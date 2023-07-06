@@ -1,0 +1,100 @@
+{
+  "name": "@adonisjs/cache",
+  "description": "Cache module for AdonisJS. Supports Redis, Memcache, File and in-memory drivers",
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=18.16.0"
+  },
+  "main": "build/index.js",
+  "type": "module",
+  "files": [
+    "src",
+    "providers",
+    "index.ts",
+    "build/src",
+    "build/services",
+    "build/providers",
+    "build/stubs",
+    "build/index.d.ts",
+    "build/index.js"
+  ],
+  "exports": {
+    ".": "./build/index.js",
+    "./providers/cache_provider": "./build/providers/cache_provider.js",
+    "./services/main": "./build/services/main.js",
+    "./types": "./build/src/types.js"
+  },
+  "scripts": {
+    "clean": "del-cli build",
+    "copy:templates": "copyfiles \"stubs/**/*.stub\" build",
+    "typecheck": "tsc --no-emit",
+    "lint": "eslint . --ext=.ts",
+    "format": "prettier --write .",
+    "quick:test": "node --enable-source-maps --loader=ts-node/esm bin/test.ts",
+    "pretest": "npm run lint",
+    "test": "c8 npm run quick:test",
+    "build": "tsc",
+    "postbuild": "npm run copy:templates",
+    "release": "np",
+    "version": "npm run build",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@adonisjs/core": "6.1.5-5",
+    "@adonisjs/eslint-config": "^1.1.7",
+    "@adonisjs/prettier-config": "^1.1.7",
+    "@adonisjs/tsconfig": "^1.1.7",
+    "@japa/assert": "2.0.0-1",
+    "@japa/runner": "3.0.0-3",
+    "@swc/core": "^1.3.68",
+    "@types/memjs": "^1.3.0",
+    "@types/node": "^20.3.3",
+    "c8": "^8.0.0",
+    "copyfiles": "^2.4.1",
+    "del-cli": "^5.0.0",
+    "eslint": "^8.44.0",
+    "memjs": "^1.3.1",
+    "np": "^8.0.4",
+    "prettier": "^3.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  },
+  "peerDependencies": {
+    "@adonisjs/core": "6.1.5-5"
+  },
+  "author": "{{ NPM_AUTHORS }}",
+  "license": "MIT",
+  "keywords": [],
+  "eslintConfig": {
+    "extends": "@adonisjs/eslint-config/package"
+  },
+  "prettier": "@adonisjs/prettier-config",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "np": {
+    "message": "chore(release): %s",
+    "tag": "latest",
+    "branch": "main",
+    "anyBranch": false
+  },
+  "c8": {
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "exclude": [
+      "tests/**"
+    ]
+  },
+  "dependencies": {
+    "@keyv/memcache": "^1.4.0",
+    "@keyv/redis": "^2.7.0",
+    "@poppinss/utils": "6.5.0-3",
+    "ioredis": "^5.3.2",
+    "keyv": "^4.5.2",
+    "keyv-file": "^0.2.0",
+    "quick-lru": "^6.1.1"
+  }
+}
