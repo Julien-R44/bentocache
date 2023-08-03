@@ -1,5 +1,14 @@
+/*
+ * @adonisjs/cache
+ *
+ * (c) AdonisJS
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 import { RuntimeException } from '@poppinss/utils'
-import { CacheDriversList } from './types/main.js'
+import type { CacheDriversList } from './types/main.js'
 
 /**
  * A global collection of Cache drivers
@@ -16,7 +25,7 @@ class CacheDriversCollection {
    */
   extend<Name extends keyof CacheDriversList>(
     driverName: Name,
-    factoryCallback: CacheDriversList[Name],
+    factoryCallback: CacheDriversList[Name]
   ): this {
     this.list[driverName] = factoryCallback
     return this
@@ -27,16 +36,16 @@ class CacheDriversCollection {
    */
   create<Name extends keyof CacheDriversList>(
     name: Name,
-    config: Parameters<CacheDriversList[Name]>[number],
+    config: Parameters<CacheDriversList[Name]>[number]
   ) {
     const driverFactory = this.list[name]
     if (!driverFactory) {
       throw new RuntimeException(
-        `Unknown cache driver "${String(name)}". Make sure the driver is registered`,
+        `Unknown cache driver "${String(name)}". Make sure the driver is registered`
       )
     }
 
-    return driverFactory(config)
+    return driverFactory(config as any)
   }
 }
 

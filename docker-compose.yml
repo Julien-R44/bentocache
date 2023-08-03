@@ -6,8 +6,19 @@ services:
     ports:
       - '6379:6379'
 
-  memcached:
-    image: memcached:alpine
+  redis-insight:
+    image: redislabs/redisinsight:latest
     restart: always
     ports:
-      - '11211:11211'
+      - '8001:8001'
+
+  dynamodb:
+    image: amazon/dynamodb-local
+    restart: always
+    ports:
+      - '8000:8000'
+    volumes:
+      - dynamodb-data:/home/dynamodblocal/data
+
+volumes:
+  dynamodb-data: {}
