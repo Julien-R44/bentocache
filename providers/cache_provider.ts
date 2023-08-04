@@ -31,9 +31,9 @@ export default class CacheProvider {
    * Register built-in stores in the driversList
    */
   async #registerDrivers(driversInUse: Set<keyof CacheDriversList>) {
-    if (driversInUse.has('lru')) {
-      const { Lru } = await import('../src/drivers/lru.js')
-      driversList.extend('lru', (c) => new Lru(c))
+    if (driversInUse.has('memory')) {
+      const { Memory } = await import('../src/drivers/memory.js')
+      driversList.extend('memory', (c) => new Memory(c))
     }
 
     if (driversInUse.has('file')) {

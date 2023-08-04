@@ -10,13 +10,13 @@
 import QuickLRU from 'quick-lru'
 
 import { BaseDriver } from './base_driver.js'
-import type { CacheDriver, CachedValue, LruConfig } from '../types/main.js'
+import type { CacheDriver, CachedValue, MemoryConfig as MemoryConfig } from '../types/main.js'
 
-export class Lru extends BaseDriver implements CacheDriver {
+export class Memory extends BaseDriver implements CacheDriver {
   #lru: QuickLRU<string, CachedValue>
-  declare config: LruConfig
+  declare config: MemoryConfig
 
-  constructor(config: LruConfig & { lruInstance?: QuickLRU<string, CachedValue> }) {
+  constructor(config: MemoryConfig & { lruInstance?: QuickLRU<string, CachedValue> }) {
     super(config)
 
     if (config.lruInstance) {
@@ -24,14 +24,14 @@ export class Lru extends BaseDriver implements CacheDriver {
       return
     }
 
-    this.#lru = new QuickLRU({ maxSize: config.maxSize, maxAge: config.ttl })
+    this.#lru = new QuickLRU({ maxSize: config.maxSize ?? 1000, maxAge: config.ttl })
   }
 
   /**
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string) {
-    return new Lru({
+    return new Memory({
       ...this.config,
       lruInstance: this.#lru,
       prefix: this.joinPrefixes(this.getPrefix(), namespace),
@@ -142,4 +142,11 @@ export class Lru extends BaseDriver implements CacheDriver {
   }
 
   async disconnect() {}
+}
+
+export function memoryDriver(options: MemoryConfig) {
+  return {
+    options,
+    driver: (config: MemoryConfig) => new Memory(config),
+  }
 }

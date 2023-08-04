@@ -11,7 +11,7 @@ import { test } from '@japa/runner'
 import { IgnitorFactory } from '@adonisjs/core/factories'
 
 import { defineConfig } from '../index.js'
-import { Lru } from '../src/drivers/lru.js'
+import { Memory } from '../src/drivers/memory.js'
 import { Redis } from '../src/drivers/redis.js'
 import driversList from '../src/drivers_list.js'
 import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
@@ -60,8 +60,8 @@ test.group('Cache Provider', (group) => {
 
     assert.instanceOf(redisInstance, Redis)
     assert.throws(
-      () => driversList.create('lru', {} as any),
-      'Unknown cache driver "lru". Make sure the driver is registered'
+      () => driversList.create('memory', {} as any),
+      'Unknown cache driver "memory". Make sure the driver is registered'
     )
     assert.throws(
       () => driversList.create('file', {} as any),
@@ -86,7 +86,7 @@ test.group('Cache Provider', (group) => {
                 connection: REDIS_CREDENTIALS,
               },
               memory: {
-                driver: 'lru',
+                driver: 'memory',
                 ttl: 1000,
                 maxSize: 1000,
               },
@@ -108,13 +108,13 @@ test.group('Cache Provider', (group) => {
     })
     cleanup(() => redisInstance.disconnect())
 
-    const memoryInstance = driversList.create('lru', {
+    const memoryInstance = driversList.create('memory', {
       ttl: 100,
       maxSize: 1000,
     })
 
     assert.instanceOf(redisInstance, Redis)
-    assert.instanceOf(memoryInstance, Lru)
+    assert.instanceOf(memoryInstance, Memory)
   })
 
   test('define repl bindings', async ({ assert }) => {

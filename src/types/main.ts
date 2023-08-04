@@ -8,7 +8,7 @@
  */
 
 import type { Redis } from '../drivers/redis.js'
-import type { Lru } from '../drivers/lru.js'
+import type { Memory } from '../drivers/memory.js'
 import type { CacheManager } from '../cache_manager.js'
 import type { Redis as IoRedis, RedisOptions as IoRedisOptions } from 'ioredis'
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
@@ -21,6 +21,16 @@ export * from './events.js'
 type MaybePromise<T> = T | Promise<T>
 
 export type CacheDriverFactory = (config: any) => CacheDriver
+
+export type CacheDriverOptions = {
+  ttl?: TTL
+  prefix?: string
+}
+
+export type CreateDriverResult = {
+  options: CacheDriverOptions
+  driver: CacheDriverFactory
+}
 
 export interface CacheSerializer {
   serialize: (value: any) => Promise<string> | string
@@ -112,33 +122,33 @@ export type CachedValue = any
  * A list of known Caches inferred from the user config
  */
 export interface CachesList {}
-export type InferCaches<T extends { list: Record<string, CacheDriverFactory> }> = T['list']
+export type InferCaches<T extends { list: Record<string, CreateDriverResult> }> = T['list']
 
 export interface CacheDriversList {
   file: (config: FileConfig) => File
   redis: (config: RedisConfig) => Redis
-  lru: (config: LruConfig) => Lru
+  memory: (config: MemoryConfig) => Memory
   dynamodb: (config: DynamoDBConfig) => DynamoDB
   cloudflarekv: (config: CloudflareKvConfig) => CloudflareKv
 }
 
-export type CacheDriversListContract = Record<string, CacheDriverFactory>
+export type CacheDriversListContract = Record<string, CreateDriverResult>
 
 export interface CacheService
   extends CacheManager<CachesList extends CacheDriversListContract ? CachesList : never> {}
 
 /**
  * A TTL can be a number in milliseconds or a string formatted as a duration
+ *
+ * Formats accepted are :
+ * - Simple number in milliseconds
+ * - String formatted as a duration. Uses https://github.com/lukeed/ms under the hood
  */
 export type TTL = number | string
 
 export type CommonOptions = {
   /**
    * Default TTL
-   *
-   * Formats accepted are :
-   * - Simple number in milliseconds
-   * - String formatted as a duration. Uses https://github.com/lukeed/ms under the hood
    */
   ttl?: TTL
 
@@ -149,7 +159,7 @@ export type CommonOptions = {
 }
 
 export type DriverCommonOptions = {
-  ttl: number
+  ttl?: number
   prefix?: string
 }
 
@@ -167,12 +177,14 @@ export type RedisConfig = {
   connection: IoRedis | IoRedisOptions
 } & DriverCommonOptions
 
-export type LruConfig = {
+export type MemoryConfig = {
   /**
    * Maximum number of items to store in the cache
    * before removing the least recently used items
+   *
+   * @default 1000
    */
-  maxSize: number
+  maxSize?: number
 } & DriverCommonOptions
 
 export type DynamoDBConfig = {

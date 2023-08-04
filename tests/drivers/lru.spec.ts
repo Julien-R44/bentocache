@@ -9,12 +9,12 @@
 
 import { test } from '@japa/runner'
 
-import { Lru } from '../../src/drivers/lru.js'
+import { Memory } from '../../src/drivers/memory.js'
 import { registerApiTestSuite } from '../../test_helpers/driver_test_suite.js'
 
 registerApiTestSuite({
   test,
-  driver: Lru,
+  driver: Memory,
   config: {
     ttl: 30 * 100,
     maxSize: 1000,

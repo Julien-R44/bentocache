@@ -7,10 +7,13 @@
  * file that was distributed with this source code.
  */
 
-import { Cache } from './cache.js'
 import Emittery from 'emittery'
 
-export class CacheManager<KnownCaches extends Record<string, CacheDriverFactory>> {
+import { Cache } from './cache.js'
+import { resolveTtl } from './helpers.js'
+import type { CreateDriverResult, CacheEvents, Emitter, KeyValueObject, TTL } from './types/main.js'
+
+export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>> {
   #config: {
     default?: keyof KnownCaches
     list: KnownCaches
@@ -26,10 +29,28 @@ export class CacheManager<KnownCaches extends Record<string, CacheDriverFactory>
    */
   #driversCache: Map<keyof KnownCaches, Cache> = new Map()
 
-  constructor(config: { default?: keyof KnownCaches; list: KnownCaches }, emitter?: Emitter) {
+  /**
+   * Default TTL for all the drivers when not defined explicitly
+   *
+   * @default 30s
+   */
+  #ttl: number
+
+  #prefix?: string
+
+  constructor(
+    config: {
+      default?: keyof KnownCaches
+      list: KnownCaches
+      ttl?: TTL
+      prefix?: string
+    },
+    emitter?: Emitter
+  ) {
     this.#config = config
     this.#emitter = emitter || new Emittery()
-    this.#fakedCacheManager = new FakeCacheManager<KnownCaches>(this.#emitter)
+    this.#ttl = resolveTtl(config.ttl, 30_000)
+    this.#prefix = config.prefix
   }
 
   /**
@@ -45,14 +66,22 @@ export class CacheManager<KnownCaches extends Record<string, CacheDriverFactory>
       return this.#driversCache.get(cacheToUse)!
     }
 
-    const driverFactory = this.#config.list[cacheToUse]
+    const { driver, options } = this.#config.list[cacheToUse]
 
-    const cacheInstance = new Cache(cacheToUse as string, driverFactory({}), {
+    const driverOptions = {
+      prefix: options.prefix || this.#prefix,
+      ttl: resolveTtl(options.ttl, this.#ttl),
+    }
+
+    const cacheInstance = new Cache(cacheToUse as string, driver(driverOptions), {
       emitter: this.#emitter,
+      ttl: driverOptions.ttl,
     })
+
     this.#driversCache.set(cacheToUse, cacheInstance)
     return cacheInstance
   }
+
   /**
    * Subscribe to a given cache event
    */
