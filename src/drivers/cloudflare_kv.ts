@@ -139,25 +139,6 @@ export class CloudflareKv extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Add the given amount to the value of a key.
-   * Creates the key if it doesn't exist
-   *
-   * Cloudflare KV does not support incrementing values.
-   * So this operation is not atomic. We may introduces locks in the future.
-   */
-  async add(key: string, amount: number) {
-    const value = await this.get(key)
-    if (!value) {
-      await this.set(key, amount.toString())
-      return amount
-    }
-
-    const newValue = Number.parseInt(value) + amount
-    await this.set(key, newValue.toString())
-    return newValue
-  }
-
-  /**
    * Check if a key exists in the cache
    */
   async has(key: string) {

@@ -90,21 +90,6 @@ export class Memory extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Add the given amount to the value of a key.
-   * Creates the key if it doesn't exist
-   */
-  add(key: string, amount: number) {
-    if (!this.has(key)) {
-      this.set(key, amount, this.config.ttl)
-      return amount
-    }
-
-    const newValue = +this.get(key)! + amount
-    this.set(key, newValue, this.config.ttl)
-    return newValue
-  }
-
-  /**
    * Check if a key exists in the cache
    */
   has(key: string) {

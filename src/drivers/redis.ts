@@ -110,15 +110,6 @@ export class Redis extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Add the given amount to the value of a key.
-   * Creates the key if it doesn't exist
-   */
-  async add(key: string, amount: number) {
-    key = this.getItemKey(key)
-    return this.#connection.incrby(key, amount)
-  }
-
-  /**
    * Check if a key exists in the cache
    */
   async has(key: string) {

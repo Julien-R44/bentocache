@@ -255,30 +255,6 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Add the given amount to the value of a key.
-   * Creates the key if it doesn't exist
-   */
-  async add(key: string, amount: number) {
-    const command = new UpdateItemCommand({
-      TableName: this.#tableName,
-      Key: { key: { S: this.getItemKey(key) } },
-      UpdateExpression: 'SET #value = if_not_exists(#value, :zero) + :amount',
-      ExpressionAttributeNames: {
-        '#value': 'value',
-      },
-      ExpressionAttributeValues: {
-        ':amount': { N: amount.toString() },
-        ':zero': { N: '0' },
-      },
-      ReturnValues: 'UPDATED_NEW',
-    })
-
-    const result = await this.#client.send(command)
-
-    return Number(result.Attributes?.value.N ?? 0)
-  }
-
-  /**
    * Check if a key exists in the cache
    */
   async has(key: string) {

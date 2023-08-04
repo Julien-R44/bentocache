@@ -289,32 +289,6 @@ export class Cache {
   }
 
   /**
-   * Add the given amount to the value of a key.
-   * Creates the key if it doesn't exist
-   *
-   * Returns the new value
-   */
-  async add(key: string, amount: number) {
-    return this.#driver.add(key, amount)
-  }
-
-  /**
-   * Increment a value by the given amount.
-   * Creates the key if it doesn't exist
-   */
-  async increment(key: string, amount = 1) {
-    return await this.add(key, amount ?? 1)
-  }
-
-  /**
-   * Decrement a value by the given amount.
-   * Creates the key if it doesn't exist
-   */
-  async decrement(key: string, amount = -1) {
-    return this.add(key, amount ?? -1)
-  }
-
-  /**
    * Check if a key exists in the cache
    */
   async has(key: string) {

@@ -252,28 +252,6 @@ export function registerApiTestSuite<T extends CacheDriverConstructor>({
       assert.isFalse(await cache.has('key1'))
     })
 
-    test('add() can increments a key', async ({ assert }) => {
-      await cache.set('key1', '1')
-      await cache.add('key1', 10)
-      assert.equal(await cache.get('key1'), 11)
-    })
-
-    test('add() can decrements a key', async ({ assert }) => {
-      await cache.set('key1', '10')
-      await cache.add('key1', -1)
-      assert.equal(await cache.get('key1'), 9)
-    })
-
-    test('add() create key when missing', async ({ assert }) => {
-      await cache.add('key1', 10)
-      assert.equal(await cache.get('key1'), 10)
-    })
-
-    test('add() returns the new value', async ({ assert }) => {
-      await cache.set('key1', '10')
-      assert.equal(await cache.add('key1', 10), 20)
-    })
-
     test('pull() returns value and removes it', async ({ assert }) => {
       await cache.set('key1', 'foo')
       const value = await cache.pull('key1')
