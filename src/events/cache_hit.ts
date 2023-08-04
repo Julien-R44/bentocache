@@ -1,7 +1,7 @@
 import type { CacheEvent } from '../types/main.js'
 
 export class CacheHit implements CacheEvent {
-  name = 'cache:hit'
+  name = 'cache:hit' as const
 
   constructor(
     readonly key: string,

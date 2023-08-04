@@ -16,18 +16,11 @@ import type { File } from '../drivers/file.js'
 import type { DynamoDB } from '../drivers/dynamodb.js'
 import type { CloudflareKv } from '../drivers/cloudflare_kv.js'
 
+export * from './events.js'
+
 type MaybePromise<T> = T | Promise<T>
 
-export interface CacheEvent {
-  name: string
-  toJSON: () => Record<string, any>
-}
-
 export type CacheDriverFactory = (config: any) => CacheDriver
-
-export interface Emitter {
-  emit: (event: string, ...values: any[]) => void
-}
 
 export interface CacheSerializer {
   serialize: (value: any) => Promise<string> | string

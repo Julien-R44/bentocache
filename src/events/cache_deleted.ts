@@ -1,7 +1,7 @@
 import type { CacheEvent } from '../types/main.js'
 
 export class CacheDeleted implements CacheEvent {
-  name = 'cache:deleted'
+  name = 'cache:deleted' as const
 
   constructor(
     readonly key: string,

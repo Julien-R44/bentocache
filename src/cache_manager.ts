@@ -8,7 +8,7 @@
  */
 
 import { Cache } from './cache.js'
-import type { CacheDriverFactory, Emitter, KeyValueObject } from './types/main.js'
+import Emittery from 'emittery'
 
 export class CacheManager<KnownCaches extends Record<string, CacheDriverFactory>> {
   #config: {
@@ -26,9 +26,10 @@ export class CacheManager<KnownCaches extends Record<string, CacheDriverFactory>
    */
   #driversCache: Map<keyof KnownCaches, Cache> = new Map()
 
-  constructor(config: { default?: keyof KnownCaches; list: KnownCaches }, emitter: Emitter) {
+  constructor(config: { default?: keyof KnownCaches; list: KnownCaches }, emitter?: Emitter) {
     this.#config = config
-    this.#emitter = emitter
+    this.#emitter = emitter || new Emittery()
+    this.#fakedCacheManager = new FakeCacheManager<KnownCaches>(this.#emitter)
   }
 
   /**
@@ -51,6 +52,29 @@ export class CacheManager<KnownCaches extends Record<string, CacheDriverFactory>
     })
     this.#driversCache.set(cacheToUse, cacheInstance)
     return cacheInstance
+  }
+  /**
+   * Subscribe to a given cache event
+   */
+  on<Event extends keyof CacheEvents>(event: Event, callback: (arg: CacheEvents[Event]) => void) {
+    this.#emitter.on(event, callback)
+    return this
+  }
+
+  /**
+   * Subscribe to a given cache event only once
+   */
+  once<Event extends keyof CacheEvents>(event: Event, callback: (arg: CacheEvents[Event]) => void) {
+    this.#emitter.once(event, callback)
+    return this
+  }
+
+  /**
+   * Unsubscribe the callback from the given event
+   */
+  off<Event extends keyof CacheEvents>(event: Event, callback: (arg: CacheEvents[Event]) => void) {
+    this.#emitter.off(event, callback)
+    return this
   }
 
   /**
