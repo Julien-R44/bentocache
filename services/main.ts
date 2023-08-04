@@ -21,3 +21,19 @@ await app.booted(async () => {
 })
 
 export { cache as default }
+
+// const nexusCache = new NexusCache({
+//   default: 'redis',
+// list: {
+//   multiple: createMultipleDriver([createRedisDriver({}), createMemcachedDriver({})]),
+
+//   redis: createRedisDriver({}),
+
+//   memcached: createMemcachedDriver({}),
+
+//   hybrid: createHybridDriver({
+//     local: createMemoryDriver({}),
+//     remote: createRedisDriver({}),
+//   }),
+// },
+// })

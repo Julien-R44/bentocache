@@ -8,23 +8,27 @@
  */
 
 import { EventEmitter } from 'node:events'
+import { defu } from 'defu'
 
 import { Cache } from '../src/cache.js'
 import { Redis } from '../src/drivers/redis.js'
-import type { Emitter } from '../src/types/main.js'
+import type { Emitter, GracefulRetainOptions } from '../src/types/main.js'
 import type { CacheDriver } from '../src/types/main.js'
 
 type FactoryParameters = {
   emitter: Emitter
   driver: CacheDriver
   ttl: number
+  gracefulRetain: GracefulRetainOptions
 }
 
 export class CacheFactory {
-  #parameters: Partial<FactoryParameters> = {}
+  #parameters: Partial<FactoryParameters> = {
+    gracefulRetain: { enabled: false },
+  }
 
   merge(parameters: Partial<FactoryParameters>) {
-    Object.assign(this.#parameters, parameters)
+    this.#parameters = defu(parameters, this.#parameters)
     return this
   }
 
@@ -32,7 +36,7 @@ export class CacheFactory {
     return (
       this.#parameters.driver ??
       new Redis({
-        ttl: this.#parameters.ttl ?? 1000 * 60 * 60,
+        ttl: this.#parameters.ttl,
         prefix: 'test',
         connection: { host: '127.0.0.1', port: 6379 },
       })
@@ -46,7 +50,19 @@ export class CacheFactory {
   create() {
     return new Cache('primary', this.#getDriver(), {
       emitter: this.#getEmitter(),
-      ttl: this.#parameters.ttl ?? 1000 * 60 * 60,
+      ttl: this.#parameters.ttl,
+      gracefulRetain: this.#parameters.gracefulRetain,
     })
+  }
+
+  createWithTeardown() {
+    const cache = this.create()
+    return {
+      cache,
+      async teardown() {
+        await cache.clear()
+        await cache.disconnect()
+      },
+    }
   }
 }

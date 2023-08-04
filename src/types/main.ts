@@ -18,7 +18,18 @@ import type { CloudflareKv } from '../drivers/cloudflare_kv.js'
 
 export * from './events.js'
 
+export type GetOrSetCallback = () => MaybePromise<CachedValue>
 type MaybePromise<T> = T | Promise<T>
+
+export type GracefulRetainOptions = {
+  enabled: boolean
+  duration?: TTL
+  delay?: TTL
+}
+
+export type GetOrSetOptions = {
+  gracefulRetain?: GracefulRetainOptions
+}
 
 export type CacheDriverFactory = (config: any) => CacheDriver
 
@@ -81,12 +92,6 @@ export interface CacheDriver {
    * If `ttl` is not defined, the value will be stored forever
    */
   setMany(values: KeyValueObject[], ttl?: number): MaybePromise<boolean>
-
-  /**
-   * Add the given amount to the value of a key.
-   * Creates the key if it doesn't exist
-   */
-  add(key: string, amount: number): MaybePromise<number>
 
   /**
    * Check if a key exists in the cache

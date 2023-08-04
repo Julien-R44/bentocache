@@ -9,6 +9,7 @@
 
 import is from '@sindresorhus/is'
 import string from '@poppinss/utils/string'
+import { defu } from 'defu'
 
 import { JsonSerializer } from './serializers/json.js'
 import type {
@@ -17,6 +18,9 @@ import type {
   CacheSerializer,
   CachedValue,
   Emitter,
+  GetOrSetCallback,
+  GetOrSetOptions,
+  GracefulRetainOptions,
   TTL,
 } from './types/main.js'
 import { CacheHit } from './events/cache_hit.js'
@@ -24,7 +28,10 @@ import { CacheDeleted } from './events/cache_deleted.js'
 import { CacheMiss } from './events/cache_miss.js'
 import { CacheWritten } from './events/cache_written.js'
 import { CacheCleared } from './events/cache_cleared.js'
-import { Mutex, MutexInterface, Semaphore, SemaphoreInterface, withTimeout } from 'async-mutex'
+import { Mutex } from 'async-mutex'
+import { resolveTtl } from './helpers.js'
+import debug from './debug.js'
+import { CacheItem } from './cache_item.js'
 
 export class Cache {
   /**
@@ -57,13 +64,16 @@ export class Cache {
    */
   #locks = new Map<string, Mutex>()
 
+  #gracefulRetain: GracefulRetainOptions
+
   constructor(
     name: string,
     driver: CacheDriver,
     options: {
-      emitter?: { emit: (event: string, ...values: any[]) => void }
+      emitter?: Emitter
       ttl?: TTL
       serializer?: CacheSerializer
+      gracefulRetain: GracefulRetainOptions
     }
   ) {
     this.#name = name
@@ -71,6 +81,7 @@ export class Cache {
     this.#emitter = options.emitter
     this.#defaultTtl = this.#resolveTtl(options.ttl) ?? 1000 * 60 * 60
     this.#serializer = options.serializer ?? this.#serializer
+    this.#gracefulRetain = options.gracefulRetain
   }
 
   /**
@@ -111,11 +122,11 @@ export class Cache {
   /**
    * Set a value in the cache
    */
-  async #set<T extends CachedValue>(key: string, value: T, ttl?: number) {
-    const serializedValue = await this.#serialize(value)
+  async #set(key: string, item: any, ttl?: number) {
+    const serializedValue = await this.#serialize(item)
     const result = await this.#driver.set(key, serializedValue, ttl)
     if (result) {
-      this.#emit(new CacheWritten(key, value, this.#name))
+      this.#emit(new CacheWritten(key, item.value, this.#name))
     }
 
     return result
@@ -142,6 +153,7 @@ export class Cache {
       emitter: this.#emitter,
       ttl: this.#defaultTtl,
       serializer: this.#serializer,
+      gracefulRetain: this.#gracefulRetain,
     })
   }
 
@@ -149,17 +161,26 @@ export class Cache {
    * Get a value from the cache
    */
   async get(key: string, defaultValue?: CachedValue | (() => CachedValue)) {
-    const value = await this.#driver.get(key)
+    const item = await this.#driver.get(key)
 
-    if (is.nullOrUndefined(value)) {
-      this.#emit(new CacheMiss(key, this.#name))
-      return this.#resolveDefaultValue(defaultValue)
+    /**
+     * Explicitly check for `undefined` as the value can be stored as `null`
+     */
+    if (item !== undefined) {
+      const deserialized = await this.#deserialize(item)
+      const cacheItem = CacheItem.fromDriver(key, deserialized)
+
+      if (!cacheItem.isLogicallyExpired()) {
+        this.#emit(new CacheHit(key, cacheItem.getValue(), this.#name))
+        return cacheItem.getValue()
+      } else if (this.#gracefulRetain.enabled) {
+        this.#emit(new CacheHit(key, cacheItem.getValue(), this.#name))
+        return cacheItem.getValue()
+      }
     }
 
-    const deserialized = await this.#deserialize(value)
-    this.#emit(new CacheHit(key, deserialized, this.#name))
-
-    return deserialized
+    this.#emit(new CacheMiss(key, this.#name))
+    return this.#resolveDefaultValue(defaultValue)
   }
 
   /**
@@ -194,7 +215,7 @@ export class Cache {
    * Returns true if the value was set, false otherwise
    */
   async set<T extends CachedValue>(key: string, value: T, ttl?: TTL) {
-    return this.#set(key, value, this.#resolveTtl(ttl))
+    return this.#set(key, { value }, this.#resolveTtl(ttl))
   }
 
   /**
@@ -202,7 +223,7 @@ export class Cache {
    * Returns true if the value was set, false otherwise
    */
   async setForever<T extends CachedValue>(key: string, value: T) {
-    return this.#set(key, value)
+    return this.#set(key, { value })
   }
 
   /**
@@ -224,14 +245,35 @@ export class Cache {
     return result
   }
 
-  async #getOrSet(key: string, callback: () => Promise<CachedValue> | CachedValue, ttl?: number) {
-    const value = await this.get(key)
-    if (!is.nullOrUndefined(value)) {
-      return value
+  async #getOrSet(
+    key: string,
+    callback: GetOrSetCallback,
+    ttl?: number,
+    options: GetOrSetOptions = {}
+  ) {
+    const gracefulRetainOptions = defu(options.gracefulRetain, this.#gracefulRetain)
+    const isGracefulRetainEnabled = gracefulRetainOptions.enabled
+
+    const item = await this.#driver.get(key)
+    let cacheItem: CacheItem | undefined
+
+    /**
+     * Value was found in the cache
+     */
+    if (item !== undefined) {
+      debug('getOrSet(): value found in cache for key "%s"', key)
+      const deserialized = await this.#deserialize(item)
+      cacheItem = CacheItem.fromDriver(key, deserialized)
+
+      if (!cacheItem.isLogicallyExpired()) {
+        this.#emit(new CacheHit(key, cacheItem.getValue(), this.#name))
+        debug('getOrSet(): value found in cache for key "%s"', key)
+        return cacheItem.getValue()
+      }
     }
 
     /**
-     * Here we know that the value is not in the cache.
+     * Here we know that the value is not in the cache ( or is logically expired ).
      * So we have to call the callback to resolve the value.
      *
      * We acquire a in-memory lock to make sure that only one
@@ -247,15 +289,50 @@ export class Cache {
        * since another request might have resolved it while
        * we were waiting for the lock
        */
-      const doubleCheckedValue = await this.get(key)
-      if (!is.nullOrUndefined(doubleCheckedValue)) {
-        return doubleCheckedValue
+      const doubleCheckedValue = await this.#driver.get(key)
+      if (doubleCheckedValue !== undefined) {
+        const deserialized = await this.#deserialize(doubleCheckedValue)
+        cacheItem = CacheItem.fromDriver(key, deserialized)
+        if (!cacheItem.isLogicallyExpired()) {
+          this.#emit(new CacheHit(key, cacheItem.getValue(), this.#name))
+          debug('getOrSet(): value found in cache for key "%s"', key)
+          return cacheItem.getValue()
+        }
       }
 
+      /**
+       * Now let's call the callback to resolve the value that
+       * will be stored in the cache
+       */
+      let realTtl = isGracefulRetainEnabled
+        ? resolveTtl(gracefulRetainOptions.duration, this.#gracefulRetain.duration)
+        : ttl
+
       const newValue = await callback()
-      await this.#set(key, newValue, ttl)
+      const cacheItemToStore = {
+        value: newValue,
+        logicalExpiration: isGracefulRetainEnabled && ttl ? Date.now() + ttl : undefined,
+      }
+
+      await this.#set(key, cacheItemToStore, realTtl)
+      debug('getOrSet(): set value in cache %o', { cacheItem: cacheItemToStore, realTtl })
 
       return newValue
+    } catch (error) {
+      debug('getOrSet(): error while calling callback for key "%s"', key)
+
+      /**
+       * If the callback failed and graceful retain is enabled, we have to
+       * return the old cached value if it exists.
+       */
+      if (isGracefulRetainEnabled) {
+        debug('getOrSet(): graceful retain is enabled for key "%s"', key)
+        if (cacheItem) {
+          return cacheItem.getValue()
+        }
+      }
+
+      throw error
     } finally {
       release()
       this.#locks.delete(key)
@@ -266,15 +343,29 @@ export class Cache {
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the callback and return it
    */
+  async getOrSet(key: string, cb: GetOrSetCallback, opts?: GetOrSetOptions): Promise<any>
+  async getOrSet(key: string, ttl: TTL, cb: GetOrSetCallback, opts?: GetOrSetOptions): Promise<any>
   async getOrSet(
     key: string,
-    ttlOrCallback: TTL | (() => Promise<CachedValue> | CachedValue),
-    callback?: () => Promise<CachedValue> | CachedValue
+    ttlOrCallback: TTL | (() => GetOrSetCallback),
+    callbackOrOptions?: GetOrSetCallback | GetOrSetOptions,
+    options?: GetOrSetOptions
   ) {
-    const ttl = is.function_(ttlOrCallback) ? this.#defaultTtl : this.#resolveTtl(ttlOrCallback)
-    const resolvedCallback = is.function_(ttlOrCallback) ? ttlOrCallback : callback
+    let ttl: TTL
+    let callback: GetOrSetCallback
+    let resolvedOptions: GetOrSetOptions
 
-    return this.#getOrSet(key, resolvedCallback!, ttl)
+    if (typeof ttlOrCallback === 'function') {
+      ttl = this.#defaultTtl
+      callback = ttlOrCallback
+      resolvedOptions = (callbackOrOptions as GetOrSetOptions) || options
+    } else {
+      ttl = this.#resolveTtl(ttlOrCallback)
+      callback = callbackOrOptions as () => Promise<CachedValue> | CachedValue
+      resolvedOptions = options!
+    }
+
+    return this.#getOrSet(key, callback, ttl, resolvedOptions)
   }
 
   /**
@@ -310,14 +401,14 @@ export class Cache {
    */
   async pull(key: string) {
     const result = await this.#driver.pull(key)
-    const returnValue = is.undefined(result) ? undefined : await this.#deserialize(result)
+    const item = is.undefined(result) ? undefined : await this.#deserialize(result)
 
     if (result) {
-      this.#emit(new CacheHit(key, returnValue, this.#name))
+      this.#emit(new CacheHit(key, item.value, this.#name))
       this.#emit(new CacheDeleted(key, this.#name))
     }
 
-    return returnValue
+    return item
   }
 
   /**

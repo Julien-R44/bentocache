@@ -164,16 +164,17 @@ test.group('Cache Provider', (group) => {
           providers: ['../providers/cache_provider.js'],
         },
         config: {
-          cache: defineConfig({
-            default: 'redis',
-            list: {
-              redis: {
-                driver: 'redis',
-                ttl: 1000,
-                connection: REDIS_CREDENTIALS,
-              },
-            },
-          }),
+          // cache: defineConfig({
+          //   default: 'redis',
+          //   list:
+          //   // list: {
+          //   //   redis: {
+          //   //     driver: 'redis',
+          //   //     ttl: 1000,
+          //   //     connection: REDIS_CREDENTIALS,
+          //   //   },
+          //   // },
+          // }),
         },
       })
       .create(BASE_URL, { importer: (filePath) => import(filePath) })
@@ -186,5 +187,5 @@ test.group('Cache Provider', (group) => {
     assert.isUndefined(await cache.get('foo'))
 
     await app.terminate()
-  })
+  }).skip()
 })

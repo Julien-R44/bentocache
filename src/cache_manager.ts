@@ -11,7 +11,14 @@ import Emittery from 'emittery'
 
 import { Cache } from './cache.js'
 import { resolveTtl } from './helpers.js'
-import type { CreateDriverResult, CacheEvents, Emitter, KeyValueObject, TTL } from './types/main.js'
+import type {
+  CreateDriverResult,
+  CacheEvents,
+  Emitter,
+  KeyValueObject,
+  TTL,
+  GracefulRetainOptions,
+} from './types/main.js'
 
 export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>> {
   #config: {
@@ -38,12 +45,15 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
 
   #prefix?: string
 
+  #gracefulRetain: GracefulRetainOptions
+
   constructor(
     config: {
       default?: keyof KnownCaches
       stores: KnownCaches
       ttl?: TTL
       prefix?: string
+      gracefulRetain?: GracefulRetainOptions
     },
     emitter?: Emitter
   ) {
@@ -51,6 +61,12 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
     this.#emitter = emitter || new Emittery()
     this.#ttl = resolveTtl(config.ttl, 30_000)
     this.#prefix = config.prefix
+
+    this.#gracefulRetain = config.gracefulRetain || {
+      enabled: false,
+      duration: '6h',
+      delay: '30s',
+    }
   }
 
   /**
@@ -71,11 +87,13 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
     const driverOptions = {
       prefix: options.prefix || this.#prefix,
       ttl: resolveTtl(options.ttl, this.#ttl),
+      gracefulRetain: this.#gracefulRetain,
     }
 
     const cacheInstance = new Cache(cacheToUse as string, driver(driverOptions), {
       emitter: this.#emitter,
       ttl: driverOptions.ttl,
+      gracefulRetain: this.#gracefulRetain,
     })
 
     this.#driversCache.set(cacheToUse, cacheInstance)

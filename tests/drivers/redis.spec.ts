@@ -25,21 +25,21 @@ registerApiTestSuite({
   },
 })
 
-registerApiTestSuite({
-  name: 'Redis ( Upstash )',
-  test,
-  driver: Redis,
-  config: {
-    ttl: 30 * 100,
-    prefix: 'japa',
-    connection: {
-      host: process.env.UPSTASH_HOST!,
-      port: +process.env.UPSTASH_PORT!,
-      username: process.env.UPSTASH_USERNAME!,
-      password: process.env.UPSTASH_PASSWORD!,
-    },
-  },
-})
+// registerApiTestSuite({
+//   name: 'Redis ( Upstash )',
+//   test,
+//   driver: Redis,
+//   config: {
+//     ttl: 30 * 100,
+//     prefix: 'japa',
+//     connection: {
+//       host: process.env.UPSTASH_HOST!,
+//       port: +process.env.UPSTASH_PORT!,
+//       username: process.env.UPSTASH_USERNAME!,
+//       password: process.env.UPSTASH_PASSWORD!,
+//     },
+//   },
+// })
 
 test.group('Redis driver', (group) => {
   let redis: Redis

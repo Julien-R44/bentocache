@@ -20,3 +20,7 @@ export function cleanupCache(cache: { clear(): any; disconnect(): any }) {
     await cache.disconnect()
   }
 }
+
+export function throwingCb(errorMsg = 'error') {
+  throw new Error(errorMsg)
+}
