@@ -131,6 +131,7 @@ export class Memory extends BaseDriver implements CacheDriver {
 
 export function memoryDriver(options: MemoryConfig) {
   return {
+    type: 'driver' as const,
     options,
     driver: (config: MemoryConfig) => new Memory(config),
   }

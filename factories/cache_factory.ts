@@ -10,7 +10,7 @@
 import { EventEmitter } from 'node:events'
 import { defu } from 'defu'
 
-import { Cache } from '../src/cache.js'
+import { Cache } from '../src/providers/cache.js'
 import { Redis } from '../src/drivers/redis.js'
 import type { Emitter, GracefulRetainOptions } from '../src/types/main.js'
 import type { CacheDriver } from '../src/types/main.js'

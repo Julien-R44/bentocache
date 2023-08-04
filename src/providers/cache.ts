@@ -7,91 +7,31 @@
  * file that was distributed with this source code.
  */
 
-import is from '@sindresorhus/is'
-import string from '@poppinss/utils/string'
 import { defu } from 'defu'
+import is from '@sindresorhus/is'
+import { Mutex } from 'async-mutex'
 
-import { JsonSerializer } from './serializers/json.js'
 import type {
   CacheDriver,
-  CacheEvent,
-  CacheSerializer,
   CachedValue,
-  Emitter,
   GetOrSetCallback,
   GetOrSetOptions,
-  GracefulRetainOptions,
   TTL,
-} from './types/main.js'
-import { CacheHit } from './events/cache_hit.js'
-import { CacheDeleted } from './events/cache_deleted.js'
-import { CacheMiss } from './events/cache_miss.js'
-import { CacheWritten } from './events/cache_written.js'
-import { CacheCleared } from './events/cache_cleared.js'
-import { Mutex } from 'async-mutex'
-import { resolveTtl } from './helpers.js'
-import debug from './debug.js'
-import { CacheItem } from './cache_item.js'
+} from '../types/main.js'
+import { CacheHit } from '../events/cache_hit.js'
+import { CacheDeleted } from '../events/cache_deleted.js'
+import { CacheMiss } from '../events/cache_miss.js'
+import { CacheWritten } from '../events/cache_written.js'
+import { CacheCleared } from '../events/cache_cleared.js'
+import { resolveTtl } from '../helpers.js'
+import debug from '../debug.js'
+import { CacheItem } from '../cache_item.js'
+import type { CacheProvider, CacheProviderOptions } from '../types/provider.js'
+import { BaseProvider } from './base_provider.js'
 
-export class Cache {
-  /**
-   * Underlying driver
-   */
-  #driver: CacheDriver
-
-  /**
-   * Emitter to use when emitting cache:* events
-   */
-  #emitter?: Emitter
-
-  /**
-   * Serializer to use when storing and retrieving values
-   */
-  #serializer: CacheSerializer = new JsonSerializer()
-
-  /**
-   * Default TTL in milliseconds
-   */
-  #defaultTtl: number
-
-  /**
-   * Name of the cache store
-   */
-  #name: string
-
-  /**
-   * A map of locks to use for getOrSet cache stampede protection
-   */
-  #locks = new Map<string, Mutex>()
-
-  #gracefulRetain: GracefulRetainOptions
-
-  constructor(
-    name: string,
-    driver: CacheDriver,
-    options: {
-      emitter?: Emitter
-      ttl?: TTL
-      serializer?: CacheSerializer
-      gracefulRetain: GracefulRetainOptions
-    }
-  ) {
-    this.#name = name
-    this.#driver = driver
-    this.#emitter = options.emitter
-    this.#defaultTtl = this.#resolveTtl(options.ttl) ?? 1000 * 60 * 60
-    this.#serializer = options.serializer ?? this.#serializer
-    this.#gracefulRetain = options.gracefulRetain
-  }
-
-  /**
-   * Resolve the given TTL to a number in milliseconds value
-   */
-  #resolveTtl(ttl?: TTL) {
-    if (is.nullOrUndefined(ttl)) return this.#defaultTtl
-    if (is.number(ttl)) return ttl
-
-    return string.milliseconds.parse(ttl)
+export class Cache extends BaseProvider implements CacheProvider {
+  constructor(name: string, driver: CacheDriver, options: CacheProviderOptions) {
+    super(name, driver, options)
   }
 
   #resolveDefaultValue(defaultValue?: CachedValue | (() => CachedValue)) {
@@ -99,34 +39,13 @@ export class Cache {
   }
 
   /**
-   * Serialize a value
-   */
-  async #serialize(value: CachedValue) {
-    return await this.#serializer.serialize(value)
-  }
-
-  /**
-   * Deserialize a value
-   */
-  async #deserialize(value: string) {
-    return await this.#serializer.deserialize(value)
-  }
-
-  /**
-   * Emit a CacheEvent using the emitter
-   */
-  #emit(event: CacheEvent) {
-    return this.#emitter?.emit(event.name, event.toJSON())
-  }
-
-  /**
    * Set a value in the cache
    */
   async #set(key: string, item: any, ttl?: number) {
-    const serializedValue = await this.#serialize(item)
-    const result = await this.#driver.set(key, serializedValue, ttl)
+    const serializedValue = await this.serialize(item)
+    const result = await this.driver.set(key, serializedValue, ttl)
     if (result) {
-      this.#emit(new CacheWritten(key, item.value, this.#name))
+      this.emit(new CacheWritten(key, item.value, this.name))
     }
 
     return result
@@ -136,10 +55,10 @@ export class Cache {
    * Get or create a new lock for the given key
    */
   #getOrCreateLock(key: string) {
-    let lock = this.#locks.get(key)
+    let lock = this.locks.get(key)
     if (!lock) {
       lock = new Mutex()
-      this.#locks.set(key, lock)
+      this.locks.set(key, lock)
     }
 
     return lock
@@ -149,11 +68,11 @@ export class Cache {
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string) {
-    return new Cache(this.#name, this.#driver.namespace(namespace), {
-      emitter: this.#emitter,
-      ttl: this.#defaultTtl,
-      serializer: this.#serializer,
-      gracefulRetain: this.#gracefulRetain,
+    return new Cache(this.name, this.driver.namespace(namespace), {
+      emitter: this.emitter,
+      ttl: this.defaultTtl,
+      serializer: this.serializer,
+      gracefulRetain: this.gracefulRetain,
     })
   }
 
@@ -161,25 +80,25 @@ export class Cache {
    * Get a value from the cache
    */
   async get(key: string, defaultValue?: CachedValue | (() => CachedValue)) {
-    const item = await this.#driver.get(key)
+    const item = await this.driver.get(key)
 
     /**
      * Explicitly check for `undefined` as the value can be stored as `null`
      */
     if (item !== undefined) {
-      const deserialized = await this.#deserialize(item)
+      const deserialized = await this.deserialize(item)
       const cacheItem = CacheItem.fromDriver(key, deserialized)
 
       if (!cacheItem.isLogicallyExpired()) {
-        this.#emit(new CacheHit(key, cacheItem.getValue(), this.#name))
+        this.emit(new CacheHit(key, cacheItem.getValue(), this.name))
         return cacheItem.getValue()
-      } else if (this.#gracefulRetain.enabled) {
-        this.#emit(new CacheHit(key, cacheItem.getValue(), this.#name))
+      } else if (this.gracefulRetain.enabled) {
+        this.emit(new CacheHit(key, cacheItem.getValue(), this.name))
         return cacheItem.getValue()
       }
     }
 
-    this.#emit(new CacheMiss(key, this.#name))
+    this.emit(new CacheMiss(key, this.name))
     return this.#resolveDefaultValue(defaultValue)
   }
 
@@ -192,17 +111,17 @@ export class Cache {
     keys: string[],
     defaultValues?: CachedValue[] | (() => CachedValue[]) | undefined
   ): Promise<{ key: string; value: CachedValue | undefined }[]> {
-    const result = await this.#driver.getMany(keys)
+    const result = await this.driver.getMany(keys)
     const resolvedDefaultValues = this.#resolveDefaultValue(defaultValues)
 
     const deserializedValuesPromises = keys.map(async (key, index) => {
       if (is.nullOrUndefined(result[index].value)) {
-        this.#emit(new CacheMiss(key, this.#name))
+        this.emit(new CacheMiss(key, this.name))
         return { key, value: resolvedDefaultValues?.[index] }
       }
 
-      const value = await this.#deserialize(result[index].value!)
-      this.#emit(new CacheHit(key, value, this.#name))
+      const value = await this.deserialize(result[index].value!)
+      this.emit(new CacheHit(key, value, this.name))
 
       return { key, value }
     })
@@ -215,7 +134,7 @@ export class Cache {
    * Returns true if the value was set, false otherwise
    */
   async set<T extends CachedValue>(key: string, value: T, ttl?: TTL) {
-    return this.#set(key, { value }, this.#resolveTtl(ttl))
+    return this.#set(key, { value }, resolveTtl(ttl))
   }
 
   /**
@@ -232,14 +151,14 @@ export class Cache {
   async setMany(values: { key: string; value: CachedValue }[], ttl?: number) {
     const serializedValuesPromises = values.map(async (value) => ({
       key: value.key,
-      value: await this.#serialize(value.value),
+      value: await this.serialize(value.value),
     }))
 
     const serializedValues = await Promise.all(serializedValuesPromises)
 
-    const result = await this.#driver.setMany(serializedValues, this.#resolveTtl(ttl))
+    const result = await this.driver.setMany(serializedValues, resolveTtl(ttl))
     if (result) {
-      values.forEach((value) => this.#emit(new CacheWritten(value.key, value.value!, this.#name)))
+      values.forEach((value) => this.emit(new CacheWritten(value.key, value.value!, this.name)))
     }
 
     return result
@@ -251,10 +170,10 @@ export class Cache {
     ttl?: number,
     options: GetOrSetOptions = {}
   ) {
-    const gracefulRetainOptions = defu(options.gracefulRetain, this.#gracefulRetain)
+    const gracefulRetainOptions = defu(options.gracefulRetain, this.gracefulRetain)
     const isGracefulRetainEnabled = gracefulRetainOptions.enabled
 
-    const item = await this.#driver.get(key)
+    const item = await this.driver.get(key)
     let cacheItem: CacheItem | undefined
 
     /**
@@ -262,11 +181,11 @@ export class Cache {
      */
     if (item !== undefined) {
       debug('getOrSet(): value found in cache for key "%s"', key)
-      const deserialized = await this.#deserialize(item)
+      const deserialized = await this.deserialize(item)
       cacheItem = CacheItem.fromDriver(key, deserialized)
 
       if (!cacheItem.isLogicallyExpired()) {
-        this.#emit(new CacheHit(key, cacheItem.getValue(), this.#name))
+        this.emit(new CacheHit(key, cacheItem.getValue(), this.name))
         debug('getOrSet(): value found in cache for key "%s"', key)
         return cacheItem.getValue()
       }
@@ -289,12 +208,12 @@ export class Cache {
        * since another request might have resolved it while
        * we were waiting for the lock
        */
-      const doubleCheckedValue = await this.#driver.get(key)
+      const doubleCheckedValue = await this.driver.get(key)
       if (doubleCheckedValue !== undefined) {
-        const deserialized = await this.#deserialize(doubleCheckedValue)
+        const deserialized = await this.deserialize(doubleCheckedValue)
         cacheItem = CacheItem.fromDriver(key, deserialized)
         if (!cacheItem.isLogicallyExpired()) {
-          this.#emit(new CacheHit(key, cacheItem.getValue(), this.#name))
+          this.emit(new CacheHit(key, cacheItem.getValue(), this.name))
           debug('getOrSet(): value found in cache for key "%s"', key)
           return cacheItem.getValue()
         }
@@ -305,7 +224,7 @@ export class Cache {
        * will be stored in the cache
        */
       let realTtl = isGracefulRetainEnabled
-        ? resolveTtl(gracefulRetainOptions.duration, this.#gracefulRetain.duration)
+        ? resolveTtl(gracefulRetainOptions.duration, this.gracefulRetain.duration)
         : ttl
 
       const newValue = await callback()
@@ -335,7 +254,7 @@ export class Cache {
       throw error
     } finally {
       release()
-      this.#locks.delete(key)
+      this.locks.delete(key)
     }
   }
 
@@ -343,8 +262,6 @@ export class Cache {
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the callback and return it
    */
-  async getOrSet(key: string, cb: GetOrSetCallback, opts?: GetOrSetOptions): Promise<any>
-  async getOrSet(key: string, ttl: TTL, cb: GetOrSetCallback, opts?: GetOrSetOptions): Promise<any>
   async getOrSet(
     key: string,
     ttlOrCallback: TTL | (() => GetOrSetCallback),
@@ -356,11 +273,11 @@ export class Cache {
     let resolvedOptions: GetOrSetOptions
 
     if (typeof ttlOrCallback === 'function') {
-      ttl = this.#defaultTtl
+      ttl = this.defaultTtl
       callback = ttlOrCallback
       resolvedOptions = (callbackOrOptions as GetOrSetOptions) || options
     } else {
-      ttl = this.#resolveTtl(ttlOrCallback)
+      ttl = resolveTtl(ttlOrCallback)
       callback = callbackOrOptions as () => Promise<CachedValue> | CachedValue
       resolvedOptions = options!
     }
@@ -383,14 +300,14 @@ export class Cache {
    * Check if a key exists in the cache
    */
   async has(key: string) {
-    return this.#driver.has(key)
+    return this.driver.has(key)
   }
 
   /**
    * Check if key is missing in the cache
    */
   async missing(key: string) {
-    const hasKey = await this.#driver.has(key)
+    const hasKey = await this.driver.has(key)
     return !hasKey
   }
 
@@ -400,12 +317,12 @@ export class Cache {
    * Returns the value if the key exists, undefined otherwise
    */
   async pull(key: string) {
-    const result = await this.#driver.pull(key)
-    const item = is.undefined(result) ? undefined : await this.#deserialize(result)
+    const result = await this.driver.pull(key)
+    const item = is.undefined(result) ? undefined : await this.deserialize(result)
 
     if (result) {
-      this.#emit(new CacheHit(key, item.value, this.#name))
-      this.#emit(new CacheDeleted(key, this.#name))
+      this.emit(new CacheHit(key, item.value, this.name))
+      this.emit(new CacheDeleted(key, this.name))
     }
 
     return item
@@ -416,10 +333,10 @@ export class Cache {
    * Returns true if the key was deleted, false otherwise
    */
   async delete(key: string): Promise<boolean> {
-    const result = await this.#driver.delete(key)
+    const result = await this.driver.delete(key)
 
     if (result) {
-      this.#emit(new CacheDeleted(key, this.#name))
+      this.emit(new CacheDeleted(key, this.name))
     }
 
     return result
@@ -429,9 +346,9 @@ export class Cache {
    * Delete multiple keys from the cache
    */
   async deleteMany(keys: string[]): Promise<boolean> {
-    const result = await this.#driver.deleteMany(keys)
+    const result = await this.driver.deleteMany(keys)
     if (result) {
-      keys.forEach((key) => this.#emit(new CacheDeleted(key, this.#name)))
+      keys.forEach((key) => this.emit(new CacheDeleted(key, this.name)))
     }
 
     return result
@@ -441,14 +358,14 @@ export class Cache {
    * Remove all items from the cache
    */
   async clear() {
-    await this.#driver.clear()
-    this.#emit(new CacheCleared(this.#name))
+    await this.driver.clear()
+    this.emit(new CacheCleared(this.name))
   }
 
   /**
    * Closes the connection to the cache
    */
   async disconnect() {
-    return this.#driver.disconnect()
+    return this.driver.disconnect()
   }
 }

@@ -13,7 +13,7 @@ import EventEmitter from 'node:events'
 
 import { CacheManager } from '../src/cache_manager.js'
 import { memoryDriver } from '../src/drivers/memory.js'
-import type { DriverCommonOptions } from '../src/types/main.js'
+import type { CreateDriverResult, DriverCommonOptions } from '../src/types/main.js'
 import { redisDriver } from '../src/drivers/redis.js'
 import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
 
@@ -189,6 +189,40 @@ test.group('Cache Manager', () => {
       stores: {
         memory: memoryDriver({}),
         redis: redisDriver({ connection: REDIS_CREDENTIALS }),
+      },
+    })
+
+    const memory = manager.use('memory')
+    assert.equal(memory, manager.use('memory'))
+
+    const redis = manager.use('redis')
+    assert.equal(redis, manager.use('redis'))
+    assert.equal(memory, manager.use('memory'))
+
+    await manager.disconnectAll()
+  })
+
+  test('create hybrid cache', async ({ assert }) => {
+    function createHybridDriver(options: {
+      local: CreateDriverResult
+      remote: CreateDriverResult
+    }) {
+      return {
+        type: 'hybrid' as const,
+        ...options,
+      }
+    }
+
+    const manager = new CacheManager({
+      default: 'memory',
+      stores: {
+        memory: memoryDriver({}),
+        redis: redisDriver({ connection: REDIS_CREDENTIALS }),
+
+        hybrid: createHybridDriver({
+          local: memoryDriver({}),
+          remote: redisDriver({ connection: REDIS_CREDENTIALS }),
+        }),
       },
     })
 

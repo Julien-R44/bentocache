@@ -9,7 +9,7 @@
 
 import Emittery from 'emittery'
 
-import { Cache } from './cache.js'
+import { Cache } from './providers/cache.js'
 import { resolveTtl } from './helpers.js'
 import type {
   CreateDriverResult,

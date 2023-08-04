@@ -10,7 +10,7 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
-import type { Cache } from '../../src/cache.js'
+import type { Cache } from '../../src/providers/cache.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { throwingCb } from '../../test_helpers/index.js'
 
