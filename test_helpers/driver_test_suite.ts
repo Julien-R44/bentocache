@@ -16,6 +16,7 @@ type CacheDriverConstructor = {
 }
 
 export function registerApiTestSuite<T extends CacheDriverConstructor>({
+  name,
   test,
   driver,
   config,
@@ -28,6 +29,11 @@ export function registerApiTestSuite<T extends CacheDriverConstructor>({
   test: typeof JapaTest
   driver: T
   config: ConstructorParameters<T>[0]
+
+  /**
+   * Name of the driver
+   */
+  name?: string
 
   /**
    * Setup hook to be invoked before each test
@@ -54,13 +60,13 @@ export function registerApiTestSuite<T extends CacheDriverConstructor>({
    */
   supportsMilliseconds?: boolean
 }) {
-  const name = driver.prototype.constructor.name
+  name = name || driver.prototype.constructor.name
   const sleepTime = supportsMilliseconds ? 20 : 1000
 
   test.group(`Cache API compliance - ${name}`, (group) => {
     let cache: CacheDriver
 
-    group.tap((t) => t.disableTimeout())
+    group.tap((t) => t.disableTimeout().retry(3))
 
     group.setup(async () => {
       await setup?.()

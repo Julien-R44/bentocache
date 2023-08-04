@@ -15,12 +15,29 @@ import { test } from '@japa/runner'
 import { Redis as IoRedis } from 'ioredis'
 
 registerApiTestSuite({
+  name: 'Redis',
   test,
   driver: Redis,
   config: {
     ttl: 30 * 100,
     prefix: 'japa',
     connection: REDIS_CREDENTIALS,
+  },
+})
+
+registerApiTestSuite({
+  name: 'Redis ( Upstash )',
+  test,
+  driver: Redis,
+  config: {
+    ttl: 30 * 100,
+    prefix: 'japa',
+    connection: {
+      host: process.env.UPSTASH_HOST!,
+      port: +process.env.UPSTASH_PORT!,
+      username: process.env.UPSTASH_USERNAME!,
+      password: process.env.UPSTASH_PASSWORD!,
+    },
   },
 })
 

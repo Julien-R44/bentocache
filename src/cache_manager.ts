@@ -16,7 +16,7 @@ import type { CreateDriverResult, CacheEvents, Emitter, KeyValueObject, TTL } fr
 export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>> {
   #config: {
     default?: keyof KnownCaches
-    list: KnownCaches
+    stores: KnownCaches
   }
 
   /**
@@ -41,7 +41,7 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
   constructor(
     config: {
       default?: keyof KnownCaches
-      list: KnownCaches
+      stores: KnownCaches
       ttl?: TTL
       prefix?: string
     },
@@ -66,7 +66,7 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
       return this.#driversCache.get(cacheToUse)!
     }
 
-    const { driver, options } = this.#config.list[cacheToUse]
+    const { driver, options } = this.#config.stores[cacheToUse]
 
     const driverOptions = {
       prefix: options.prefix || this.#prefix,
@@ -250,6 +250,6 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
    * Disconnect all cache connections created by the manager
    */
   async disconnectAll(): Promise<void> {
-    await Promise.all(Object.keys(this.#config.list).map((cache) => this.use(cache).disconnect()))
+    await Promise.all(Object.keys(this.#config.stores).map((cache) => this.use(cache).disconnect()))
   }
 }

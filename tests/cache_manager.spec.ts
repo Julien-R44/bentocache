@@ -20,8 +20,11 @@ import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
 test.group('Cache Manager', () => {
   test('should accept EventEmitter or Emittery', async () => {
     // This test only rely type-checking
-    new CacheManager({ default: 'memory', list: { memory: memoryDriver({}) } }, new EventEmitter())
-    new CacheManager({ default: 'memory', list: { memory: memoryDriver({}) } }, new Emittery())
+    new CacheManager(
+      { default: 'memory', stores: { memory: memoryDriver({}) } },
+      new EventEmitter()
+    )
+    new CacheManager({ default: 'memory', stores: { memory: memoryDriver({}) } }, new Emittery())
   })
 
   test('Subscribe to an event', async ({ assert }) => {
@@ -29,7 +32,7 @@ test.group('Cache Manager', () => {
 
     const manager = new CacheManager({
       default: 'memory',
-      list: { memory: memoryDriver({}) },
+      stores: { memory: memoryDriver({}) },
     })
 
     manager.on('cache:hit', (event) => {
@@ -44,7 +47,7 @@ test.group('Cache Manager', () => {
   test('Unsubscribe from an event', async ({ assert }) => {
     const manager = new CacheManager({
       default: 'memory',
-      list: { memory: memoryDriver({}) },
+      stores: { memory: memoryDriver({}) },
     })
 
     const listener = () => assert.fail()
@@ -60,7 +63,7 @@ test.group('Cache Manager', () => {
     const cacheManager = new CacheManager({
       default: 'memory',
       ttl: 10000,
-      list: { memory: memoryDriver({}), other: memoryDriver({}) },
+      stores: { memory: memoryDriver({}), other: memoryDriver({}) },
     })
 
     expectTypeOf(cacheManager.use).parameter(0).toEqualTypeOf<'memory' | 'other' | undefined>()
@@ -84,7 +87,7 @@ test.group('Cache Manager', () => {
     const manager = new CacheManager({
       default: 'memory',
       ttl: 200,
-      list: {
+      stores: {
         memory: {
           driver: (config: any) => new MyDriver(config) as any,
           options: { ttl: 30000 },
@@ -112,7 +115,7 @@ test.group('Cache Manager', () => {
     const manager = new CacheManager({
       default: 'memory',
       ttl: '30s',
-      list: {
+      stores: {
         memory: {
           driver: (config: any) => new MyDriver(config) as any,
           options: {},
@@ -135,7 +138,7 @@ test.group('Cache Manager', () => {
     const manager = new CacheManager({
       default: 'memory',
       ttl: 200,
-      list: {
+      stores: {
         memory: {
           driver: (config: any) => new MyDriver(config) as any,
           options: { ttl: '30s' },
@@ -164,7 +167,7 @@ test.group('Cache Manager', () => {
     const manager = new CacheManager({
       default: 'memory',
       prefix: 'test',
-      list: {
+      stores: {
         memory: {
           driver: (config: any) => new MyDriver(config) as any,
           options: {},
@@ -183,7 +186,7 @@ test.group('Cache Manager', () => {
   test('instances of cache should be cached and re-used', async ({ assert }) => {
     const manager = new CacheManager({
       default: 'memory',
-      list: {
+      stores: {
         memory: memoryDriver({}),
         redis: redisDriver({ connection: REDIS_CREDENTIALS }),
       },
