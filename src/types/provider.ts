@@ -3,7 +3,7 @@ import type { TTL } from './helpers.js'
 import type {
   CacheSerializer,
   Emitter,
-  GetOrSetCallback,
+  Factory,
   GetOrSetOptions,
   GracefulRetainOptions,
 } from './main.js'
@@ -21,17 +21,17 @@ export interface CacheProvider extends CacheDriver {
   /**
    * Get or set a value in the cache
    */
-  getOrSet(key: string, cb: GetOrSetCallback, opts?: GetOrSetOptions): Promise<any>
+  getOrSet(key: string, cb: Factory, opts?: GetOrSetOptions): Promise<any>
 
   /**
    * Get or set a value in the cache with a specific TTL
    */
-  getOrSet(key: string, ttl: TTL, cb: GetOrSetCallback, opts?: GetOrSetOptions): Promise<any>
+  getOrSet(key: string, ttl: TTL, cb: Factory, opts?: GetOrSetOptions): Promise<any>
 
   /**
    * Get or set a value in the cache forever
    */
-  getOrSetForever(key: string, cb: GetOrSetCallback, opts?: GetOrSetOptions): Promise<any>
+  getOrSetForever(key: string, cb: Factory, opts?: GetOrSetOptions): Promise<any>
 
   /**
    * Check if a key is missing from the cache
@@ -44,6 +44,7 @@ export type CacheProviderOptions = {
   ttl?: TTL
   serializer?: CacheSerializer
   gracefulRetain: GracefulRetainOptions
+  earlyExpiration?: number
 }
 
 export interface CacheProviderConstructor {

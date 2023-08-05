@@ -7,6 +7,8 @@
  * file that was distributed with this source code.
  */
 
+import { setTimeout } from 'node:timers/promises'
+
 export const BASE_URL = new URL('./tmp/', import.meta.url)
 
 export const REDIS_CREDENTIALS = {
@@ -21,6 +23,13 @@ export function cleanupCache(cache: { clear(): any; disconnect(): any }) {
   }
 }
 
-export function throwingCb(errorMsg = 'error') {
+export function throwingFactory(errorMsg = 'error') {
   throw new Error(errorMsg)
+}
+
+export function waitAndReturnFactory(ms: number, value: any) {
+  return async () => {
+    await setTimeout(ms)
+    return value
+  }
 }

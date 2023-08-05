@@ -9,8 +9,6 @@
 
 import Emittery from 'emittery'
 
-import { Cache } from './providers/cache.js'
-import { resolveTtl } from './helpers.js'
 import type {
   CreateDriverResult,
   CacheEvents,
@@ -19,6 +17,10 @@ import type {
   TTL,
   GracefulRetainOptions,
 } from './types/main.js'
+import { resolveTtl } from './helpers.js'
+import { Cache } from './providers/cache.js'
+import type { CacheProvider } from './types/provider.js'
+import { HybridCache } from './providers/hybrid_cache.js'
 
 export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>> {
   #config: {
@@ -34,7 +36,7 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
   /**
    * Cache of already instantiated drivers
    */
-  #driversCache: Map<keyof KnownCaches, Cache> = new Map()
+  #driversCache: Map<keyof KnownCaches, CacheProvider> = new Map()
 
   /**
    * Default TTL for all the drivers when not defined explicitly
@@ -69,35 +71,51 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
     }
   }
 
-  /**
-   * Use a registered cache driver
-   */
-  use<CacheName extends keyof KnownCaches>(cache?: CacheName): Cache {
-    let cacheToUse: keyof KnownCaches | undefined = cache || this.#config.default
-    if (!cacheToUse) {
-      throw new Error('No cache driver selected')
+  #createProvider(cacheName: string, registry: CreateDriverResult): CacheProvider {
+    if (registry.type === 'hybrid') {
+      return new HybridCache(cacheName, {
+        local: registry.local.driver(registry.local.options),
+        remote: registry.remote.driver(registry.remote.options),
+        emitter: this.#emitter,
+        ttl: this.#ttl,
+        gracefulRetain: this.#gracefulRetain,
+      })
     }
-
-    if (this.#driversCache.has(cacheToUse)) {
-      return this.#driversCache.get(cacheToUse)!
-    }
-
-    const { driver, options } = this.#config.stores[cacheToUse]
 
     const driverOptions = {
-      prefix: options.prefix || this.#prefix,
-      ttl: resolveTtl(options.ttl, this.#ttl),
+      prefix: registry.options.prefix || this.#prefix,
+      ttl: resolveTtl(registry.options.ttl, this.#ttl),
       gracefulRetain: this.#gracefulRetain,
     }
 
-    const cacheInstance = new Cache(cacheToUse as string, driver(driverOptions), {
+    return new Cache(cacheName, registry.driver(driverOptions), {
       emitter: this.#emitter,
       ttl: driverOptions.ttl,
       gracefulRetain: this.#gracefulRetain,
     })
+  }
 
-    this.#driversCache.set(cacheToUse, cacheInstance)
-    return cacheInstance
+  /**
+   * Use a registered cache driver
+   */
+  use<CacheName extends keyof KnownCaches>(cache?: CacheName) {
+    let cacheToUse: keyof KnownCaches | undefined = cache || this.#config.default
+    if (!cacheToUse) throw new Error('No cache driver selected')
+
+    /**
+     * Check if the cache driver was already instantiated
+     */
+    if (this.#driversCache.has(cacheToUse)) {
+      return this.#driversCache.get(cacheToUse)!
+    }
+
+    /**
+     * Otherwise create a new instance and cache it
+     */
+    const provider = this.#createProvider(cacheToUse as string, this.#config.stores[cacheToUse])
+    this.#driversCache.set(cacheToUse, provider)
+
+    return provider
   }
 
   /**
@@ -172,7 +190,7 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
 
   /**
    * Retrieve an item from the cache if it exists, otherwise store the value
-   * provided by the callback and return it
+   * provided by the factory and return it
    */
   async getOrSet() {
     // TODO
@@ -180,7 +198,7 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
 
   /**
    * Retrieve an item from the cache if it exists, otherwise store the value
-   * provided by the callback forever and return it
+   * provided by the factory forever and return it
    */
   async getOrSetForever() {
     // TODO

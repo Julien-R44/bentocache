@@ -3,6 +3,11 @@
  */
 export class CacheItem {
   /**
+   * The key of the cache item.
+   */
+  #key: string
+
+  /**
    * The value of the item.
    */
   #value: any
@@ -14,17 +19,37 @@ export class CacheItem {
    */
   #logicalExpiration: number
 
+  #earlyExpiration: number
+
   constructor(key: string, item: Record<string, any>) {
+    this.#key = key
     this.#value = item.value
     this.#logicalExpiration = item.logicalExpiration
+    this.#earlyExpiration = item.earlyExpiration
   }
 
   getValue() {
     return this.#value
   }
 
+  getKey() {
+    return this.#key
+  }
+
   isLogicallyExpired() {
     return Date.now() >= this.#logicalExpiration
+  }
+
+  isEarlyExpired() {
+    if (!this.#earlyExpiration) {
+      return false
+    }
+
+    if (this.isLogicallyExpired()) {
+      return false
+    }
+
+    return Date.now() >= this.#earlyExpiration
   }
 
   static fromDriver(key: string, item: Record<string, any>) {

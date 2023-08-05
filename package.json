@@ -30,7 +30,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext=.ts",
     "format": "prettier --write .",
-    "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --loader=ts-node/esm bin/test.ts",
+    "quick:test": "cross-env NODE_NO_WARNINGS=1 NODE_DEBUG=adonisjs:cache node --enable-source-maps --loader=ts-node/esm bin/test.ts",
     "pretest": "npm run lint",
     "test": "c8 npm run quick:test",
     "build": "tsc",

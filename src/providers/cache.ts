@@ -7,31 +7,29 @@
  * file that was distributed with this source code.
  */
 
-import { defu } from 'defu'
 import is from '@sindresorhus/is'
 import { Mutex } from 'async-mutex'
 
-import type {
-  CacheDriver,
-  CachedValue,
-  GetOrSetCallback,
-  GetOrSetOptions,
-  TTL,
-} from '../types/main.js'
+import type { CacheDriver, CachedValue, Factory, GetOrSetOptions, TTL } from '../types/main.js'
+import debug from '../debug.js'
+import { resolveTtl } from '../helpers.js'
+import { CacheItem } from '../cache_item.js'
+import { BaseProvider } from './base_provider.js'
 import { CacheHit } from '../events/cache_hit.js'
-import { CacheDeleted } from '../events/cache_deleted.js'
 import { CacheMiss } from '../events/cache_miss.js'
+import { CacheDeleted } from '../events/cache_deleted.js'
 import { CacheWritten } from '../events/cache_written.js'
 import { CacheCleared } from '../events/cache_cleared.js'
-import { resolveTtl } from '../helpers.js'
-import debug from '../debug.js'
-import { CacheItem } from '../cache_item.js'
 import type { CacheProvider, CacheProviderOptions } from '../types/provider.js'
-import { BaseProvider } from './base_provider.js'
+import type { CacheOptions } from '../cache_options.js'
 
 export class Cache extends BaseProvider implements CacheProvider {
+  #driver: CacheDriver
+
   constructor(name: string, driver: CacheDriver, options: CacheProviderOptions) {
-    super(name, driver, options)
+    super(name, options)
+
+    this.#driver = driver
   }
 
   #resolveDefaultValue(defaultValue?: CachedValue | (() => CachedValue)) {
@@ -43,7 +41,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    */
   async #set(key: string, item: any, ttl?: number) {
     const serializedValue = await this.serialize(item)
-    const result = await this.driver.set(key, serializedValue, ttl)
+    const result = await this.#driver.set(key, serializedValue, ttl)
     if (result) {
       this.emit(new CacheWritten(key, item.value, this.name))
     }
@@ -68,7 +66,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string) {
-    return new Cache(this.name, this.driver.namespace(namespace), {
+    return new Cache(this.name, this.#driver.namespace(namespace), {
       emitter: this.emitter,
       ttl: this.defaultTtl,
       serializer: this.serializer,
@@ -80,7 +78,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Get a value from the cache
    */
   async get(key: string, defaultValue?: CachedValue | (() => CachedValue)) {
-    const item = await this.driver.get(key)
+    const item = await this.#driver.get(key)
 
     /**
      * Explicitly check for `undefined` as the value can be stored as `null`
@@ -111,7 +109,7 @@ export class Cache extends BaseProvider implements CacheProvider {
     keys: string[],
     defaultValues?: CachedValue[] | (() => CachedValue[]) | undefined
   ): Promise<{ key: string; value: CachedValue | undefined }[]> {
-    const result = await this.driver.getMany(keys)
+    const result = await this.#driver.getMany(keys)
     const resolvedDefaultValues = this.#resolveDefaultValue(defaultValues)
 
     const deserializedValuesPromises = keys.map(async (key, index) => {
@@ -156,7 +154,7 @@ export class Cache extends BaseProvider implements CacheProvider {
 
     const serializedValues = await Promise.all(serializedValuesPromises)
 
-    const result = await this.driver.setMany(serializedValues, resolveTtl(ttl))
+    const result = await this.#driver.setMany(serializedValues, resolveTtl(ttl))
     if (result) {
       values.forEach((value) => this.emit(new CacheWritten(value.key, value.value!, this.name)))
     }
@@ -164,25 +162,50 @@ export class Cache extends BaseProvider implements CacheProvider {
     return result
   }
 
-  async #getOrSet(
-    key: string,
-    callback: GetOrSetCallback,
-    ttl?: number,
-    options: GetOrSetOptions = {}
-  ) {
-    const gracefulRetainOptions = defu(options.gracefulRetain, this.gracefulRetain)
-    const isGracefulRetainEnabled = gracefulRetainOptions.enabled
+  async #earlyExpirationRefresh(key: string, factory: Factory, options: CacheOptions) {
+    let lock = this.#getOrCreateLock(key)
 
-    const item = await this.driver.get(key)
+    /**
+     * If lock is already acquired, then just exit. We only want to run
+     * the factory once, in background.
+     */
+    if (lock.isLocked()) {
+      return
+    }
+
+    await lock.runExclusive(async () => {
+      const cacheItem = {
+        value: await factory(),
+        logicalExpiration: options.logicalTtlFromNow(),
+        earlyExpiration: options.earlyExpireTtlFromNow(),
+      }
+
+      await this.#set(key, cacheItem, options.physicalTtl)
+      debug('EARLY EXPIRATION REFRESH: set value in cache %o', {
+        cacheItem: cacheItem,
+        physical: options.physicalTtl,
+      })
+    })
+  }
+
+  async #getOrSet(key: string, factory: Factory, options: CacheOptions) {
+    const item = await this.#driver.get(key)
     let cacheItem: CacheItem | undefined
 
     /**
      * Value was found in the cache
      */
     if (item !== undefined) {
-      debug('getOrSet(): value found in cache for key "%s"', key)
       const deserialized = await this.deserialize(item)
       cacheItem = CacheItem.fromDriver(key, deserialized)
+
+      /**
+       * If item is early expired, then we have to run the factory
+       * in the background to update the cache.
+       */
+      if (cacheItem.isEarlyExpired()) {
+        this.#earlyExpirationRefresh(key, factory, options)
+      }
 
       if (!cacheItem.isLogicallyExpired()) {
         this.emit(new CacheHit(key, cacheItem.getValue(), this.name))
@@ -193,10 +216,10 @@ export class Cache extends BaseProvider implements CacheProvider {
 
     /**
      * Here we know that the value is not in the cache ( or is logically expired ).
-     * So we have to call the callback to resolve the value.
+     * So we have to call the factory to resolve the value.
      *
      * We acquire a in-memory lock to make sure that only one
-     * request will call the callback. All other requests will
+     * request will call the factory. All other requests will
      * wait for the first one to finish and then return the value
      */
     let lock = this.#getOrCreateLock(key)
@@ -208,7 +231,7 @@ export class Cache extends BaseProvider implements CacheProvider {
        * since another request might have resolved it while
        * we were waiting for the lock
        */
-      const doubleCheckedValue = await this.driver.get(key)
+      const doubleCheckedValue = await this.#driver.get(key)
       if (doubleCheckedValue !== undefined) {
         const deserialized = await this.deserialize(doubleCheckedValue)
         cacheItem = CacheItem.fromDriver(key, deserialized)
@@ -219,32 +242,27 @@ export class Cache extends BaseProvider implements CacheProvider {
         }
       }
 
-      /**
-       * Now let's call the callback to resolve the value that
-       * will be stored in the cache
-       */
-      let realTtl = isGracefulRetainEnabled
-        ? resolveTtl(gracefulRetainOptions.duration, this.gracefulRetain.duration)
-        : ttl
-
-      const newValue = await callback()
       const cacheItemToStore = {
-        value: newValue,
-        logicalExpiration: isGracefulRetainEnabled && ttl ? Date.now() + ttl : undefined,
+        value: await factory(),
+        logicalExpiration: options.logicalTtlFromNow(),
+        earlyExpiration: options.earlyExpireTtlFromNow(),
       }
 
-      await this.#set(key, cacheItemToStore, realTtl)
-      debug('getOrSet(): set value in cache %o', { cacheItem: cacheItemToStore, realTtl })
+      await this.#set(key, cacheItemToStore, options.physicalTtl)
+      debug('getOrSet(): set value in cache %o', {
+        cacheItem: cacheItemToStore,
+        physicalTtl: options.physicalTtl,
+      })
 
-      return newValue
+      return cacheItemToStore.value
     } catch (error) {
-      debug('getOrSet(): error while calling callback for key "%s"', key)
+      debug('getOrSet(): error while calling factory for key "%s"', key)
 
       /**
-       * If the callback failed and graceful retain is enabled, we have to
+       * If the factory failed and graceful retain is enabled, we have to
        * return the old cached value if it exists.
        */
-      if (isGracefulRetainEnabled) {
+      if (options.isGracefulRetainEnabled) {
         debug('getOrSet(): graceful retain is enabled for key "%s"', key)
         if (cacheItem) {
           return cacheItem.getValue()
@@ -260,54 +278,46 @@ export class Cache extends BaseProvider implements CacheProvider {
 
   /**
    * Retrieve an item from the cache if it exists, otherwise store the value
-   * provided by the callback and return it
+   * provided by the factory and return it
    */
   async getOrSet(
     key: string,
-    ttlOrCallback: TTL | (() => GetOrSetCallback),
-    callbackOrOptions?: GetOrSetCallback | GetOrSetOptions,
-    options?: GetOrSetOptions
+    ttlOrFactory: TTL | Factory,
+    factoryOrOptions?: Factory | GetOrSetOptions,
+    maybeOptions?: GetOrSetOptions
   ) {
-    let ttl: TTL
-    let callback: GetOrSetCallback
-    let resolvedOptions: GetOrSetOptions
+    let { factory, options } = this.resolveGetSetOptions(
+      ttlOrFactory,
+      factoryOrOptions,
+      maybeOptions
+    )
 
-    if (typeof ttlOrCallback === 'function') {
-      ttl = this.defaultTtl
-      callback = ttlOrCallback
-      resolvedOptions = (callbackOrOptions as GetOrSetOptions) || options
-    } else {
-      ttl = resolveTtl(ttlOrCallback)
-      callback = callbackOrOptions as () => Promise<CachedValue> | CachedValue
-      resolvedOptions = options!
-    }
-
-    return this.#getOrSet(key, callback, ttl, resolvedOptions)
+    return this.#getOrSet(key, factory, options)
   }
 
   /**
    * Retrieve an item from the cache if it exists, otherwise store the value
-   * provided by the callback forever and return it
+   * provided by the factory forever and return it
    */
   async getOrSetForever(
     key: string,
-    callback: () => CachedValue | Promise<CachedValue>
+    factory: () => CachedValue | Promise<CachedValue>
   ): Promise<CachedValue> {
-    return this.#getOrSet(key, callback)
+    return this.#getOrSet(key, factory, this.foreverCacheOptions())
   }
 
   /**
    * Check if a key exists in the cache
    */
   async has(key: string) {
-    return this.driver.has(key)
+    return this.#driver.has(key)
   }
 
   /**
    * Check if key is missing in the cache
    */
   async missing(key: string) {
-    const hasKey = await this.driver.has(key)
+    const hasKey = await this.#driver.has(key)
     return !hasKey
   }
 
@@ -317,7 +327,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Returns the value if the key exists, undefined otherwise
    */
   async pull(key: string) {
-    const result = await this.driver.pull(key)
+    const result = await this.#driver.pull(key)
     const item = is.undefined(result) ? undefined : await this.deserialize(result)
 
     if (result) {
@@ -333,7 +343,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Returns true if the key was deleted, false otherwise
    */
   async delete(key: string): Promise<boolean> {
-    const result = await this.driver.delete(key)
+    const result = await this.#driver.delete(key)
 
     if (result) {
       this.emit(new CacheDeleted(key, this.name))
@@ -346,7 +356,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Delete multiple keys from the cache
    */
   async deleteMany(keys: string[]): Promise<boolean> {
-    const result = await this.driver.deleteMany(keys)
+    const result = await this.#driver.deleteMany(keys)
     if (result) {
       keys.forEach((key) => this.emit(new CacheDeleted(key, this.name)))
     }
@@ -358,7 +368,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Remove all items from the cache
    */
   async clear() {
-    await this.driver.clear()
+    await this.#driver.clear()
     this.emit(new CacheCleared(this.name))
   }
 
@@ -366,6 +376,6 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Closes the connection to the cache
    */
   async disconnect() {
-    return this.driver.disconnect()
+    return this.#driver.disconnect()
   }
 }

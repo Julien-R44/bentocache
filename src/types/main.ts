@@ -14,8 +14,9 @@ export * from './events.js'
 export * from './options.js'
 export * from './helpers.js'
 export * from './driver.js'
+export * from './provider.js'
 
-export type GetOrSetCallback = () => MaybePromise<CachedValue>
+export type Factory = () => MaybePromise<CachedValue>
 
 export type GracefulRetainOptions = {
   enabled: boolean
@@ -25,6 +26,7 @@ export type GracefulRetainOptions = {
 
 export type GetOrSetOptions = {
   gracefulRetain?: GracefulRetainOptions
+  earlyExpiration?: number
 }
 
 export type CacheDriverFactory = (config: any) => CacheDriver
@@ -42,8 +44,8 @@ export type CreateDriverResult =
     }
   | {
       type: 'hybrid'
-      local: CreateDriverResult
-      remote: CreateDriverResult
+      local: Exclude<CreateDriverResult, { type: 'hybrid' }>
+      remote: Exclude<CreateDriverResult, { type: 'hybrid' }>
     }
 
 export interface CacheSerializer {
