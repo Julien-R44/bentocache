@@ -40,6 +40,7 @@ export interface CacheProvider extends CacheDriver {
 }
 
 export type CacheProviderOptions = {
+  mode?: 'hybrid' | 'basic'
   localDriver: CacheDriver
   remoteDriver?: CacheDriver
   busDriver?: any

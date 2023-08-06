@@ -24,7 +24,9 @@ export function cleanupCache(cache: { clear(): any; disconnect(): any }) {
 }
 
 export function throwingFactory(errorMsg = 'error') {
-  throw new Error(errorMsg)
+  return () => {
+    throw new Error(errorMsg)
+  }
 }
 
 export function waitAndReturnFactory(ms: number, value: any) {

@@ -101,7 +101,7 @@ test.group('Cache | getOrSet', (group) => {
     assert.deepEqual(result, { foo: 'bar' })
     await setTimeout(50)
 
-    const result2 = await cache.getOrSet('key1', '10ms', () => throwingFactory(), {
+    const result2 = await cache.getOrSet('key1', '10ms', throwingFactory(), {
       gracefulRetain: { enabled: true, duration: '100ms' },
     })
 
@@ -109,7 +109,7 @@ test.group('Cache | getOrSet', (group) => {
     await setTimeout(100)
 
     await assert.rejects(async () => {
-      return cache.getOrSet('key1', '10ms', () => throwingFactory('Error in cb'), {
+      return cache.getOrSet('key1', '10ms', throwingFactory('Error in cb'), {
         gracefulRetain: { enabled: true, duration: '100ms' },
       })
     }, /Error in cb/)
@@ -125,12 +125,12 @@ test.group('Cache | getOrSet', (group) => {
     await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }))
     await setTimeout(50)
 
-    const res = await cache.getOrSet('key1', '10ms', () => throwingFactory())
+    const res = await cache.getOrSet('key1', '10ms', throwingFactory())
     assert.deepEqual(res, { foo: 'bar' })
 
     await setTimeout(50)
     await assert.rejects(
-      async () => cache.getOrSet('key1', '10ms', () => throwingFactory('fail')),
+      async () => cache.getOrSet('key1', '10ms', throwingFactory('fail')),
       /fail/
     )
   })

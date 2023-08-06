@@ -18,6 +18,12 @@ export * from './provider.js'
 
 export type Factory = () => MaybePromise<CachedValue>
 
+export type RawCacheOptions = {
+  ttl?: TTL
+  gracefulRetain?: GracefulRetainOptions
+  earlyExpiration?: number
+}
+
 export type GracefulRetainOptions = {
   enabled: boolean
   duration?: TTL
@@ -49,6 +55,6 @@ export type CreateDriverResult =
     }
 
 export interface CacheSerializer {
-  serialize: (value: any) => Promise<string> | string
-  deserialize: (value: any) => Promise<any> | any
+  serialize: (value: any) => string
+  deserialize: (value: any) => any
 }

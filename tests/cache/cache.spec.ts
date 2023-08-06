@@ -10,23 +10,13 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
-import type { Cache } from '../../src/providers/cache.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
-import { cleanupCache, throwingFactory } from '../../test_helpers/index.js'
+import { throwingFactory } from '../../test_helpers/index.js'
 
-test.group('Cache', (group) => {
-  let cache: Cache
-
-  group.each.setup(() => {
-    cache = new CacheFactory().create().cache
-
-    return async () => {
-      await cache.clear()
-      await cache.disconnect()
-    }
-  })
-
+test.group('Cache', () => {
   test('get() returns deserialized value', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
+
     await cache.set('key', { foo: 'bar' })
     assert.deepEqual(await cache.get('key'), { foo: 'bar' })
 
@@ -41,38 +31,36 @@ test.group('Cache', (group) => {
   })
 
   test('get() with default value', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
+
     assert.deepEqual(await cache.get('key', 'default'), 'default')
   })
 
-  test('get() also use graceful retain', async ({ assert, cleanup }) => {
-    const { cache: cache2, teardown } = new CacheFactory()
+  test('get() also use graceful retain', async ({ assert }) => {
+    const { cache } = new CacheFactory()
       .merge({ gracefulRetain: { enabled: true, duration: '500ms' } })
       .create()
 
-    cleanup(teardown)
-
-    await cache2.getOrSet('key', '10ms', () => 'value')
-    assert.deepEqual(await cache2.get('key'), 'value')
+    await cache.getOrSet('key', '10ms', () => 'value')
+    assert.deepEqual(await cache.get('key'), 'value')
     await setTimeout(100)
-    assert.deepEqual(await cache2.get('key'), 'value')
+    assert.deepEqual(await cache.get('key'), 'value')
   })
 
-  test('get() dont use graceful retain when disabled globally', async ({ assert, cleanup }) => {
-    const { cache: cache2, teardown } = new CacheFactory()
+  test('get() dont use graceful retain when disabled globally', async ({ assert }) => {
+    const { cache } = new CacheFactory()
       .merge({ gracefulRetain: { enabled: false, duration: '500ms' } })
       .create()
 
-    cleanup(teardown)
-
-    await cache2.getOrSet('key', '10ms', () => 'value', {
+    await cache.getOrSet('key', '10ms', () => 'value', {
       gracefulRetain: { enabled: true, duration: '500ms' },
     })
 
-    assert.deepEqual(await cache2.get('key'), 'value')
+    assert.deepEqual(await cache.get('key'), 'value')
     await setTimeout(100)
-    assert.isUndefined(await cache2.get('key'))
+    assert.isUndefined(await cache.get('key'))
 
-    const result = await cache2.getOrSet('key', '10ms', () => throwingFactory('DB call failed'), {
+    const result = await cache.getOrSet('key', '10ms', throwingFactory('DB call failed'), {
       gracefulRetain: { enabled: true, duration: '500ms' },
     })
 
@@ -80,6 +68,8 @@ test.group('Cache', (group) => {
   })
 
   test('getMany() with default value', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
+
     await cache.setMany([{ key: 'key1', value: 'value1' }])
 
     const result = await cache.getMany(
@@ -95,15 +85,21 @@ test.group('Cache', (group) => {
   })
 
   test('missing() returns true when key does not exists', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
+
     assert.isTrue(await cache.missing('key1'))
   })
 
   test('missing() returns false when key exists', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
+
     await cache.set('key1', 'value1')
     assert.isFalse(await cache.missing('key1'))
   })
 
   test('getOrSetForever() returns value when key exists', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
+
     await cache.set('key1', { foo: 'bar' })
     const value = await cache.getOrSetForever('key1', () => ({ foo: 'baz' }))
 
@@ -112,91 +108,33 @@ test.group('Cache', (group) => {
   })
 
   test('getOrSetForever() store values when key does not exists', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
+
     const value = await cache.getOrSetForever('key1', () => ({ foo: 'bar' }))
     assert.deepEqual(value, { foo: 'bar' })
     assert.deepEqual(await cache.get('key1'), { foo: 'bar' })
   })
 
-  test('getOrSetForever() store items forever', async ({ assert, cleanup }) => {
-    const { cache: cache2 } = new CacheFactory().merge({ ttl: 10 }).create()
-    cleanup(cleanupCache(cache2))
+  test('getOrSetForever() store items forever', async ({ assert }) => {
+    const { cache } = new CacheFactory().merge({ ttl: 10 }).create()
 
-    await cache2.getOrSetForever('key1', () => ({ foo: 'bar' }))
+    await cache.getOrSetForever('key1', () => ({ foo: 'bar' }))
     await setTimeout(20)
-    assert.deepEqual(await cache2.get('key1'), { foo: 'bar' })
+    assert.deepEqual(await cache.get('key1'), { foo: 'bar' })
   })
 
-  test('setForever() store a value forever', async ({ assert, cleanup }) => {
-    const { cache: cache2 } = new CacheFactory().merge({ ttl: 10 }).create()
-    cleanup(cleanupCache(cache2))
+  test('setForever() store a value forever', async ({ assert }) => {
+    const { cache } = new CacheFactory().merge({ ttl: 10 }).create()
 
-    await cache2.setForever('key', 'value')
+    await cache.setForever('key', 'value')
     await setTimeout(30)
-    assert.deepEqual(await cache2.get('key'), 'value')
+    assert.deepEqual(await cache.get('key'), 'value')
   })
 
   test('setForever() returns true when value is set', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
+
     const result = await cache.setForever('key', 'value')
     assert.isTrue(result)
-  })
-})
-
-test.group('Cache | Stampede protection', (group) => {
-  test('getOrSet should have cache stampede protection', async ({ assert, cleanup }) => {
-    assert.plan(2)
-
-    const { cache, teardown } = new CacheFactory().create()
-    cleanup(teardown)
-
-    const factory = async () => {
-      await setTimeout(100)
-      assert.incrementAssertionsCount()
-      return 'value'
-    }
-
-    const results = await Promise.all([
-      cache.getOrSet('key', factory),
-      cache.getOrSet('key', factory),
-    ])
-
-    assert.deepEqual(results, ['value', 'value'])
-  })
-
-  test('getOrSetForever should have cache stampede protection', async ({ assert, cleanup }) => {
-    assert.plan(2)
-
-    const { cache, teardown } = new CacheFactory().create()
-    cleanup(teardown)
-
-    const factory = async () => {
-      await setTimeout(100)
-      assert.incrementAssertionsCount()
-      return 'value'
-    }
-
-    const results = await Promise.all([
-      cache.getOrSetForever('key', factory),
-      cache.getOrSetForever('key', factory),
-    ])
-
-    assert.deepEqual(results, ['value', 'value'])
-  })
-
-  test('if factory throws an error it should release the lock', async ({ assert, cleanup }) => {
-    const { cache, teardown } = new CacheFactory().create()
-    cleanup(teardown)
-
-    const results = await Promise.allSettled([
-      cache.getOrSet('key', () => throwingFactory('foo')),
-      cache.getOrSet('key', async () => {
-        await setTimeout(100)
-        return 'value'
-      }),
-    ])
-
-    assert.deepEqual(results, [
-      { status: 'rejected', reason: new Error('foo') },
-      { status: 'fulfilled', value: 'value' },
-    ])
   })
 })

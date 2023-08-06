@@ -1,3 +1,6 @@
+import { JsonSerializer } from './serializers/json.js'
+import type { CacheSerializer } from './types/main.js'
+
 /**
  * Represents a cache item stored inside a distributed cache driver.
  */
@@ -21,6 +24,8 @@ export class CacheItem {
 
   #earlyExpiration: number
 
+  static #serializer = new JsonSerializer()
+
   constructor(key: string, item: Record<string, any>) {
     this.#key = key
     this.#value = item.value
@@ -34,6 +39,14 @@ export class CacheItem {
 
   getKey() {
     return this.#key
+  }
+
+  getLogicalExpiration() {
+    return this.#logicalExpiration
+  }
+
+  getEarlyExpiration() {
+    return this.#earlyExpiration
   }
 
   isLogicallyExpired() {
@@ -52,7 +65,15 @@ export class CacheItem {
     return Date.now() >= this.#earlyExpiration
   }
 
-  static fromDriver(key: string, item: Record<string, any>) {
-    return new CacheItem(key, item)
+  static fromDriver(key: string, item: string) {
+    return new CacheItem(key, this.#serializer.deserialize(item))
+  }
+
+  serialize() {
+    return {
+      value: this.#value,
+      logicalExpiration: this.#logicalExpiration,
+      earlyExpiration: this.#earlyExpiration,
+    }
   }
 }

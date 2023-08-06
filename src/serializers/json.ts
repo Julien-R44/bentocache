@@ -13,11 +13,11 @@ import type { CacheSerializer } from '../types/main.js'
  * Simple class to serialize and deserialize values using JSON
  */
 export class JsonSerializer implements CacheSerializer {
-  async serialize(value: unknown) {
+  serialize(value: unknown) {
     return JSON.stringify(value)
   }
 
-  async deserialize(value: string) {
+  deserialize(value: string) {
     return JSON.parse(value)
   }
 }

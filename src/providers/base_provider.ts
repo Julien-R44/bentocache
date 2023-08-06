@@ -42,12 +42,12 @@ export abstract class BaseProvider {
     return this.emitter?.emit(event.name, event.toJSON())
   }
 
-  protected async serialize(value: any) {
-    return await this.serializer.serialize(value)
+  protected serialize(value: any) {
+    return this.serializer.serialize(value)
   }
 
-  protected async deserialize(value: string) {
-    return await this.serializer.deserialize(value)
+  protected deserialize(value: string) {
+    return this.serializer.deserialize(value)
   }
 
   /**

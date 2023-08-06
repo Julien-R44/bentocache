@@ -1,22 +1,15 @@
 import { defu } from 'defu'
-import type { GracefulRetainOptions, TTL } from './types/main.js'
-import { GetOrSetOptions } from './types/main.js'
+import type { RawCacheOptions } from './types/main.js'
 import { resolveTtl } from './helpers.js'
 
-type Options = {
-  ttl?: TTL
-  gracefulRetain?: GracefulRetainOptions
-  earlyExpiration?: number
-}
-
 export class CacheOptions {
-  options: Options
+  options: RawCacheOptions
 
   logicalTtl: number
   physicalTtl: number
   earlyExpireTtl?: number
 
-  constructor(options: Options, defaults: Partial<Options> = {}) {
+  constructor(options: RawCacheOptions = {}, defaults: Partial<RawCacheOptions> = {}) {
     this.options = defu(options, defaults)
 
     this.logicalTtl = this.#resolveLogicalTtl()
