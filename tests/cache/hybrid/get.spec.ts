@@ -3,7 +3,7 @@ import { CacheFactory } from '../../../factories/cache_factory.js'
 import { NullDriver } from '../../../src/drivers/null.js'
 
 test.group('Get', () => {
-  test('Value not in local but in remote', async ({ assert, cleanup }) => {
+  test('Value not in local but in remote', async ({ assert }) => {
     const { cache, remote } = new CacheFactory().withHybridConfig().create()
 
     await remote.set('foo', JSON.stringify({ value: 'bar' }))

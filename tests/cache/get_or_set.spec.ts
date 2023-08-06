@@ -14,9 +14,8 @@ import { CacheFactory } from '../../factories/cache_factory.js'
 import { throwingFactory, waitAndReturnFactory } from '../../test_helpers/index.js'
 
 test.group('Cache | getOrSet', (group) => {
-  test('getOrSet() returns value when key exists', async ({ assert, cleanup }) => {
-    const { cache, teardown } = new CacheFactory().create()
-    cleanup(teardown)
+  test('getOrSet() returns value when key exists', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
 
     await cache.set('key1', { foo: 'bar' })
     const value = await cache.getOrSet('key1', () => ({ foo: 'baz' }))
@@ -24,18 +23,16 @@ test.group('Cache | getOrSet', (group) => {
     assert.deepEqual(value, { foo: 'bar' })
   })
 
-  test('getOrSet() store values when key does not exists', async ({ assert, cleanup }) => {
-    const { cache, teardown } = new CacheFactory().create()
-    cleanup(teardown)
+  test('getOrSet() store values when key does not exists', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
 
     const value = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
     assert.deepEqual(value, { foo: 'bar' })
     assert.deepEqual(await cache.get('key1'), { foo: 'bar' })
   })
 
-  test('getOrSet() with specific ttl', async ({ assert, cleanup }) => {
-    const { cache, teardown } = new CacheFactory().create()
-    cleanup(teardown)
+  test('getOrSet() with specific ttl', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
 
     await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }))
     await setTimeout(20)
@@ -43,11 +40,10 @@ test.group('Cache | getOrSet', (group) => {
     assert.isUndefined(await cache.get('key1'))
   })
 
-  test('graceful retain should returns old value if cb throws', async ({ assert, cleanup }) => {
+  test('graceful retain should returns old value if cb throws', async ({ assert }) => {
     assert.plan(3)
 
-    const { cache, teardown } = new CacheFactory().create()
-    cleanup(teardown)
+    const { cache } = new CacheFactory().create()
 
     const result = await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }), {
       gracefulRetain: { enabled: true, duration: '10m' },
@@ -69,12 +65,8 @@ test.group('Cache | getOrSet', (group) => {
     assert.deepEqual(result2, { foo: 'bar' })
   })
 
-  test('graceful retain should not returns old value if cb doesnt throws', async ({
-    assert,
-    cleanup,
-  }) => {
-    const { cache, teardown } = new CacheFactory().create()
-    cleanup(teardown)
+  test('graceful retain should not returns old value if cb doesnt throws', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
 
     const result = await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }), {
       gracefulRetain: { enabled: true, duration: '10m' },
@@ -90,9 +82,8 @@ test.group('Cache | getOrSet', (group) => {
     assert.deepEqual(result2, { foo: 'baz' })
   })
 
-  test('should throws if gracefully retained value is outdated', async ({ assert, cleanup }) => {
-    const { cache, teardown } = new CacheFactory().create()
-    cleanup(teardown)
+  test('should throws if gracefully retained value is outdated', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
 
     const result = await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }), {
       gracefulRetain: { enabled: true, duration: '100ms' },
@@ -115,12 +106,10 @@ test.group('Cache | getOrSet', (group) => {
     }, /Error in cb/)
   })
 
-  test('should use the default duration when not defined', async ({ assert, cleanup }) => {
-    const { cache, teardown } = new CacheFactory()
+  test('should use the default duration when not defined', async ({ assert }) => {
+    const { cache } = new CacheFactory()
       .merge({ gracefulRetain: { enabled: true, duration: '100ms' } })
       .create()
-
-    cleanup(teardown)
 
     await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }))
     await setTimeout(50)
@@ -135,12 +124,8 @@ test.group('Cache | getOrSet', (group) => {
     )
   })
 
-  test('early expiration', async ({ assert, cleanup }) => {
-    const { cache, teardown } = new CacheFactory()
-      .merge({ earlyExpiration: 0.5, ttl: 100 })
-      .create()
-
-    cleanup(teardown)
+  test('early expiration', async ({ assert }) => {
+    const { cache } = new CacheFactory().merge({ earlyExpiration: 0.5, ttl: 100 }).create()
 
     assert.plan(5)
 
@@ -173,12 +158,8 @@ test.group('Cache | getOrSet', (group) => {
     assert.deepEqual(r4, { foo: 'baz' })
   })
 
-  test('early refresh should be locked. only one factory call', async ({ assert, cleanup }) => {
-    const { cache, teardown } = new CacheFactory()
-      .merge({ earlyExpiration: 0.5, ttl: 100 })
-      .create()
-
-    cleanup(teardown)
+  test('early refresh should be locked. only one factory call', async ({ assert }) => {
+    const { cache } = new CacheFactory().merge({ earlyExpiration: 0.5, ttl: 100 }).create()
 
     assert.plan(4)
 
@@ -207,10 +188,8 @@ test.group('Cache | getOrSet', (group) => {
     assert.deepEqual(r3, { foo: 'baz' })
   })
 
-  test('earlyexpiration of >= 0 or <= 1 should be ignored', async ({ assert, cleanup }) => {
-    const { cache, teardown, driver } = new CacheFactory().merge({ ttl: 100 }).create()
-
-    cleanup(teardown)
+  test('earlyexpiration of >= 0 or <= 1 should be ignored', async ({ assert }) => {
+    const { cache, driver } = new CacheFactory().merge({ ttl: 100 }).create()
 
     await cache.getOrSet('key1', () => ({ foo: 'bar' }), { earlyExpiration: 1 })
     await cache.getOrSet('key2', () => ({ foo: 'bar' }), { earlyExpiration: 0 })
@@ -219,12 +198,8 @@ test.group('Cache | getOrSet', (group) => {
     assert.notInclude(driver.get('key2'), 'earlyExpiration')
   })
 
-  test('early refresh should re-increment physical/logical ttls', async ({ assert, cleanup }) => {
-    const { cache, teardown } = new CacheFactory()
-      .merge({ earlyExpiration: 0.5, ttl: 100 })
-      .create()
-
-    cleanup(teardown)
+  test('early refresh should re-increment physical/logical ttls', async ({ assert }) => {
+    const { cache } = new CacheFactory().merge({ earlyExpiration: 0.5, ttl: 100 }).create()
 
     // init cache
     const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))

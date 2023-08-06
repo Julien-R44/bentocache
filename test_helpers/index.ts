@@ -16,13 +16,6 @@ export const REDIS_CREDENTIALS = {
   port: Number(process.env.REDIS_PORT),
 }
 
-export function cleanupCache(cache: { clear(): any; disconnect(): any }) {
-  return async () => {
-    await cache.clear()
-    await cache.disconnect()
-  }
-}
-
 export function throwingFactory(errorMsg = 'error') {
   return () => {
     throw new Error(errorMsg)

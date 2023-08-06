@@ -12,7 +12,6 @@ import EventEmitter from 'node:events'
 import { pEvent, pEventMultiple } from 'p-event'
 
 import { CacheFactory } from '../factories/cache_factory.js'
-import { cleanupCache } from '../test_helpers/index.js'
 
 test.group('Cache events', () => {
   test('construct driver', async () => {
@@ -20,10 +19,9 @@ test.group('Cache events', () => {
     await cache.disconnect()
   })
 
-  test('emit cache:miss event when get() inexistent key', async ({ assert, cleanup }) => {
+  test('emit cache:miss event when get() inexistent key', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(() => cache.disconnect())
 
     cache.get('key')
 
@@ -35,10 +33,9 @@ test.group('Cache events', () => {
     })
   })
 
-  test('emit cache:hit event when get() existing key', async ({ assert, cleanup }) => {
+  test('emit cache:hit event when get() existing key', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
 
     await cache.set('key', 'value')
     cache.get('key')
@@ -51,10 +48,9 @@ test.group('Cache events', () => {
     })
   })
 
-  test('emit cache:written event when calling set()', async ({ assert, cleanup }) => {
+  test('emit cache:written event when calling set()', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
 
     cache.set('key', 'value')
 
@@ -67,10 +63,9 @@ test.group('Cache events', () => {
   })
 
   // TODO
-  test('dont emit cache:written event if set() failed', async ({ assert, cleanup }) => {
+  test('dont emit cache:written event if set() failed', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
 
     cache.set('key', 'value', -1).catch(() => {})
 
@@ -78,10 +73,9 @@ test.group('Cache events', () => {
     assert.isUndefined(event)
   }).skip()
 
-  test('emit cache:deleted event when calling delete()', async ({ assert, cleanup }) => {
+  test('emit cache:deleted event when calling delete()', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
 
     await cache.set('key', 'value')
     cache.delete('key')
@@ -93,10 +87,9 @@ test.group('Cache events', () => {
     })
   })
 
-  test('pull() should emit cache:deleted and cache:hit events', async ({ assert, cleanup }) => {
+  test('pull() should emit cache:deleted and cache:hit events', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
 
     await cache.set('key', 'value')
     cache.pull('key')
@@ -120,11 +113,9 @@ test.group('Cache events', () => {
 
   test('pull() should not emit cache:deleted and cache:hit events if nothing was found', async ({
     assert,
-    cleanup,
   }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
 
     cache.pull('key').catch(() => {})
 
@@ -137,10 +128,9 @@ test.group('Cache events', () => {
     assert.isUndefined(hitEvent)
   })
 
-  test('getMany() should emit cache:miss and cache:hit events', async ({ assert, cleanup }) => {
+  test('getMany() should emit cache:miss and cache:hit events', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
 
     await cache.setMany([
       { key: 'key1', value: 'value1' },
@@ -165,10 +155,9 @@ test.group('Cache events', () => {
     ])
   })
 
-  test('clear() should emit cache:cleared event', async ({ assert, cleanup }) => {
+  test('clear() should emit cache:cleared event', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
 
     cache.clear()
 
@@ -178,10 +167,9 @@ test.group('Cache events', () => {
     })
   })
 
-  test('setMany() should emit cache:written events', async ({ assert, cleanup }) => {
+  test('setMany() should emit cache:written events', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
 
     cache.setMany([
       { key: 'key1', value: 'value1' },
@@ -195,10 +183,9 @@ test.group('Cache events', () => {
     ])
   })
 
-  test('deleteMany() should emit cache:deleted events', async ({ assert, cleanup }) => {
+  test('deleteMany() should emit cache:deleted events', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
 
     await cache.setMany([
       { key: 'key1', value: 'value1' },
@@ -214,10 +201,9 @@ test.group('Cache events', () => {
     ])
   })
 
-  test('setForever should emit cache:written event', async ({ assert, cleanup }) => {
+  test('setForever should emit cache:written event', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
 
     cache.setForever('key', 'value')
 
@@ -229,10 +215,9 @@ test.group('Cache events', () => {
     })
   })
 
-  test('getOrSet should emit cache:hit when value is found', async ({ assert, cleanup }) => {
+  test('getOrSet should emit cache:hit when value is found', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
 
     await cache.set('foo', 'bar')
 
@@ -246,13 +231,10 @@ test.group('Cache events', () => {
     })
   })
 
-  test('getOrSet should emit cache:written when value is not found', async ({
-    assert,
-    cleanup,
-  }) => {
+  test('getOrSet should emit cache:written when value is not found', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
-    cleanup(cleanupCache(cache))
+
     cache.getOrSet('foo', () => 'baz')
 
     const event = await pEvent(emitter, 'cache:written')

@@ -11,10 +11,10 @@ import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
 import { CacheItem } from '../../../src/cache_item.js'
-import { CacheFactory } from '../../../factories/cache_factory.js'
-import { throwingFactory, waitAndReturnFactory } from '../../../test_helpers/index.js'
-import { ChaosCache } from '../../../test_helpers/chaos_cache.js'
 import { Memory } from '../../../src/drivers/memory.js'
+import { CacheFactory } from '../../../factories/cache_factory.js'
+import { ChaosCache } from '../../../test_helpers/chaos_cache.js'
+import { throwingFactory, waitAndReturnFactory } from '../../../test_helpers/index.js'
 
 test.group('Cache | getOrSet', () => {
   test('returns value when key exists in local', async ({ assert }) => {
@@ -109,7 +109,7 @@ test.group('Cache | getOrSet', () => {
     assert.deepEqual(r2, { foo: 'baz' })
   })
 
-  test('should throws if gracefully retained value is outdated', async ({ assert, cleanup }) => {
+  test('should throws if gracefully retained value is outdated', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .merge({ gracefulRetain: { enabled: true, duration: '100ms' } })
       .create()
