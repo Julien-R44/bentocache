@@ -17,8 +17,22 @@ services:
     restart: always
     ports:
       - '8000:8000'
-    volumes:
-      - dynamodb-data:/home/dynamodblocal/data
 
-volumes:
-  dynamodb-data: {}
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - '5432:5432'
+
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mysql
+    ports:
+      - '3306:3306'

@@ -48,7 +48,8 @@ export class CacheFactory {
   create() {
     const driver = this.#getDriver()
 
-    const cache = new Cache('primary', driver, {
+    const cache = new Cache('primary', {
+      localDriver: driver,
       emitter: this.#getEmitter(),
       ttl: this.#parameters.ttl,
       gracefulRetain: this.#parameters.gracefulRetain,

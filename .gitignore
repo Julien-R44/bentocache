@@ -4,3 +4,4 @@ coverage
 .env
 poc
 doc.md
+cache.sqlite3

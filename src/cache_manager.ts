@@ -20,7 +20,6 @@ import type {
 import { resolveTtl } from './helpers.js'
 import { Cache } from './providers/cache.js'
 import type { CacheProvider } from './types/provider.js'
-import { HybridCache } from './providers/hybrid_cache.js'
 
 export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>> {
   #config: {
@@ -73,13 +72,7 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
 
   #createProvider(cacheName: string, registry: CreateDriverResult): CacheProvider {
     if (registry.type === 'hybrid') {
-      return new HybridCache(cacheName, {
-        local: registry.local.driver(registry.local.options),
-        remote: registry.remote.driver(registry.remote.options),
-        emitter: this.#emitter,
-        ttl: this.#ttl,
-        gracefulRetain: this.#gracefulRetain,
-      })
+      throw new Error('Hybrid drivers are not supported by the cache manager')
     }
 
     const driverOptions = {
@@ -88,7 +81,8 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
       gracefulRetain: this.#gracefulRetain,
     }
 
-    return new Cache(cacheName, registry.driver(driverOptions), {
+    return new Cache(cacheName, {
+      localDriver: registry.driver(driverOptions),
       emitter: this.#emitter,
       ttl: driverOptions.ttl,
       gracefulRetain: this.#gracefulRetain,

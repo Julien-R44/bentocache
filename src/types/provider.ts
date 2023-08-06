@@ -40,6 +40,9 @@ export interface CacheProvider extends CacheDriver {
 }
 
 export type CacheProviderOptions = {
+  localDriver: CacheDriver
+  remoteDriver?: CacheDriver
+  busDriver?: any
   emitter?: Emitter
   ttl?: TTL
   serializer?: CacheSerializer

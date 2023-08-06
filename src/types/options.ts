@@ -1,5 +1,6 @@
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
 import type { Redis as IoRedis, RedisOptions as IoRedisOptions } from 'ioredis'
+import type { Knex } from 'knex'
 
 /**
  * Options that are common to all drivers
@@ -97,4 +98,25 @@ export type FileConfig = {
    * Directory where the cache files will be stored
    */
   directory: string
+} & DriverCommonOptions
+
+/**
+ * Options for SQL drivers
+ */
+export type SqlConfig = {
+  /**
+   * A Knex connection instance or connection options
+   */
+  connection: Knex | Knex.Config['connection']
+
+  /**
+   * Table name to use
+   */
+  tableName?: string
+
+  /**
+   * Should the driver automatically create the table
+   * @default true
+   */
+  autoCreateTable?: boolean
 } & DriverCommonOptions

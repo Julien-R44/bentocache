@@ -10,26 +10,26 @@
 import is from '@sindresorhus/is'
 import { Mutex } from 'async-mutex'
 
-import type { CacheDriver, CachedValue, Factory, GetOrSetOptions, TTL } from '../types/main.js'
 import debug from '../debug.js'
 import { resolveTtl } from '../helpers.js'
 import { CacheItem } from '../cache_item.js'
 import { BaseProvider } from './base_provider.js'
 import { CacheHit } from '../events/cache_hit.js'
 import { CacheMiss } from '../events/cache_miss.js'
+import type { CacheOptions } from '../cache_options.js'
 import { CacheDeleted } from '../events/cache_deleted.js'
 import { CacheWritten } from '../events/cache_written.js'
 import { CacheCleared } from '../events/cache_cleared.js'
 import type { CacheProvider, CacheProviderOptions } from '../types/provider.js'
-import type { CacheOptions } from '../cache_options.js'
+import type { CacheDriver, CachedValue, Factory, GetOrSetOptions, TTL } from '../types/main.js'
 
 export class Cache extends BaseProvider implements CacheProvider {
   #driver: CacheDriver
 
-  constructor(name: string, driver: CacheDriver, options: CacheProviderOptions) {
+  constructor(name: string, options: CacheProviderOptions) {
     super(name, options)
 
-    this.#driver = driver
+    this.#driver = options.localDriver
   }
 
   #resolveDefaultValue(defaultValue?: CachedValue | (() => CachedValue)) {
@@ -66,7 +66,8 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string) {
-    return new Cache(this.name, this.#driver.namespace(namespace), {
+    return new Cache(this.name, {
+      localDriver: this.#driver.namespace(namespace),
       emitter: this.emitter,
       ttl: this.defaultTtl,
       serializer: this.serializer,
