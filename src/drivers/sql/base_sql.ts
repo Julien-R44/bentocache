@@ -1,7 +1,7 @@
 import { type Knex } from 'knex'
 import KnexPkg from 'knex'
-import type { SqlConfig } from '../types/main.js'
-import { BaseDriver } from './base_driver.js'
+import type { SqlConfig } from '../../types/main.js'
+import { BaseDriver } from '../base_driver.js'
 
 const { knex } = KnexPkg
 
