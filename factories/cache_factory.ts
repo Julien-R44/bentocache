@@ -7,15 +7,15 @@
  * file that was distributed with this source code.
  */
 
-import { EventEmitter } from 'node:events'
 import { defu } from 'defu'
+import { EventEmitter } from 'node:events'
+import { getActiveTest } from '@japa/runner'
 
+import { Redis } from '../src/drivers/redis.js'
 import { Cache } from '../src/providers/cache.js'
 import { Memory } from '../src/drivers/memory.js'
 import type { CacheDriver } from '../src/types/main.js'
 import type { Emitter, GracefulRetainOptions } from '../src/types/main.js'
-import { Redis } from '../src/drivers/redis.js'
-import { getActiveTest } from '@japa/runner'
 
 type FactoryParameters = {
   emitter: Emitter
@@ -49,11 +49,13 @@ export class CacheFactory {
   }
 
   withHybridConfig(remoteDriver?: CacheDriver) {
-    this.#localDriver = new Memory({
-      maxSize: 100,
-      ttl: this.#parameters.ttl,
-      prefix: 'test',
-    })
+    this.#localDriver =
+      this.#localDriver ??
+      new Memory({
+        maxSize: 100,
+        ttl: this.#parameters.ttl,
+        prefix: 'test',
+      })
 
     this.#remoteDriver =
       remoteDriver ??

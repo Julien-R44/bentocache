@@ -29,16 +29,21 @@ import type {
   RawCacheOptions,
   TTL,
 } from '../types/main.js'
+import { RemoteCache } from '../remote_cache.js'
 
 export class Cache extends BaseProvider implements CacheProvider {
   #localDriver: CacheDriver
   #remoteDriver?: CacheDriver
+  #remoteCache?: RemoteCache
 
   constructor(name: string, options: CacheProviderOptions) {
     super(name, options)
 
     this.#localDriver = options.localDriver
     this.#remoteDriver = options.remoteDriver
+    if (this.#remoteDriver) {
+      this.#remoteCache = new RemoteCache(this.#remoteDriver)
+    }
   }
 
   #resolveDefaultValue(defaultValue?: CachedValue | (() => CachedValue)) {
@@ -121,24 +126,22 @@ export class Cache extends BaseProvider implements CacheProvider {
      * Item wasn't found in the local cache. So let's try
      * with the remote cache
      */
-    if (this.#remoteDriver) {
-      const remoteItem = await this.#remoteDriver.get(key)
+    if (this.#remoteCache) {
+      const remoteItem = await this.#remoteCache.get(key, this.defaultCacheOptions())
 
       /**
        * Explicitly check for `undefined` as the value can be stored as `null`
        * in the remote cache
        */
       if (remoteItem !== undefined) {
-        remoteCacheItem = CacheItem.fromDriver(key, remoteItem)
-
         /**
          * Item found in remote cache and is not logically expired. So we can
          * save it to the local cache and return it right away
          */
-        if (!remoteCacheItem.isLogicallyExpired()) {
-          await this.#localDriver.set(key, remoteItem)
-          this.emit(new CacheHit(key, remoteCacheItem.getValue(), this.name))
-          return remoteCacheItem.getValue()
+        if (!remoteItem.isLogicallyExpired()) {
+          await this.#localDriver.set(key, remoteItem.serialize())
+          this.emit(new CacheHit(key, remoteItem.getValue(), this.name))
+          return remoteItem.getValue()
         }
 
         /**
@@ -207,7 +210,7 @@ export class Cache extends BaseProvider implements CacheProvider {
       earlyExpiration: this.earlyExpiration,
     })
 
-    const item = await this.serialize({
+    const item = this.serialize({
       value: value,
       logicalExpiration: options.logicalTtlFromNow(),
       earlyExpiration: options.earlyExpireTtlFromNow(),
@@ -218,7 +221,7 @@ export class Cache extends BaseProvider implements CacheProvider {
     }
 
     if (this.#remoteDriver) {
-      await this.#remoteDriver.set(key, item, options.physicalTtl)
+      await this.#remoteCache!.set(key, item, options.physicalTtl)
     }
 
     this.emit(new CacheWritten(key, value, this.name))
@@ -283,7 +286,6 @@ export class Cache extends BaseProvider implements CacheProvider {
     let localCacheItemLogicallyExpired = false
 
     let remoteCacheItem: CacheItem | undefined
-    let remoteCacheItemLogicallyExpired = false
 
     /**
      * First we check the local cache
@@ -320,21 +322,15 @@ export class Cache extends BaseProvider implements CacheProvider {
      * Since we didnt find the value in the local cache,
      * we check the remote cache
      */
-    if (this.#remoteDriver) {
-      const remoteItem = await this.#remoteDriver.get(key)
-
-      if (remoteItem !== undefined) {
-        remoteCacheItem = CacheItem.fromDriver(key, remoteItem)
-        remoteCacheItemLogicallyExpired = remoteCacheItem.isLogicallyExpired()
-      }
+    if (this.#remoteCache) {
+      remoteCacheItem = await this.#remoteCache.get(key, options)
 
       /**
        * We found the value in the remote cache and it's not logically expired
        * We need to set it in the local cache
        */
-      if (remoteCacheItem && !remoteCacheItemLogicallyExpired) {
-        await this.#localDriver?.set(key, remoteItem!, options.physicalTtl)
-        debug('getOrSet(): value found in remote cache for key "%s"', key)
+      if (remoteCacheItem && !remoteCacheItem.isLogicallyExpired()) {
+        await this.#localDriver?.set(key, remoteCacheItem.serialize(), options.physicalTtl)
         this.emit(new CacheHit(key, remoteCacheItem.getValue(), this.name))
         return remoteCacheItem.getValue()
       }

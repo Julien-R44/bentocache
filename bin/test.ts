@@ -21,7 +21,16 @@ import { BASE_URL } from '../test_helpers/index.js'
 */
 processCLIArgs(process.argv.slice(2))
 configure({
-  files: ['tests/**/*.spec.ts'],
+  suites: [
+    {
+      name: 'drivers',
+      files: ['tests/drivers/**/*.spec.ts'],
+    },
+    {
+      name: 'unit',
+      files: ['tests/**/*.spec.ts', '!tests/drivers/**/*.spec.ts'],
+    },
+  ],
   plugins: [assert(), expectTypeOf(), fileSystem({ autoClean: true, basePath: BASE_URL })],
 })
 

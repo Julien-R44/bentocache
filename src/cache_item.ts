@@ -70,10 +70,10 @@ export class CacheItem {
   }
 
   serialize() {
-    return {
+    return CacheItem.#serializer.serialize({
       value: this.#value,
       logicalExpiration: this.#logicalExpiration,
       earlyExpiration: this.#earlyExpiration,
-    }
+    })
   }
 }

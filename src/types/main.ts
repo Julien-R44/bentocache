@@ -22,6 +22,7 @@ export type RawCacheOptions = {
   ttl?: TTL
   gracefulRetain?: GracefulRetainOptions
   earlyExpiration?: number
+  suppressRemoteCacheErrors?: boolean
 }
 
 export type GracefulRetainOptions = {
@@ -33,6 +34,7 @@ export type GracefulRetainOptions = {
 export type GetOrSetOptions = {
   gracefulRetain?: GracefulRetainOptions
   earlyExpiration?: number
+  suppressRemoteCacheErrors?: boolean
 }
 
 export type CacheDriverFactory = (config: any) => CacheDriver

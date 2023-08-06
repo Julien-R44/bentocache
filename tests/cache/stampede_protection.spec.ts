@@ -5,14 +5,13 @@ import { CacheFactory } from '../../factories/cache_factory.js'
 import { throwingFactory } from '../../test_helpers/index.js'
 
 test.group('Cache | Stampede protection', () => {
-  test('getOrSet should have cache stampede protection', async ({ assert }) => {
-    assert.plan(2)
-
+  test('getOrSet() factory should be called only once', async ({ assert }) => {
     const { cache } = new CacheFactory().create()
+    let factoryCalls = 0
 
     const factory = async () => {
       await setTimeout(100)
-      assert.incrementAssertionsCount()
+      factoryCalls++
       return 'value'
     }
 
@@ -22,16 +21,16 @@ test.group('Cache | Stampede protection', () => {
     ])
 
     assert.deepEqual(results, ['value', 'value'])
+    assert.equal(factoryCalls, 1)
   })
 
-  test('getOrSetForever should have cache stampede protection', async ({ assert }) => {
-    assert.plan(2)
-
+  test('getOrSetForever() factory should be called only once', async ({ assert }) => {
     const { cache } = new CacheFactory().create()
+    let factoryCalls = 0
 
     const factory = async () => {
       await setTimeout(100)
-      assert.incrementAssertionsCount()
+      factoryCalls++
       return 'value'
     }
 
@@ -41,6 +40,7 @@ test.group('Cache | Stampede protection', () => {
     ])
 
     assert.deepEqual(results, ['value', 'value'])
+    assert.equal(factoryCalls, 1)
   })
 
   test('if factory throws an error it should release the lock', async ({ assert }) => {
@@ -59,4 +59,24 @@ test.group('Cache | Stampede protection', () => {
       { status: 'fulfilled', value: 'value' },
     ])
   })
+
+  test('high concurrency but only one factory call')
+    .with([100, 1000, 10_000])
+    .run(async ({ assert }, concurrency) => {
+      const { cache } = new CacheFactory().create()
+      let factoryCalls = 0
+
+      const factory = async () => {
+        await setTimeout(300)
+        factoryCalls++
+        return 'value'
+      }
+
+      const results = await Promise.all(
+        Array.from({ length: concurrency }).map(() => cache.getOrSet('key', factory))
+      )
+
+      assert.deepEqual(results, Array.from({ length: concurrency }).fill('value'))
+      assert.equal(factoryCalls, 1)
+    })
 })

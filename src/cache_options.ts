@@ -45,6 +45,10 @@ export class CacheOptions {
     return this.options.gracefulRetain?.enabled
   }
 
+  get suppressRemoteCacheErrors() {
+    return this.options.suppressRemoteCacheErrors
+  }
+
   logicalTtlFromNow() {
     return Date.now() + this.logicalTtl
   }

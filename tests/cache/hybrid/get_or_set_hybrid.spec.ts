@@ -13,6 +13,8 @@ import { setTimeout } from 'node:timers/promises'
 import { CacheItem } from '../../../src/cache_item.js'
 import { CacheFactory } from '../../../factories/cache_factory.js'
 import { throwingFactory, waitAndReturnFactory } from '../../../test_helpers/index.js'
+import { ChaosCache } from '../../../test_helpers/chaos_cache.js'
+import { Memory } from '../../../src/drivers/memory.js'
 
 test.group('Cache | getOrSet', () => {
   test('returns value when key exists in local', async ({ assert }) => {
@@ -263,5 +265,54 @@ test.group('Cache | getOrSet', () => {
     assert.deepEqual(r3, { foo: 'baz' })
     assert.deepEqual(r4, { foo: 'baz' })
     assert.isUndefined(r5)
+  })
+
+  test('handles failure in remote cache when retain is enabled', async ({ assert }) => {
+    const remoteDriver = new ChaosCache(new Memory({ maxSize: 10, prefix: 'test' }))
+
+    const { cache } = new CacheFactory()
+      .withHybridConfig(remoteDriver)
+      .merge({ gracefulRetain: { enabled: true, duration: '2h' } })
+      .create()
+
+    // init cache
+    const r1 = await cache.getOrSet('key1', '100ms', () => ({ foo: 'bar' }))
+
+    // make the remote cache fail
+    remoteDriver.alwaysThrow()
+
+    // wait till we enter the grace period
+    await setTimeout(100)
+
+    // get the value again
+    const r2 = await cache.getOrSet('key1', () => ({ foo: 'baz' }))
+
+    // should have served the old value
+    assert.deepEqual(r1, r2)
+  })
+
+  test('rethrows error when suppressRemoteCacheErrors is false', async ({ assert }) => {
+    const remoteDriver = new ChaosCache(new Memory({ maxSize: 10, prefix: 'test' }))
+
+    const { cache } = new CacheFactory()
+      .withHybridConfig(remoteDriver)
+      .merge({ gracefulRetain: { enabled: true, duration: '2h' } })
+      .create()
+
+    // init cache
+    await cache.getOrSet('key1', '100ms', () => ({ foo: 'bar' }))
+
+    // make the remote cache fail
+    remoteDriver.alwaysThrow()
+
+    // wait till we enter the grace period
+    await setTimeout(100)
+
+    // get the value again
+    const r2 = cache.getOrSet('key1', () => ({ foo: 'baz' }), {
+      suppressRemoteCacheErrors: false,
+    })
+
+    await assert.rejects(() => r2, /Chaos: Random error/)
   })
 })
