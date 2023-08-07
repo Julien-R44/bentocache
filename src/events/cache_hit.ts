@@ -1,5 +1,8 @@
 import type { CacheEvent } from '../types/main.js'
 
+/**
+ * Event emitted when a cache entry is hit
+ */
 export class CacheHit implements CacheEvent {
   name = 'cache:hit' as const
 

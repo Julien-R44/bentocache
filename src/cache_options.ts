@@ -1,6 +1,7 @@
 import { defu } from 'defu'
-import type { GetOrSetOptions, RawCacheOptions } from './types/main.js'
+
 import { resolveTtl } from './helpers.js'
+import type { RawCacheOptions } from './types/main.js'
 
 export class CacheMethodOptions {
   options: RawCacheOptions

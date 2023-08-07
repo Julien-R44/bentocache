@@ -1,5 +1,8 @@
 import type { CacheEvent } from '../types/main.js'
 
+/**
+ * Event emitted when a cache entry is missed
+ */
 export class CacheMiss implements CacheEvent {
   name = 'cache:miss' as const
 

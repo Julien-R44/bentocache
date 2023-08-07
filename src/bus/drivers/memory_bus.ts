@@ -1,48 +1,71 @@
 import { randomUUID } from 'node:crypto'
 import type { BusDriver, CacheBusMessage } from '../../types/bus.js'
 
+/**
+ * A simple in-memory bus driver for easy
+ * testing
+ */
 export class MemoryBus implements BusDriver {
-  static subscriptions: Map<
+  /**
+   * A Map that stores the subscriptions for each channel.
+   *
+   * key is the channel name and the value is an array of objects
+   * containing the handler function and the busId of the subscriber
+   */
+  static #subscriptions: Map<
     string,
     Array<{ handler: (message: CacheBusMessage) => void; busId: string }>
   > = new Map()
 
-  id = randomUUID()
+  /**
+   * A unique identifier for this bus instance
+   * that is used to prevent the bus from
+   * emitting events to itself
+   */
+  #id = randomUUID()
 
-  constructor() {}
+  /**
+   * Subscribes to the given channel
+   */
+  async subscribe(channelName: string, handler: (message: CacheBusMessage) => void) {
+    const handlers = MemoryBus.#subscriptions.get(channelName) || []
 
-  async disconnect() {
-    MemoryBus.subscriptions.clear()
+    handlers.push({ handler, busId: this.#id })
+    MemoryBus.#subscriptions.set(channelName, handlers)
   }
 
+  /**
+   * Unsubscribes from the given channel
+   */
   async unsubscribe(channelName: string) {
-    const handlers = MemoryBus.subscriptions.get(channelName) || []
+    const handlers = MemoryBus.#subscriptions.get(channelName) || []
 
-    MemoryBus.subscriptions.set(
+    MemoryBus.#subscriptions.set(
       channelName,
-      handlers.filter((handlerInfo) => handlerInfo.busId !== this.id)
+      handlers.filter((handlerInfo) => handlerInfo.busId !== this.#id)
     )
   }
 
-  async subscribe(channelName: string, handler: (message: CacheBusMessage) => void) {
-    const handlers = MemoryBus.subscriptions.get(channelName) || []
-
-    handlers.push({ handler, busId: this.id })
-    MemoryBus.subscriptions.set(channelName, handlers)
-  }
-
+  /**
+   * Publishes a message to the given channel
+   */
   async publish(channelName: string, message: Omit<CacheBusMessage, 'busId'>): Promise<void> {
-    const handlers = MemoryBus.subscriptions.get(channelName)
-    if (!handlers) {
-      return
-    }
+    const handlers = MemoryBus.#subscriptions.get(channelName)
+    if (!handlers) return
 
-    const fullMessage: CacheBusMessage = { ...message, busId: this.id }
+    const fullMessage: CacheBusMessage = { ...message, busId: this.#id }
 
     for (const { handler, busId } of handlers) {
-      if (busId !== this.id) {
-        handler(fullMessage)
-      }
+      if (busId === this.#id) return
+
+      handler(fullMessage)
     }
+  }
+
+  /**
+   * Disconnects the bus and clears all subscriptions
+   */
+  async disconnect() {
+    MemoryBus.#subscriptions.clear()
   }
 }
