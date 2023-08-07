@@ -79,6 +79,7 @@ test.group('Bento Cache', () => {
         hybrid: hybridDriver({
           local: memoryDriver({ maxSize: 1000 }),
           remote: redisDriver({ connection: REDIS_CREDENTIALS }),
+          // bus:
         }),
       },
     })

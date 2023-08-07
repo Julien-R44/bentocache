@@ -16,7 +16,7 @@ import { CacheItem } from './cache_item.js'
 import { BaseProvider } from './base_cache.js'
 import { CacheHit } from './events/cache_hit.js'
 import { CacheMiss } from './events/cache_miss.js'
-import { CacheMethodOptions, type CacheMethodOptions as CacheItemOptions } from './cache_options.js'
+import { type CacheMethodOptions as CacheItemOptions } from './cache_options.js'
 import { CacheDeleted } from './events/cache_deleted.js'
 import { CacheWritten } from './events/cache_written.js'
 import { CacheCleared } from './events/cache_cleared.js'
@@ -33,8 +33,6 @@ import {
   CacheBusMessageType,
 } from './types/main.js'
 import { RemoteCache } from './remote_cache.js'
-import type { RedisBus } from './bus/drivers/redis_bus.js'
-import { randomUUID } from 'node:crypto'
 import { LocalCache } from './local_cache.js'
 import { Bus } from './bus/bus.js'
 
@@ -75,14 +73,27 @@ export class Cache extends BaseProvider implements CacheProvider {
   /**
    * Set a value in the cache
    */
-  async #set(key: string, item: any, ttl?: number) {
-    const serializedValue = this.serialize(item)
-    const result = await this.#localDriver.set(key, serializedValue, ttl)
-    if (result) {
-      this.emit(new CacheWritten(key, item.value, this.name))
+  async #set(key: string, value: any, options: CacheItemOptions) {
+    const item = this.serialize({
+      value: value,
+      logicalExpiration: options.logicalTtlFromNow(),
+      earlyExpiration: options.earlyExpireTtlFromNow(),
+    })
+
+    if (this.#localCache) {
+      await this.#localCache.set(key, item, options)
     }
 
-    return result
+    if (this.#remoteCache) {
+      await this.#remoteCache!.set(key, item, options)
+    }
+
+    if (this.#bus) {
+      await this.#bus.publish({ type: CacheBusMessageType.Set, keys: [key] })
+    }
+
+    this.emit(new CacheWritten(key, value, this.name))
+    return true
   }
 
   /**
@@ -113,33 +124,32 @@ export class Cache extends BaseProvider implements CacheProvider {
 
   get<T = any>(key: string): Promise<T | undefined | null>
   get<T = any>(key: string, defaultValue: Factory<T>): Promise<T>
-  async get<T = any>(key: string, defaultValue?: Factory<T>): Promise<T | undefined | null> {
-    let localCacheItem: CacheItem | undefined
-    let remoteCacheItem: CacheItem | undefined
+  get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOrSetOptions): Promise<T>
+  async get<T = any>(
+    key: string,
+    defaultValue?: Factory<T>,
+    rawOptions?: GetOrSetOptions
+  ): Promise<T | undefined | null> {
+    const options = this.defaultCacheOptions.cloneWith(rawOptions)
 
-    const localItem = await this.#localDriver.get(key)
+    let localItem: CacheItem | undefined
+    let remoteItem: CacheItem | undefined
 
-    /**
-     * Explicitly check for `undefined` as the value can be stored as `null`
-     */
-    if (localItem !== undefined) {
-      localCacheItem = CacheItem.fromDriver(key, localItem)
-
-      /**
-       * Item found in local cache and is not logically expired. So we can
-       * return it right away
-       */
-      if (!localCacheItem.isLogicallyExpired()) {
-        this.emit(new CacheHit(key, localCacheItem.getValue(), this.name))
-        return localCacheItem.getValue()
-      }
+    if (this.#localCache) {
+      localItem = await this.#localCache.get(key, options)
 
       /**
-       * Item is logically expired, but we can still return it, if graceful
-       * retain is enabled. Keep the item around and maybe return it later
+       * Explicitly check for `undefined` as the value can be stored as `null`
        */
-      if (this.gracefulRetain.enabled) {
-        //
+      if (localItem !== undefined) {
+        /**
+         * Item found in local cache and is not logically expired. So we can
+         * return it right away
+         */
+        if (!localItem.isLogicallyExpired()) {
+          this.emit(new CacheHit(key, localItem.getValue(), this.name))
+          return localItem.getValue()
+        }
       }
     }
 
@@ -148,7 +158,7 @@ export class Cache extends BaseProvider implements CacheProvider {
      * with the remote cache
      */
     if (this.#remoteCache) {
-      const remoteItem = await this.#remoteCache.get(key, this.defaultCacheOptions)
+      remoteItem = await this.#remoteCache.get(key, this.defaultCacheOptions)
 
       /**
        * Explicitly check for `undefined` as the value can be stored as `null`
@@ -160,7 +170,7 @@ export class Cache extends BaseProvider implements CacheProvider {
          * save it to the local cache and return it right away
          */
         if (!remoteItem.isLogicallyExpired()) {
-          await this.#localDriver.set(key, remoteItem.serialize())
+          await this.#localCache?.set(key, remoteItem.serialize(), options)
           this.emit(new CacheHit(key, remoteItem.getValue(), this.name))
           return remoteItem.getValue()
         }
@@ -169,23 +179,23 @@ export class Cache extends BaseProvider implements CacheProvider {
          * Item is logically expired. If graceful retain is not enabled, then
          * its a cache miss
          */
-        if (!this.gracefulRetain.enabled) {
+        if (!options.isGracefulRetainEnabled) {
           this.emit(new CacheMiss(key, this.name))
           return this.#resolveDefaultValue(defaultValue)
         }
       }
     }
 
-    if (this.gracefulRetain.enabled) {
-      if (remoteCacheItem) {
-        await this.#localDriver.set(key, remoteCacheItem.serialize())
-        this.emit(new CacheHit(key, remoteCacheItem.serialize(), this.name))
-        return remoteCacheItem.getValue()
+    if (options.isGracefulRetainEnabled) {
+      if (remoteItem) {
+        await this.#localCache?.set(key, remoteItem.serialize(), options)
+        this.emit(new CacheHit(key, remoteItem.serialize(), this.name))
+        return remoteItem.getValue()
       }
 
-      if (localCacheItem) {
-        this.emit(new CacheHit(key, localCacheItem.serialize(), this.name))
-        return localCacheItem.getValue()
+      if (localItem) {
+        this.emit(new CacheHit(key, localItem.serialize(), this.name))
+        return localItem.getValue()
       }
     }
 
@@ -222,40 +232,17 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Returns true if the value was set, false otherwise
    */
   async set(key: string, value: any, rawOptions?: RawCacheOptions) {
-    const options = new CacheMethodOptions(rawOptions, {
-      ttl: this.defaultTtl,
-      gracefulRetain: this.gracefulRetain,
-      earlyExpiration: this.earlyExpiration,
-    })
-
-    const item = this.serialize({
-      value: value,
-      logicalExpiration: options.logicalTtlFromNow(),
-      earlyExpiration: options.earlyExpireTtlFromNow(),
-    })
-
-    if (this.#localDriver) {
-      await this.#localDriver.set(key, item, options.physicalTtl)
-    }
-
-    if (this.#remoteCache) {
-      await this.#remoteCache!.set(key, item, options.physicalTtl)
-    }
-
-    if (this.#bus) {
-      await this.#bus.publish({ type: CacheBusMessageType.Set, keys: [key] })
-    }
-
-    this.emit(new CacheWritten(key, value, this.name))
-    return true
+    const options = this.defaultCacheOptions.cloneWith(rawOptions)
+    return this.#set(key, value, options)
   }
 
   /**
    * Set a value in the cache forever
    * Returns true if the value was set, false otherwise
    */
-  async setForever<T>(key: string, value: T) {
-    return this.#set(key, { value })
+  async setForever<T>(key: string, value: T, rawOptions?: RawCacheOptions) {
+    const options = this.defaultCacheOptions.cloneWith({ ttl: null, ...rawOptions })
+    return this.#set(key, value, options)
   }
 
   /**
@@ -264,7 +251,7 @@ export class Cache extends BaseProvider implements CacheProvider {
   async setMany(values: { key: string; value: CachedValue }[], ttl?: number) {
     const serializedValuesPromises = values.map(async (value) => ({
       key: value.key,
-      value: await this.serialize(value.value),
+      value: this.serialize(value.value),
     }))
 
     const serializedValues = await Promise.all(serializedValuesPromises)
@@ -289,17 +276,7 @@ export class Cache extends BaseProvider implements CacheProvider {
     }
 
     await lock.runExclusive(async () => {
-      const cacheItem = {
-        value: await factory(),
-        logicalExpiration: options.logicalTtlFromNow(),
-        earlyExpiration: options.earlyExpireTtlFromNow(),
-      }
-
-      await this.#set(key, cacheItem, options.physicalTtl)
-      debug('EARLY EXPIRATION REFRESH: set value in cache %o', {
-        cacheItem: cacheItem,
-        physical: options.physicalTtl,
-      })
+      await this.#set(key, await factory(), options)
     })
   }
 
@@ -352,7 +329,7 @@ export class Cache extends BaseProvider implements CacheProvider {
        * We need to set it in the local cache
        */
       if (remoteCacheItem && !remoteCacheItem.isLogicallyExpired()) {
-        await this.#localDriver?.set(key, remoteCacheItem.serialize(), options.physicalTtl)
+        await this.#localCache?.set(key, remoteCacheItem.serialize(), options)
         this.emit(new CacheHit(key, remoteCacheItem.getValue(), this.name))
         return remoteCacheItem.getValue()
       }
@@ -374,14 +351,11 @@ export class Cache extends BaseProvider implements CacheProvider {
        * since another request might have resolved it while
        * we were waiting for the lock
        */
-      const doubleCheckedValue = await this.#localDriver.get(key)
-      if (doubleCheckedValue !== undefined) {
-        staleItem = CacheItem.fromDriver(key, doubleCheckedValue)
-        if (!staleItem.isLogicallyExpired()) {
-          this.emit(new CacheHit(key, staleItem.getValue(), this.name))
-          debug('getOrSet(): value found in cache for key "%s"', key)
-          return staleItem.getValue()
-        }
+      staleItem = await this.#localCache?.get(key, options)
+      if (staleItem && !staleItem.isLogicallyExpired()) {
+        this.emit(new CacheHit(key, staleItem.getValue(), this.name))
+        debug('getOrSet(): value found in cache for key "%s"', key)
+        return staleItem.getValue()
       }
 
       /**
@@ -396,15 +370,15 @@ export class Cache extends BaseProvider implements CacheProvider {
       /**
        * Store in the remote cache if available
        */
-      if (this.#remoteDriver) {
-        await this.#remoteDriver.set(key, this.serialize(newCacheItem), options.physicalTtl)
+      if (this.#remoteCache) {
+        await this.#remoteCache.set(key, this.serialize(newCacheItem), options)
       }
 
       /**
        * Store in the local cache if available
        */
-      if (this.#localDriver) {
-        await this.#localDriver.set(key, this.serialize(newCacheItem), options.physicalTtl)
+      if (this.#localCache) {
+        await this.#localCache.set(key, this.serialize(newCacheItem), options)
       }
 
       this.emit(new CacheMiss(key, this.name))
@@ -462,24 +436,32 @@ export class Cache extends BaseProvider implements CacheProvider {
    */
   async getOrSetForever<T>(
     key: string,
-    factory: () => CachedValue | Promise<CachedValue>
+    factory: () => CachedValue | Promise<CachedValue>,
+    rawOptions?: GetOrSetOptions
   ): Promise<T> {
-    return this.#getOrSet(key, factory, this.foreverCacheOptions())
+    const options = this.defaultCacheOptions.cloneWith({
+      ttl: null,
+      ...rawOptions,
+    })
+
+    return this.#getOrSet(key, factory, options)
   }
 
   /**
    * Check if a key exists in the cache
    */
   async has(key: string) {
-    return this.#localDriver.has(key)
+    const inRemote = await this.#remoteDriver?.has(key)
+    const inLocal = await this.#localDriver?.has(key)
+
+    return !!(inRemote || inLocal)
   }
 
   /**
    * Check if key is missing in the cache
    */
   async missing(key: string) {
-    const hasKey = await this.#localDriver.has(key)
-    return !hasKey
+    return !(await this.has(key))
   }
 
   /**
@@ -514,11 +496,11 @@ export class Cache extends BaseProvider implements CacheProvider {
       await this.#remoteCache.delete(key, options)
     }
 
+    this.emit(new CacheDeleted(key, this.name))
+
     if (this.#bus) {
       await this.#bus?.publish({ type: CacheBusMessageType.Delete, keys: [key] })
     }
-
-    this.emit(new CacheDeleted(key, this.name))
 
     return true
   }

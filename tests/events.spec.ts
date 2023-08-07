@@ -12,6 +12,8 @@ import EventEmitter from 'node:events'
 import { pEvent, pEventMultiple } from 'p-event'
 
 import { CacheFactory } from '../factories/cache_factory.js'
+import { ChaosBus } from '../test_helpers/chaos/chaos_bus.js'
+import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
 
 test.group('Cache events', () => {
   test('construct driver', async () => {
@@ -70,11 +72,16 @@ test.group('Cache events', () => {
     cache.delete('key')
 
     const event = await pEvent(emitter, 'cache:deleted')
-    assert.deepEqual(event, {
-      key: 'key',
-      store: 'primary',
-    })
+    assert.deepEqual(event, { key: 'key', store: 'primary' })
   })
+
+  // test('should emit cache:deleted even if bus is failing', async ({ assert }) => {
+  //   const emitter = new EventEmitter()
+  //   const { cache } = new CacheFactory()
+  //     .merge({ busDriver: new ChaosBus(new MemoryBus()) })
+  //     .withHybridConfig()
+  //     .create()
+  // })
 
   test('pull() should emit cache:deleted and cache:hit events', async ({ assert }) => {
     const emitter = new EventEmitter()

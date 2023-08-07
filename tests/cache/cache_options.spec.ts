@@ -57,4 +57,24 @@ test.group('Cache Options', () => {
 
     assert.equal(options.physicalTtl, string.milliseconds.parse('30m'))
   })
+
+  test('null ttl should be kept and resolved to undefined', ({ assert }) => {
+    const options = new CacheMethodOptions({
+      ttl: null,
+      gracefulRetain: { enabled: true, duration: '30m' },
+    })
+
+    assert.deepEqual(options.logicalTtl, undefined)
+  })
+
+  test('clone with null ttl should be kept and resolved as undefined', ({ assert }) => {
+    const options = new CacheMethodOptions({
+      ttl: '10m',
+      gracefulRetain: { enabled: true, duration: '30m' },
+    })
+
+    const clone = options.cloneWith({ ttl: null })
+
+    assert.deepEqual(clone.logicalTtl, undefined)
+  })
 })

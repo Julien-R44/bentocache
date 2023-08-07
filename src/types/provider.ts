@@ -41,6 +41,16 @@ export interface CacheProvider {
   get<T>(key: string, defaultValue?: Factory<T>): Promise<T>
 
   /**
+   * Get a value from the cache, fallback to a default value
+   * and set options
+   *
+   * @param key  Key to get
+   * @param defaultValue Default value if the key is not found
+   * @param options Options to set
+   */
+  get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOrSetOptions): Promise<T>
+
+  /**
    * Get many values from the cache
    * Will return an array of objects with `key` and `value` properties
    * If a value is not found, `value` will be undefined

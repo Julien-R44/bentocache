@@ -32,9 +32,9 @@ export class RemoteCache {
     }
   }
 
-  set(key: string, value: string, ttl?: number) {
+  async set(key: string, value: string, options: CacheMethodOptions) {
     try {
-      return this.#driver.set(key, value, ttl)
+      await this.#driver.set(key, value, options.physicalTtl)
     } catch (error) {
       console.error('RemoteCache.error', key, error)
     }

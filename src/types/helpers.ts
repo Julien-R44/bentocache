@@ -5,7 +5,7 @@
  * - Simple number in milliseconds
  * - String formatted as a duration. Uses https://github.com/lukeed/ms under the hood
  */
-export type TTL = number | string
+export type TTL = number | string | null
 
 /**
  * A factory is a function that returns a value or a promise of a value

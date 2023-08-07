@@ -157,8 +157,13 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
    */
   get<T = any>(key: string): Promise<T | undefined | null>
   get<T = any>(key: string, defaultValue: Factory<T>): Promise<T>
-  async get<T = any>(key: string, defaultValue?: Factory<T>): Promise<T> {
-    return this.use().get<T>(key, defaultValue)
+  get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOrSetOptions): Promise<T>
+  async get<T = any>(
+    key: string,
+    defaultValue?: Factory<T>,
+    rawOptions?: GetOrSetOptions
+  ): Promise<T> {
+    return this.use().get<T>(key, defaultValue, rawOptions)
   }
 
   /**

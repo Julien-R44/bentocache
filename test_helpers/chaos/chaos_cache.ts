@@ -1,6 +1,6 @@
-import { ChaosUtils } from './chaos_utils.js'
-import type { CacheDriver } from '../src/types/driver.js'
-import type { KeyValueObject } from '../src/types/helpers.js'
+import { ChaosInjector } from './chaos_injector.js'
+import type { CacheDriver } from '../../src/types/driver.js'
+import type { KeyValueObject } from '../../src/types/helpers.js'
 
 /**
  * ChaosCache is a CacheDriver Wrapper that adds chaos to the cache
@@ -16,29 +16,20 @@ export class ChaosCache implements CacheDriver {
   #innerCache: CacheDriver
 
   /**
-   * Probability of throwing an error
+   * Reference to the chaos injector
    */
-  #throwProbability = 0
-
-  /**
-   * Minimum delay in milliseconds
-   */
-  #minDelay = 0
-
-  /**
-   * Maximum delay in milliseconds
-   */
-  #maxDelay = 0
+  #chaosInjector: ChaosInjector
 
   constructor(innerCache: CacheDriver) {
     this.#innerCache = innerCache
+    this.#chaosInjector = new ChaosInjector()
   }
 
   /**
    * Make the cache always throw an error
    */
   alwaysThrow() {
-    this.#throwProbability = 1
+    this.#chaosInjector.alwaysThrow()
     return this
   }
 
@@ -46,7 +37,7 @@ export class ChaosCache implements CacheDriver {
    * Reset the cache to never throw an error
    */
   neverThrow() {
-    this.#throwProbability = 0
+    this.#chaosInjector.neverThrow()
     return this
   }
 
@@ -54,8 +45,7 @@ export class ChaosCache implements CacheDriver {
    * Make the cache delay for the given amount of milliseconds
    */
   alwaysDelay(minDelay: number, maxDelay: number) {
-    this.#minDelay = minDelay
-    this.#maxDelay = maxDelay
+    this.#chaosInjector.alwaysDelay(minDelay, maxDelay)
     return this
   }
 
@@ -68,42 +58,42 @@ export class ChaosCache implements CacheDriver {
   }
 
   async get(key: string) {
-    await ChaosUtils.maybeApplyChaos(this.#throwProbability, this.#minDelay, this.#maxDelay)
+    await this.#chaosInjector.injectChaos()
     return this.#innerCache.get(key)
   }
 
   async getMany(keys: string[]) {
-    await ChaosUtils.maybeApplyChaos(this.#throwProbability, this.#minDelay, this.#maxDelay)
+    await this.#chaosInjector.injectChaos()
     return this.#innerCache.getMany(keys)
   }
 
   async pull(key: string) {
-    await ChaosUtils.maybeApplyChaos(this.#throwProbability, this.#minDelay, this.#maxDelay)
+    await this.#chaosInjector.injectChaos()
     return this.#innerCache.pull(key)
   }
 
   async set(key: string, value: string, ttl?: number | undefined) {
-    await ChaosUtils.maybeApplyChaos(this.#throwProbability, this.#minDelay, this.#maxDelay)
+    await this.#chaosInjector.injectChaos()
     return this.#innerCache.set(key, value, ttl)
   }
 
   async setMany(values: KeyValueObject[], ttl?: number | undefined) {
-    await ChaosUtils.maybeApplyChaos(this.#throwProbability, this.#minDelay, this.#maxDelay)
+    await this.#chaosInjector.injectChaos()
     return this.#innerCache.setMany(values, ttl)
   }
 
   async has(key: string) {
-    await ChaosUtils.maybeApplyChaos(this.#throwProbability, this.#minDelay, this.#maxDelay)
+    await this.#chaosInjector.injectChaos()
     return this.#innerCache.has(key)
   }
 
   async delete(key: string) {
-    await ChaosUtils.maybeApplyChaos(this.#throwProbability, this.#minDelay, this.#maxDelay)
+    await this.#chaosInjector.injectChaos()
     return this.#innerCache.delete(key)
   }
 
   async deleteMany(keys: string[]) {
-    await ChaosUtils.maybeApplyChaos(this.#throwProbability, this.#minDelay, this.#maxDelay)
+    await this.#chaosInjector.injectChaos()
     return this.#innerCache.deleteMany(keys)
   }
 

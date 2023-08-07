@@ -91,12 +91,4 @@ export abstract class BaseProvider {
 
     return { ttl, factory, options: cacheOptions }
   }
-
-  protected foreverCacheOptions() {
-    return new CacheMethodOptions({
-      ttl: undefined,
-      gracefulRetain: this.gracefulRetain,
-      earlyExpiration: this.earlyExpiration,
-    })
-  }
 }

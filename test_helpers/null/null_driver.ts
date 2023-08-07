@@ -1,7 +1,10 @@
-import type { CacheDriver } from '../types/driver.js'
-import type { KeyValueObject } from '../types/helpers.js'
-import { BaseDriver } from './base_driver.js'
+import type { CacheDriver } from '../../src/types/driver.js'
+import { BaseDriver } from '../../src/drivers/base_driver.js'
+import type { KeyValueObject } from '../../src/types/helpers.js'
 
+/**
+ * A dummy cache driver that does nothing
+ */
 export class NullDriver extends BaseDriver implements CacheDriver {
   constructor(_config: any) {
     super(_config)

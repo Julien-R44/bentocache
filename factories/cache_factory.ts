@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-import { defu } from 'defu'
+import lodash from '@poppinss/utils/lodash'
 import { getActiveTest } from '@japa/runner'
 
 import { Cache } from '../src/cache.js'
@@ -21,6 +21,9 @@ import type { Emitter, GracefulRetainOptions } from '../src/types/main.js'
 type FactoryParameters = {
   emitter: Emitter
   ttl: number
+  localDriver: CacheDriver
+  remoteDriver: CacheDriver
+  busDriver: BusDriver
   gracefulRetain: GracefulRetainOptions
   earlyExpiration: number
 }
@@ -30,21 +33,6 @@ type FactoryParameters = {
  * testing
  */
 export class CacheFactory {
-  /**
-   * The underlying local cache driver to use
-   */
-  #localDriver?: CacheDriver
-
-  /**
-   * The underlying remote cache driver to use
-   */
-  #remoteDriver?: CacheDriver
-
-  /**
-   * The underlying bus driver to use
-   */
-  #busDriver?: BusDriver
-
   /**
    * The default parameters
    */
@@ -56,7 +44,7 @@ export class CacheFactory {
    * Instantiate and return the local driver
    */
   #createLocalDriver() {
-    if (this.#localDriver) return this.#localDriver
+    if (this.#parameters.localDriver) return this.#parameters.localDriver
     return new Memory({ maxSize: 100, ttl: this.#parameters.ttl, prefix: 'test' })
   }
 
@@ -64,7 +52,7 @@ export class CacheFactory {
    * Instantiate and return the remote driver   *
    */
   #createRemoteDriver() {
-    if (this.#remoteDriver) return this.#remoteDriver
+    if (this.#parameters.remoteDriver) return this.#parameters.remoteDriver
 
     // TODO: maybe try replace with memory remote driver
     return new Redis({ connection: { host: '127.0.0.1', port: 6379 }, prefix: 'test' })
@@ -74,17 +62,17 @@ export class CacheFactory {
    * Merge custom parameters with the default parameters
    */
   merge(parameters: Partial<FactoryParameters>) {
-    this.#parameters = defu(parameters, this.#parameters)
+    this.#parameters = lodash.merge(this.#parameters, parameters)
     return this
   }
 
   /**
    * Apply the hybrid driver configuration to the factory
    */
-  withHybridConfig(remoteDriver?: CacheDriver) {
-    this.#localDriver = this.#createLocalDriver()
-    this.#remoteDriver = remoteDriver ?? this.#createRemoteDriver()
-    this.#busDriver = new MemoryBus()
+  withHybridConfig() {
+    this.#parameters.localDriver = this.#createLocalDriver()
+    this.#parameters.remoteDriver = this.#createRemoteDriver()
+    this.#parameters.busDriver = this.#parameters.busDriver ?? new MemoryBus()
 
     return this
   }
@@ -101,7 +89,7 @@ export class CacheFactory {
     const cache = new Cache('primary', {
       localDriver: local,
       remoteDriver: remote,
-      busDriver: this.#busDriver,
+      busDriver: this.#parameters.busDriver,
       emitter: this.#parameters.emitter,
       ttl: this.#parameters.ttl,
       gracefulRetain: this.#parameters.gracefulRetain ?? { enabled: false },

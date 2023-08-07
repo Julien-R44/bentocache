@@ -18,7 +18,7 @@ export interface CacheBusMessage {
 
 export interface BusDriver {
   publish(channel: string, message: Omit<CacheBusMessage, 'busId'>): Promise<void>
-  disconnect(): Promise<void>
   subscribe(channel: string, handler: (message: CacheBusMessage) => void): Promise<void>
   unsubscribe(channel: string): Promise<void>
+  disconnect(): Promise<void>
 }

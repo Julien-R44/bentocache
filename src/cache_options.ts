@@ -1,4 +1,4 @@
-import { defu } from 'defu'
+import lodash from '@poppinss/utils/lodash'
 
 import { resolveTtl } from './helpers.js'
 import type { RawCacheOptions } from './types/main.js'
@@ -6,12 +6,12 @@ import type { RawCacheOptions } from './types/main.js'
 export class CacheMethodOptions {
   options: RawCacheOptions
 
-  logicalTtl: number
-  physicalTtl: number
+  logicalTtl?: number
+  physicalTtl?: number
   earlyExpireTtl?: number
 
   constructor(options: RawCacheOptions = {}, defaults: Partial<RawCacheOptions> = {}) {
-    this.options = defu(options, defaults)
+    this.options = lodash.merge(defaults, options)
 
     this.logicalTtl = this.#resolveLogicalTtl()
     this.physicalTtl = this.#resolvePhysicalTtl()
@@ -26,6 +26,10 @@ export class CacheMethodOptions {
     }
 
     if (percentage <= 0 || percentage >= 1) {
+      return undefined
+    }
+
+    if (!this.logicalTtl) {
       return undefined
     }
 
@@ -55,10 +59,18 @@ export class CacheMethodOptions {
   }
 
   logicalTtlFromNow() {
+    if (!this.logicalTtl) {
+      return undefined
+    }
+
     return Date.now() + this.logicalTtl
   }
 
   physicalTtlFromNow() {
+    if (!this.physicalTtl) {
+      return undefined
+    }
+
     return Date.now() + this.physicalTtl
   }
 
