@@ -1,13 +1,13 @@
 import { test } from '@japa/runner'
 import { CacheFactory } from '../factories/cache_factory.js'
 import { BentoCacheFactory } from '../factories/bentocache_factory.js'
-import { CacheManager } from '../src/cache_manager.js'
+import { BentoCache } from '../src/bento_cache.js'
 import { memoryDriver } from '../src/drivers/memory.js'
 import type { CacheEvents } from '../src/types/events.js'
 
 test.group('Typings', () => {
   test('named caches typings', async ({ expectTypeOf }) => {
-    const bento = new CacheManager({
+    const bento = new BentoCache({
       default: 'primary',
       stores: {
         primary: memoryDriver({ maxSize: 100, ttl: 30_000 }),

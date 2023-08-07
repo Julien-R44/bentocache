@@ -1,9 +1,9 @@
-import { CacheManager } from '../src/cache_manager.js'
+import { BentoCache } from '../src/bento_cache.js'
 import { memoryDriver } from '../src/drivers/memory.js'
 
 export class BentoCacheFactory {
   create() {
-    const bento = new CacheManager({
+    const bento = new BentoCache({
       default: 'primary',
       stores: {
         primary: memoryDriver({

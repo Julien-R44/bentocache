@@ -5,7 +5,7 @@ import type { CacheMiss } from '../events/cache_miss.js'
 import type { CacheWritten } from '../events/cache_written.js'
 
 /**
- * Shape of the emitter accepted by the cache manager
+ * Shape of the emitter accepted by BentoCache
  * Should be compatible with node's EventEmitter and Emittery
  */
 export interface Emitter {

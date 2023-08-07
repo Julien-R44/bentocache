@@ -20,9 +20,7 @@
   ],
   "exports": {
     ".": "./build/index.js",
-    "./providers/cache_provider": "./build/providers/cache_provider.js",
-    "./services/main": "./build/services/main.js",
-    "./types": "./build/src/types.js"
+    "./types": "./build/types/main.js"
   },
   "scripts": {
     "clean": "del-cli build",
@@ -33,7 +31,7 @@
     "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --loader=ts-node/esm bin/test.ts",
     "pretest": "npm run lint",
     "test": "c8 npm run quick:test",
-    "build": "tsc",
+    "build": "tsup-node",
     "postbuild": "npm run copy:templates",
     "release": "np",
     "version": "npm run build",
@@ -74,6 +72,7 @@
     "pg": "^8.11.2",
     "prettier": "^3.0.0",
     "ts-node": "^10.9.1",
+    "tsup": "^7.2.0",
     "type-fest": "^4.1.0",
     "typescript": "^5.1.6"
   },
@@ -149,5 +148,16 @@
       "test_helpers/**",
       "factories/**"
     ]
+  },
+  "tsup": {
+    "entry": [
+      "./index.ts",
+      "./src/types.ts"
+    ],
+    "outDir": "./build",
+    "clean": true,
+    "format": "esm",
+    "dts": true,
+    "target": "esnext"
   }
 }

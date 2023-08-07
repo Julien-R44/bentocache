@@ -24,7 +24,7 @@ import { resolveTtl } from './helpers.js'
 import { Cache } from './providers/cache.js'
 import type { CacheProvider } from './types/provider.js'
 
-export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>>
+export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
   implements CacheProvider
 {
   #config: {

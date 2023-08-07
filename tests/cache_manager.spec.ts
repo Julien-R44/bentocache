@@ -11,26 +11,23 @@ import Emittery from 'emittery'
 import { test } from '@japa/runner'
 import EventEmitter from 'node:events'
 
-import { CacheManager } from '../src/cache_manager.js'
+import { BentoCache } from '../src/bento_cache.js'
 import { memoryDriver } from '../src/drivers/memory.js'
 import type { DriverCommonOptions } from '../src/types/main.js'
 import { redisDriver } from '../src/drivers/redis.js'
 import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
 
-test.group('Cache Manager', () => {
+test.group('Bento Cache', () => {
   test('should accept EventEmitter or Emittery', async () => {
     // This test only rely type-checking
-    new CacheManager(
-      { default: 'memory', stores: { memory: memoryDriver({}) } },
-      new EventEmitter()
-    )
-    new CacheManager({ default: 'memory', stores: { memory: memoryDriver({}) } }, new Emittery())
+    new BentoCache({ default: 'memory', stores: { memory: memoryDriver({}) } }, new EventEmitter())
+    new BentoCache({ default: 'memory', stores: { memory: memoryDriver({}) } }, new Emittery())
   })
 
   test('Subscribe to an event', async ({ assert }) => {
     assert.plan(2)
 
-    const manager = new CacheManager({
+    const manager = new BentoCache({
       default: 'memory',
       stores: { memory: memoryDriver({}) },
     })
@@ -45,7 +42,7 @@ test.group('Cache Manager', () => {
   })
 
   test('Unsubscribe from an event', async ({ assert }) => {
-    const manager = new CacheManager({
+    const manager = new BentoCache({
       default: 'memory',
       stores: { memory: memoryDriver({}) },
     })
@@ -74,7 +71,7 @@ test.group('Cache Manager', () => {
       }
     }
 
-    const manager = new CacheManager({
+    const manager = new BentoCache({
       default: 'memory',
       ttl: 200,
       stores: {
@@ -102,7 +99,7 @@ test.group('Cache Manager', () => {
       }
     }
 
-    const manager = new CacheManager({
+    const manager = new BentoCache({
       default: 'memory',
       ttl: '30s',
       stores: {
@@ -125,7 +122,7 @@ test.group('Cache Manager', () => {
       }
     }
 
-    const manager = new CacheManager({
+    const manager = new BentoCache({
       default: 'memory',
       ttl: 200,
       stores: {
@@ -154,7 +151,7 @@ test.group('Cache Manager', () => {
       }
     }
 
-    const manager = new CacheManager({
+    const manager = new BentoCache({
       default: 'memory',
       prefix: 'test',
       stores: {
@@ -174,7 +171,7 @@ test.group('Cache Manager', () => {
   })
 
   test('instances of cache should be cached and re-used', async ({ assert }) => {
-    const manager = new CacheManager({
+    const manager = new BentoCache({
       default: 'memory',
       stores: {
         memory: memoryDriver({}),
