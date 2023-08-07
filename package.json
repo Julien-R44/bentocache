@@ -20,6 +20,7 @@
   ],
   "exports": {
     ".": "./build/index.js",
+    "./drivers/*": "./build/drivers/*.js",
     "./types": "./build/types/main.js"
   },
   "scripts": {
@@ -152,7 +153,8 @@
   "tsup": {
     "entry": [
       "./index.ts",
-      "./src/types.ts"
+      "./src/types.ts",
+      "./drivers/*.ts"
     ],
     "outDir": "./build",
     "clean": true,

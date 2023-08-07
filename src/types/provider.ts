@@ -1,5 +1,5 @@
 import type { CacheDriver } from './driver.js'
-import type { Factory, KeyValueObject, TTL } from './helpers.js'
+import type { Factory, TTL } from './helpers.js'
 import type {
   BusDriver,
   CacheSerializer,

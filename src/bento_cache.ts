@@ -13,7 +13,6 @@ import type {
   CreateDriverResult,
   CacheEvents,
   Emitter,
-  KeyValueObject,
   TTL,
   GracefulRetainOptions,
   Factory,
@@ -65,7 +64,7 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
   ) {
     this.#config = config
     this.#emitter = emitter || new Emittery()
-    this.#ttl = resolveTtl(config.ttl, 30_000)
+    this.#ttl = resolveTtl(config.ttl, 30_000)!
     this.#prefix = config.prefix
 
     this.#gracefulRetain = config.gracefulRetain || {

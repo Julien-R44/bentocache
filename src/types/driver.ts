@@ -1,5 +1,4 @@
 import type { MaybePromise } from './helpers.js'
-import type { KeyValueObject } from './main.js'
 
 export interface CacheDriver {
   /**
