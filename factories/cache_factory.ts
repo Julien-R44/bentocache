@@ -12,9 +12,11 @@ import { EventEmitter } from 'node:events'
 import { getActiveTest } from '@japa/runner'
 
 import { Redis } from '../src/drivers/redis.js'
-import { Cache } from '../src/providers/cache.js'
+import { Cache } from '../src/cache.js'
 import { Memory } from '../src/drivers/memory.js'
-import type { CacheDriver } from '../src/types/main.js'
+import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
+import type { BusDriver, CacheDriver } from '../src/types/main.js'
+import { createIsomorphicDestructurable } from '../src/helpers.js'
 import type { Emitter, GracefulRetainOptions } from '../src/types/main.js'
 
 type FactoryParameters = {
@@ -27,6 +29,8 @@ type FactoryParameters = {
 export class CacheFactory {
   #localDriver?: CacheDriver
   #remoteDriver?: CacheDriver
+  #busDriver?: BusDriver
+
   #parameters: Partial<FactoryParameters> = {
     gracefulRetain: { enabled: false },
   }
@@ -64,6 +68,8 @@ export class CacheFactory {
         prefix: 'test',
       })
 
+    this.#busDriver = new MemoryBus()
+
     return this
   }
 
@@ -74,6 +80,7 @@ export class CacheFactory {
     const cache = new Cache('primary', {
       localDriver: driver,
       remoteDriver: this.#remoteDriver,
+      busDriver: this.#busDriver,
       emitter: this.#getEmitter(),
       ttl: this.#parameters.ttl,
       gracefulRetain: this.#parameters.gracefulRetain!,
@@ -87,12 +94,9 @@ export class CacheFactory {
 
     if (autoCleanup) getActiveTest()?.cleanup(teardown)
 
-    return {
-      cache,
-      driver,
-      local: driver,
-      remote: remoteDriver,
-      teardown,
-    }
+    return createIsomorphicDestructurable(
+      { cache, driver, local: driver, remote: remoteDriver, teardown } as const,
+      [cache, driver, driver, remoteDriver, teardown] as const
+    )
   }
 }

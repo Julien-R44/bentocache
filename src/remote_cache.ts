@@ -1,5 +1,5 @@
 import { CacheItem } from './cache_item.js'
-import type { CacheOptions } from './cache_options.js'
+import type { CacheMethodOptions } from './cache_options.js'
 import type { CacheDriver } from './types/main.js'
 
 export class RemoteCache {
@@ -9,7 +9,7 @@ export class RemoteCache {
     this.#driver = driver
   }
 
-  async get(key: string, options: CacheOptions) {
+  async get(key: string, options: CacheMethodOptions) {
     let value: undefined | string
     try {
       value = await this.#driver.get(key)
@@ -37,6 +37,18 @@ export class RemoteCache {
       return this.#driver.set(key, value, ttl)
     } catch (error) {
       console.error('RemoteCache.error', key, error)
+    }
+  }
+
+  async delete(key: string, options: CacheMethodOptions) {
+    try {
+      await this.#driver.delete(key)
+    } catch (error) {
+      if (options?.suppressRemoteCacheErrors === false) {
+        throw error
+      }
+
+      return false
     }
   }
 }

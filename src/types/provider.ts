@@ -1,6 +1,8 @@
+import type { RedisBus } from '../bus/drivers/redis_bus.js'
 import type { CacheDriver } from './driver.js'
 import type { Factory, KeyValueObject, TTL } from './helpers.js'
 import type {
+  BusDriver,
   CacheSerializer,
   Emitter,
   GetOrSetOptions,
@@ -87,7 +89,7 @@ export type CacheProviderOptions = {
   mode?: 'hybrid' | 'basic'
   localDriver: CacheDriver
   remoteDriver?: CacheDriver
-  busDriver?: any
+  busDriver?: BusDriver
   emitter?: Emitter
   ttl?: TTL
   serializer?: CacheSerializer

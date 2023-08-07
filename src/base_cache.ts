@@ -1,7 +1,7 @@
 import type { Mutex } from 'async-mutex'
-import { resolveTtl } from '../helpers.js'
-import { JsonSerializer } from '../serializers/json.js'
-import type { CachedValue, TTL } from '../types/helpers.js'
+import { resolveTtl } from './helpers.js'
+import { JsonSerializer } from './serializers/json.js'
+import type { CachedValue, TTL } from './types/helpers.js'
 import type {
   CacheEvent,
   CacheProviderOptions,
@@ -10,8 +10,8 @@ import type {
   Factory as Factory,
   GetOrSetOptions,
   GracefulRetainOptions,
-} from '../types/main.js'
-import { CacheOptions } from '../cache_options.js'
+} from './types/main.js'
+import { CacheMethodOptions } from './cache_options.js'
 
 export abstract class BaseProvider {
   protected emitter?: Emitter
@@ -19,6 +19,7 @@ export abstract class BaseProvider {
   protected serializer: CacheSerializer = new JsonSerializer()
   protected gracefulRetain: GracefulRetainOptions
   protected earlyExpiration?: number
+  protected defaultCacheOptions: CacheMethodOptions
 
   protected locks = new Map<string, Mutex>()
 
@@ -33,6 +34,12 @@ export abstract class BaseProvider {
     this.serializer = options.serializer ?? this.serializer
     this.gracefulRetain = options.gracefulRetain
     this.earlyExpiration = options.earlyExpiration
+
+    this.defaultCacheOptions = new CacheMethodOptions({
+      ttl: this.defaultTtl,
+      gracefulRetain: this.gracefulRetain,
+      earlyExpiration: this.earlyExpiration,
+    })
   }
 
   /**
@@ -73,7 +80,7 @@ export abstract class BaseProvider {
       resolvedOptions = options!
     }
 
-    const cacheOptions = new CacheOptions(
+    const cacheOptions = new CacheMethodOptions(
       { ttl, ...resolvedOptions },
       {
         ttl: this.defaultTtl,
@@ -86,16 +93,8 @@ export abstract class BaseProvider {
   }
 
   protected foreverCacheOptions() {
-    return new CacheOptions({
+    return new CacheMethodOptions({
       ttl: undefined,
-      gracefulRetain: this.gracefulRetain,
-      earlyExpiration: this.earlyExpiration,
-    })
-  }
-
-  protected defaultCacheOptions() {
-    return new CacheOptions({
-      ttl: this.defaultTtl,
       gracefulRetain: this.gracefulRetain,
       earlyExpiration: this.earlyExpiration,
     })

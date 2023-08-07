@@ -6,8 +6,8 @@ import type { Knex } from 'knex'
  * Options that are common to all drivers
  *
  * Some of theses options may be also defined in
- * the manager options. Setting them specifically
- * for a driver will override the manager options.
+ * the BentoCache options. Setting them specifically
+ * for a driver will override the BentoCache options.
  */
 export type DriverCommonOptions = {
   ttl?: number

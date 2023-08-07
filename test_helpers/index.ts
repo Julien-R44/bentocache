@@ -16,12 +16,18 @@ export const REDIS_CREDENTIALS = {
   port: Number(process.env.REDIS_PORT),
 }
 
+/**
+ * Returns a factory that will throw an error when invoked
+ */
 export function throwingFactory(errorMsg = 'error') {
   return () => {
     throw new Error(errorMsg)
   }
 }
 
+/**
+ * Returns a factory that will take some time to return the given value
+ */
 export function waitAndReturnFactory(ms: number, value: any) {
   return async () => {
     await setTimeout(ms)

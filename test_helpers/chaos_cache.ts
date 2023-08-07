@@ -1,29 +1,68 @@
+import { ChaosUtils } from './chaos_utils.js'
 import type { CacheDriver } from '../src/types/driver.js'
 import type { KeyValueObject } from '../src/types/helpers.js'
-import { ChaosUtils } from './chaos_utils.js'
 
+/**
+ * ChaosCache is a CacheDriver Wrapper that adds chaos to the cache
+ * by randomly throwing errors or delaying the execution of the cache.
+ *
+ * This is handy for testing the resilience of the cache within
+ * our test suite.
+ */
 export class ChaosCache implements CacheDriver {
+  /**
+   * The inner cache driver that is wrapped
+   */
   #innerCache: CacheDriver
 
+  /**
+   * Probability of throwing an error
+   */
   #throwProbability = 0
+
+  /**
+   * Minimum delay in milliseconds
+   */
   #minDelay = 0
+
+  /**
+   * Maximum delay in milliseconds
+   */
   #maxDelay = 0
 
   constructor(innerCache: CacheDriver) {
     this.#innerCache = innerCache
   }
 
+  /**
+   * Make the cache always throw an error
+   */
   alwaysThrow() {
     this.#throwProbability = 1
     return this
   }
 
+  /**
+   * Reset the cache to never throw an error
+   */
+  neverThrow() {
+    this.#throwProbability = 0
+    return this
+  }
+
+  /**
+   * Make the cache delay for the given amount of milliseconds
+   */
   alwaysDelay(minDelay: number, maxDelay: number) {
     this.#minDelay = minDelay
     this.#maxDelay = maxDelay
     return this
   }
 
+  /**
+   * Below is the list of methods that are proxied to the inner cache
+   * with the addition of chaos logic
+   */
   namespace(namespace: string) {
     return this.#innerCache.namespace(namespace)
   }

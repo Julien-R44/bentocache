@@ -155,8 +155,9 @@ export class Redis extends BaseDriver implements CacheDriver {
 
 export function redisDriver(options: RedisConfig) {
   return {
-    type: 'driver' as const,
-    options,
-    driver: (config: RedisConfig) => new Redis(config),
+    local: {
+      options,
+      factory: (config: RedisConfig) => new Redis(config),
+    },
   }
 }

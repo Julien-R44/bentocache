@@ -1,8 +1,8 @@
 import { defu } from 'defu'
-import type { RawCacheOptions } from './types/main.js'
+import type { GetOrSetOptions, RawCacheOptions } from './types/main.js'
 import { resolveTtl } from './helpers.js'
 
-export class CacheOptions {
+export class CacheMethodOptions {
   options: RawCacheOptions
 
   logicalTtl: number
@@ -29,6 +29,10 @@ export class CacheOptions {
     }
 
     return this.logicalTtl * percentage
+  }
+
+  cloneWith(options?: Partial<RawCacheOptions>) {
+    return new CacheMethodOptions(options, this.options)
   }
 
   #resolveLogicalTtl() {

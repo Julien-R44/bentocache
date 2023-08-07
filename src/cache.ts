@@ -10,40 +10,61 @@
 import is from '@sindresorhus/is'
 import { Mutex } from 'async-mutex'
 
-import debug from '../debug.js'
-import { resolveTtl } from '../helpers.js'
-import { CacheItem } from '../cache_item.js'
-import { BaseProvider } from './base_provider.js'
-import { CacheHit } from '../events/cache_hit.js'
-import { CacheMiss } from '../events/cache_miss.js'
-import { CacheOptions, type CacheOptions as CacheItemOptions } from '../cache_options.js'
-import { CacheDeleted } from '../events/cache_deleted.js'
-import { CacheWritten } from '../events/cache_written.js'
-import { CacheCleared } from '../events/cache_cleared.js'
-import type { CacheProvider, CacheProviderOptions } from '../types/provider.js'
-import type {
-  CacheDriver,
-  CachedValue,
-  GetOrSetOptions,
-  RawCacheOptions,
-  TTL,
-  Factory,
-  KeyValueObject,
-} from '../types/main.js'
-import { RemoteCache } from '../remote_cache.js'
+import debug from './debug.js'
+import { resolveTtl } from './helpers.js'
+import { CacheItem } from './cache_item.js'
+import { BaseProvider } from './base_cache.js'
+import { CacheHit } from './events/cache_hit.js'
+import { CacheMiss } from './events/cache_miss.js'
+import { CacheMethodOptions, type CacheMethodOptions as CacheItemOptions } from './cache_options.js'
+import { CacheDeleted } from './events/cache_deleted.js'
+import { CacheWritten } from './events/cache_written.js'
+import { CacheCleared } from './events/cache_cleared.js'
+import type { CacheProvider, CacheProviderOptions } from './types/provider.js'
+import {
+  type CacheDriver,
+  type CachedValue,
+  type GetOrSetOptions,
+  type RawCacheOptions,
+  type TTL,
+  type Factory,
+  type KeyValueObject,
+  type BusDriver,
+  CacheBusMessageType,
+} from './types/main.js'
+import { RemoteCache } from './remote_cache.js'
+import type { RedisBus } from './bus/drivers/redis_bus.js'
+import { randomUUID } from 'node:crypto'
+import { LocalCache } from './local_cache.js'
+import { Bus } from './bus/bus.js'
 
 export class Cache extends BaseProvider implements CacheProvider {
-  #localDriver: CacheDriver
+  #localDriver?: CacheDriver
+  #localCache?: LocalCache
+
   #remoteDriver?: CacheDriver
   #remoteCache?: RemoteCache
+  #bus?: Bus
+  #busDriver?: BusDriver
 
   constructor(name: string, options: CacheProviderOptions) {
     super(name, options)
 
     this.#localDriver = options.localDriver
     this.#remoteDriver = options.remoteDriver
+    this.#busDriver = options.busDriver
+
+    if (this.#localDriver) {
+      this.#localCache = new LocalCache(this.#localDriver)
+    }
+
     if (this.#remoteDriver) {
       this.#remoteCache = new RemoteCache(this.#remoteDriver)
+    }
+
+    if (this.#busDriver && this.#localDriver) {
+      this.#bus = new Bus(this.#busDriver, this.#localDriver)
+      this.#bus.subscribe()
     }
   }
 
@@ -127,7 +148,7 @@ export class Cache extends BaseProvider implements CacheProvider {
      * with the remote cache
      */
     if (this.#remoteCache) {
-      const remoteItem = await this.#remoteCache.get(key, this.defaultCacheOptions())
+      const remoteItem = await this.#remoteCache.get(key, this.defaultCacheOptions)
 
       /**
        * Explicitly check for `undefined` as the value can be stored as `null`
@@ -201,7 +222,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Returns true if the value was set, false otherwise
    */
   async set(key: string, value: any, rawOptions?: RawCacheOptions) {
-    const options = new CacheOptions(rawOptions, {
+    const options = new CacheMethodOptions(rawOptions, {
       ttl: this.defaultTtl,
       gracefulRetain: this.gracefulRetain,
       earlyExpiration: this.earlyExpiration,
@@ -217,8 +238,12 @@ export class Cache extends BaseProvider implements CacheProvider {
       await this.#localDriver.set(key, item, options.physicalTtl)
     }
 
-    if (this.#remoteDriver) {
+    if (this.#remoteCache) {
       await this.#remoteCache!.set(key, item, options.physicalTtl)
+    }
+
+    if (this.#bus) {
+      await this.#bus.publish({ type: CacheBusMessageType.Set, keys: [key] })
     }
 
     this.emit(new CacheWritten(key, value, this.name))
@@ -475,14 +500,24 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Delete a key from the cache
    * Returns true if the key was deleted, false otherwise
    */
-  async delete(key: string): Promise<boolean> {
-    const result = await this.#localDriver.delete(key)
+  async delete(key: string, rawOptions?: GetOrSetOptions): Promise<boolean> {
+    const options = this.defaultCacheOptions.cloneWith(rawOptions)
 
-    if (result) {
-      this.emit(new CacheDeleted(key, this.name))
+    if (this.#localCache) {
+      await this.#localCache.delete(key)
     }
 
-    return result
+    if (this.#remoteCache) {
+      await this.#remoteCache.delete(key, options)
+    }
+
+    if (this.#bus) {
+      await this.#bus?.publish({ type: CacheBusMessageType.Delete, keys: [key] })
+    }
+
+    this.emit(new CacheDeleted(key, this.name))
+
+    return true
   }
 
   /**
@@ -501,7 +536,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Remove all items from the cache
    */
   async clear() {
-    await Promise.all([this.#localDriver.clear(), this.#remoteDriver?.clear()])
+    await Promise.all([this.#localDriver?.clear(), this.#remoteDriver?.clear()])
     this.emit(new CacheCleared(this.name))
   }
 
@@ -509,6 +544,10 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Closes the connection to the cache
    */
   async disconnect() {
-    await Promise.all([this.#localDriver.disconnect(), this.#remoteDriver?.disconnect()])
+    await Promise.all([
+      this.#localDriver?.disconnect(),
+      this.#remoteDriver?.disconnect(),
+      this.#bus?.disconnect(),
+    ])
   }
 }

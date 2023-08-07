@@ -7,6 +7,7 @@
  * file that was distributed with this source code.
  */
 
+import type { BusDriver } from './bus.js'
 import type { CacheDriver } from './driver.js'
 import type { TTL } from './helpers.js'
 
@@ -15,6 +16,7 @@ export * from './options.js'
 export * from './helpers.js'
 export * from './driver.js'
 export * from './provider.js'
+export * from './bus.js'
 
 export type RawCacheOptions = {
   ttl?: TTL
@@ -29,11 +31,10 @@ export type GracefulRetainOptions = {
   delay?: TTL
 }
 
-export type GetOrSetOptions = {
-  gracefulRetain?: GracefulRetainOptions
-  earlyExpiration?: number
-  suppressRemoteCacheErrors?: boolean
-}
+export type GetOrSetOptions = Pick<
+  RawCacheOptions,
+  'earlyExpiration' | 'gracefulRetain' | 'suppressRemoteCacheErrors'
+>
 
 export type CacheDriverFactory = (config: any) => CacheDriver
 
@@ -42,17 +43,28 @@ export type CacheDriverOptions = {
   prefix?: string
 }
 
-export type CreateDriverResult =
-  | {
-      type: 'driver'
-      options: CacheDriverOptions
-      driver: CacheDriverFactory
-    }
-  | {
-      type: 'hybrid'
-      local: Exclude<CreateDriverResult, { type: 'hybrid' }>
-      remote: Exclude<CreateDriverResult, { type: 'hybrid' }>
-    }
+export type CreateDriverResult = {
+  local: {
+    options: CacheDriverOptions
+    factory: CacheDriverFactory
+  }
+  remote?: {
+    options: CacheDriverOptions
+    factory: CacheDriverFactory
+  }
+  bus?: CreateBusDriverResult
+}
+
+export type CacheBusOptions = {
+  //
+}
+
+export type CacheBusFactory = (config: any) => BusDriver
+
+export type CreateBusDriverResult = {
+  options: CacheBusOptions
+  factory: CacheBusFactory
+}
 
 export interface CacheSerializer {
   serialize: (value: any) => string

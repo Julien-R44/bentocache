@@ -1,6 +1,6 @@
 import string from '@poppinss/utils/string'
 import { test } from '@japa/runner'
-import { CacheOptions } from '../../src/cache_options.js'
+import { CacheMethodOptions } from '../../src/cache_options.js'
 
 test.group('Cache Options', () => {
   test('override defaults', ({ assert }) => {
@@ -14,14 +14,14 @@ test.group('Cache Options', () => {
       gracefulRetain: { enabled: false, duration: '1h' },
     }
 
-    const options = new CacheOptions(override, defaults)
+    const options = new CacheMethodOptions(override, defaults)
 
     assert.equal(options.logicalTtl, string.milliseconds.parse('10m'))
     assert.equal(options.physicalTtl, string.milliseconds.parse('30m'))
   })
 
   test('early expiration percentage', ({ assert }) => {
-    const options = new CacheOptions({
+    const options = new CacheMethodOptions({
       ttl: '10m',
       earlyExpiration: 0.1,
     })
@@ -30,7 +30,7 @@ test.group('Cache Options', () => {
   })
 
   test('early expiration percentage with graceful retain', ({ assert }) => {
-    const options = new CacheOptions({
+    const options = new CacheMethodOptions({
       ttl: '10m',
       earlyExpiration: 0.1,
       gracefulRetain: { enabled: true, duration: '30m' },
@@ -40,7 +40,7 @@ test.group('Cache Options', () => {
   })
 
   test('physical ttl should be logical ttl when graceful retain is disabled', ({ assert }) => {
-    const options = new CacheOptions({
+    const options = new CacheMethodOptions({
       ttl: '10m',
     })
 
@@ -50,7 +50,7 @@ test.group('Cache Options', () => {
   test('physical ttl should be graceful retain ttl when graceful retain is enabled', ({
     assert,
   }) => {
-    const options = new CacheOptions({
+    const options = new CacheMethodOptions({
       ttl: '10m',
       gracefulRetain: { enabled: true, duration: '30m' },
     })

@@ -1,0 +1,92 @@
+/*
+ * @adonisjs/cache
+ *
+ * (c) AdonisJS
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+import Emittery from 'emittery'
+import { test } from '@japa/runner'
+import EventEmitter from 'node:events'
+
+import { BentoCache } from '../src/bento_cache.js'
+import { redisDriver } from '../src/drivers/redis.js'
+import { hybridDriver } from '../src/drivers/hybrid.js'
+import { memoryDriver } from '../src/drivers/memory.js'
+import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
+import { BentoCacheFactory } from '../factories/bentocache_factory.js'
+
+test.group('Bento Cache', () => {
+  test('should accept EventEmitter or Emittery', async () => {
+    // This test only rely type-checking
+    new BentoCache({ default: 'memory', stores: { memory: memoryDriver({}) } }, new EventEmitter())
+    new BentoCache({ default: 'memory', stores: { memory: memoryDriver({}) } }, new Emittery())
+  })
+
+  test('Subscribe to an event', async ({ assert }) => {
+    assert.plan(2)
+
+    const { bento } = new BentoCacheFactory().create()
+
+    bento.on('cache:hit', (event) => {
+      assert.equal(event.key, 'foo')
+      assert.equal(event.value, 'bar')
+    })
+
+    await bento.set('foo', 'bar')
+    await bento.get('foo')
+  })
+
+  test('Unsubscribe from an event', async ({ assert }) => {
+    const { bento } = new BentoCacheFactory().create()
+
+    const listener = () => assert.fail()
+
+    bento.on('cache:hit', listener)
+    bento.off('cache:hit', listener)
+
+    await bento.set('foo', 'bar')
+    await bento.get('foo')
+  })
+
+  test('instances of cache should be cached and re-used', async ({ assert }) => {
+    const bento = new BentoCache({
+      default: 'memory',
+      stores: {
+        memory: memoryDriver({}),
+        redis: redisDriver({ connection: REDIS_CREDENTIALS }),
+      },
+    })
+
+    const memory = bento.use('memory')
+    assert.equal(memory, bento.use('memory'))
+
+    const redis = bento.use('redis')
+    assert.equal(redis, bento.use('redis'))
+    assert.equal(memory, bento.use('memory'))
+
+    await bento.disconnectAll()
+  })
+
+  test('create store with hybrid driver', async ({ assert, cleanup }) => {
+    const bento = new BentoCache({
+      default: 'memory',
+      stores: {
+        memory: memoryDriver({}),
+
+        hybrid: hybridDriver({
+          local: memoryDriver({ maxSize: 1000 }),
+          remote: redisDriver({ connection: REDIS_CREDENTIALS }),
+        }),
+      },
+    })
+
+    cleanup(() => bento.disconnectAll())
+
+    await bento.use('hybrid').set('foo', 'bar')
+
+    assert.equal(await bento.use('hybrid').get('foo'), 'bar')
+  })
+})

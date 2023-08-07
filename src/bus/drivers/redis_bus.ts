@@ -1,34 +1,36 @@
-import type { CacheBusMessage, CacheBusPublisher, CacheBusSubscriber } from '../../types/bus.js'
+import { randomUUID } from 'node:crypto'
 import { Redis as IoRedis } from 'ioredis'
 import type { RedisOptions as IoRedisOptions } from 'ioredis'
+import type { BusDriver, CacheBusMessage } from '../../types/bus.js'
 
-export class RedisBus implements CacheBusPublisher, CacheBusSubscriber {
-  #redis: IoRedis
+export class RedisBus implements BusDriver {
+  id = randomUUID()
+  #publisher: IoRedis
+  #subscriber: IoRedis
 
-  constructor(connection: IoRedis | IoRedisOptions) {
-    this.#redis = connection instanceof IoRedis ? connection : new IoRedis(connection)
+  constructor(connection: IoRedisOptions) {
+    this.#subscriber = new IoRedis(connection)
+    this.#publisher = new IoRedis(connection)
   }
+
   async disconnect(): Promise<void> {
-    this.#redis.disconnect()
+    this.#publisher.disconnect()
+    this.#subscriber.disconnect()
   }
 
   async unsubscribe(channel: string): Promise<void> {
-    await this.#redis.unsubscribe(channel)
+    await this.#subscriber.unsubscribe(channel)
   }
 
-  async subscribe(channel: string, handler: (message: CacheBusMessage) => void): Promise<void> {
-    await this.#redis.subscribe(channel, (err, count) => {
+  async subscribe(channelName: string, handler: (message: CacheBusMessage) => void): Promise<void> {
+    this.#subscriber.subscribe(channelName, (err) => {
       if (err) {
         throw err
       }
-
-      console.log(
-        `Subscribed to ${count} channel. Listening for updates on the ${channel} channel.`
-      )
     })
 
-    this.#redis.on('message', (receivedChannel, message) => {
-      if (channel !== receivedChannel) {
+    this.#subscriber.on('message', (receivedChannel, message) => {
+      if (channelName !== receivedChannel) {
         return
       }
 
@@ -36,7 +38,7 @@ export class RedisBus implements CacheBusPublisher, CacheBusSubscriber {
     })
   }
 
-  async publish(channel: string, message: CacheBusMessage): Promise<void> {
-    await this.#redis.publish(channel, JSON.stringify(message))
+  async publish(channelName: string, message: Omit<CacheBusMessage, 'busId'>): Promise<void> {
+    await this.#publisher.publish(channelName, JSON.stringify({ busId: this.id, ...message }))
   }
 }

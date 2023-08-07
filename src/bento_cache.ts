@@ -21,7 +21,7 @@ import type {
   RawCacheOptions,
 } from './types/main.js'
 import { resolveTtl } from './helpers.js'
-import { Cache } from './providers/cache.js'
+import { Cache } from './cache.js'
 import type { CacheProvider } from './types/provider.js'
 
 export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
@@ -76,20 +76,24 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
   }
 
   #createProvider(cacheName: string, registry: CreateDriverResult): CacheProvider {
-    if (registry.type === 'hybrid') {
-      throw new Error('Hybrid drivers are not supported by the cache manager')
+    const localDriverOptions = {
+      prefix: registry.local.options.prefix || this.#prefix,
+      ttl: resolveTtl(registry.local.options.ttl, this.#ttl),
+      gracefulRetain: this.#gracefulRetain,
     }
 
-    const driverOptions = {
-      prefix: registry.options.prefix || this.#prefix,
-      ttl: resolveTtl(registry.options.ttl, this.#ttl),
+    const remoteDriverOptions = {
+      prefix: registry.remote?.options.prefix || this.#prefix,
+      ttl: resolveTtl(registry.remote?.options.ttl, this.#ttl),
       gracefulRetain: this.#gracefulRetain,
     }
 
     return new Cache(cacheName, {
-      localDriver: registry.driver(driverOptions),
+      localDriver: registry.local.factory(localDriverOptions),
+      remoteDriver: registry.remote?.factory(remoteDriverOptions),
+      busDriver: registry.bus?.factory(registry.bus.options),
       emitter: this.#emitter,
-      ttl: driverOptions.ttl,
+      ttl: localDriverOptions.ttl,
       gracefulRetain: this.#gracefulRetain,
     })
   }
