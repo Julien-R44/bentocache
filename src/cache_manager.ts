@@ -16,12 +16,17 @@ import type {
   KeyValueObject,
   TTL,
   GracefulRetainOptions,
+  Factory,
+  GetOrSetOptions,
+  RawCacheOptions,
 } from './types/main.js'
 import { resolveTtl } from './helpers.js'
 import { Cache } from './providers/cache.js'
 import type { CacheProvider } from './types/provider.js'
 
-export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>> {
+export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>>
+  implements CacheProvider
+{
   #config: {
     default?: keyof KnownCaches
     stores: KnownCaches
@@ -146,8 +151,10 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
   /**
    * Get a value from the cache
    */
-  async get<T>(key: string): Promise<T | null> {
-    return this.use().get(key) as T
+  get<T = any>(key: string): Promise<T | undefined | null>
+  get<T = any>(key: string, defaultValue: Factory<T>): Promise<T>
+  async get<T = any>(key: string, defaultValue?: Factory<T>): Promise<T> {
+    return this.use().get<T>(key, defaultValue)
   }
 
   /**
@@ -155,16 +162,16 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
    * Will return an array of objects with `key` and `value` properties
    * If a value is not found, `value` will be undefined
    */
-  async getMany(keys: string[]) {
-    return this.use().getMany(keys)
+  async getMany<T>(keys: string[], defaultValues?: T[]): Promise<KeyValueObject<T>[]> {
+    return this.use().getMany(keys, defaultValues)
   }
 
   /**
    * Put a value in the cache
    * Returns true if the value was set, false otherwise
    */
-  async set(key: string, value: any, ttl?: number) {
-    return this.use().set(key, value, ttl)
+  async set(key: string, value: any, options?: RawCacheOptions) {
+    return this.use().set(key, value, options)
   }
 
   /**
@@ -186,16 +193,21 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory and return it
    */
-  async getOrSet() {
-    // TODO
+  async getOrSet<T>(
+    key: string,
+    ttlOrFactory: TTL | Factory<T>,
+    factoryOrOptions?: Factory<T> | GetOrSetOptions,
+    maybeOptions?: GetOrSetOptions
+  ): Promise<T> {
+    return this.use().getOrSet(key, ttlOrFactory, factoryOrOptions, maybeOptions)
   }
 
   /**
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory forever and return it
    */
-  async getOrSetForever() {
-    // TODO
+  getOrSetForever<T>(key: string, cb: Factory<T>, opts?: GetOrSetOptions): Promise<T> {
+    return this.use().getOrSetForever(key, cb, opts)
   }
 
   /**
@@ -217,8 +229,8 @@ export class CacheManager<KnownCaches extends Record<string, CreateDriverResult>
    *
    * Returns the value if the key exists, undefined otherwise
    */
-  async pull(key: string) {
-    return this.use().pull(key)
+  async pull<T = any>(key: string) {
+    return this.use().pull<T>(key)
   }
 
   /**

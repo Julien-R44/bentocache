@@ -13,7 +13,7 @@ import { setTimeout } from 'node:timers/promises'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { throwingFactory, waitAndReturnFactory } from '../../test_helpers/index.js'
 
-test.group('Cache | getOrSet', (group) => {
+test.group('Cache | getOrSet', () => {
   test('getOrSet() returns value when key exists', async ({ assert }) => {
     const { cache } = new CacheFactory().create()
 

@@ -8,9 +8,12 @@
 export type TTL = number | string
 
 /**
- * A type that represents either a value or a promise that resolves to that value.
+ * A factory is a function that returns a value or a promise of a value
  */
 export type MaybePromise<T> = T | Promise<T>
 
 export type CachedValue = any
-export type KeyValueObject = { key: string; value: string | undefined }
+
+export type KeyValueObject<T = any> = { key: string; value: T | undefined }
+
+export type Factory<T = any> = T | (() => T) | Promise<T> | (() => Promise<T>)

@@ -25,8 +25,8 @@ type FactoryParameters = {
 }
 
 export class CacheFactory {
-  #localDriver: CacheDriver
-  #remoteDriver: CacheDriver
+  #localDriver?: CacheDriver
+  #remoteDriver?: CacheDriver
   #parameters: Partial<FactoryParameters> = {
     gracefulRetain: { enabled: false },
   }
@@ -76,7 +76,7 @@ export class CacheFactory {
       remoteDriver: this.#remoteDriver,
       emitter: this.#getEmitter(),
       ttl: this.#parameters.ttl,
-      gracefulRetain: this.#parameters.gracefulRetain,
+      gracefulRetain: this.#parameters.gracefulRetain!,
       earlyExpiration: this.#parameters.earlyExpiration,
     })
 

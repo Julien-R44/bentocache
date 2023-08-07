@@ -24,10 +24,11 @@ import type { CacheProvider, CacheProviderOptions } from '../types/provider.js'
 import type {
   CacheDriver,
   CachedValue,
-  Factory,
   GetOrSetOptions,
   RawCacheOptions,
   TTL,
+  Factory,
+  KeyValueObject,
 } from '../types/main.js'
 import { RemoteCache } from '../remote_cache.js'
 
@@ -46,7 +47,7 @@ export class Cache extends BaseProvider implements CacheProvider {
     }
   }
 
-  #resolveDefaultValue(defaultValue?: CachedValue | (() => CachedValue)) {
+  #resolveDefaultValue(defaultValue?: Factory) {
     return is.function_(defaultValue) ? defaultValue() : defaultValue ?? undefined
   }
 
@@ -54,7 +55,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Set a value in the cache
    */
   async #set(key: string, item: any, ttl?: number) {
-    const serializedValue = await this.serialize(item)
+    const serializedValue = this.serialize(item)
     const result = await this.#localDriver.set(key, serializedValue, ttl)
     if (result) {
       this.emit(new CacheWritten(key, item.value, this.name))
@@ -89,10 +90,9 @@ export class Cache extends BaseProvider implements CacheProvider {
     })
   }
 
-  /**
-   * Get a value from the cache
-   */
-  async get(key: string, defaultValue?: CachedValue | (() => CachedValue)) {
+  get<T = any>(key: string): Promise<T | undefined | null>
+  get<T = any>(key: string, defaultValue: Factory<T>): Promise<T>
+  async get<T = any>(key: string, defaultValue?: Factory<T>): Promise<T | undefined | null> {
     let localCacheItem: CacheItem | undefined
     let remoteCacheItem: CacheItem | undefined
 
@@ -177,10 +177,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Will return an array of objects with `key` and `value` properties
    * If a value is not found, `value` will be undefined
    */
-  async getMany(
-    keys: string[],
-    defaultValues?: CachedValue[] | (() => CachedValue[]) | undefined
-  ): Promise<{ key: string; value: CachedValue | undefined }[]> {
+  async getMany<T>(keys: string[], defaultValues?: Factory<T[]>): Promise<KeyValueObject<T>[]> {
     const result = await this.#localDriver.getMany(keys)
     const resolvedDefaultValues = this.#resolveDefaultValue(defaultValues)
 
@@ -232,7 +229,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Set a value in the cache forever
    * Returns true if the value was set, false otherwise
    */
-  async setForever<T extends CachedValue>(key: string, value: T) {
+  async setForever<T>(key: string, value: T) {
     return this.#set(key, { value })
   }
 
@@ -416,12 +413,12 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory and return it
    */
-  async getOrSet(
+  async getOrSet<T>(
     key: string,
-    ttlOrFactory: TTL | Factory,
-    factoryOrOptions?: Factory | GetOrSetOptions,
+    ttlOrFactory: TTL | Factory<T>,
+    factoryOrOptions?: Factory<T> | GetOrSetOptions,
     maybeOptions?: GetOrSetOptions
-  ) {
+  ): Promise<T> {
     let { factory, options } = this.resolveGetSetOptions(
       ttlOrFactory,
       factoryOrOptions,
@@ -435,10 +432,10 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory forever and return it
    */
-  async getOrSetForever(
+  async getOrSetForever<T>(
     key: string,
     factory: () => CachedValue | Promise<CachedValue>
-  ): Promise<CachedValue> {
+  ): Promise<T> {
     return this.#getOrSet(key, factory, this.foreverCacheOptions())
   }
 
@@ -462,7 +459,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    *
    * Returns the value if the key exists, undefined otherwise
    */
-  async pull(key: string) {
+  async pull<T = any>(key: string): Promise<T | undefined | null> {
     const result = await this.#localDriver.pull(key)
     const item = is.undefined(result) ? undefined : await this.deserialize(result)
 

@@ -3,7 +3,7 @@ import { RedisBus } from '../../src/bus/drivers/redis_bus.js'
 import { REDIS_CREDENTIALS } from '../../test_helpers/index.js'
 import { CacheBusMessageType } from '../../src/types/bus.js'
 
-test.group('Redis Bus', (group) => {
+test.group('Redis Bus', () => {
   test('Simple pub/sub', async ({ assert }, done) => {
     const a = new RedisBus(REDIS_CREDENTIALS)
     const b = new RedisBus(REDIS_CREDENTIALS)

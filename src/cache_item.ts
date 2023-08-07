@@ -1,5 +1,4 @@
 import { JsonSerializer } from './serializers/json.js'
-import type { CacheSerializer } from './types/main.js'
 
 /**
  * Represents a cache item stored inside a distributed cache driver.

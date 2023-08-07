@@ -55,7 +55,7 @@ export abstract class BaseProvider {
    * since it can be called in different ways
    */
   protected resolveGetSetOptions(
-    ttlOrFactory: TTL | (() => Factory),
+    ttlOrFactory: TTL | Factory,
     factoryOrOptions?: Factory | GetOrSetOptions,
     options?: GetOrSetOptions
   ) {

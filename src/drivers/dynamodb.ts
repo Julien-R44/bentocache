@@ -12,7 +12,6 @@ import {
   GetItemCommand,
   PutItemCommand,
   DeleteItemCommand,
-  UpdateItemCommand,
   BatchWriteItemCommand,
   ScanCommand,
   type AttributeValue,

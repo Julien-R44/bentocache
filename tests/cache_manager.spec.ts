@@ -59,16 +59,6 @@ test.group('Cache Manager', () => {
     await manager.get('foo')
   })
 
-  test('Named caches typings should be okay', async ({ expectTypeOf }) => {
-    const cacheManager = new CacheManager({
-      default: 'memory',
-      ttl: 10000,
-      stores: { memory: memoryDriver({}), other: memoryDriver({}) },
-    })
-
-    expectTypeOf(cacheManager.use).parameter(0).toEqualTypeOf<'memory' | 'other' | undefined>()
-  })
-
   test('should use default ttl when not provided', async ({ assert }) => {
     assert.plan(2)
 

@@ -313,6 +313,6 @@ test.group('Cache | getOrSet', () => {
       suppressRemoteCacheErrors: false,
     })
 
-    await assert.rejects(() => r2, /Chaos: Random error/)
+    await assert.rejects(() => r2, 'Chaos: Random error')
   })
 })

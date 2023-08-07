@@ -62,17 +62,6 @@ test.group('Cache events', () => {
     })
   })
 
-  // TODO
-  test('dont emit cache:written event if set() failed', async ({ assert }) => {
-    const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
-
-    cache.set('key', 'value', -1).catch(() => {})
-
-    const event = await pEvent(emitter, 'cache:written', { timeout: 300 }).catch(() => undefined)
-    assert.isUndefined(event)
-  }).skip()
-
   test('emit cache:deleted event when calling delete()', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()

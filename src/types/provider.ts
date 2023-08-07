@@ -1,42 +1,86 @@
 import type { CacheDriver } from './driver.js'
-import type { TTL } from './helpers.js'
+import type { Factory, KeyValueObject, TTL } from './helpers.js'
 import type {
   CacheSerializer,
   Emitter,
-  Factory,
   GetOrSetOptions,
   GracefulRetainOptions,
+  RawCacheOptions,
 } from './main.js'
 
 /**
  * A cache provider is a class that wraps an underlying cache driver
  * to provide additional features.
  */
-export interface CacheProvider extends CacheDriver {
+export interface CacheProvider {
+  /**
+   * Set a value in the cache
+   * Returns true if the value was set, false otherwise
+   */
+  set(key: string, value: any, options?: RawCacheOptions): Promise<boolean>
+
   /**
    * Set a value in the cache forever
    */
-  setForever(key: string, value: string): Promise<boolean>
+  setForever(key: string, value: any): Promise<boolean>
+
+  /**
+   * Get a value from the cache
+   *
+   * @param key Key to get
+   */
+  get<T>(key: string): Promise<T | undefined | null>
+
+  /**
+   * Get a value from the cache, fallback to a default value
+   *
+   * @param key Key to get
+   * @param defaultValue Default value if the key is not found
+   */
+  get<T>(key: string, defaultValue?: Factory<T>): Promise<T>
+
+  /**
+   * Get many values from the cache
+   * Will return an array of objects with `key` and `value` properties
+   * If a value is not found, `value` will be undefined
+   */
+  getMany<T>(keys: string[], defaultValue?: Factory<T[]>): Promise<KeyValueObject<T>[]>
 
   /**
    * Get or set a value in the cache
    */
-  getOrSet(key: string, cb: Factory, opts?: GetOrSetOptions): Promise<any>
+  getOrSet<T>(key: string, cb: Factory<T>, opts?: GetOrSetOptions): Promise<T>
 
   /**
    * Get or set a value in the cache with a specific TTL
    */
-  getOrSet(key: string, ttl: TTL, cb: Factory, opts?: GetOrSetOptions): Promise<any>
+  getOrSet<T>(key: string, ttl: TTL, cb: Factory<T>, opts?: GetOrSetOptions): Promise<T>
+
+  getOrSet<T>(
+    key: string,
+    ttlOrFactory: TTL | Factory<T>,
+    factoryOrOptions?: Factory<T> | GetOrSetOptions,
+    maybeOptions?: GetOrSetOptions
+  ): Promise<T>
 
   /**
    * Get or set a value in the cache forever
    */
-  getOrSetForever(key: string, cb: Factory, opts?: GetOrSetOptions): Promise<any>
+  getOrSetForever<T>(key: string, cb: Factory<T>, opts?: GetOrSetOptions): Promise<T>
 
   /**
    * Check if a key is missing from the cache
    */
   missing(key: string): Promise<boolean>
+
+  namespace(namespace: string): CacheProvider
+  setMany(values: KeyValueObject[]): Promise<boolean>
+  has(key: string): Promise<boolean>
+  pull<T = any>(key: string): Promise<T | undefined | null>
+  delete(key: string): Promise<boolean>
+  deleteMany(keys: string[]): Promise<boolean>
+  clear(): Promise<void>
+  disconnect(): Promise<void>
 }
 
 export type CacheProviderOptions = {

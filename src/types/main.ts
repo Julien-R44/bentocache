@@ -8,15 +8,13 @@
  */
 
 import type { CacheDriver } from './driver.js'
-import type { CachedValue, MaybePromise, TTL } from './helpers.js'
+import type { TTL } from './helpers.js'
 
 export * from './events.js'
 export * from './options.js'
 export * from './helpers.js'
 export * from './driver.js'
 export * from './provider.js'
-
-export type Factory = () => MaybePromise<CachedValue>
 
 export type RawCacheOptions = {
   ttl?: TTL
