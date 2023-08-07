@@ -407,6 +407,9 @@ export class Cache extends BaseProvider implements CacheProvider {
         await this.#localDriver.set(key, this.serialize(newCacheItem), options.physicalTtl)
       }
 
+      this.emit(new CacheMiss(key, this.name))
+      this.emit(new CacheWritten(key, newCacheItem.value, this.name))
+
       debug('getOrSet(): set value in cache %o', {
         cacheItem: newCacheItem,
         physicalTtl: options.physicalTtl,

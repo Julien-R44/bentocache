@@ -24,6 +24,8 @@ test.group('Utils', () => {
 
     bus1.subscribe('channel', () => assert.fail())
     bus1.publish('channel', { data: 'test' } as any)
+
+    bus1.disconnect()
   })
 
   test('Two memory bus instances should be able to communicate', ({ assert }) => {
@@ -34,5 +36,8 @@ test.group('Utils', () => {
 
     bus1.subscribe('channel', (message: any) => assert.equal(message.data, 'test'))
     bus2.publish('channel', { data: 'test' } as any)
+
+    bus1.disconnect()
+    bus2.disconnect()
   })
 })

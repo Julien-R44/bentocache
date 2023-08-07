@@ -220,17 +220,20 @@ test.group('Cache events', () => {
     })
   })
 
-  test('getOrSet should emit cache:written when value is not found', async ({ assert }) => {
+  test('getOrSet should emit cache:written and cache:miss when value is not found', async ({
+    assert,
+  }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
 
     cache.getOrSet('foo', () => 'baz')
 
-    const event = await pEvent(emitter, 'cache:written')
-    assert.deepEqual(event, {
-      key: 'foo',
-      value: 'baz',
-      store: 'primary',
-    })
+    const [writtenEvents, missEvents] = await Promise.all([
+      pEvent(emitter, 'cache:written'),
+      pEvent(emitter, 'cache:miss'),
+    ])
+
+    assert.deepEqual(writtenEvents, { key: 'foo', value: 'baz', store: 'primary' })
+    assert.deepEqual(missEvents, { key: 'foo', store: 'primary' })
   })
 })

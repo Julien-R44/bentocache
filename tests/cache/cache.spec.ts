@@ -463,13 +463,13 @@ test.group('Cache', () => {
   })
 
   test('earlyexpiration of >= 0 or <= 1 should be ignored', async ({ assert }) => {
-    const { cache, driver } = new CacheFactory().withHybridConfig().merge({ ttl: 100 }).create()
+    const { cache, local } = new CacheFactory().withHybridConfig().merge({ ttl: 100 }).create()
 
     await cache.getOrSet('key1', () => ({ foo: 'bar' }), { earlyExpiration: 1 })
     await cache.getOrSet('key2', () => ({ foo: 'bar' }), { earlyExpiration: 0 })
 
-    assert.notInclude(driver.get('key1'), 'earlyExpiration')
-    assert.notInclude(driver.get('key2'), 'earlyExpiration')
+    assert.notInclude(local.get('key1'), 'earlyExpiration')
+    assert.notInclude(local.get('key2'), 'earlyExpiration')
   })
 
   test('early refresh should re-increment physical/logical ttls', async ({ assert }) => {
@@ -781,13 +781,13 @@ test.group('Cache', () => {
   })
 
   test('earlyexpiration of >= 0 or <= 1 should be ignored', async ({ assert }) => {
-    const { cache, driver } = new CacheFactory().merge({ ttl: 100 }).create()
+    const { cache, local } = new CacheFactory().merge({ ttl: 100 }).create()
 
     await cache.getOrSet('key1', () => ({ foo: 'bar' }), { earlyExpiration: 1 })
     await cache.getOrSet('key2', () => ({ foo: 'bar' }), { earlyExpiration: 0 })
 
-    assert.notInclude(driver.get('key1'), 'earlyExpiration')
-    assert.notInclude(driver.get('key2'), 'earlyExpiration')
+    assert.notInclude(local.get('key1'), 'earlyExpiration')
+    assert.notInclude(local.get('key2'), 'earlyExpiration')
   })
 
   test('early refresh should re-increment physical/logical ttls', async ({ assert }) => {
