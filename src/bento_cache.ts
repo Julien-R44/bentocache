@@ -167,15 +167,6 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
   }
 
   /**
-   * Get many values from the cache
-   * Will return an array of objects with `key` and `value` properties
-   * If a value is not found, `value` will be undefined
-   */
-  async getMany<T>(keys: string[], defaultValues?: T[]): Promise<KeyValueObject<T>[]> {
-    return this.use().getMany(keys, defaultValues)
-  }
-
-  /**
    * Put a value in the cache
    * Returns true if the value was set, false otherwise
    */
@@ -189,13 +180,6 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
    */
   async setForever(key: string, value: any) {
     return this.use().setForever(key, value)
-  }
-
-  /**
-   * Set many values in the cache
-   */
-  async setMany(values: KeyValueObject[]) {
-    return this.use().setMany(values)
   }
 
   /**

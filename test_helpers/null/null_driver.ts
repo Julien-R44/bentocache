@@ -18,19 +18,11 @@ export class NullDriver extends BaseDriver implements CacheDriver {
     return undefined
   }
 
-  getMany(_keys: string[]) {
-    return []
-  }
-
   pull(_key: string) {
     return undefined
   }
 
   set(_key: string, _value: string, _ttl?: number | undefined) {
-    return true
-  }
-
-  setMany(_values: KeyValueObject[], _ttl?: number | undefined) {
     return true
   }
 

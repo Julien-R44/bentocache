@@ -97,15 +97,6 @@ export class File extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Get many values from the cache
-   * Will return an array of objects with `key` and `value` properties
-   * If a value is not found, `value` will be undefined
-   */
-  async getMany(keys: string[]) {
-    return await Promise.all(keys.map(async (key) => ({ key: key, value: await this.get(key) })))
-  }
-
-  /**
    * Get the value of a key and delete it
    *
    * Returns the value if the key exists, undefined otherwise
@@ -131,15 +122,6 @@ export class File extends BaseDriver implements CacheDriver {
       this.#keyToPath(key),
       JSON.stringify([value, ttl ? Date.now() + ttl : -1])
     )
-
-    return true
-  }
-
-  /**
-   * Set many values in the cache
-   */
-  async setMany(values: { key: string; value: any }[], ttl?: number) {
-    await Promise.all(values.map((value) => this.set(value.key, value.value, ttl)))
 
     return true
   }

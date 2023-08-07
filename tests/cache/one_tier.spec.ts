@@ -5,25 +5,6 @@ import { throwingFactory, waitAndReturnFactory } from '../../test_helpers/index.
 import { CacheFactory } from '../../factories/cache_factory.js'
 
 test.group('One tier tests', () => {
-  test('getMany() with default value', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
-
-    await cache.setMany([{ key: 'key1', value: 'value1' }])
-
-    const result = await cache.getMany(
-      ['key1', 'key2', 'key3'],
-      ['default1', 'default2', 'default3']
-    )
-
-    assert.deepEqual(result, [
-      { key: 'key1', value: 'value1' },
-      { key: 'key2', value: 'default2' },
-      { key: 'key3', value: 'default3' },
-    ])
-  })
-
-  // TODO more get many tests
-
   test('get() returns deserialized value', async ({ assert }) => {
     const { cache } = new CacheFactory().create()
 

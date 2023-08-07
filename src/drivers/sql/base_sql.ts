@@ -90,28 +90,6 @@ export abstract class BaseSql extends BaseDriver {
   }
 
   /**
-   * Get many values from the cache
-   * Will return an array of objects with `key` and `value` properties
-   * If a value is not found, `value` will be undefined
-   */
-  async getMany(keys: string[]) {
-    await this.initialized
-
-    const result = await this.connection
-      .from(this.tableName)
-      .select(['key', 'value', 'expires_at'])
-      .whereIn(
-        'key',
-        keys.map((key) => this.getItemKey(key))
-      )
-
-    return keys.map((key) => ({
-      key: key,
-      value: result.find((item) => item.key === this.getItemKey(key))?.value,
-    }))
-  }
-
-  /**
    * Get the value of a key and delete it
    *
    * Returns the value if the key exists, undefined otherwise
@@ -139,26 +117,6 @@ export abstract class BaseSql extends BaseDriver {
         value: value,
         expires_at: ttl ? new Date(Date.now() + ttl) : null,
       })
-      .onConflict('key')
-      .merge(['value', 'expires_at'])
-
-    return true
-  }
-
-  /**
-   * Set many values in the cache
-   */
-  async setMany(values: { key: string; value: any }[], ttl?: number) {
-    await this.initialized
-    await this.connection
-      .from(this.tableName)
-      .insert(
-        values.map((value) => ({
-          key: this.getItemKey(value.key),
-          value: value.value,
-          expires_at: ttl ? new Date(Date.now() + ttl) : null,
-        }))
-      )
       .onConflict('key')
       .merge(['value', 'expires_at'])
 

@@ -62,11 +62,6 @@ export class ChaosCache implements CacheDriver {
     return this.#innerCache.get(key)
   }
 
-  async getMany(keys: string[]) {
-    await this.#chaosInjector.injectChaos()
-    return this.#innerCache.getMany(keys)
-  }
-
   async pull(key: string) {
     await this.#chaosInjector.injectChaos()
     return this.#innerCache.pull(key)
@@ -75,11 +70,6 @@ export class ChaosCache implements CacheDriver {
   async set(key: string, value: string, ttl?: number | undefined) {
     await this.#chaosInjector.injectChaos()
     return this.#innerCache.set(key, value, ttl)
-  }
-
-  async setMany(values: KeyValueObject[], ttl?: number | undefined) {
-    await this.#chaosInjector.injectChaos()
-    return this.#innerCache.setMany(values, ttl)
   }
 
   async has(key: string) {

@@ -204,30 +204,6 @@ export class Cache extends BaseProvider implements CacheProvider {
   }
 
   /**
-   * Get many values from the cache
-   * Will return an array of objects with `key` and `value` properties
-   * If a value is not found, `value` will be undefined
-   */
-  async getMany<T>(keys: string[], defaultValues?: Factory<T[]>): Promise<KeyValueObject<T>[]> {
-    const result = await this.#localDriver.getMany(keys)
-    const resolvedDefaultValues = this.#resolveDefaultValue(defaultValues)
-
-    const deserializedValuesPromises = keys.map(async (key, index) => {
-      if (is.nullOrUndefined(result[index].value)) {
-        this.emit(new CacheMiss(key, this.name))
-        return { key, value: resolvedDefaultValues?.[index] }
-      }
-
-      const value = await this.deserialize(result[index].value!)
-      this.emit(new CacheHit(key, value, this.name))
-
-      return { key, value }
-    })
-
-    return await Promise.all(deserializedValuesPromises)
-  }
-
-  /**
    * Set a value in the cache
    * Returns true if the value was set, false otherwise
    */
@@ -243,25 +219,6 @@ export class Cache extends BaseProvider implements CacheProvider {
   async setForever<T>(key: string, value: T, rawOptions?: RawCacheOptions) {
     const options = this.defaultCacheOptions.cloneWith({ ttl: null, ...rawOptions })
     return this.#set(key, value, options)
-  }
-
-  /**
-   * Set many values in the cache
-   */
-  async setMany(values: { key: string; value: CachedValue }[], ttl?: number) {
-    const serializedValuesPromises = values.map(async (value) => ({
-      key: value.key,
-      value: this.serialize(value.value),
-    }))
-
-    const serializedValues = await Promise.all(serializedValuesPromises)
-
-    const result = await this.#localDriver.setMany(serializedValues, resolveTtl(ttl))
-    if (result) {
-      values.forEach((value) => this.emit(new CacheWritten(value.key, value.value!, this.name)))
-    }
-
-    return result
   }
 
   async #earlyExpirationRefresh(key: string, factory: Factory, options: CacheItemOptions) {

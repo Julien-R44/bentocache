@@ -46,15 +46,6 @@ export class Memory extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Get many values from the cache
-   * Will return an array of objects with `key` and `value` properties
-   * If a value is not found, `value` will be undefined
-   */
-  getMany(keys: string[]) {
-    return keys.map((key) => ({ key: key, value: this.get(key) }))
-  }
-
-  /**
    * Get the value of a key and delete it
    *
    * Returns the value if the key exists, undefined otherwise
@@ -75,17 +66,6 @@ export class Memory extends BaseDriver implements CacheDriver {
    */
   set<T extends CachedValue>(key: string, value: T, ttl?: number) {
     this.#lru.set(this.getItemKey(key), value, { maxAge: ttl ?? Number.POSITIVE_INFINITY })
-    return true
-  }
-
-  /**
-   * Set many values in the cache
-   */
-  setMany(values: { key: string; value: CachedValue }[], ttl?: number) {
-    for (const { key, value } of values) {
-      this.set(key, value, ttl)
-    }
-
     return true
   }
 

@@ -51,13 +51,6 @@ export interface CacheProvider {
   get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOrSetOptions): Promise<T>
 
   /**
-   * Get many values from the cache
-   * Will return an array of objects with `key` and `value` properties
-   * If a value is not found, `value` will be undefined
-   */
-  getMany<T>(keys: string[], defaultValue?: Factory<T[]>): Promise<KeyValueObject<T>[]>
-
-  /**
    * Get or set a value in the cache
    */
   getOrSet<T>(key: string, cb: Factory<T>, opts?: GetOrSetOptions): Promise<T>
@@ -85,7 +78,6 @@ export interface CacheProvider {
   missing(key: string): Promise<boolean>
 
   namespace(namespace: string): CacheProvider
-  setMany(values: KeyValueObject[]): Promise<boolean>
   has(key: string): Promise<boolean>
   pull<T = any>(key: string): Promise<T | undefined | null>
   delete(key: string): Promise<boolean>

@@ -180,33 +180,6 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Get many values from the cache
-   * Will return an array of objects with `key` and `value` properties
-   * If a value is not found, `value` will be undefined
-   */
-  async getMany(keys: string[]) {
-    const command = new BatchGetItemCommand({
-      RequestItems: {
-        [this.#tableName]: {
-          Keys: keys.map((key) => ({ key: { S: this.getItemKey(key) } })),
-        },
-      },
-    })
-
-    const result = await this.#client.send(command)
-    return keys.map((key) => {
-      const items = result.Responses?.[this.#tableName] ?? []
-      const item = items.find((i) => i.key.S === this.getItemKey(key))
-
-      if (!item || this.#isItemExpired(item)) {
-        return { key, value: undefined }
-      }
-
-      return { key, value: item.value.S ?? item.value.N }
-    })
-  }
-
-  /**
    * Get the value of a key and delete it
    *
    * Returns the value if the key exists, undefined otherwise
@@ -229,23 +202,6 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
     const command = new PutItemCommand({
       TableName: this.#tableName,
       Item: this.#createItemPayload(key, value, ttl),
-    })
-
-    await this.#client.send(command)
-
-    return true
-  }
-
-  /**
-   * Set many values in the cache
-   */
-  async setMany(values: { key: string; value: any }[], ttl?: number) {
-    const requests = values.map(({ key, value }) => ({
-      PutRequest: { Item: this.#createItemPayload(key, value, ttl) },
-    }))
-
-    const command = new BatchWriteItemCommand({
-      RequestItems: { [this.#tableName]: requests },
     })
 
     await this.#client.send(command)

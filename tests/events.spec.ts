@@ -124,33 +124,6 @@ test.group('Cache events', () => {
     assert.isUndefined(hitEvent)
   })
 
-  test('getMany() should emit cache:miss and cache:hit events', async ({ assert }) => {
-    const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
-
-    await cache.setMany([
-      { key: 'key1', value: 'value1' },
-      { key: 'key3', value: 'value3' },
-    ])
-
-    cache.getMany(['key1', 'key2', 'key3', 'key4'])
-
-    const [missEvents, hitEvents] = await Promise.all([
-      pEventMultiple(emitter, 'cache:miss', { count: 2 }),
-      pEventMultiple(emitter, 'cache:hit', { count: 2 }),
-    ])
-
-    assert.deepEqual(missEvents, [
-      { key: 'key2', store: 'primary' },
-      { key: 'key4', store: 'primary' },
-    ])
-
-    assert.deepEqual(hitEvents, [
-      { key: 'key1', value: 'value1', store: 'primary' },
-      { key: 'key3', value: 'value3', store: 'primary' },
-    ])
-  })
-
   test('clear() should emit cache:cleared event', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
@@ -163,30 +136,12 @@ test.group('Cache events', () => {
     })
   })
 
-  test('setMany() should emit cache:written events', async ({ assert }) => {
-    const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
-
-    cache.setMany([
-      { key: 'key1', value: 'value1' },
-      { key: 'key2', value: 'value2' },
-    ])
-
-    const events = await pEventMultiple(emitter, 'cache:written', { count: 2 })
-    assert.deepEqual(events, [
-      { key: 'key1', store: 'primary', value: 'value1' },
-      { key: 'key2', store: 'primary', value: 'value2' },
-    ])
-  })
-
   test('deleteMany() should emit cache:deleted events', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
 
-    await cache.setMany([
-      { key: 'key1', value: 'value1' },
-      { key: 'key2', value: 'value2' },
-    ])
+    await cache.set('key1', 'value1')
+    await cache.set('key2', 'value2')
 
     cache.deleteMany(['key1', 'key2'])
 

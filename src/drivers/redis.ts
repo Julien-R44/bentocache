@@ -50,21 +50,6 @@ export class Redis extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Get many values from the cache
-   * Will return an array of objects with `key` and `value` properties
-   * If a value is not found, `value` will be undefined
-   */
-  async getMany(keys: string[]) {
-    const prefixedKeys = keys.map((key) => this.getItemKey(key))
-    const result = await this.#connection.mget(prefixedKeys)
-
-    return keys.map((key, index) => ({
-      key: key,
-      value: result[index] ?? undefined,
-    }))
-  }
-
-  /**
    * Get the value of a key and delete it
    *
    * Returns the value if the key exists, undefined otherwise
@@ -89,24 +74,6 @@ export class Redis extends BaseDriver implements CacheDriver {
 
     const result = await this.#connection.set(key, value, 'PX', ttl)
     return result === 'OK'
-  }
-
-  /**
-   * Set many values in the cache
-   */
-  async setMany(values: { key: string; value: CachedValue }[], ttl?: number) {
-    const prefixedValues = values.map((value) => ({
-      key: this.getItemKey(value.key),
-      value: value.value,
-    }))
-
-    const commands = prefixedValues.map((value) =>
-      ['set', value.key, value.value].concat(ttl ? ['PX', ttl] : [])
-    )
-
-    await this.#connection.multi(commands).exec()
-
-    return true
   }
 
   /**

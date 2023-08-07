@@ -75,18 +75,6 @@ export class CloudflareKv extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Get many values from the cache
-   * Will return an array of objects with `key` and `value` properties
-   * If a value is not found, `value` will be undefined
-   *
-   * Note that cloudflare kv does not support bulk get.
-   * so we have to do it one by one
-   */
-  getMany(keys: string[]) {
-    return Promise.all(keys.map(async (key) => ({ key, value: await this.get(key) })))
-  }
-
-  /**
    * Get the value of a key and delete it
    *
    * Returns the value if the key exists, undefined otherwise
@@ -113,25 +101,6 @@ export class CloudflareKv extends BaseDriver implements CacheDriver {
       .put(`values/${encodedKey}`, {
         searchParams: { expiration_ttl: ttl },
         body: value,
-      })
-      .json<{ success: boolean }>()
-
-    return result.success === true
-  }
-
-  /**
-   * Set many values in the cache
-   */
-  async setMany(values: KeyValueObject[], ttl?: number | undefined) {
-    ttl = this.#getTtl(ttl)
-
-    const result = await this.#got
-      .put(`bulk`, {
-        json: values.map((value) => ({
-          key: this.getItemKey(value.key),
-          value: value.value,
-          expiration_ttl: ttl,
-        })),
       })
       .json<{ success: boolean }>()
 
