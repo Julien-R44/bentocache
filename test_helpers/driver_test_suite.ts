@@ -244,11 +244,20 @@ export function registerApiTestSuite<T extends CacheDriverConstructor>({
 
     test('should be able to access namespaced key from root if prefixed', async ({ assert }) => {
       const users = cache.namespace('users')
+      const usersPosts = users.namespace('posts')
+
       users.set('key1', 'value1')
+      usersPosts.set('key1', 'value2')
 
-      const result = await cache.get('users:key1')
+      const r1 = await cache.get('users:key1')
+      const r2 = await usersPosts.get('key1')
+      const r3 = await users.get('posts:key1')
+      const r4 = await cache.get('users:posts:key1')
 
-      assert.deepEqual(result, 'value1')
-    })
+      assert.deepEqual(r1, 'value1')
+      assert.deepEqual(r2, 'value2')
+      assert.deepEqual(r3, 'value2')
+      assert.deepEqual(r4, 'value2')
+    }).pin()
   })
 }
