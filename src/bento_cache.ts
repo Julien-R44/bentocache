@@ -18,14 +18,17 @@ import type {
   Factory,
   GetOrSetOptions,
   RawCacheOptions,
+  Logger,
 } from './types/main.js'
 import { resolveTtl } from './helpers.js'
 import { Cache } from './cache.js'
 import type { CacheProvider } from './types/provider.js'
+import { noopLogger } from 'typescript-log'
 
 export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
   implements CacheProvider
 {
+  // todo update interface
   #config: {
     default?: keyof KnownCaches
     stores: KnownCaches
@@ -51,15 +54,19 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
   #prefix?: string
 
   #gracefulRetain: GracefulRetainOptions
+  #logger: Logger
 
   constructor(
+    // todo update interface
     config: {
       default?: keyof KnownCaches
       stores: KnownCaches
       ttl?: TTL
       prefix?: string
       gracefulRetain?: GracefulRetainOptions
+      logger?: Logger
     },
+    // todo move in config
     emitter?: Emitter
   ) {
     this.#config = config
@@ -72,6 +79,9 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
       duration: '6h',
       delay: '30s',
     }
+
+    this.#logger = (config.logger || noopLogger()).child({ pkg: 'bentocache' })
+    this.#logger.trace('bentocache initialized')
   }
 
   #createProvider(cacheName: string, registry: CreateDriverResult): CacheProvider {
@@ -92,6 +102,7 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
       remoteDriver: registry.remote?.factory(remoteDriverOptions),
       busDriver: registry.bus?.factory(registry.bus.options),
       emitter: this.#emitter,
+      logger: this.#logger,
       ttl: localDriverOptions.ttl,
       gracefulRetain: this.#gracefulRetain,
     })

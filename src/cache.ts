@@ -20,6 +20,7 @@ import { CacheDeleted } from './events/cache_deleted.js'
 import { CacheWritten } from './events/cache_written.js'
 import { CacheCleared } from './events/cache_cleared.js'
 import type { CacheProvider, CacheProviderOptions } from './types/provider.js'
+import type { Logger } from './types/main.js'
 import {
   type CacheDriver,
   type CachedValue,
@@ -42,6 +43,7 @@ export class Cache extends BaseProvider implements CacheProvider {
   #remoteCache?: RemoteCache
   #bus?: Bus
   #busDriver?: BusDriver
+  #logger: Logger
 
   constructor(name: string, options: CacheProviderOptions) {
     super(name, options)
@@ -49,6 +51,7 @@ export class Cache extends BaseProvider implements CacheProvider {
     this.#localDriver = options.localDriver
     this.#remoteDriver = options.remoteDriver
     this.#busDriver = options.busDriver
+    this.#logger = options.logger
 
     if (this.#localDriver) {
       this.#localCache = new LocalCache(this.#localDriver)

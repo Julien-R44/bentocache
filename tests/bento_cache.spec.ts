@@ -7,6 +7,7 @@
  * file that was distributed with this source code.
  */
 
+import { pino } from 'pino'
 import Emittery from 'emittery'
 import { test } from '@japa/runner'
 import EventEmitter from 'node:events'
@@ -79,7 +80,7 @@ test.group('Bento Cache', () => {
         hybrid: hybridDriver({
           local: memoryDriver({ maxSize: 1000 }),
           remote: redisDriver({ connection: REDIS_CREDENTIALS }),
-          bus: redisBusDriver({ connection: REDIS_CREDENTIALS }),
+          bus: redisBusDriver(REDIS_CREDENTIALS),
         }),
       },
     })
@@ -89,5 +90,21 @@ test.group('Bento Cache', () => {
     await bento.use('hybrid').set('foo', 'bar')
 
     assert.equal(await bento.use('hybrid').get('foo'), 'bar')
+  })
+
+  test('use custom logger', async ({ assert, cleanup }) => {
+    const logger = {
+      loggedMessages: [] as any,
+      child: () => logger,
+      log: (level: string, message: any) => logger.loggedMessages.push({ level, message }),
+      trace: (message: any) => logger.log('trace', message),
+      debug: (message: any) => logger.log('debug', message),
+    }
+
+    // @ts-expect-error too lazy to implement the entire interface
+    const { bento } = new BentoCacheFactory().merge({ logger: logger }).create()
+    cleanup(() => bento.disconnectAll())
+
+    assert.isAbove(logger.loggedMessages.length, 0)
   })
 })

@@ -18,3 +18,8 @@ export type MaybePromise<T> = T | Promise<T>
 export type Factory<T = any> = T | (() => T) | Promise<T> | (() => Promise<T>)
 
 export type CachedValue = any
+
+/**
+ * Logger interface
+ */
+export type { Logger } from 'typescript-log'

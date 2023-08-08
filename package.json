@@ -1,6 +1,6 @@
 {
-  "name": "@adonisjs/cache",
-  "description": "Cache module for AdonisJS. Redis, Upstash, CloudfareKV, File, in-memory and others drivers",
+  "name": "@bimoo/bentocache",
+  "description": "Multi-tier cache module for Node.js. Redis, Upstash, CloudfareKV, File, in-memory and others drivers",
   "version": "0.0.0",
   "engines": {
     "node": ">=18.16.0"
@@ -52,6 +52,7 @@
     "@types/benchmark": "^2.1.2",
     "@types/node": "^20.4.5",
     "@vercel/kv": "^0.2.2",
+    "benchmark": "^2.1.4",
     "better-sqlite3": "^8.5.0",
     "c8": "^8.0.1",
     "copyfiles": "^2.4.1",
@@ -68,7 +69,7 @@
     "np": "^8.0.4",
     "p-event": "^6.0.0",
     "pg": "^8.11.2",
-    "benchmark": "^2.1.4",
+    "pino": "^8.15.0",
     "prettier": "^3.0.0",
     "ts-node": "^10.9.1",
     "tsup": "^7.2.0",
@@ -81,7 +82,8 @@
     "@sindresorhus/is": "^5.6.0",
     "async-mutex": "^0.4.0",
     "emittery": "^1.0.1",
-    "quick-lru": "^6.1.1"
+    "quick-lru": "^6.1.1",
+    "typescript-log": "^2.0.0"
   },
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": "^3.379.1",

@@ -17,6 +17,7 @@ import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
 import type { BusDriver, CacheDriver } from '../src/types/main.js'
 import { createIsomorphicDestructurable } from '../src/helpers.js'
 import type { Emitter, GracefulRetainOptions } from '../src/types/main.js'
+import { noopLogger } from 'typescript-log'
 
 type FactoryParameters = {
   emitter: Emitter
@@ -92,6 +93,7 @@ export class CacheFactory {
       busDriver: this.#parameters.busDriver,
       emitter: this.#parameters.emitter,
       ttl: this.#parameters.ttl,
+      logger: noopLogger(),
       gracefulRetain: this.#parameters.gracefulRetain ?? { enabled: false },
       earlyExpiration: this.#parameters.earlyExpiration,
     })

@@ -1,5 +1,5 @@
 import type { CacheDriver } from './driver.js'
-import type { Factory, TTL } from './helpers.js'
+import type { Factory, Logger, TTL } from './helpers.js'
 import type {
   BusDriver,
   CacheSerializer,
@@ -92,6 +92,7 @@ export type CacheProviderOptions = {
   remoteDriver?: CacheDriver
   busDriver?: BusDriver
   emitter?: Emitter
+  logger: Logger
   ttl?: TTL
   serializer?: CacheSerializer
   gracefulRetain: GracefulRetainOptions
