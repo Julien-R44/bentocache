@@ -50,17 +50,16 @@ export class ChaosBus implements BusDriver {
   }
 
   async disconnect(): Promise<void> {
-    await this.#chaosInjector.injectChaos()
     return this.#innerBus.disconnect()
   }
 
   async subscribe(channel: string, handler: (message: CacheBusMessage) => void): Promise<void> {
-    await this.#chaosInjector.injectChaos()
     return this.#innerBus.subscribe(channel, handler)
   }
 
   async unsubscribe(channel: string): Promise<void> {
-    await this.#chaosInjector.injectChaos()
     return this.#innerBus.unsubscribe(channel)
   }
+
+  onReconnect(_callback: () => void): void {}
 }

@@ -13,10 +13,10 @@ import { setTimeout } from 'node:timers/promises'
 import { CacheItem } from '../../src/cache_item.js'
 import { Memory } from '../../src/drivers/memory.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
+import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 import { NullDriver } from '../../test_helpers/null/null_driver.js'
 import { ChaosCache } from '../../test_helpers/chaos/chaos_cache.js'
 import { throwingFactory, waitAndReturnFactory } from '../../test_helpers/index.js'
-import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 
 test.group('Cache', () => {
   test('Value not in local but in remote', async ({ assert }) => {

@@ -24,14 +24,14 @@ export class LocalCache {
     /**
      * Try to get the item from the local cache
      */
-    this.#logger.trace({ key, options }, 'getting local cache item')
+    this.#logger.trace({ key }, 'getting local cache item')
     value = await this.#driver.get(key)
 
     /**
      * If the item is not found, return undefined
      */
     if (value === undefined) {
-      this.#logger.trace({ key, options }, 'local cache item not found')
+      this.#logger.trace({ key }, 'local cache item not found')
       return
     }
 
@@ -52,7 +52,7 @@ export class LocalCache {
     /**
      * Save the item to the local cache
      */
-    this.#logger.trace({ key, value, options }, 'saving local cache item')
+    this.#logger.trace({ key, value }, 'saving local cache item')
     await this.#driver.set(key, value, options.physicalTtl)
   }
 
@@ -60,7 +60,7 @@ export class LocalCache {
    * Delete an item from the local cache
    */
   async delete(key: string, options?: CacheItemOptions) {
-    this.#logger.trace({ key, options }, 'deleting local cache item')
+    this.#logger.trace({ key }, 'deleting local cache item')
     await this.#driver.delete(key)
   }
 

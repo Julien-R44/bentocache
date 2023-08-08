@@ -43,6 +43,14 @@ export class RedisBus implements BusDriver {
   }
 
   /**
+   * When the Redis client reconnects
+   * Can happen when the connection is lost
+   */
+  onReconnect(callback: () => void): void {
+    this.#subscriber.on('reconnecting', callback)
+  }
+
+  /**
    * Subscribes to the given channel with the given handler
    */
   async subscribe(channelName: string, handler: (message: CacheBusMessage) => void): Promise<void> {

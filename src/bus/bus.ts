@@ -1,9 +1,11 @@
 import { createId } from '@paralleldrive/cuid2'
-import { BusMessagePublished } from '../events/bus_message_published.js'
+
+import { RetryQueue } from './retry_queue.js'
 import type { LocalCache } from '../local_cache.js'
 import { CacheBusMessageType } from '../types/bus.js'
-import type { BusDriver, CacheBusMessage, Emitter, Logger } from '../types/main.js'
 import { BusMessageReceived } from '../events/bus_message_received.js'
+import { BusMessagePublished } from '../events/bus_message_published.js'
+import type { BusDriver, CacheBusMessage, Emitter, Logger } from '../types/main.js'
 
 /**
  * The bus is used to notify other processes about cache changes.
@@ -47,11 +49,18 @@ export class Bus {
    */
   #channelName = 'bentocache.notifications'
 
+  /**
+   * The error retry queue holds messages that failed to be sent
+   */
+  #errorRetryQueue = new RetryQueue()
+
   constructor(driver: BusDriver, cache: LocalCache, logger: Logger, emitter: Emitter) {
     this.#driver = driver
     this.#cache = cache
     this.#emitter = emitter
     this.#logger = logger.child({ context: 'bentocache.bus' })
+
+    this.#driver.onReconnect(() => this.#onReconnect())
   }
 
   /**
@@ -70,6 +79,38 @@ export class Bus {
   }
 
   /**
+   * When the bus driver reconnects.
+   * We need to process the error retry queue
+   */
+  async #onReconnect() {
+    this.#logger.debug(
+      `reconnected. starting error retry queue processing with ${this.#errorRetryQueue.size()} messages`
+    )
+
+    /**
+     * Process the error retry queue
+     */
+    while (this.#errorRetryQueue.size() > 0) {
+      const message = this.#errorRetryQueue.dequeue()
+      if (!message) break
+
+      /**
+       * Try to publish the message
+       */
+      const published = await this.publish(message)
+
+      /**
+       * If the message failed to be published, we will
+       * try again later
+       */
+      if (!published) {
+        this.#errorRetryQueue.enqueue(message)
+        break
+      }
+    }
+  }
+
+  /**
    * Subscribe to the bus channel
    */
   async subscribe() {
@@ -78,20 +119,35 @@ export class Bus {
 
   /**
    * Publish a message to the bus channel
+   *
+   * @returns true if the message was published, false if not
    */
-  async publish(message: Omit<CacheBusMessage, 'busId'>): Promise<void> {
-    this.#logger.trace({ keys: message.keys, type: message.type }, 'publishing message to bus')
-
-    /**
-     * Publish the message to the bus using the underlying driver
-     */
+  async publish(message: Omit<CacheBusMessage, 'busId'>): Promise<boolean> {
     const fullMessage = { ...message, busId: this.#busId }
-    await this.#driver.publish(this.#channelName, fullMessage)
 
-    /**
-     * Emit the bus:message:published event
-     */
-    this.#emitter.emit('bus:message:published', new BusMessagePublished(fullMessage))
+    try {
+      this.#logger.trace({ keys: message.keys, type: message.type }, 'publishing message to bus')
+
+      /**
+       * Publish the message to the bus using the underlying driver
+       */
+      await this.#driver.publish(this.#channelName, fullMessage)
+
+      /**
+       * Emit the bus:message:published event
+       */
+      this.#emitter.emit('bus:message:published', new BusMessagePublished(fullMessage))
+      return true
+    } catch (error) {
+      /**
+       * Add to the error retry queue
+       */
+      const wasAdded = this.#errorRetryQueue.enqueue(fullMessage)
+      if (!wasAdded) return false
+
+      this.#logger.debug(message, 'added message to error retry queue')
+      return false
+    }
   }
 
   /**

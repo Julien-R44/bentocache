@@ -7,7 +7,6 @@
  * file that was distributed with this source code.
  */
 
-import { pino } from 'pino'
 import Emittery from 'emittery'
 import { test } from '@japa/runner'
 import EventEmitter from 'node:events'

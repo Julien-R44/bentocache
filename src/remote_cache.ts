@@ -35,7 +35,7 @@ export class RemoteCache {
 
       return CacheItem.fromDriver(key, value)
     } catch (error) {
-      this.#logger.error({ key, options, error }, 'error getting remote cache item')
+      this.#logger.error({ key, error }, 'error getting remote cache item')
       this.#maybeRethrowError(error, options)
 
       return undefined
@@ -47,10 +47,10 @@ export class RemoteCache {
    */
   async set(key: string, value: string, options: CacheItemOptions) {
     try {
-      this.#logger.trace({ key, value, options }, 'saving remote cache item')
+      this.#logger.trace({ key, value }, 'saving remote cache item')
       await this.#driver.set(key, value, options.physicalTtl)
     } catch (error) {
-      this.#logger.error({ key, value, options, error }, 'error saving remote cache item')
+      this.#logger.error({ key, value, error }, 'error saving remote cache item')
       this.#maybeRethrowError(error, options)
 
       return false
@@ -62,10 +62,10 @@ export class RemoteCache {
    */
   async delete(key: string, options: CacheItemOptions) {
     try {
-      this.#logger.trace({ key, options }, 'deleting remote cache item')
+      this.#logger.trace({ key }, 'deleting remote cache item')
       await this.#driver.delete(key)
     } catch (error) {
-      this.#logger.error({ key, options, error }, 'error deleting remote cache item')
+      this.#logger.error({ key, error }, 'error deleting remote cache item')
       this.#maybeRethrowError(error, options)
 
       return false
@@ -77,10 +77,10 @@ export class RemoteCache {
    */
   async deleteMany(keys: string[], options: CacheItemOptions) {
     try {
-      this.#logger.trace({ keys, options }, 'deleting remote cache items')
+      this.#logger.trace({ keys }, 'deleting remote cache items')
       await this.#driver.deleteMany(keys)
     } catch (error) {
-      this.#logger.error({ keys, options, error }, 'error deleting remote cache items')
+      this.#logger.error({ keys, error }, 'error deleting remote cache items')
       this.#maybeRethrowError(error, options)
 
       return false

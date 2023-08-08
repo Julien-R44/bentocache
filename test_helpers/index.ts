@@ -7,12 +7,13 @@
  * file that was distributed with this source code.
  */
 
+import { pino } from 'pino'
 import { setTimeout } from 'node:timers/promises'
 
 export const BASE_URL = new URL('./tmp/', import.meta.url)
 
 export const REDIS_CREDENTIALS = {
-  host: process.env.REDIS_HOST,
+  host: process.env.REDIS_HOST!,
   port: Number(process.env.REDIS_PORT),
 }
 
@@ -34,3 +35,12 @@ export function waitAndReturnFactory(ms: number, value: any) {
     return value
   }
 }
+
+/**
+ * Pino logger that could be injected in
+ * cache classes for manual and quick testing
+ */
+export const traceLogger = pino({
+  level: 'trace',
+  transport: { target: 'pino-pretty' },
+})

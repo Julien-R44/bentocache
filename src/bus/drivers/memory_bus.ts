@@ -14,7 +14,10 @@ export class MemoryBus implements BusDriver {
    */
   static #subscriptions: Map<
     string,
-    Array<{ handler: (message: CacheBusMessage) => void; busId: string }>
+    Array<{
+      handler: (message: CacheBusMessage) => void
+      busId: string
+    }>
   > = new Map()
 
   constructor(protected id = createId()) {}
@@ -51,7 +54,7 @@ export class MemoryBus implements BusDriver {
     const fullMessage: CacheBusMessage = { ...message, busId: this.id }
 
     for (const { handler, busId } of handlers) {
-      if (busId === this.id) return
+      if (busId === this.id) continue
 
       handler(fullMessage)
     }
@@ -63,4 +66,6 @@ export class MemoryBus implements BusDriver {
   async disconnect() {
     MemoryBus.#subscriptions.clear()
   }
+
+  async onReconnect(_callback: () => void) {}
 }

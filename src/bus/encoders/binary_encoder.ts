@@ -1,5 +1,5 @@
-import type { BusEncoder, CacheBusMessage } from '../../types/bus.js'
 import { CacheBusMessageType } from '../../types/bus.js'
+import type { BusEncoder, CacheBusMessage } from '../../types/bus.js'
 
 /**
  * A Binary Encoder that encodes and decodes CacheBusMessage
@@ -39,6 +39,7 @@ export class BinaryEncoder implements BusEncoder {
       (sum, key) => sum + 4 + Buffer.byteLength(key, 'utf8'),
       0
     )
+
     const totalLength = this.#busIdLength + 1 + totalKeysLength
 
     /**
@@ -85,18 +86,35 @@ export class BinaryEncoder implements BusEncoder {
     let offset = 0
     const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'binary')
 
+    /**
+     * First #busIdLength bytes are the bus ID
+     */
     const busId = buffer.toString('utf8', offset, this.#busIdLength)
     offset += this.#busIdLength
 
+    /**
+     * Then comes the message type as a single byte
+     */
     const typeValue = buffer.readUInt8(offset++)
     const type = typeValue === 0x01 ? CacheBusMessageType.Set : CacheBusMessageType.Delete
 
+    /**
+     * Finally, the keys
+     */
     const keys = []
     while (offset < buffer.length) {
+      /**
+       * First 4 bytes are the length of the key in bytes
+       */
       const keyLength = buffer.readUInt32BE(offset)
       offset += 4
+
+      /**
+       * Then comes the key itself
+       */
       const key = buffer.toString('utf8', offset, offset + keyLength)
       offset += keyLength
+
       keys.push(key)
     }
 

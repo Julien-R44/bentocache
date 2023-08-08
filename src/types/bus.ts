@@ -9,6 +9,8 @@ export interface BusDriver {
   subscribe(channel: string, handler: (message: CacheBusMessage) => void): Promise<void>
   unsubscribe(channel: string): Promise<void>
   disconnect(): Promise<void>
+
+  onReconnect(callback: () => void): void
 }
 
 /**
