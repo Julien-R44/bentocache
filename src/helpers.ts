@@ -1,4 +1,3 @@
-import is from '@sindresorhus/is'
 import string from '@poppinss/utils/string'
 
 import type { TTL } from './types/main.js'
@@ -18,7 +17,7 @@ export function resolveTtl(ttl?: TTL, defaultTtl: TTL = 30_000) {
     return undefined
   }
 
-  if (is.number(ttl)) return ttl
+  if (typeof ttl === 'number') return ttl
 
   return string.milliseconds.parse(ttl)
 }

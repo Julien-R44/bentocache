@@ -24,7 +24,6 @@ export abstract class BaseDriver {
    */
   #sanitizePrefix(prefix?: string) {
     if (!prefix) return ''
-
     return prefix.replace(/:+$/, '')
   }
 
@@ -34,7 +33,6 @@ export abstract class BaseDriver {
    */
   protected createNamespacePrefix(namespace: string) {
     const sanitizedPrefix = this.#sanitizePrefix(this.prefix)
-
     return sanitizedPrefix ? `${sanitizedPrefix}:${namespace}` : namespace
   }
 

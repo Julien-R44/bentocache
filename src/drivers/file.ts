@@ -13,6 +13,14 @@ import { access, mkdir, readFile, writeFile, rm } from 'node:fs/promises'
 import { BaseDriver } from './base_driver.js'
 import type { CacheDriver, FileConfig } from '../types/main.js'
 
+/**
+ * Caching driver for the filesystem
+ *
+ * - Each key is stored as a file in the filesystem.
+ * - Each namespace is a folder created in the parent namespace
+ * - Files are stored in the following format: [stringifiedValue, expireTimestamp]
+ * - If the expireTimestamp is -1, the value should never expire
+ */
 export class File extends BaseDriver implements CacheDriver {
   /**
    * Root directory for storing the cache files
@@ -23,18 +31,35 @@ export class File extends BaseDriver implements CacheDriver {
 
   constructor(config: FileConfig) {
     super(config)
-    this.#directory = join(config.directory, (config.prefix || '').replaceAll(':', '/'))
+
+    this.#directory = this.#sanitizePath(join(config.directory, config.prefix || ''))
   }
 
+  /**
+   * Since keys and namespace uses `:` as a separator, we need to
+   * purge them from the given path. We replace them with `/` to
+   * create a nested directory structure.
+   */
+  #sanitizePath(path?: string) {
+    if (!path) return ''
+    return path.replaceAll(':', '/')
+  }
+
+  /**
+   * Converts the given key to a file path
+   */
   #keyToPath(key: string) {
     const keyWithoutPrefix = key.replace(this.prefix, '')
 
+    /**
+     * Check if the key contains a relative path
+     */
     let re = /(\.\/|\.\.\/)/g
     if (re.test(key)) {
       throw new Error(`Invalid key: ${keyWithoutPrefix}. Should not contain relative paths.`)
     }
 
-    return join(this.#directory, keyWithoutPrefix.replaceAll(':', '/'))
+    return join(this.#directory, this.#sanitizePath(keyWithoutPrefix))
   }
 
   /**
@@ -103,9 +128,7 @@ export class File extends BaseDriver implements CacheDriver {
    */
   async pull(key: string) {
     const value = await this.get(key)
-    if (!value) {
-      return undefined
-    }
+    if (!value) return undefined
 
     await this.delete(key)
     return value
@@ -117,7 +140,6 @@ export class File extends BaseDriver implements CacheDriver {
    */
   async set(key: string, value: string, ttl?: number) {
     key = this.getItemKey(key)
-
     await this.#outputFile(
       this.#keyToPath(key),
       JSON.stringify([value, ttl ? Date.now() + ttl : -1])
@@ -148,12 +170,16 @@ export class File extends BaseDriver implements CacheDriver {
   async has(key: string) {
     key = this.getItemKey(key)
 
+    /**
+     * Check if the file exists
+     */
     const path = this.#keyToPath(key)
     const pathExists = await this.#pathExists(path)
-    if (!pathExists) {
-      return false
-    }
+    if (!pathExists) return false
 
+    /**
+     * Check if the file is expired
+     */
     const content = await readFile(path, { encoding: 'utf-8' })
     const [, expire] = JSON.parse(content)
 
@@ -170,10 +196,12 @@ export class File extends BaseDriver implements CacheDriver {
    */
   async clear() {
     const cacheExists = await this.#pathExists(this.#directory)
-    if (!cacheExists) {
-      return
-    }
+    if (!cacheExists) return
 
+    /**
+     * By removing the directory and sub-directories, we are also
+     * removing the namespaces inside it
+     */
     await rm(this.#directory, { recursive: true })
   }
 

@@ -7,7 +7,6 @@
  * file that was distributed with this source code.
  */
 
-import is from '@sindresorhus/is'
 import { Mutex } from 'async-mutex'
 
 import { CacheItem } from './cache_item.js'
@@ -67,7 +66,7 @@ export class Cache extends BaseProvider implements CacheProvider {
   }
 
   #resolveDefaultValue(defaultValue?: Factory) {
-    return is.function_(defaultValue) ? defaultValue() : defaultValue ?? undefined
+    return typeof defaultValue === 'function' ? defaultValue() : defaultValue ?? undefined
   }
 
   /**
@@ -445,7 +444,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    */
   async pull<T = any>(key: string): Promise<T | undefined | null> {
     const result = await this.#localDriver.pull(key)
-    const item = is.undefined(result) ? undefined : await this.deserialize(result)
+    const item = result === undefined ? undefined : await this.deserialize(result)
 
     if (result) {
       this.emit(new CacheHit(key, item.value, this.name))

@@ -1,12 +1,3 @@
-/*
- * @adonisjs/cache
- *
- * (c) AdonisJS
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import QuickLRU from 'quick-lru'
 
 import { BaseDriver } from './base_driver.js'
@@ -51,9 +42,7 @@ export class Memory extends BaseDriver implements CacheDriver {
    * Returns the value if the key exists, undefined otherwise
    */
   pull(key: string) {
-    if (!this.has(key)) {
-      return undefined
-    }
+    if (!this.has(key)) return undefined
 
     const value = this.get(key)
     this.delete(key)
@@ -80,8 +69,7 @@ export class Memory extends BaseDriver implements CacheDriver {
    * Remove all items from the cache
    */
   async clear() {
-    const keys = [...this.#lru.keys()]
-    for (const key of keys) {
+    for (const key of this.#lru.keys()) {
       if (key.startsWith(this.prefix)) {
         this.#lru.delete(key)
       }
@@ -100,9 +88,7 @@ export class Memory extends BaseDriver implements CacheDriver {
    * Delete multiple keys from the cache
    */
   deleteMany(keys: string[]) {
-    for (const key of keys) {
-      this.delete(key)
-    }
+    for (const key of keys) this.delete(key)
     return true
   }
 

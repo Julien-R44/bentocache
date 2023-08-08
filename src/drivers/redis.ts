@@ -1,23 +1,18 @@
-/*
- * @adonisjs/cache
- *
- * (c) AdonisJS
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { Redis as IoRedis } from 'ioredis'
 
 import { BaseDriver } from './base_driver.js'
 import type { CacheDriver, CachedValue, RedisConfig } from '../types/main.js'
 
+/**
+ * Caching driver for Redis
+ */
 export class Redis extends BaseDriver implements CacheDriver {
   #connection: IoRedis
   declare config: RedisConfig
 
   constructor(config: RedisConfig) {
     super(config)
+
     if (config.connection instanceof IoRedis) {
       this.#connection = config.connection
       return

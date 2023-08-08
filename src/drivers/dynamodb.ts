@@ -17,7 +17,6 @@ import {
   type AttributeValue,
   ConditionalCheckFailedException,
 } from '@aws-sdk/client-dynamodb'
-import is from '@sindresorhus/is'
 import chunkify from '@sindresorhus/chunkify'
 
 import { BaseDriver } from './base_driver.js'
@@ -85,12 +84,8 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
         TableName: this.#tableName,
         ProjectionExpression: '#key',
         FilterExpression: 'begins_with(#key, :prefix)',
-        ExpressionAttributeNames: {
-          '#key': 'key',
-        },
-        ExpressionAttributeValues: {
-          ':prefix': { S: this.prefix },
-        },
+        ExpressionAttributeNames: { '#key': 'key' },
+        ExpressionAttributeValues: { ':prefix': { S: this.prefix } },
         ExclusiveStartKey: exclusiveStartKey,
       })
     )
@@ -101,11 +96,7 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
    */
   async #batchDeleteItems(items: Record<string, AttributeValue>[]) {
     const requests = items.map((item) => ({ DeleteRequest: { Key: item } }))
-
-    const command = new BatchWriteItemCommand({
-      RequestItems: { [this.#tableName]: requests },
-    })
-
+    const command = new BatchWriteItemCommand({ RequestItems: { [this.#tableName]: requests } })
     await this.#client.send(command)
   }
 
@@ -117,9 +108,7 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
    * TTLs.
    */
   #isItemExpired(item: Record<string, AttributeValue>) {
-    if (!item.ttl) {
-      return false
-    }
+    if (!item.ttl) return false
 
     const now = Math.floor(Date.now() / 1000)
     return Number(item.ttl.N) < now
@@ -136,17 +125,16 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
 
   /**
    * Generate the payload for a WriteRequest
+   *
+   * We append the TTL attribute only if a TTL is defined.
+   * If no TTL is defined, the item will never expire.
    */
   #createItemPayload(key: string, value: string, ttl?: number): Record<string, AttributeValue> {
-    const type = is.numericString(value) ? 'N' : 'S'
-
-    const item = {
+    return {
       key: { S: this.getItemKey(key) },
-      value: { [type]: value } as any as AttributeValue,
+      value: { S: value },
       ...(ttl ? { ttl: { N: this.#computeTtl(ttl) } } : {}),
     }
-
-    return item
   }
 
   /**

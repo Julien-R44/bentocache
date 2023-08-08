@@ -80,7 +80,6 @@
     "@paralleldrive/cuid2": "^2.2.1",
     "@poppinss/utils": "6.5.0-3",
     "@sindresorhus/chunkify": "^0.2.0",
-    "@sindresorhus/is": "^5.6.0",
     "async-mutex": "^0.4.0",
     "emittery": "^1.0.1",
     "quick-lru": "^6.1.1",
