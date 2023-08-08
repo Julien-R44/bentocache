@@ -11,7 +11,6 @@ import is from '@sindresorhus/is'
 import { Mutex } from 'async-mutex'
 
 import debug from './debug.js'
-import { resolveTtl } from './helpers.js'
 import { CacheItem } from './cache_item.js'
 import { BaseProvider } from './base_cache.js'
 import { CacheHit } from './events/cache_hit.js'
@@ -28,7 +27,6 @@ import {
   type RawCacheOptions,
   type TTL,
   type Factory,
-  type KeyValueObject,
   type BusDriver,
   CacheBusMessageType,
 } from './types/main.js'

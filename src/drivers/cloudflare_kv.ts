@@ -11,7 +11,7 @@ import got, { type Got } from 'got'
 import chunkify from '@sindresorhus/chunkify'
 
 import { BaseDriver } from './base_driver.js'
-import type { CacheDriver, CloudflareKvConfig, KeyValueObject } from '../types/main.js'
+import type { CacheDriver, CloudflareKvConfig } from '../types/main.js'
 
 export class CloudflareKv extends BaseDriver implements CacheDriver {
   #got: Got

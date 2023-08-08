@@ -11,10 +11,10 @@ import Emittery from 'emittery'
 import { test } from '@japa/runner'
 import EventEmitter from 'node:events'
 
+import { redisBusDriver, redisDriver } from '../drivers/redis.js'
 import { BentoCache } from '../src/bento_cache.js'
-import { redisDriver } from '../src/drivers/redis.js'
-import { hybridDriver } from '../src/drivers/hybrid.js'
-import { memoryDriver } from '../src/drivers/memory.js'
+import { memoryDriver } from '../drivers/memory.js'
+import { hybridDriver } from '../drivers/hybrid.js'
 import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
 import { BentoCacheFactory } from '../factories/bentocache_factory.js'
 
@@ -79,7 +79,7 @@ test.group('Bento Cache', () => {
         hybrid: hybridDriver({
           local: memoryDriver({ maxSize: 1000 }),
           remote: redisDriver({ connection: REDIS_CREDENTIALS }),
-          // bus:
+          bus: redisBusDriver({ connection: REDIS_CREDENTIALS }),
         }),
       },
     })

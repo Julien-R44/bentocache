@@ -1,5 +1,5 @@
 import { BentoCache } from '../src/bento_cache.js'
-import { memoryDriver } from '../src/drivers/memory.js'
+import { memoryDriver } from '../drivers/memory.js'
 
 /**
  * A factory that creates a new BentoCache instance

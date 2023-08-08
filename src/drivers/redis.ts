@@ -119,12 +119,3 @@ export class Redis extends BaseDriver implements CacheDriver {
     await this.#connection.quit()
   }
 }
-
-export function redisDriver(options: RedisConfig) {
-  return {
-    local: {
-      options,
-      factory: (config: RedisConfig) => new Redis(config),
-    },
-  }
-}

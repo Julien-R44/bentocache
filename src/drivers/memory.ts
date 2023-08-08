@@ -108,12 +108,3 @@ export class Memory extends BaseDriver implements CacheDriver {
 
   async disconnect() {}
 }
-
-export function memoryDriver(options: MemoryConfig) {
-  return {
-    local: {
-      options,
-      factory: (config: MemoryConfig) => new Memory(config),
-    },
-  }
-}

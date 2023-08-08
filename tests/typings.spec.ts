@@ -1,9 +1,10 @@
 import { test } from '@japa/runner'
+
+import { BentoCache } from '../src/bento_cache.js'
+import { memoryDriver } from '../drivers/memory.js'
+import type { CacheEvents } from '../src/types/events.js'
 import { CacheFactory } from '../factories/cache_factory.js'
 import { BentoCacheFactory } from '../factories/bentocache_factory.js'
-import { BentoCache } from '../src/bento_cache.js'
-import { memoryDriver } from '../src/drivers/memory.js'
-import type { CacheEvents } from '../src/types/events.js'
 
 test.group('Typings', () => {
   test('named caches typings', async ({ expectTypeOf }) => {
