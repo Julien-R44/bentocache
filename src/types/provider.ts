@@ -91,7 +91,7 @@ export type CacheProviderOptions = {
   localDriver?: CacheDriver
   remoteDriver?: CacheDriver
   busDriver?: BusDriver
-  emitter?: Emitter
+  emitter: Emitter
   logger: Logger
   ttl?: TTL
   serializer?: CacheSerializer

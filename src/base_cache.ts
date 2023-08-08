@@ -14,7 +14,7 @@ import type {
 import { CacheItemOptions } from './cache_options.js'
 
 export abstract class BaseProvider {
-  protected emitter?: Emitter
+  protected emitter: Emitter
   protected defaultTtl: number
   protected serializer: CacheSerializer = new JsonSerializer()
   protected gracefulRetain: GracefulRetainOptions

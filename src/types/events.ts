@@ -1,3 +1,4 @@
+import type { BusMessagePublished } from '../events/bus_message_published.js'
 import type { CacheCleared } from '../events/cache_cleared.js'
 import type { CacheDeleted } from '../events/cache_deleted.js'
 import type { CacheHit } from '../events/cache_hit.js'
@@ -24,6 +25,8 @@ export type CacheEvents = {
   'cache:hit': ReturnType<CacheHit['toJSON']>
   'cache:miss': ReturnType<CacheMiss['toJSON']>
   'cache:written': ReturnType<CacheWritten['toJSON']>
+  'bus:message:published': ReturnType<BusMessagePublished['toJSON']>
+  'bus:message:received': ReturnType<BusMessagePublished['toJSON']>
 }
 
 /**

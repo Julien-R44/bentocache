@@ -1,4 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
 import { Redis as IoRedis, type RedisOptions as IoRedisOptions } from 'ioredis'
 
 import type { BusEncoder } from '../../types/bus.js'
@@ -11,13 +10,6 @@ import { type BusDriver, type CacheBusMessage } from '../../types/bus.js'
  * Leverage Redis Pub/Sub to publish and subscribe to messages
  */
 export class RedisBus implements BusDriver {
-  /**
-   * A unique identifier for this bus instance
-   * that is used to prevent the bus from
-   * emitting events to itself
-   */
-  #id = createId()
-
   /**
    * The Redis client used to publish messages
    *
@@ -40,7 +32,11 @@ export class RedisBus implements BusDriver {
    */
   #encoder: BusEncoder
 
-  constructor(connection: IoRedisOptions, encoder?: BusEncoder) {
+  constructor(
+    protected id: string,
+    connection: IoRedisOptions,
+    encoder?: BusEncoder
+  ) {
     this.#subscriber = new IoRedis(connection)
     this.#publisher = new IoRedis(connection)
     this.#encoder = encoder ?? new BinaryEncoder()
@@ -64,7 +60,7 @@ export class RedisBus implements BusDriver {
       /**
        * Ignore messages published by this bus instance
        */
-      if (data.busId === this.#id) return
+      if (data.busId === this.id) return
 
       handler(data)
     })
@@ -81,9 +77,7 @@ export class RedisBus implements BusDriver {
    * Publishes a message to the given channel
    */
   async publish(channelName: string, message: Omit<CacheBusMessage, 'busId'>): Promise<void> {
-    const data = { busId: this.#id, ...message }
-    const encoded = this.#encoder.encode(data)
-
+    const encoded = this.#encoder.encode({ busId: this.id, ...message })
     await this.#publisher.publish(channelName, encoded)
   }
 

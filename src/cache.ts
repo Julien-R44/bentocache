@@ -61,7 +61,7 @@ export class Cache extends BaseProvider implements CacheProvider {
     }
 
     if (this.#busDriver && this.#localCache) {
-      this.#bus = new Bus(this.#busDriver, this.#localCache, this.#logger)
+      this.#bus = new Bus(this.#busDriver, this.#localCache, this.#logger, this.emitter)
       this.#bus.subscribe()
     }
   }

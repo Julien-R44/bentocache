@@ -12,6 +12,7 @@ import EventEmitter from 'node:events'
 import { pEvent, pEventMultiple } from 'p-event'
 
 import { CacheFactory } from '../factories/cache_factory.js'
+import { CacheBusMessageType } from '../src/types/bus.js'
 
 test.group('Cache events', () => {
   test('construct driver', async () => {
@@ -195,5 +196,36 @@ test.group('Cache events', () => {
 
     assert.deepEqual(writtenEvents, { key: 'foo', value: 'baz', store: 'primary' })
     assert.deepEqual(missEvents, { key: 'foo', store: 'primary' })
+  })
+
+  test('should emit event when publish a message', async ({ assert }) => {
+    const emitter = new EventEmitter()
+    const { cache } = new CacheFactory().withHybridConfig().merge({ emitter }).create()
+
+    cache.getOrSet('foo', () => 'baz')
+
+    const event = await pEvent(emitter, 'bus:message:published')
+
+    assert.isDefined(event.message.busId)
+    assert.deepInclude(event.message, {
+      keys: ['foo'],
+      type: CacheBusMessageType.Set,
+    })
+  })
+
+  test('should emit event when receive a message', async ({ assert }) => {
+    const emitter = new EventEmitter()
+    new CacheFactory().withHybridConfig().merge({ emitter }).create()
+    const [cache2] = new CacheFactory().withHybridConfig().create()
+
+    cache2.getOrSet('foo', () => 'baz')
+
+    const event = await pEvent(emitter, 'bus:message:received')
+
+    assert.isDefined(event.message.busId)
+    assert.deepInclude(event.message, {
+      keys: ['foo'],
+      type: CacheBusMessageType.Set,
+    })
   })
 })

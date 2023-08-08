@@ -8,20 +8,28 @@
  */
 
 import lodash from '@poppinss/utils/lodash'
+import { noopLogger } from 'typescript-log'
 import { getActiveTest } from '@japa/runner'
+import { createId } from '@paralleldrive/cuid2'
 
 import { Cache } from '../src/cache.js'
 import { Redis } from '../src/drivers/redis.js'
 import { Memory } from '../src/drivers/memory.js'
 import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
-import type { BusDriver, CacheDriver } from '../src/types/main.js'
 import { createIsomorphicDestructurable } from '../src/helpers.js'
-import type { Emitter, GracefulRetainOptions } from '../src/types/main.js'
-import { noopLogger } from 'typescript-log'
+import type {
+  Emitter,
+  GracefulRetainOptions,
+  BusDriver,
+  CacheDriver,
+  Logger,
+} from '../src/types/main.js'
+import EventEmitter from 'node:events'
 
 type FactoryParameters = {
   emitter: Emitter
   ttl: number
+  logger: Logger
   localDriver: CacheDriver
   remoteDriver: CacheDriver
   busDriver: BusDriver
@@ -73,7 +81,7 @@ export class CacheFactory {
   withHybridConfig() {
     this.#parameters.localDriver = this.#createLocalDriver()
     this.#parameters.remoteDriver = this.#createRemoteDriver()
-    this.#parameters.busDriver = this.#parameters.busDriver ?? new MemoryBus()
+    this.#parameters.busDriver = this.#parameters.busDriver ?? new MemoryBus(createId())
 
     return this
   }
@@ -91,9 +99,9 @@ export class CacheFactory {
       localDriver: local,
       remoteDriver: remote,
       busDriver: this.#parameters.busDriver,
-      emitter: this.#parameters.emitter,
+      emitter: this.#parameters.emitter || new EventEmitter(),
       ttl: this.#parameters.ttl,
-      logger: noopLogger(),
+      logger: this.#parameters.logger || noopLogger(),
       gracefulRetain: this.#parameters.gracefulRetain ?? { enabled: false },
       earlyExpiration: this.#parameters.earlyExpiration,
     })

@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { createId } from '@paralleldrive/cuid2'
 import type { BusDriver, CacheBusMessage } from '../../types/bus.js'
 
 /**
@@ -17,12 +17,7 @@ export class MemoryBus implements BusDriver {
     Array<{ handler: (message: CacheBusMessage) => void; busId: string }>
   > = new Map()
 
-  /**
-   * A unique identifier for this bus instance
-   * that is used to prevent the bus from
-   * emitting events to itself
-   */
-  #id = randomUUID()
+  constructor(protected id = createId()) {}
 
   /**
    * Subscribes to the given channel
@@ -30,7 +25,7 @@ export class MemoryBus implements BusDriver {
   async subscribe(channelName: string, handler: (message: CacheBusMessage) => void) {
     const handlers = MemoryBus.#subscriptions.get(channelName) || []
 
-    handlers.push({ handler, busId: this.#id })
+    handlers.push({ handler, busId: this.id })
     MemoryBus.#subscriptions.set(channelName, handlers)
   }
 
@@ -42,7 +37,7 @@ export class MemoryBus implements BusDriver {
 
     MemoryBus.#subscriptions.set(
       channelName,
-      handlers.filter((handlerInfo) => handlerInfo.busId !== this.#id)
+      handlers.filter((handlerInfo) => handlerInfo.busId !== this.id)
     )
   }
 
@@ -53,10 +48,10 @@ export class MemoryBus implements BusDriver {
     const handlers = MemoryBus.#subscriptions.get(channelName)
     if (!handlers) return
 
-    const fullMessage: CacheBusMessage = { ...message, busId: this.#id }
+    const fullMessage: CacheBusMessage = { ...message, busId: this.id }
 
     for (const { handler, busId } of handlers) {
-      if (busId === this.#id) return
+      if (busId === this.id) return
 
       handler(fullMessage)
     }

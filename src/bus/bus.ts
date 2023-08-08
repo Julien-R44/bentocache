@@ -1,6 +1,9 @@
+import { createId } from '@paralleldrive/cuid2'
+import { BusMessagePublished } from '../events/bus_message_published.js'
 import type { LocalCache } from '../local_cache.js'
 import { CacheBusMessageType } from '../types/bus.js'
-import type { BusDriver, CacheBusMessage, Logger } from '../types/main.js'
+import type { BusDriver, CacheBusMessage, Emitter, Logger } from '../types/main.js'
+import { BusMessageReceived } from '../events/bus_message_received.js'
 
 /**
  * The bus is used to notify other processes about cache changes.
@@ -28,13 +31,26 @@ export class Bus {
   #logger: Logger
 
   /**
+   * Emitter
+   */
+  #emitter: Emitter
+
+  /**
+   * A unique identifier for this bus instance
+   * that is used to prevent the bus from
+   * emitting events to itself
+   */
+  #busId = createId()
+
+  /**
    * The channel name to use
    */
   #channelName = 'bentocache.notifications'
 
-  constructor(driver: BusDriver, cache: LocalCache, logger: Logger) {
+  constructor(driver: BusDriver, cache: LocalCache, logger: Logger, emitter: Emitter) {
     this.#driver = driver
     this.#cache = cache
+    this.#emitter = emitter
     this.#logger = logger.child({ context: 'bentocache.bus' })
   }
 
@@ -44,6 +60,7 @@ export class Bus {
    */
   #onMessage(message: CacheBusMessage) {
     this.#logger.trace({ keys: message.keys, type: message.type }, 'received message from bus')
+    this.#emitter.emit('bus:message:received', new BusMessageReceived(message))
 
     if (message.type === CacheBusMessageType.Set || message.type === CacheBusMessageType.Delete) {
       for (const key of message.keys) {
@@ -65,7 +82,16 @@ export class Bus {
   async publish(message: Omit<CacheBusMessage, 'busId'>): Promise<void> {
     this.#logger.trace({ keys: message.keys, type: message.type }, 'publishing message to bus')
 
-    await this.#driver.publish(this.#channelName, { ...message })
+    /**
+     * Publish the message to the bus using the underlying driver
+     */
+    const fullMessage = { ...message, busId: this.#busId }
+    await this.#driver.publish(this.#channelName, fullMessage)
+
+    /**
+     * Emit the bus:message:published event
+     */
+    this.#emitter.emit('bus:message:published', new BusMessagePublished(fullMessage))
   }
 
   /**

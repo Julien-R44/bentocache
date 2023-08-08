@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import { createId } from '@paralleldrive/cuid2'
 import { setTimeout } from 'node:timers/promises'
 
 import { RedisBus } from '../src/bus/drivers/redis_bus.js'
@@ -9,7 +10,7 @@ import { BinaryEncoder } from '../src/bus/encoders/binary_encoder.js'
 
 test.group('Redis Bus', () => {
   test('Bus1 should not receive message emitted by itself', async ({ assert, cleanup }) => {
-    const bus1 = new RedisBus(REDIS_CREDENTIALS)
+    const bus1 = new RedisBus(createId(), REDIS_CREDENTIALS)
     cleanup(async () => bus1.disconnect())
 
     bus1.subscribe('foo', () => {
@@ -24,8 +25,8 @@ test.group('Redis Bus', () => {
   })
 
   test('bus 1 should receive message emitted by bus 2', async ({ assert, cleanup }, done) => {
-    const bus1 = new RedisBus(REDIS_CREDENTIALS)
-    const bus2 = new RedisBus(REDIS_CREDENTIALS)
+    const bus1 = new RedisBus(createId(), REDIS_CREDENTIALS)
+    const bus2 = new RedisBus(createId(), REDIS_CREDENTIALS)
 
     cleanup(async () => {
       await bus1.disconnect()
@@ -43,8 +44,8 @@ test.group('Redis Bus', () => {
   }).waitForDone()
 
   test('json encoding/decoding should works fine', async ({ assert, cleanup }, done) => {
-    const bus1 = new RedisBus(REDIS_CREDENTIALS, new JsonEncoder())
-    const bus2 = new RedisBus(REDIS_CREDENTIALS, new JsonEncoder())
+    const bus1 = new RedisBus(createId(), REDIS_CREDENTIALS, new JsonEncoder())
+    const bus2 = new RedisBus(createId(), REDIS_CREDENTIALS, new JsonEncoder())
 
     cleanup(async () => {
       await bus1.disconnect()
@@ -65,8 +66,8 @@ test.group('Redis Bus', () => {
   }).waitForDone()
 
   test('binary encoding/decoding should works fine', async ({ assert, cleanup }, done) => {
-    const bus1 = new RedisBus(REDIS_CREDENTIALS, new BinaryEncoder())
-    const bus2 = new RedisBus(REDIS_CREDENTIALS, new BinaryEncoder())
+    const bus1 = new RedisBus(createId(), REDIS_CREDENTIALS, new BinaryEncoder())
+    const bus2 = new RedisBus(createId(), REDIS_CREDENTIALS, new BinaryEncoder())
 
     cleanup(async () => {
       await bus1.disconnect()
