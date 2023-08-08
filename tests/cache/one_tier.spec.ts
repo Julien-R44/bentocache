@@ -175,6 +175,22 @@ test.group('One tier tests', () => {
     assert.isFalse(await cache.has('key2'))
   })
 
+  test('deleteMany should delete multiple keys', async ({ assert }) => {
+    const { cache } = new CacheFactory()
+      .merge({ gracefulRetain: { enabled: true, duration: '500ms' } })
+      .create()
+
+    await cache.set('key1', 'value1', { ttl: '100ms' })
+    await cache.set('key2', 'bar')
+
+    await setTimeout(100)
+
+    await cache.deleteMany(['key1', 'key2'])
+
+    assert.isFalse(await cache.has('key1'))
+    assert.isFalse(await cache.has('key2'))
+  })
+
   // TODO test pull ?
 
   test('getOrSetForever() should set value forever', async ({ assert }) => {

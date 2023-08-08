@@ -88,7 +88,7 @@ export interface CacheProvider {
 
 export type CacheProviderOptions = {
   mode?: 'hybrid' | 'basic'
-  localDriver: CacheDriver
+  localDriver?: CacheDriver
   remoteDriver?: CacheDriver
   busDriver?: BusDriver
   emitter?: Emitter

@@ -10,12 +10,11 @@
 import is from '@sindresorhus/is'
 import { Mutex } from 'async-mutex'
 
-import debug from './debug.js'
 import { CacheItem } from './cache_item.js'
 import { BaseProvider } from './base_cache.js'
 import { CacheHit } from './events/cache_hit.js'
 import { CacheMiss } from './events/cache_miss.js'
-import { type CacheMethodOptions as CacheItemOptions } from './cache_options.js'
+import { type CacheItemOptions as CacheItemOptions } from './cache_options.js'
 import { CacheDeleted } from './events/cache_deleted.js'
 import { CacheWritten } from './events/cache_written.js'
 import { CacheCleared } from './events/cache_cleared.js'
@@ -54,15 +53,15 @@ export class Cache extends BaseProvider implements CacheProvider {
     this.#logger = options.logger
 
     if (this.#localDriver) {
-      this.#localCache = new LocalCache(this.#localDriver)
+      this.#localCache = new LocalCache(this.#localDriver, this.#logger)
     }
 
     if (this.#remoteDriver) {
-      this.#remoteCache = new RemoteCache(this.#remoteDriver)
+      this.#remoteCache = new RemoteCache(this.#remoteDriver, this.#logger)
     }
 
-    if (this.#busDriver && this.#localDriver) {
-      this.#bus = new Bus(this.#busDriver, this.#localDriver)
+    if (this.#busDriver && this.#localCache) {
+      this.#bus = new Bus(this.#busDriver, this.#localCache, this.#logger)
       this.#bus.subscribe()
     }
   }
@@ -115,7 +114,9 @@ export class Cache extends BaseProvider implements CacheProvider {
    */
   namespace(namespace: string) {
     return new Cache(this.name, {
-      localDriver: this.#localDriver.namespace(namespace),
+      localDriver: this.#localDriver?.namespace(namespace),
+      remoteDriver: this.#remoteDriver?.namespace(namespace),
+      logger: this.#logger,
       emitter: this.emitter,
       ttl: this.defaultTtl,
       serializer: this.serializer,
@@ -222,6 +223,9 @@ export class Cache extends BaseProvider implements CacheProvider {
     return this.#set(key, value, options)
   }
 
+  /**
+   * Refreshes the value of a cache
+   */
   async #earlyExpirationRefresh(key: string, factory: Factory, options: CacheItemOptions) {
     let lock = this.#getOrCreateLock(key)
 
@@ -271,7 +275,7 @@ export class Cache extends BaseProvider implements CacheProvider {
        * Returns the value
        */
       this.emit(new CacheHit(key, localCacheItem.getValue(), this.name))
-      debug('getOrSet(): value found in local cache for key "%s"', key)
+      this.#logger.trace({ key, cache: this.name, opId: options.id }, 'local cache hit')
       return localCacheItem.getValue()
     }
 
@@ -289,6 +293,7 @@ export class Cache extends BaseProvider implements CacheProvider {
       if (remoteCacheItem && !remoteCacheItem.isLogicallyExpired()) {
         await this.#localCache?.set(key, remoteCacheItem.serialize(), options)
         this.emit(new CacheHit(key, remoteCacheItem.getValue(), this.name))
+        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'remote cache hit')
         return remoteCacheItem.getValue()
       }
     }
@@ -312,7 +317,10 @@ export class Cache extends BaseProvider implements CacheProvider {
       staleItem = await this.#localCache?.get(key, options)
       if (staleItem && !staleItem.isLogicallyExpired()) {
         this.emit(new CacheHit(key, staleItem.getValue(), this.name))
-        debug('getOrSet(): value found in cache for key "%s"', key)
+        this.#logger.trace(
+          { key, cache: this.name, opId: options.id },
+          'local cache hit after lock'
+        )
         return staleItem.getValue()
       }
 
@@ -349,24 +357,19 @@ export class Cache extends BaseProvider implements CacheProvider {
       this.emit(new CacheMiss(key, this.name))
       this.emit(new CacheWritten(key, newCacheItem.value, this.name))
 
-      debug('getOrSet(): set value in cache %o', {
-        cacheItem: newCacheItem,
-        physicalTtl: options.physicalTtl,
-      })
+      this.#logger.trace({ key, cache: this.name, opId: options.id }, 'cache miss')
 
       return newCacheItem.value
     } catch (error) {
-      debug('getOrSet(): error while calling factory for key "%s"', key)
+      this.#logger.trace({ key, cache: this.name, opId: options.id }, 'factory error')
 
       /**
        * If the factory failed and graceful retain is enabled, we have to
        * return the old cached value if it exists.
        */
-      if (options.isGracefulRetainEnabled) {
-        debug('getOrSet(): graceful retain is enabled for key "%s"', key)
-        if (staleItem) {
-          return staleItem.getValue()
-        }
+      if (options.isGracefulRetainEnabled && staleItem) {
+        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'returns stale value')
+        return staleItem.getValue()
       }
 
       throw error
@@ -404,6 +407,10 @@ export class Cache extends BaseProvider implements CacheProvider {
     factory: () => CachedValue | Promise<CachedValue>,
     rawOptions?: GetOrSetOptions
   ): Promise<T> {
+    /**
+     * Create a CacheOptions instance with a null `ttl`
+     * for keeping the value forever
+     */
     const options = this.defaultCacheOptions.cloneWith({
       ttl: null,
       ...rawOptions,
@@ -433,6 +440,8 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Get the value of a key and delete it
    *
    * Returns the value if the key exists, undefined otherwise
+   *
+   * TODO
    */
   async pull<T = any>(key: string): Promise<T | undefined | null> {
     const result = await this.#localDriver.pull(key)
@@ -448,24 +457,25 @@ export class Cache extends BaseProvider implements CacheProvider {
 
   /**
    * Delete a key from the cache
-   * Returns true if the key was deleted, false otherwise
    */
   async delete(key: string, rawOptions?: GetOrSetOptions): Promise<boolean> {
     const options = this.defaultCacheOptions.cloneWith(rawOptions)
 
-    if (this.#localCache) {
-      await this.#localCache.delete(key)
-    }
+    /**
+     * Delete from local and remote cache if available
+     */
+    await this.#localCache?.delete(key)
+    await this.#remoteCache?.delete(key, options)
 
-    if (this.#remoteCache) {
-      await this.#remoteCache.delete(key, options)
-    }
-
+    /**
+     * Emit cache:deleted event
+     */
     this.emit(new CacheDeleted(key, this.name))
 
-    if (this.#bus) {
-      await this.#bus?.publish({ type: CacheBusMessageType.Delete, keys: [key] })
-    }
+    /**
+     * Publish invalidation through the bus
+     */
+    await this.#bus?.publish({ type: CacheBusMessageType.Delete, keys: [key] })
 
     return true
   }
@@ -473,13 +483,26 @@ export class Cache extends BaseProvider implements CacheProvider {
   /**
    * Delete multiple keys from the cache
    */
-  async deleteMany(keys: string[]): Promise<boolean> {
-    const result = await this.#localDriver.deleteMany(keys)
-    if (result) {
-      keys.forEach((key) => this.emit(new CacheDeleted(key, this.name)))
-    }
+  async deleteMany(keys: string[], rawOptions?: GetOrSetOptions): Promise<boolean> {
+    const options = this.defaultCacheOptions.cloneWith(rawOptions)
 
-    return result
+    /**
+     * Delete from local and remote cache if available
+     */
+    await this.#localCache?.deleteMany(keys)
+    await this.#remoteCache?.deleteMany(keys, options)
+
+    /**
+     * Emit cache:deleted events for each key
+     */
+    keys.forEach((key) => this.emit(new CacheDeleted(key, this.name)))
+
+    /**
+     * publis invalidation through the bus
+     */
+    await this.#bus?.publish({ type: CacheBusMessageType.Delete, keys })
+
+    return true
   }
 
   /**

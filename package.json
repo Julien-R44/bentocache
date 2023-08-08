@@ -83,7 +83,8 @@
     "async-mutex": "^0.4.0",
     "emittery": "^1.0.1",
     "quick-lru": "^6.1.1",
-    "typescript-log": "^2.0.0"
+    "typescript-log": "^2.0.0",
+    "uid": "^2.0.2"
   },
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": "^3.379.1",

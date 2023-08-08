@@ -1,5 +1,6 @@
+import type { LocalCache } from '../local_cache.js'
 import { CacheBusMessageType } from '../types/bus.js'
-import type { BusDriver, CacheBusMessage, CacheDriver } from '../types/main.js'
+import type { BusDriver, CacheBusMessage, Logger } from '../types/main.js'
 
 /**
  * The bus is used to notify other processes about cache changes.
@@ -17,18 +18,24 @@ export class Bus {
   #driver: BusDriver
 
   /**
-   * The cache driver to be notified
+   * The local cache that will be updated when a message is received
    */
-  #cache?: CacheDriver
+  #cache?: LocalCache
+
+  /**
+   * The logger to use
+   */
+  #logger: Logger
 
   /**
    * The channel name to use
    */
   #channelName = 'bentocache.notifications'
 
-  constructor(driver: BusDriver, cache: CacheDriver) {
+  constructor(driver: BusDriver, cache: LocalCache, logger: Logger) {
     this.#driver = driver
     this.#cache = cache
+    this.#logger = logger.child({ context: 'bentocache.bus' })
   }
 
   /**
@@ -36,9 +43,11 @@ export class Bus {
    * This is where we update the local cache.
    */
   #onMessage(message: CacheBusMessage) {
+    this.#logger.trace({ keys: message.keys, type: message.type }, 'received message from bus')
+
     if (message.type === CacheBusMessageType.Set || message.type === CacheBusMessageType.Delete) {
       for (const key of message.keys) {
-        this.#cache?.delete(key) // should allow graceful retain
+        this.#cache?.delete(key) // todo should allow graceful retain
       }
     }
   }
@@ -54,6 +63,8 @@ export class Bus {
    * Publish a message to the bus channel
    */
   async publish(message: Omit<CacheBusMessage, 'busId'>): Promise<void> {
+    this.#logger.trace({ keys: message.keys, type: message.type }, 'publishing message to bus')
+
     await this.#driver.publish(this.#channelName, { ...message })
   }
 

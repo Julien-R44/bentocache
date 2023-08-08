@@ -1,14 +1,17 @@
+import { uid } from 'uid'
 import lodash from '@poppinss/utils/lodash'
 
 import { resolveTtl } from './helpers.js'
 import type { RawCacheOptions } from './types/main.js'
 
-export class CacheMethodOptions {
+export class CacheItemOptions {
   options: RawCacheOptions
 
   logicalTtl?: number
   physicalTtl?: number
   earlyExpireTtl?: number
+
+  id: string
 
   constructor(options: RawCacheOptions = {}, defaults: Partial<RawCacheOptions> = {}) {
     this.options = lodash.merge(defaults, options)
@@ -16,6 +19,8 @@ export class CacheMethodOptions {
     this.logicalTtl = this.#resolveLogicalTtl()
     this.physicalTtl = this.#resolvePhysicalTtl()
     this.earlyExpireTtl = this.#resolveEarlyExpireTtl()
+
+    this.id = uid()
   }
 
   #resolveEarlyExpireTtl() {
@@ -37,7 +42,7 @@ export class CacheMethodOptions {
   }
 
   cloneWith(options?: Partial<RawCacheOptions>) {
-    return new CacheMethodOptions(options, this.options)
+    return new CacheItemOptions(options, this.options)
   }
 
   #resolveLogicalTtl() {

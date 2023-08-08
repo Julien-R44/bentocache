@@ -11,7 +11,7 @@ import type {
   GetOrSetOptions,
   GracefulRetainOptions,
 } from './types/main.js'
-import { CacheMethodOptions } from './cache_options.js'
+import { CacheItemOptions } from './cache_options.js'
 
 export abstract class BaseProvider {
   protected emitter?: Emitter
@@ -19,7 +19,7 @@ export abstract class BaseProvider {
   protected serializer: CacheSerializer = new JsonSerializer()
   protected gracefulRetain: GracefulRetainOptions
   protected earlyExpiration?: number
-  protected defaultCacheOptions: CacheMethodOptions
+  protected defaultCacheOptions: CacheItemOptions
 
   protected locks = new Map<string, Mutex>()
 
@@ -35,7 +35,7 @@ export abstract class BaseProvider {
     this.gracefulRetain = options.gracefulRetain
     this.earlyExpiration = options.earlyExpiration
 
-    this.defaultCacheOptions = new CacheMethodOptions({
+    this.defaultCacheOptions = new CacheItemOptions({
       ttl: this.defaultTtl,
       gracefulRetain: this.gracefulRetain,
       earlyExpiration: this.earlyExpiration,
@@ -80,7 +80,7 @@ export abstract class BaseProvider {
       resolvedOptions = options!
     }
 
-    const cacheOptions = new CacheMethodOptions(
+    const cacheOptions = new CacheItemOptions(
       { ttl, ...resolvedOptions },
       {
         ttl: this.defaultTtl,

@@ -1,52 +1,87 @@
 import { CacheItem } from './cache_item.js'
-import type { CacheMethodOptions } from './cache_options.js'
-import type { CacheDriver } from './types/main.js'
+import type { CacheItemOptions } from './cache_options.js'
+import type { CacheDriver, Logger } from './types/main.js'
 
+/**
+ * RemoteCache is a wrapper around a CacheDriver that provides
+ * some handy methods for interacting with a remote cache ( redis, database, etc )
+ */
 export class RemoteCache {
   #driver: CacheDriver
+  #logger: Logger
 
-  constructor(driver: CacheDriver) {
+  constructor(driver: CacheDriver, logger: Logger) {
     this.#driver = driver
+    this.#logger = logger.child({ context: 'bentocache.remoteCache' })
   }
 
-  async get(key: string, options: CacheMethodOptions) {
+  /**
+   * Rethrow the error if suppressRemoteCacheErrors is disabled
+   */
+  #maybeRethrowError(error: Error, options: CacheItemOptions) {
+    if (options.suppressRemoteCacheErrors === false) {
+      throw error
+    }
+  }
+
+  /**
+   * Get an item from the remote cache
+   */
+  async get(key: string, options: CacheItemOptions) {
     let value: undefined | string
     try {
       value = await this.#driver.get(key)
+      if (value === undefined) return
 
-      if (value === undefined) {
-        return undefined
-      }
-
-      let cacheItem = CacheItem.fromDriver(key, value)
-
-      return cacheItem
+      return CacheItem.fromDriver(key, value)
     } catch (error) {
-      // TODO log error
-
-      if (options.suppressRemoteCacheErrors === false) {
-        throw error
-      }
+      this.#logger.error({ key, options, error }, 'error getting remote cache item')
+      this.#maybeRethrowError(error, options)
 
       return undefined
     }
   }
 
-  async set(key: string, value: string, options: CacheMethodOptions) {
+  /**
+   * Set a new item in the remote cache
+   */
+  async set(key: string, value: string, options: CacheItemOptions) {
     try {
+      this.#logger.trace({ key, value, options }, 'saving remote cache item')
       await this.#driver.set(key, value, options.physicalTtl)
     } catch (error) {
-      console.error('RemoteCache.error', key, error)
+      this.#logger.error({ key, value, options, error }, 'error saving remote cache item')
+      this.#maybeRethrowError(error, options)
+
+      return false
     }
   }
 
-  async delete(key: string, options: CacheMethodOptions) {
+  /**
+   * Delete an item from the remote cache
+   */
+  async delete(key: string, options: CacheItemOptions) {
     try {
+      this.#logger.trace({ key, options }, 'deleting remote cache item')
       await this.#driver.delete(key)
     } catch (error) {
-      if (options?.suppressRemoteCacheErrors === false) {
-        throw error
-      }
+      this.#logger.error({ key, options, error }, 'error deleting remote cache item')
+      this.#maybeRethrowError(error, options)
+
+      return false
+    }
+  }
+
+  /**
+   * Delete multiple items from the remote cache
+   */
+  async deleteMany(keys: string[], options: CacheItemOptions) {
+    try {
+      this.#logger.trace({ keys, options }, 'deleting remote cache items')
+      await this.#driver.deleteMany(keys)
+    } catch (error) {
+      this.#logger.error({ keys, options, error }, 'error deleting remote cache items')
+      this.#maybeRethrowError(error, options)
 
       return false
     }

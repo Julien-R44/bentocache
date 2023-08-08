@@ -16,6 +16,7 @@ import { CacheFactory } from '../../factories/cache_factory.js'
 import { NullDriver } from '../../test_helpers/null/null_driver.js'
 import { ChaosCache } from '../../test_helpers/chaos/chaos_cache.js'
 import { throwingFactory, waitAndReturnFactory } from '../../test_helpers/index.js'
+import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 
 test.group('Cache', () => {
   test('Value not in local but in remote', async ({ assert }) => {
@@ -463,6 +464,96 @@ test.group('Cache', () => {
     assert.equal(r2, 'baz')
   })
 
+  test('deleteMany should delete from local and remote', async ({ assert }) => {
+    const { cache, local, remote } = new CacheFactory().withHybridConfig().create()
+
+    await cache.set('foo', 'bar')
+    await cache.set('bar', 'baz')
+
+    // then we delete it
+    await cache.deleteMany(['foo', 'bar'])
+
+    // so local cache should be deleted
+    const r1 = await local.get('foo')
+    const r2 = await local.get('bar')
+
+    // and remote cache should be deleted
+    const r3 = await remote.get('foo')
+    const r4 = await remote.get('bar')
+
+    assert.isUndefined(r1)
+    assert.isUndefined(r2)
+    assert.isUndefined(r3)
+    assert.isUndefined(r4)
+  })
+
+  test('deleteMany should throw if remote fail and suppressRemoteCacheErrors is on', async ({
+    assert,
+  }) => {
+    const remoteDriver = new ChaosCache(new Memory({ maxSize: 10, prefix: 'test' }))
+    const { cache, local } = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
+
+    await cache.set('foo', 'bar')
+    await cache.set('bar', 'baz')
+
+    remoteDriver.alwaysThrow()
+    const r1 = cache.deleteMany(['foo', 'bar'], { suppressRemoteCacheErrors: false })
+
+    await assert.rejects(() => r1, 'Chaos: Random error')
+
+    const r2 = await local.get('foo')
+    const r3 = await local.get('bar')
+
+    assert.isUndefined(r2)
+    assert.isUndefined(r3)
+  })
+
+  test('a deleteMany should delete others instances local caches', async ({ assert }) => {
+    const [cache1, local1] = new CacheFactory().withHybridConfig().create()
+    const [cache2] = new CacheFactory().withHybridConfig().create()
+
+    // first we initialize the cache1 with some keys
+    await cache1.set('foo', 'bar')
+    await cache1.set('bar', 'baz')
+
+    // then we delete it from another cache
+    await cache2.deleteMany(['foo', 'bar'])
+
+    // so local cache of cache1 should be invalidated
+    const r1 = await local1.get('foo')
+    const r2 = await local1.get('bar')
+
+    assert.isUndefined(r1)
+    assert.isUndefined(r2)
+  })
+
+  test('a deleteMany should delete others local cache even if remote fail', async ({ assert }) => {
+    const remoteDriver = new ChaosCache(new Memory({ maxSize: 10, prefix: 'test' }))
+
+    const [cache1, local1] = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
+    const [cache2] = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
+
+    // first we initialize the cache1 with some keys
+    await cache1.set('foo', 'bar')
+    await cache1.set('bar', 'baz')
+    await cache1.set('baz', 'foo')
+
+    // then we delete it from another cache. remote will throw
+    remoteDriver.alwaysThrow()
+    await cache2.deleteMany(['foo', 'bar'])
+
+    // so local cache of cache1 should be invalidated
+    const r1 = await local1.get('foo')
+    const r2 = await local1.get('bar')
+    const r3 = await local1.get('baz')
+
+    assert.isUndefined(r1)
+    assert.isUndefined(r2)
+
+    // `baz` wasn't deleted
+    assert.isDefined(r3)
+  })
+
   test('delete should delete from local and remote', async ({ assert }) => {
     const { cache, local, remote } = new CacheFactory().withHybridConfig().create()
 
@@ -545,5 +636,31 @@ test.group('Cache', () => {
 
     assert.isUndefined(r1)
     assert.isUndefined(r2)
+  })
+
+  test('when a node receive a set/delete event from bus it shouldnt publish a set/delete in return', async ({
+    assert,
+  }) => {
+    class Bus extends MemoryBus {
+      published: any[] = []
+      async publish(channel: string, message: any) {
+        this.published.push({ message })
+        return super.publish(channel, message)
+      }
+    }
+
+    const bus1 = new Bus()
+    const [cache1] = new CacheFactory().merge({ busDriver: bus1 }).withHybridConfig().create()
+
+    const bus2 = new Bus()
+    const [cache2] = new CacheFactory().merge({ busDriver: bus2 }).withHybridConfig().create()
+
+    await cache1.set('foo', 'bar')
+    const r1 = await cache2.get('foo')
+
+    // cache2 should receive the set event but not broadcast a `delete` event
+    assert.equal(r1, 'bar')
+    assert.isTrue(bus1.published.length === 1)
+    assert.isTrue(bus2.published.length === 0)
   })
 })
