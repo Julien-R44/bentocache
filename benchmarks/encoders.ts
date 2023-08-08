@@ -6,7 +6,6 @@ import { createId } from '@paralleldrive/cuid2'
 import { CacheBusMessageType } from '../src/types/bus.js'
 import { JsonEncoder } from '../src/bus/encoders/json_encoder.js'
 import { BinaryEncoder } from '../src/bus/encoders/binary_encoder.js'
-import { MsgpackEncoder } from '../src/bus/encoders/msgpack_encoder.js'
 
 /**
  * Benchmark to compare the performance of different encoders
@@ -25,7 +24,6 @@ const suite = new Benchmark.Suite()
 
 const jsonEncoder = new JsonEncoder()
 const binaryEncoder = new BinaryEncoder()
-const msgpackEncoder = new MsgpackEncoder()
 
 const data = {
   busId: createId(),
@@ -38,15 +36,12 @@ const data = {
  */
 const jsonEncoded = jsonEncoder.encode(data)
 const binaryEncoded = binaryEncoder.encode(data)
-const msgpackEncoded = msgpackEncoder.encode(data)
 
 const jsonSize = Buffer.from(jsonEncoded).length
 const binarySize = binaryEncoded.length
-const msgpackSize = msgpackEncoded.length
 
 console.log('Json size: %d bytes', jsonSize)
 console.log('Binary size: %d bytes', binarySize)
-console.log('Msgpack size: %d bytes', msgpackSize)
 
 /**
  * Then run the benchmark
@@ -54,7 +49,6 @@ console.log('Msgpack size: %d bytes', msgpackSize)
 suite
   .add('JsonEncoder', () => jsonEncoder.decode(jsonEncoder.encode(data)))
   .add('BinaryEncoder', () => binaryEncoder.decode(binaryEncoder.encode(data)))
-  .add('MsgpackEncoder', () => msgpackEncoder.decode(msgpackEncoder.encode(data)))
   .on('cycle', (event: any) => console.log(String(event.target)))
   .on('complete', function (this: Benchmark.Suite) {
     console.log('\nFastest is ' + this.filter('fastest').map('name'))
