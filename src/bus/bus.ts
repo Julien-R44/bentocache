@@ -67,10 +67,20 @@ export class Bus {
    * When a message is received through the bus.
    * This is where we update the local cache.
    */
-  #onMessage(message: CacheBusMessage) {
+  async #onMessage(message: CacheBusMessage) {
+    /**
+     * Since we received a message from the bus, we assume that
+     * the Bus is working. So we can try process the error retry queue if
+     * there are any messages in it.
+     */
+    await this.#processErrorRetryQueue()
+
     this.#logger.trace({ keys: message.keys, type: message.type }, 'received message from bus')
     this.#emitter.emit('bus:message:received', new BusMessageReceived(message))
 
+    /**
+     * Process the message
+     */
     if (message.type === CacheBusMessageType.Set || message.type === CacheBusMessageType.Delete) {
       for (const key of message.keys) {
         this.#cache?.delete(key) // todo should allow graceful retain
@@ -79,12 +89,11 @@ export class Bus {
   }
 
   /**
-   * When the bus driver reconnects.
-   * We need to process the error retry queue
+   * Process the error retry queue
    */
-  async #onReconnect() {
+  async #processErrorRetryQueue() {
     this.#logger.debug(
-      `reconnected. starting error retry queue processing with ${this.#errorRetryQueue.size()} messages`
+      `starting error retry queue processing with ${this.#errorRetryQueue.size()} messages`
     )
 
     /**
@@ -108,6 +117,14 @@ export class Bus {
         break
       }
     }
+  }
+
+  /**
+   * When the bus driver reconnects after a disconnection
+   */
+  async #onReconnect() {
+    this.#logger.debug('bus driver reconnected')
+    await this.#processErrorRetryQueue()
   }
 
   /**

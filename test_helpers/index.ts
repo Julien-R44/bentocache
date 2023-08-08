@@ -40,7 +40,5 @@ export function waitAndReturnFactory(ms: number, value: any) {
  * Pino logger that could be injected in
  * cache classes for manual and quick testing
  */
-export const traceLogger = pino({
-  level: 'trace',
-  transport: { target: 'pino-pretty' },
-})
+export const traceLogger = (pretty = true) =>
+  pino({ level: 'trace', ...(pretty ? { transport: { target: 'pino-pretty' } } : {}) })
