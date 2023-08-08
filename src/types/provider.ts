@@ -97,8 +97,3 @@ export type CacheProviderOptions = {
   gracefulRetain: GracefulRetainOptions
   earlyExpiration?: number
 }
-
-export interface CacheProviderConstructor {
-  // todo any
-  new (name: string, driver: CacheDriver, options: CacheProviderOptions): CacheProvider
-}

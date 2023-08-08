@@ -48,8 +48,9 @@ test.group('Cache', () => {
       .create()
 
     await local.set('foo', JSON.stringify({ value: 'bar' }))
-    const value = await cache.get('foo')
-    assert.deepEqual(value, 'bar')
+    const r1 = await cache.get('foo')
+
+    assert.deepEqual(r1, 'bar')
   })
 
   test('return remote item if logically expired and retain is enabled', async ({ assert }) => {
@@ -59,10 +60,10 @@ test.group('Cache', () => {
       .create()
 
     await remote.set('foo', JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }))
-    const value = await cache.get('foo')
+    const r1 = await cache.get('foo')
 
-    assert.deepEqual(value, 'bar')
-  }).skip()
+    assert.deepEqual(r1, 'bar')
+  })
 
   test('doesnt return remote item if logically expired and retain is disabled', async ({
     assert,

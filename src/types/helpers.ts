@@ -12,8 +12,9 @@ export type TTL = number | string | null
  */
 export type MaybePromise<T> = T | Promise<T>
 
-export type CachedValue = any
-
-export type KeyValueObject<T = any> = { key: string; value: T | undefined }
-
+/**
+ * A Factory is basically just a function that returns a value
+ */
 export type Factory<T = any> = T | (() => T) | Promise<T> | (() => Promise<T>)
+
+export type CachedValue = any

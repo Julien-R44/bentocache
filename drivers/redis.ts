@@ -13,7 +13,9 @@ export function redisDriver(options: RedisConfig): CreateDriverResult {
 /**
  * Create a new bus redis driver
  */
-export function redisBusDriver(options: RedisConfig): CreateBusDriverResult {
+export function redisBusDriver(
+  options: ConstructorParameters<typeof RedisBus>[0]
+): CreateBusDriverResult {
   return {
     options,
     factory: (config: ConstructorParameters<typeof RedisBus>[0]) => new RedisBus(config),

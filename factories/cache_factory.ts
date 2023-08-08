@@ -49,7 +49,7 @@ export class CacheFactory {
   }
 
   /**
-   * Instantiate and return the remote driver   *
+   * Instantiate and return the remote driver
    */
   #createRemoteDriver() {
     if (this.#parameters.remoteDriver) return this.#parameters.remoteDriver

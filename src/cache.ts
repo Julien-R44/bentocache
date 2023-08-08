@@ -336,6 +336,13 @@ export class Cache extends BaseProvider implements CacheProvider {
         await this.#localCache.set(key, this.serialize(newCacheItem), options)
       }
 
+      /**
+       * Emit invalidation through the bus
+       */
+      if (this.#bus) {
+        await this.#bus.publish({ keys: [key], type: CacheBusMessageType.Set })
+      }
+
       this.emit(new CacheMiss(key, this.name))
       this.emit(new CacheWritten(key, newCacheItem.value, this.name))
 
