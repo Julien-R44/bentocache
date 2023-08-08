@@ -1,14 +1,42 @@
-import { type Knex } from 'knex'
 import KnexPkg from 'knex'
-import type { SqlConfig } from '../../types/main.js'
+import { type Knex } from 'knex'
+
 import { BaseDriver } from '../base_driver.js'
+import type { SqlConfig } from '../../types/main.js'
 
 const { knex } = KnexPkg
 
+/**
+ * The base for each SQL driver
+ *
+ * Some notes :
+ * - when creating a new instance of a driver, we
+ *   gonna check if the cache table exists. If it doesn't, we gonna
+ *   create it
+ *
+ * - Since SQL doesn't have the concept of TTLs, we store the
+ *   expiration date in the cache table. Then we a value from
+ *   the table, we check if it's expired. If it is, we delete the row
+ */
 export abstract class BaseSql extends BaseDriver {
+  /**
+   * Knex connection instance
+   */
   protected connection: Knex
+
+  /**
+   * The name of the table used to store the cache
+   */
   protected tableName = 'bentocache'
+
+  /**
+   * A promise that resolves when the table is created
+   */
   protected initialized: Promise<void>
+
+  /**
+   * The SQL dialect used by the driver
+   */
   protected dialect: 'pg' | 'mysql2' | 'better-sqlite3'
 
   constructor(config: SqlConfig & { dialect: 'pg' | 'mysql2' | 'better-sqlite3' }) {
@@ -17,32 +45,43 @@ export abstract class BaseSql extends BaseDriver {
     this.dialect = config.dialect
     this.tableName = config.tableName || this.tableName
     this.connection = this.#createConnection(config)
-    this.initialized = new Promise(async (resolve, reject) => {
-      const hasTable = await this.connection.schema.hasTable(this.tableName)
+    this.initialized = this.#createTableIfNotExists()
+  }
 
-      if (hasTable) {
-        resolve()
-        return
-      }
+  /**
+   * Create the cache table if it doesn't exist
+   */
+  async #createTableIfNotExists() {
+    const hasTable = await this.connection.schema.hasTable(this.tableName)
+    if (hasTable) return
 
-      this.connection.schema
-        .createTable(this.tableName, (table) => {
-          table.string('key', 255).notNullable().primary()
-          table.text('value', 'longtext')
-          table.timestamp('expires_at').nullable()
-        })
-        .then(() => resolve())
-        .catch((err) => reject(err))
+    await this.connection.schema.createTable(this.tableName, (table) => {
+      table.string('key', 255).notNullable().primary()
+      table.text('value', 'longtext')
+      table.timestamp('expires_at').nullable()
     })
   }
 
+  /**
+   * Check if the given timestamp is expired
+   */
+  #isExpired(expiration: number) {
+    return expiration !== null && expiration < Date.now()
+  }
+
+  /**
+   * Create a Knex connection instance
+   */
   #createConnection(config: SqlConfig) {
     if (typeof config.connection === 'string') {
       return knex({ client: this.dialect, connection: config.connection, useNullAsDefault: true })
     }
 
-    // This looks hacky. Maybe we can find a better way to do this?
-    // We check if config.connection is a Knex object
+    /**
+     * This looks hacky. Maybe we can find a better way to do this?
+     * We check if config.connection is a Knex object. If it is, we
+     * return it as is. If it's not, we create a new Knex object
+     */
     if ('with' in config.connection!) {
       return config.connection
     }
@@ -61,10 +100,6 @@ export abstract class BaseSql extends BaseDriver {
     })
   }
 
-  #isExpired(expiration: number) {
-    return expiration !== null && expiration < Date.now()
-  }
-
   /**
    * Get a value from the cache
    */
@@ -77,9 +112,7 @@ export abstract class BaseSql extends BaseDriver {
       .where('key', this.getItemKey(key))
       .first()
 
-    if (!result) {
-      return
-    }
+    if (!result) return
 
     if (this.#isExpired(result.expires_at)) {
       await this.delete(key)
@@ -96,27 +129,27 @@ export abstract class BaseSql extends BaseDriver {
    */
   async pull(key: string) {
     const value = await this.get(key)
-
-    if (value) {
-      await this.delete(key)
-    }
+    if (value) await this.delete(key)
 
     return value
   }
 
   /**
-   * Put a value in the cache
+   * Set a value in the cache
    * Returns true if the value was set, false otherwise
    */
   async set(key: string, value: any, ttl?: number) {
     await this.initialized
+
+    const row = {
+      key: this.getItemKey(key),
+      value: value,
+      expires_at: ttl ? new Date(Date.now() + ttl) : null,
+    }
+
     await this.connection
       .from(this.tableName)
-      .insert({
-        key: this.getItemKey(key),
-        value: value,
-        expires_at: ttl ? new Date(Date.now() + ttl) : null,
-      })
+      .insert(row)
       .onConflict('key')
       .merge(['value', 'expires_at'])
 
@@ -135,9 +168,7 @@ export abstract class BaseSql extends BaseDriver {
       .where('key', this.getItemKey(key))
       .first()
 
-    if (!result) {
-      return false
-    }
+    if (!result) return false
 
     if (this.#isExpired(result.expires_at)) {
       await this.delete(key)
@@ -177,17 +208,15 @@ export abstract class BaseSql extends BaseDriver {
   async deleteMany(keys: string[]) {
     await this.initialized
 
-    const result = await this.connection
-      .from(this.tableName)
-      .whereIn(
-        'key',
-        keys.map((key) => this.getItemKey(key))
-      )
-      .delete()
+    keys = keys.map((key) => this.getItemKey(key))
+    const result = await this.connection.from(this.tableName).whereIn('key', keys).delete()
 
     return result > 0
   }
 
+  /**
+   * Disconnect from the database
+   */
   async disconnect() {
     await this.connection.destroy()
   }
