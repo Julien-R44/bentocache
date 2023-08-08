@@ -22,3 +22,8 @@ export interface BusDriver {
   unsubscribe(channel: string): Promise<void>
   disconnect(): Promise<void>
 }
+
+export interface BusEncoder {
+  encode(message: CacheBusMessage): string | Buffer
+  decode(data: string): CacheBusMessage
+}

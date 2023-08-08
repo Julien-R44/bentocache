@@ -1,7 +1,9 @@
-import { randomUUID } from 'node:crypto'
+import { createId } from '@paralleldrive/cuid2'
 import { Redis as IoRedis, type RedisOptions as IoRedisOptions } from 'ioredis'
 
-import type { BusDriver, CacheBusMessage } from '../../types/bus.js'
+import type { BusEncoder } from '../../types/bus.js'
+import { BinaryEncoder } from '../encoders/binary_encoder.js'
+import { type BusDriver, type CacheBusMessage } from '../../types/bus.js'
 
 /**
  * A Redis Bus driver
@@ -14,7 +16,7 @@ export class RedisBus implements BusDriver {
    * that is used to prevent the bus from
    * emitting events to itself
    */
-  #id = randomUUID()
+  #id = createId()
 
   /**
    * The Redis client used to publish messages
@@ -30,9 +32,18 @@ export class RedisBus implements BusDriver {
    */
   #subscriber: IoRedis
 
-  constructor(connection: IoRedisOptions) {
+  /**
+   * The encoder used to encode and decode messages
+   *
+   * By default, we use the BinaryEncoder. See the benchmarks
+   * file for more information
+   */
+  #encoder: BusEncoder
+
+  constructor(connection: IoRedisOptions, encoder?: BusEncoder) {
     this.#subscriber = new IoRedis(connection)
     this.#publisher = new IoRedis(connection)
+    this.#encoder = encoder ?? new BinaryEncoder()
   }
 
   /**
@@ -48,7 +59,7 @@ export class RedisBus implements BusDriver {
     this.#subscriber.on('message', (receivedChannel, message) => {
       if (channelName !== receivedChannel) return
 
-      const data = JSON.parse(message)
+      const data = this.#encoder.decode(message)
 
       /**
        * Ignore messages published by this bus instance
@@ -70,7 +81,10 @@ export class RedisBus implements BusDriver {
    * Publishes a message to the given channel
    */
   async publish(channelName: string, message: Omit<CacheBusMessage, 'busId'>): Promise<void> {
-    await this.#publisher.publish(channelName, JSON.stringify({ busId: this.#id, ...message }))
+    const data = { busId: this.#id, ...message }
+    const encoded = this.#encoder.encode(data)
+
+    await this.#publisher.publish(channelName, encoded)
   }
 
   /**
