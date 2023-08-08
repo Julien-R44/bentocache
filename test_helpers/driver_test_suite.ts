@@ -258,6 +258,6 @@ export function registerApiTestSuite<T extends CacheDriverConstructor>({
       assert.deepEqual(r2, 'value2')
       assert.deepEqual(r3, 'value2')
       assert.deepEqual(r4, 'value2')
-    }).pin()
+    })
   })
 }
