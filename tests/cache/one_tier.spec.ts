@@ -348,8 +348,6 @@ test.group('One tier tests', () => {
     assert.deepEqual(r1, { foo: 'bar' })
     assert.deepEqual(r2, { foo: 'bar' })
     assert.deepEqual(r3, { foo: 'bar' })
-
-    console.log
     assert.deepEqual(r4, { foo: 'baz' })
   })
 

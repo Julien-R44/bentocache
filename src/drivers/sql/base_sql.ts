@@ -57,7 +57,7 @@ export abstract class BaseSql extends BaseDriver {
     return new (this.constructor as any)({
       ...this.config,
       connection: this.connection,
-      prefix: this.joinPrefixes(this.getPrefix(), namespace),
+      prefix: this.createNamespacePrefix(namespace),
     })
   }
 
@@ -153,7 +153,7 @@ export abstract class BaseSql extends BaseDriver {
   async clear() {
     await this.initialized
 
-    await this.connection.from(this.tableName).where('key', 'like', `${this.getPrefix()}%`).delete()
+    await this.connection.from(this.tableName).where('key', 'like', `${this.prefix}%`).delete()
   }
 
   /**

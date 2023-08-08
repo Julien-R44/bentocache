@@ -16,7 +16,6 @@ import {
   ScanCommand,
   type AttributeValue,
   ConditionalCheckFailedException,
-  BatchGetItemCommand,
 } from '@aws-sdk/client-dynamodb'
 import is from '@sindresorhus/is'
 import chunkify from '@sindresorhus/chunkify'
@@ -90,7 +89,7 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
           '#key': 'key',
         },
         ExpressionAttributeValues: {
-          ':prefix': { S: this.getPrefix() },
+          ':prefix': { S: this.prefix },
         },
         ExclusiveStartKey: exclusiveStartKey,
       })
@@ -157,7 +156,7 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
     return new DynamoDB({
       ...this.config,
       client: this.#client,
-      prefix: this.joinPrefixes(this.getPrefix(), namespace),
+      prefix: this.createNamespacePrefix(namespace),
     })
   }
 

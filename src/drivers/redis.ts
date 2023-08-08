@@ -37,7 +37,7 @@ export class Redis extends BaseDriver implements CacheDriver {
     return new Redis({
       ...this.config,
       connection: this.#connection,
-      prefix: this.joinPrefixes(this.getPrefix(), namespace),
+      prefix: this.createNamespacePrefix(namespace),
     })
   }
 
@@ -88,7 +88,7 @@ export class Redis extends BaseDriver implements CacheDriver {
    * Remove all items from the cache
    */
   async clear() {
-    const keys = await this.#connection.keys(`${this.getPrefix()}*`)
+    const keys = await this.#connection.keys(`${this.prefix}*`)
 
     if (keys.length) {
       await this.#connection.del(keys)

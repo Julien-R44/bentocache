@@ -241,5 +241,14 @@ export function registerApiTestSuite<T extends CacheDriverConstructor>({
       assert.isUndefined(await cache.get('key1'))
       assert.isUndefined(await fooNamespace.get('key2'))
     })
+
+    test('should be able to access namespaced key from root if prefixed', async ({ assert }) => {
+      const users = cache.namespace('users')
+      users.set('key1', 'value1')
+
+      const result = await cache.get('users:key1')
+
+      assert.deepEqual(result, 'value1')
+    })
   })
 }

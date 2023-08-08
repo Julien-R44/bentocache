@@ -34,7 +34,7 @@ export class Memory extends BaseDriver implements CacheDriver {
     return new Memory({
       ...this.config,
       lruInstance: this.#lru,
-      prefix: this.joinPrefixes(this.getPrefix(), namespace),
+      prefix: this.createNamespacePrefix(namespace),
     })
   }
 
@@ -82,7 +82,7 @@ export class Memory extends BaseDriver implements CacheDriver {
   async clear() {
     const keys = [...this.#lru.keys()]
     for (const key of keys) {
-      if (key.startsWith(this.getPrefix())) {
+      if (key.startsWith(this.prefix)) {
         this.#lru.delete(key)
       }
     }

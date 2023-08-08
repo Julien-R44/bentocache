@@ -51,7 +51,7 @@ export class CloudflareKv extends BaseDriver implements CacheDriver {
   namespace(namespace: string) {
     return new CloudflareKv({
       ...this.config,
-      prefix: this.joinPrefixes(this.getPrefix(), namespace),
+      prefix: this.createNamespacePrefix(namespace),
     })
   }
 
@@ -120,7 +120,7 @@ export class CloudflareKv extends BaseDriver implements CacheDriver {
    */
   async clear() {
     const result = await this.#got
-      .get(`keys`, { searchParams: { prefix: this.getPrefix() } })
+      .get(`keys`, { searchParams: { prefix: this.prefix } })
       .json<{ result: { name: string }[] }>()
 
     await this.deleteMany(

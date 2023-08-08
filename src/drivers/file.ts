@@ -27,7 +27,7 @@ export class File extends BaseDriver implements CacheDriver {
   }
 
   #keyToPath(key: string) {
-    const keyWithoutPrefix = key.replace(this.getPrefix(), '')
+    const keyWithoutPrefix = key.replace(this.prefix, '')
 
     let re = /(\.\/|\.\.\/)/g
     if (re.test(key)) {
@@ -69,7 +69,7 @@ export class File extends BaseDriver implements CacheDriver {
   namespace(namespace: string) {
     return new File({
       ...this.config,
-      prefix: this.joinPrefixes(this.getPrefix(), namespace),
+      prefix: this.createNamespacePrefix(namespace),
     })
   }
 
