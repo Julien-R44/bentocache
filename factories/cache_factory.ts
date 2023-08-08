@@ -82,6 +82,7 @@ export class CacheFactory {
     this.#parameters.localDriver = this.#createLocalDriver()
     this.#parameters.remoteDriver = this.#createRemoteDriver()
     this.#parameters.busDriver = this.#parameters.busDriver ?? new MemoryBus(createId())
+    // this.#parameters.busDriver = new RedisBus(createId(), REDIS_CREDENTIALS)
 
     return this
   }

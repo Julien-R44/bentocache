@@ -1,7 +1,6 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
-import { traceLogger } from '../../test_helpers/index.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 import { ChaosBus } from '../../test_helpers/chaos/chaos_bus.js'
@@ -36,18 +35,9 @@ test.group('Bus synchronization', () => {
     const bus2 = new ChaosBus(new MemoryBus())
     const bus3 = new ChaosBus(new MemoryBus())
 
-    const [cache1] = new CacheFactory()
-      .withHybridConfig()
-      .merge({ busDriver: bus1, logger: traceLogger(false) })
-      .create()
-    const [cache2] = new CacheFactory()
-      .withHybridConfig()
-      .merge({ busDriver: bus2, logger: traceLogger(false) })
-      .create()
-    const [cache3] = new CacheFactory()
-      .withHybridConfig()
-      .merge({ busDriver: bus3, logger: traceLogger(false) })
-      .create()
+    const [cache1] = new CacheFactory().withHybridConfig().merge({ busDriver: bus1 }).create()
+    const [cache2] = new CacheFactory().withHybridConfig().merge({ busDriver: bus2 }).create()
+    const [cache3] = new CacheFactory().withHybridConfig().merge({ busDriver: bus3 }).create()
 
     bus1.alwaysThrow()
     bus2.alwaysThrow()
