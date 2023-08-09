@@ -1,10 +1,10 @@
 import { createId } from '@paralleldrive/cuid2'
 
 import { RetryQueue } from './retry_queue.js'
-import type { LocalCache } from '../local_cache.js'
+import type { LocalCache } from '../cache/local_cache.js'
 import { CacheBusMessageType } from '../types/bus.js'
-import { BusMessageReceived } from '../events/bus_message_received.js'
-import { BusMessagePublished } from '../events/bus_message_published.js'
+import { BusMessageReceived } from '../events/bus/bus_message_received.js'
+import { BusMessagePublished } from '../events/bus/bus_message_published.js'
 import type { BusDriver, CacheBusMessage, Emitter, Logger } from '../types/main.js'
 
 /**

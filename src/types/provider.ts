@@ -1,13 +1,5 @@
-import type { CacheDriver } from './driver.js'
-import type { Factory, Logger, TTL } from './helpers.js'
-import type {
-  BusDriver,
-  CacheSerializer,
-  Emitter,
-  GetOrSetOptions,
-  GracefulRetainOptions,
-  RawCacheOptions,
-} from './main.js'
+import type { Factory, TTL } from './helpers.js'
+import type { GetOrSetOptions, RawCommonOptions } from './main.js'
 
 /**
  * A cache provider is a class that wraps an underlying cache driver
@@ -18,7 +10,7 @@ export interface CacheProvider {
    * Set a value in the cache
    * Returns true if the value was set, false otherwise
    */
-  set(key: string, value: any, options?: RawCacheOptions): Promise<boolean>
+  set(key: string, value: any, options?: RawCommonOptions): Promise<boolean>
 
   /**
    * Set a value in the cache forever
@@ -84,21 +76,4 @@ export interface CacheProvider {
   deleteMany(keys: string[]): Promise<boolean>
   clear(): Promise<void>
   disconnect(): Promise<void>
-}
-
-export type CacheProviderOptions = {
-  mode?: 'hybrid' | 'basic'
-  localDriver?: CacheDriver
-  remoteDriver?: CacheDriver
-  busDriver?: BusDriver
-  emitter: Emitter
-  logger: Logger
-  ttl?: TTL
-  serializer?: CacheSerializer
-  gracefulRetain: GracefulRetainOptions
-  earlyExpiration?: number
-  timeouts?: {
-    soft?: number
-    hard?: number
-  }
 }

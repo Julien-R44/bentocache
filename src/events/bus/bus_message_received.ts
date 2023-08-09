@@ -1,4 +1,4 @@
-import type { CacheBusMessage, CacheEvent } from '../types/main.js'
+import type { CacheBusMessage, CacheEvent } from '../../types/main.js'
 
 /**
  * Event when the bus receives a message

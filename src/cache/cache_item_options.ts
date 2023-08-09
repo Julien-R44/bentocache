@@ -1,14 +1,14 @@
 import { uid } from 'uid'
 import lodash from '@poppinss/utils/lodash'
 
-import { resolveTtl } from './helpers.js'
-import type { FactoryTimeoutOptions, RawCacheOptions } from './types/main.js'
+import { resolveTtl } from '../helpers.js'
+import type { RawCommonOptions } from '../types/main.js'
 
 export class CacheItemOptions {
   /**
    * The options that were passed to the constructor
    */
-  #options: RawCacheOptions
+  #options: RawCommonOptions
 
   /**
    * Unique identifier that will be used when logging
@@ -43,7 +43,7 @@ export class CacheItemOptions {
     hard?: number
   }
 
-  constructor(options: RawCacheOptions = {}, defaults: Partial<RawCacheOptions> = {}) {
+  constructor(options: RawCommonOptions = {}, defaults: Partial<RawCommonOptions> = {}) {
     this.id = uid()
 
     this.#options = lodash.merge({}, defaults, options)
@@ -95,7 +95,7 @@ export class CacheItemOptions {
    * options as the current instance, but with any provided
    * options overriding the current
    */
-  cloneWith(options?: Partial<RawCacheOptions>) {
+  cloneWith(options?: Partial<RawCommonOptions>) {
     return new CacheItemOptions(options, this.#options)
   }
 

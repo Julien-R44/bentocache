@@ -1,4 +1,4 @@
-import type { CacheEvent } from '../types/main.js'
+import type { CacheEvent } from '../../types/main.js'
 
 /**
  * Event emitted when a cache entry is hit

@@ -7,37 +7,32 @@
  * file that was distributed with this source code.
  */
 
-import Emittery from 'emittery'
-
 import type {
   CreateDriverResult,
   CacheEvents,
-  Emitter,
   TTL,
-  GracefulRetainOptions,
   Factory,
   GetOrSetOptions,
-  RawCacheOptions,
-  Logger,
+  RawCommonOptions,
+  RawBentoCacheOptions,
 } from './types/main.js'
 import { resolveTtl } from './helpers.js'
-import { Cache } from './cache.js'
+import { Cache } from './cache/cache.js'
 import type { CacheProvider } from './types/provider.js'
-import { noopLogger } from 'typescript-log'
+import { BentoCacheOptions } from './bento_cache_options.js'
 
 export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
   implements CacheProvider
 {
-  // todo update interface
-  #config: {
-    default?: keyof KnownCaches
-    stores: KnownCaches
-  }
+  /**
+   * Name of the default cache
+   */
+  #defaultCache: keyof KnownCaches
 
   /**
-   * Reference to the event emitter
+   * List of registered caches
    */
-  #emitter: Emitter
+  #stores: KnownCaches
 
   /**
    * Cache of already instantiated drivers
@@ -45,66 +40,33 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
   #driversCache: Map<keyof KnownCaches, CacheProvider> = new Map()
 
   /**
-   * Default TTL for all the drivers when not defined explicitly
-   *
-   * @default 30s
+   * Bento Cache options instance
    */
-  #ttl: number
+  #options: BentoCacheOptions
 
-  #prefix?: string
+  constructor(config: RawBentoCacheOptions & { default: keyof KnownCaches; stores: KnownCaches }) {
+    this.#stores = config.stores
+    this.#defaultCache = config.default
 
-  #gracefulRetain: GracefulRetainOptions
-  #logger: Logger
-
-  constructor(
-    // todo update interface
-    config: {
-      default?: keyof KnownCaches
-      stores: KnownCaches
-      ttl?: TTL
-      prefix?: string
-      gracefulRetain?: GracefulRetainOptions
-      logger?: Logger
-    },
-    // todo move in config
-    emitter?: Emitter
-  ) {
-    this.#config = config
-    this.#emitter = emitter || new Emittery()
-    this.#ttl = resolveTtl(config.ttl, 30_000)!
-    this.#prefix = config.prefix
-
-    this.#gracefulRetain = config.gracefulRetain || {
-      enabled: false,
-      duration: '6h',
-      delay: '30s',
-    }
-
-    this.#logger = (config.logger || noopLogger()).child({ pkg: 'bentocache' })
-    this.#logger.trace('bentocache initialized')
+    this.#options = new BentoCacheOptions(config)
+    this.#options.logger.trace('bentocache initialized')
   }
 
   #createProvider(cacheName: string, registry: CreateDriverResult): CacheProvider {
     const localDriverOptions = {
-      prefix: registry.local.options.prefix || this.#prefix,
-      ttl: resolveTtl(registry.local.options.ttl, this.#ttl),
-      gracefulRetain: this.#gracefulRetain,
+      prefix: registry.local.options.prefix || this.#options.prefix,
+      ttl: resolveTtl(registry.local.options.ttl, this.#options.ttl),
     }
 
     const remoteDriverOptions = {
-      prefix: registry.remote?.options.prefix || this.#prefix,
-      ttl: resolveTtl(registry.remote?.options.ttl, this.#ttl),
-      gracefulRetain: this.#gracefulRetain,
+      prefix: registry.remote?.options.prefix || this.#options.prefix,
+      ttl: resolveTtl(registry.remote?.options.ttl, this.#options.ttl),
     }
 
-    return new Cache(cacheName, {
+    return new Cache(cacheName, this.#options, {
       localDriver: registry.local.factory(localDriverOptions),
       remoteDriver: registry.remote?.factory(remoteDriverOptions),
       busDriver: registry.bus?.factory(registry.bus.options),
-      emitter: this.#emitter,
-      logger: this.#logger,
-      ttl: localDriverOptions.ttl,
-      gracefulRetain: this.#gracefulRetain,
     })
   }
 
@@ -112,7 +74,7 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
    * Use a registered cache driver
    */
   use<CacheName extends keyof KnownCaches>(cache?: CacheName) {
-    let cacheToUse: keyof KnownCaches | undefined = cache || this.#config.default
+    let cacheToUse: keyof KnownCaches | undefined = cache || this.#defaultCache
     if (!cacheToUse) throw new Error('No cache driver selected')
 
     /**
@@ -125,7 +87,7 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
     /**
      * Otherwise create a new instance and cache it
      */
-    const provider = this.#createProvider(cacheToUse as string, this.#config.stores[cacheToUse])
+    const provider = this.#createProvider(cacheToUse as string, this.#stores[cacheToUse])
     this.#driversCache.set(cacheToUse, provider)
 
     return provider
@@ -135,7 +97,7 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
    * Subscribe to a given cache event
    */
   on<Event extends keyof CacheEvents>(event: Event, callback: (arg: CacheEvents[Event]) => void) {
-    this.#emitter.on(event, callback)
+    this.#options.emitter.on(event, callback)
     return this
   }
 
@@ -143,7 +105,7 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
    * Subscribe to a given cache event only once
    */
   once<Event extends keyof CacheEvents>(event: Event, callback: (arg: CacheEvents[Event]) => void) {
-    this.#emitter.once(event, callback)
+    this.#options.emitter.once(event, callback)
     return this
   }
 
@@ -151,7 +113,7 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
    * Unsubscribe the callback from the given event
    */
   off<Event extends keyof CacheEvents>(event: Event, callback: (arg: CacheEvents[Event]) => void) {
-    this.#emitter.off(event, callback)
+    this.#options.emitter.off(event, callback)
     return this
   }
 
@@ -180,7 +142,7 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
    * Put a value in the cache
    * Returns true if the value was set, false otherwise
    */
-  async set(key: string, value: any, options?: RawCacheOptions) {
+  async set(key: string, value: any, options?: RawCommonOptions) {
     return this.use().set(key, value, options)
   }
 
@@ -269,6 +231,6 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
    * Disconnect all cache connections created by the manager
    */
   async disconnectAll(): Promise<void> {
-    await Promise.all(Object.keys(this.#config.stores).map((cache) => this.use(cache).disconnect()))
+    await Promise.all(Object.keys(this.#stores).map((cache) => this.use(cache).disconnect()))
   }
 }

@@ -1,9 +1,9 @@
-import type { BusMessagePublished } from '../events/bus_message_published.js'
-import type { CacheCleared } from '../events/cache_cleared.js'
-import type { CacheDeleted } from '../events/cache_deleted.js'
-import type { CacheHit } from '../events/cache_hit.js'
-import type { CacheMiss } from '../events/cache_miss.js'
-import type { CacheWritten } from '../events/cache_written.js'
+import type { CacheHit } from '../events/cache/cache_hit.js'
+import type { CacheMiss } from '../events/cache/cache_miss.js'
+import type { CacheWritten } from '../events/cache/cache_written.js'
+import type { CacheCleared } from '../events/cache/cache_cleared.js'
+import type { CacheDeleted } from '../events/cache/cache_deleted.js'
+import type { BusMessagePublished } from '../events/bus/bus_message_published.js'
 
 /**
  * Shape of the emitter accepted by BentoCache

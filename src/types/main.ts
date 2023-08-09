@@ -1,15 +1,7 @@
-/*
- * @adonisjs/cache
- *
- * (c) AdonisJS
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import type { BusDriver } from './bus.js'
 import type { CacheDriver } from './driver.js'
-import type { TTL } from './helpers.js'
+import type { Emitter } from './events.js'
+import type { Logger, TTL } from './helpers.js'
 
 export * from './events.js'
 export * from './options.js'
@@ -17,18 +9,47 @@ export * from './helpers.js'
 export * from './driver.js'
 export * from './provider.js'
 export * from './bus.js'
+export * from './methods_options.js'
 
-export type FactoryTimeoutOptions = {
-  soft?: TTL
-  hard?: TTL
+export type RawBentoCacheOptions = {
+  logger?: Logger
+  emitter?: Emitter
+  prefix?: string
+} & RawCommonOptions
+
+export type CacheProviderOptions = {
+  localDriver?: CacheDriver
+  remoteDriver?: CacheDriver
+  busDriver?: BusDriver
+  logger: Logger
+  emitter: Emitter
+  ttl: number
+  gracefulRetain: GracefulRetainOptions
+  earlyExpiration: number
+  suppressRemoteCacheErrors: boolean
+  timeouts?: FactoryTimeoutOptions
 }
 
-export type RawCacheOptions = {
+export type RawCommonOptions = {
   ttl?: TTL
   gracefulRetain?: GracefulRetainOptions
   earlyExpiration?: number
   suppressRemoteCacheErrors?: boolean
   timeouts?: FactoryTimeoutOptions
+}
+
+/**
+ * The options that can be passed when creating
+ * a cache driver like `memoryDriver({ ... })
+ */
+export type CacheDriverOptions = {
+  ttl?: TTL
+  prefix?: string
+}
+
+export type FactoryTimeoutOptions = {
+  soft?: TTL
+  hard?: TTL
 }
 
 export type GracefulRetainOptions = {
@@ -37,17 +58,7 @@ export type GracefulRetainOptions = {
   delay?: TTL
 }
 
-export type GetOrSetOptions = Pick<
-  RawCacheOptions,
-  'earlyExpiration' | 'gracefulRetain' | 'suppressRemoteCacheErrors'
->
-
 export type CacheDriverFactory = (config: any) => CacheDriver
-
-export type CacheDriverOptions = {
-  ttl?: TTL
-  prefix?: string
-}
 
 export type CreateDriverResult = {
   local: {
@@ -61,14 +72,11 @@ export type CreateDriverResult = {
   bus?: CreateBusDriverResult
 }
 
-export type CacheBusOptions = {
-  //
-}
-
 export type CacheBusFactory = (config: any) => BusDriver
 
 export type CreateBusDriverResult = {
-  options: CacheBusOptions
+  // TODO
+  options: any
   factory: CacheBusFactory
 }
 

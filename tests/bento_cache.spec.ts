@@ -11,18 +11,28 @@ import Emittery from 'emittery'
 import { test } from '@japa/runner'
 import EventEmitter from 'node:events'
 
-import { redisBusDriver, redisDriver } from '../drivers/redis.js'
 import { BentoCache } from '../src/bento_cache.js'
 import { memoryDriver } from '../drivers/memory.js'
 import { hybridDriver } from '../drivers/hybrid.js'
 import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
+import { redisBusDriver, redisDriver } from '../drivers/redis.js'
 import { BentoCacheFactory } from '../factories/bentocache_factory.js'
 
 test.group('Bento Cache', () => {
   test('should accept EventEmitter or Emittery', async () => {
     // This test only rely type-checking
-    new BentoCache({ default: 'memory', stores: { memory: memoryDriver({}) } }, new EventEmitter())
-    new BentoCache({ default: 'memory', stores: { memory: memoryDriver({}) } }, new Emittery())
+
+    new BentoCache({
+      default: 'memory',
+      stores: { memory: memoryDriver({}) },
+      emitter: new EventEmitter(),
+    })
+
+    new BentoCache({
+      default: 'memory',
+      stores: { memory: memoryDriver({}) },
+      emitter: new Emittery(),
+    })
   })
 
   test('Subscribe to an event', async ({ assert }) => {

@@ -1,4 +1,4 @@
-import { JsonSerializer } from './serializers/json.js'
+import { JsonSerializer } from '../serializers/json.js'
 
 /**
  * Represents a cache item stored inside a distributed cache driver.

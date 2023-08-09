@@ -1,6 +1,6 @@
 import string from '@poppinss/utils/string'
 import { test } from '@japa/runner'
-import { CacheItemOptions } from '../../src/cache_options.js'
+import { CacheItemOptions } from '../../src/cache/cache_item_options.js'
 
 test.group('Cache Options', () => {
   test('override defaults', ({ assert }) => {

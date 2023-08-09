@@ -1,6 +1,6 @@
 import { CacheItem } from './cache_item.js'
-import type { CacheItemOptions } from './cache_options.js'
-import type { CacheDriver, Logger } from './types/main.js'
+import type { CacheItemOptions } from './cache_item_options.js'
+import type { CacheDriver, Logger } from '../types/main.js'
 
 /**
  * RemoteCache is a wrapper around a CacheDriver that provides
@@ -85,5 +85,33 @@ export class RemoteCache {
 
       return false
     }
+  }
+
+  /**
+   * Create a new namespace for the remote cache
+   */
+  namespace(namespace: string) {
+    return this.#driver.namespace(namespace)
+  }
+
+  /**
+   * Check if an item exists in the remote cache
+   */
+  has(key: string) {
+    return this.#driver.has(key)
+  }
+
+  /**
+   * Clear the remote cache
+   */
+  clear() {
+    return this.#driver.clear()
+  }
+
+  /**
+   * Disconnect from the remote cache
+   */
+  disconnect() {
+    return this.#driver.disconnect()
   }
 }

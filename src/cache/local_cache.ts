@@ -1,6 +1,6 @@
 import { CacheItem } from './cache_item.js'
-import type { CacheItemOptions } from './cache_options.js'
-import type { Logger, CacheDriver } from './types/main.js'
+import type { CacheItemOptions } from './cache_item_options.js'
+import type { Logger, CacheDriver } from '../types/main.js'
 
 /**
  * LocalCache is a wrapper around a CacheDriver that provides a
@@ -18,7 +18,7 @@ export class LocalCache {
   /**
    * Get an item from the local cache
    */
-  async get(key: string, options: CacheItemOptions) {
+  async get(key: string, _options: CacheItemOptions) {
     let value: undefined | string
 
     /**
@@ -59,7 +59,7 @@ export class LocalCache {
   /**
    * Delete an item from the local cache
    */
-  async delete(key: string, options?: CacheItemOptions) {
+  async delete(key: string, _options?: CacheItemOptions) {
     this.#logger.trace({ key }, 'deleting local cache item')
     await this.#driver.delete(key)
   }
@@ -70,5 +70,33 @@ export class LocalCache {
   async deleteMany(keys: string[], options?: CacheItemOptions) {
     this.#logger.trace({ keys, options }, 'deleting local cache items')
     await this.#driver.deleteMany(keys)
+  }
+
+  /**
+   * Create a new namespace for the local cache
+   */
+  namespace(namespace: string) {
+    return this.#driver.namespace(namespace)
+  }
+
+  /**
+   * Check if an item exists in the local cache
+   */
+  has(key: string) {
+    return this.#driver.has(key)
+  }
+
+  /**
+   * Clear the local cache
+   */
+  clear() {
+    return this.#driver.clear()
+  }
+
+  /**
+   * Disconnect from the local cache
+   */
+  disconnect() {
+    return this.#driver.disconnect()
   }
 }
