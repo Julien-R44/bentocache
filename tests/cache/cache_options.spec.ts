@@ -77,4 +77,39 @@ test.group('Cache Options', () => {
 
     assert.deepEqual(clone.logicalTtl, undefined)
   })
+
+  test('should assign timeouts', ({ assert }) => {
+    const options = new CacheItemOptions({
+      ttl: '10m',
+      timeouts: { soft: '1m', hard: '2m' },
+    })
+
+    assert.deepEqual(options.timeouts?.soft, string.milliseconds.parse('1m'))
+    assert.deepEqual(options.timeouts?.hard, string.milliseconds.parse('2m'))
+  })
+
+  test('should be able to override timeouts', ({ assert }) => {
+    const options = new CacheItemOptions({
+      ttl: '10m',
+      timeouts: { soft: '1m', hard: '2m' },
+    })
+
+    const clone = options.cloneWith({ timeouts: { soft: '3m' } })
+
+    assert.deepEqual(clone.timeouts?.soft, string.milliseconds.parse('3m'))
+    assert.deepEqual(clone.timeouts?.hard, string.milliseconds.parse('2m'))
+  })
+
+  test('cloneWith should not mutate original', ({ assert }) => {
+    const r1 = new CacheItemOptions({
+      gracefulRetain: { enabled: false, duration: '30m' },
+    })
+
+    const r2 = r1.cloneWith({
+      gracefulRetain: { enabled: true, duration: '60m' },
+    })
+
+    assert.isFalse(r1.isGracefulRetainEnabled)
+    assert.isTrue(r2.isGracefulRetainEnabled)
+  })
 })

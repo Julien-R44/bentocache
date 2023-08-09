@@ -3,8 +3,34 @@ import { setTimeout } from 'node:timers/promises'
 
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { throwingFactory } from '../../test_helpers/index.js'
+import { Memory } from '../../src/drivers/memory.js'
 
 test.group('Cache | Stampede protection', () => {
+  test('multiple concurrent calls should ask remote only once', async ({ assert }) => {
+    class RemoteDriver extends Memory {
+      askedKeys: string[] = []
+
+      get(key: string) {
+        this.askedKeys.push(key)
+        return super.get(key)
+      }
+    }
+
+    const remoteDriver = new RemoteDriver({})
+    const { cache } = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
+
+    const results = await Promise.all([
+      cache.getOrSet('key', async () => 42),
+      cache.getOrSet('key', async () => 42),
+      cache.getOrSet('key', async () => 42),
+      cache.getOrSet('key', async () => 42),
+      cache.getOrSet('key', async () => 42),
+    ])
+
+    assert.deepEqual(results, [42, 42, 42, 42, 42])
+    assert.deepEqual(remoteDriver.askedKeys, ['key'])
+  })
+
   test('getOrSet() factory should be called only once', async ({ assert }) => {
     const { cache } = new CacheFactory().create()
     let factoryCalls = 0

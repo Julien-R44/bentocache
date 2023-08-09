@@ -18,11 +18,17 @@ export * from './driver.js'
 export * from './provider.js'
 export * from './bus.js'
 
+export type FactoryTimeoutOptions = {
+  soft?: TTL
+  hard?: TTL
+}
+
 export type RawCacheOptions = {
   ttl?: TTL
   gracefulRetain?: GracefulRetainOptions
   earlyExpiration?: number
   suppressRemoteCacheErrors?: boolean
+  timeouts?: FactoryTimeoutOptions
 }
 
 export type GracefulRetainOptions = {

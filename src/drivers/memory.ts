@@ -3,6 +3,9 @@ import QuickLRU from 'quick-lru'
 import { BaseDriver } from './base_driver.js'
 import type { CacheDriver, CachedValue, MemoryConfig as MemoryConfig } from '../types/main.js'
 
+/**
+ * A memory caching driver using LRU algorithm
+ */
 export class Memory extends BaseDriver implements CacheDriver {
   #lru: QuickLRU<string, CachedValue>
   declare config: MemoryConfig

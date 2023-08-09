@@ -1,4 +1,4 @@
-import type { Mutex } from 'async-mutex'
+import type { MutexInterface } from 'async-mutex'
 import { resolveTtl } from './helpers.js'
 import { JsonSerializer } from './serializers/json.js'
 import type { CachedValue, TTL } from './types/helpers.js'
@@ -19,9 +19,13 @@ export abstract class BaseProvider {
   protected serializer: CacheSerializer = new JsonSerializer()
   protected gracefulRetain: GracefulRetainOptions
   protected earlyExpiration?: number
+  protected timeouts?: {
+    soft?: number
+    hard?: number
+  }
   protected defaultCacheOptions: CacheItemOptions
 
-  protected locks = new Map<string, Mutex>()
+  protected locks = new Map<string, MutexInterface>()
 
   constructor(
     protected name: string,
@@ -39,6 +43,7 @@ export abstract class BaseProvider {
       ttl: this.defaultTtl,
       gracefulRetain: this.gracefulRetain,
       earlyExpiration: this.earlyExpiration,
+      timeouts: options.timeouts,
     })
   }
 
@@ -80,14 +85,11 @@ export abstract class BaseProvider {
       resolvedOptions = options!
     }
 
-    const cacheOptions = new CacheItemOptions(
-      { ttl, ...resolvedOptions },
-      {
-        ttl: this.defaultTtl,
-        gracefulRetain: this.gracefulRetain,
-        earlyExpiration: this.earlyExpiration,
-      }
-    )
+    const cacheOptions = this.defaultCacheOptions.cloneWith({
+      ttl,
+      timeouts: undefined,
+      ...resolvedOptions,
+    })
 
     return { ttl, factory, options: cacheOptions }
   }

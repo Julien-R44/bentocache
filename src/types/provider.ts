@@ -97,4 +97,8 @@ export type CacheProviderOptions = {
   serializer?: CacheSerializer
   gracefulRetain: GracefulRetainOptions
   earlyExpiration?: number
+  timeouts?: {
+    soft?: number
+    hard?: number
+  }
 }

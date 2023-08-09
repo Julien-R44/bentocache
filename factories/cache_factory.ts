@@ -35,6 +35,10 @@ type FactoryParameters = {
   busDriver: BusDriver
   gracefulRetain: GracefulRetainOptions
   earlyExpiration: number
+  timeouts?: {
+    soft?: number
+    hard?: number
+  }
 }
 
 /**
@@ -71,7 +75,7 @@ export class CacheFactory {
    * Merge custom parameters with the default parameters
    */
   merge(parameters: Partial<FactoryParameters>) {
-    this.#parameters = lodash.merge(this.#parameters, parameters)
+    this.#parameters = lodash.merge({}, this.#parameters, parameters)
     return this
   }
 
@@ -105,6 +109,7 @@ export class CacheFactory {
       logger: this.#parameters.logger || noopLogger(),
       gracefulRetain: this.#parameters.gracefulRetain ?? { enabled: false },
       earlyExpiration: this.#parameters.earlyExpiration,
+      timeouts: this.#parameters.timeouts,
     })
 
     if (autoCleanup) {

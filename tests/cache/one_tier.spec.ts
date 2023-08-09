@@ -442,4 +442,34 @@ test.group('One tier tests', () => {
     assert.deepEqual(r4, { foo: 'baz' })
     assert.isUndefined(r5)
   })
+
+  test('soft timeout should returns old value if factory take too long', async ({ assert }) => {
+    const { cache } = new CacheFactory()
+      .merge({
+        ttl: 100,
+        timeouts: { soft: 500 },
+        gracefulRetain: { enabled: true, duration: '10m' },
+      })
+      .create()
+
+    // init the cache
+    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
+
+    // wait for expiration
+    await setTimeout(100)
+
+    // factory that will exceed soft timeout
+    const r2 = await cache.getOrSet('key1', waitAndReturnFactory(550, { foo: 'baz' }))
+
+    // wait til factory is done
+    await setTimeout(50)
+
+    // get the value
+    const r3 = await cache.getOrSet('key1', () => ({ foo: 'bazzz' }))
+
+    assert.deepEqual(r1, r2)
+    assert.deepEqual(r3, { foo: 'baz' })
+  })
+    .disableTimeout()
+    .skip()
 })

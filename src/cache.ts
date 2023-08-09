@@ -9,7 +9,7 @@
 
 import { Mutex } from 'async-mutex'
 
-import { CacheItem } from './cache_item.js'
+import type { CacheItem } from './cache_item.js'
 import { BaseProvider } from './base_cache.js'
 import { CacheHit } from './events/cache_hit.js'
 import { CacheMiss } from './events/cache_miss.js'
@@ -226,6 +226,7 @@ export class Cache extends BaseProvider implements CacheProvider {
    * Refreshes the value of a cache
    */
   async #earlyExpirationRefresh(key: string, factory: Factory, options: CacheItemOptions) {
+    this.#logger.debug({ key, name: this.name, opId: options.id }, 'try to early refresh')
     let lock = this.#getOrCreateLock(key)
 
     /**
@@ -237,32 +238,25 @@ export class Cache extends BaseProvider implements CacheProvider {
     }
 
     await lock.runExclusive(async () => {
+      this.#logger.trace({ key, cache: this.name, opId: options.id }, 'acquired lock')
       await this.#set(key, await factory(), options)
     })
   }
 
   async #getOrSet(key: string, factory: Factory, options: CacheItemOptions) {
     let localCacheItem: CacheItem | undefined
-    let localCacheItemLogicallyExpired = false
 
     let remoteCacheItem: CacheItem | undefined
 
     /**
      * First we check the local cache
      */
-    if (this.#localDriver) {
-      const localItem = await this.#localDriver.get(key)
-
-      if (localItem !== undefined) {
-        localCacheItem = CacheItem.fromDriver(key, localItem)
-        localCacheItemLogicallyExpired = localCacheItem.isLogicallyExpired()
-      }
-    }
+    localCacheItem = await this.#localCache?.get(key, options)
 
     /**
      * We found the value in the local cache and it's not logically expired
      */
-    if (localCacheItem && !localCacheItemLogicallyExpired) {
+    if (localCacheItem && !localCacheItem.isLogicallyExpired()) {
       /**
        * Check if we need to early refresh the value
        */
@@ -279,103 +273,110 @@ export class Cache extends BaseProvider implements CacheProvider {
     }
 
     /**
-     * Since we didnt find the value in the local cache,
-     * we check the remote cache
-     */
-    if (this.#remoteCache) {
-      remoteCacheItem = await this.#remoteCache.get(key, options)
-
-      /**
-       * We found the value in the remote cache and it's not logically expired
-       * We need to set it in the local cache
-       */
-      if (remoteCacheItem && !remoteCacheItem.isLogicallyExpired()) {
-        await this.#localCache?.set(key, remoteCacheItem.serialize(), options)
-        this.emit(new CacheHit(key, remoteCacheItem.getValue(), this.name))
-        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'remote cache hit')
-        return remoteCacheItem.getValue()
-      }
-    }
-
-    /**
-     * We didnt find the value in the local or remote cache
+     * We didn't find the value in the local or remote cache
      * We need to run the factory and set the value in the different caches
      */
     const lock = this.#getOrCreateLock(key)
-    const release = await lock.acquire()
 
-    let staleItem: CacheItem | undefined
-    let newCacheItem: any
+    return await lock
+      .runExclusive(async () => {
+        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'acquired lock')
 
-    try {
-      /**
-       * We have to check again if the value is in the cache
-       * since another request might have resolved it while
-       * we were waiting for the lock
-       */
-      staleItem = await this.#localCache?.get(key, options)
-      if (staleItem && !staleItem.isLogicallyExpired()) {
-        this.emit(new CacheHit(key, staleItem.getValue(), this.name))
-        this.#logger.trace(
-          { key, cache: this.name, opId: options.id },
-          'local cache hit after lock'
-        )
-        return staleItem.getValue()
-      }
+        /**
+         * We have to check again if the value is in the cache
+         * since another request might have resolved it while
+         * we were waiting for the lock
+         */
+        localCacheItem = await this.#localCache?.get(key, options)
+        if (localCacheItem && !localCacheItem.isLogicallyExpired()) {
+          this.emit(new CacheHit(key, localCacheItem.getValue(), this.name))
+          this.#logger.trace(
+            { key, cache: this.name, opId: options.id },
+            'local cache hit after lock'
+          )
+          return localCacheItem.getValue()
+        }
 
-      /**
-       * Execute the factory and prepare the cache item to store
-       */
-      newCacheItem = {
-        value: await factory(),
-        logicalExpiration: options.logicalTtlFromNow(),
-        earlyExpiration: options.earlyExpireTtlFromNow(),
-      }
+        /**
+         * Since we didn't find the value in the local cache,
+         * we check the remote cache
+         */
+        remoteCacheItem = await this.#remoteCache?.get(key, options)
 
-      /**
-       * Store in the remote cache if available
-       */
-      if (this.#remoteCache) {
-        await this.#remoteCache.set(key, this.serialize(newCacheItem), options)
-      }
+        /**
+         * We found the value in the remote cache and it's not logically expired
+         * We need to set it in the local cache
+         */
+        if (remoteCacheItem && !remoteCacheItem.isLogicallyExpired()) {
+          this.#logger.trace({ key, cache: this.name, opId: options.id }, 'remote cache hit')
 
-      /**
-       * Store in the local cache if available
-       */
-      if (this.#localCache) {
-        await this.#localCache.set(key, this.serialize(newCacheItem), options)
-      }
+          /**
+           * Set the value in the local cache
+           */
+          await this.#localCache?.set(key, remoteCacheItem.serialize(), options)
 
-      /**
-       * Emit invalidation through the bus
-       */
-      if (this.#bus) {
-        await this.#bus.publish({ keys: [key], type: CacheBusMessageType.Set })
-      }
+          /**
+           * Returns the value
+           */
+          this.emit(new CacheHit(key, remoteCacheItem.getValue(), this.name))
+          return remoteCacheItem.getValue()
+        }
 
-      this.emit(new CacheMiss(key, this.name))
-      this.emit(new CacheWritten(key, newCacheItem.value, this.name))
+        /**
+         * Execute the factory and prepare the cache item to store
+         */
+        const newCacheItem = {
+          value: await factory(),
+          logicalExpiration: options.logicalTtlFromNow(),
+          earlyExpiration: options.earlyExpireTtlFromNow(),
+        }
 
-      this.#logger.trace({ key, cache: this.name, opId: options.id }, 'cache miss')
+        /**
+         * Store in the remote cache if available
+         */
+        await this.#remoteCache?.set(key, this.serialize(newCacheItem), options)
 
-      return newCacheItem.value
-    } catch (error) {
-      this.#logger.trace({ key, cache: this.name, opId: options.id }, 'factory error')
+        /**
+         * Store in the local cache if available
+         */
+        await this.#localCache?.set(key, this.serialize(newCacheItem), options)
 
-      /**
-       * If the factory failed and graceful retain is enabled, we have to
-       * return the old cached value if it exists.
-       */
-      if (options.isGracefulRetainEnabled && staleItem) {
-        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'returns stale value')
-        return staleItem.getValue()
-      }
+        /**
+         * Emit invalidation through the bus
+         */
+        await this.#bus?.publish({ keys: [key], type: CacheBusMessageType.Set })
 
-      throw error
-    } finally {
-      release()
-      this.locks.delete(key)
-    }
+        /**
+         * Emit cache:miss and cache:written events
+         */
+        this.emit(new CacheMiss(key, this.name))
+        this.emit(new CacheWritten(key, newCacheItem.value, this.name))
+
+        /**
+         * Return the value
+         */
+        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'cache miss')
+        return newCacheItem.value
+      })
+      .catch((error) => {
+        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'factory error')
+
+        const staleItem = localCacheItem ?? remoteCacheItem
+
+        /**
+         * If the factory failed and graceful retain is enabled, we have to
+         * return the old cached value if it exists.
+         */
+        if (options.isGracefulRetainEnabled && staleItem) {
+          this.#logger.trace({ key, cache: this.name, opId: options.id }, 'returns stale value')
+          return staleItem.getValue()
+        }
+
+        throw error
+      })
+      .finally(() => {
+        this.locks.delete(key)
+      })
   }
 
   /**
