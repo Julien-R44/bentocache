@@ -169,17 +169,9 @@ export class Cache implements CacheProvider {
       earlyExpiration: options.earlyExpireTtlFromNow(),
     })
 
-    if (this.#localCache) {
-      await this.#localCache.set(key, item, options)
-    }
-
-    if (this.#remoteCache) {
-      await this.#remoteCache!.set(key, item, options)
-    }
-
-    if (this.#bus) {
-      await this.#bus.publish({ type: CacheBusMessageType.Set, keys: [key] })
-    }
+    await this.#localCache?.set(key, item, options)
+    await this.#remoteCache?.set(key, item, options)
+    await this.#bus?.publish({ type: CacheBusMessageType.Set, keys: [key] })
 
     this.#emit(new events.CacheWritten(key, value, this.name))
     return true
@@ -370,48 +362,36 @@ export class Cache implements CacheProvider {
         /**
          * Execute the factory and prepare the cache item to store
          */
-        const newCacheItem = {
+        const item = {
           value: await factory(),
           logicalExpiration: options.logicalTtlFromNow(),
           earlyExpiration: options.earlyExpireTtlFromNow(),
         }
 
-        /**
-         * Store in the remote cache if available
-         */
-        await this.#remoteCache?.set(key, this.#serialize(newCacheItem), options)
-
-        /**
-         * Store in the local cache if available
-         */
-        await this.#localCache?.set(key, this.#serialize(newCacheItem), options)
-
-        /**
-         * Emit invalidation through the bus
-         */
+        await this.#localCache?.set(key, this.#serialize(item), options)
+        await this.#remoteCache?.set(key, this.#serialize(item), options)
         await this.#bus?.publish({ keys: [key], type: CacheBusMessageType.Set })
 
         /**
          * Emit cache:miss and cache:written events
          */
         this.#emit(new events.CacheMiss(key, this.name))
-        this.#emit(new events.CacheWritten(key, newCacheItem.value, this.name))
+        this.#emit(new events.CacheWritten(key, item.value, this.name))
 
         /**
          * Return the value
          */
         this.logger.trace({ key, cache: this.name, opId: options.id }, 'cache miss')
-        return newCacheItem.value
+        return item.value
       })
       .catch((error) => {
         this.logger.trace({ key, cache: this.name, opId: options.id }, 'factory error')
-
-        const staleItem = localCacheItem ?? remoteCacheItem
 
         /**
          * If the factory failed and graceful retain is enabled, we have to
          * return the old cached value if it exists.
          */
+        const staleItem = localCacheItem ?? remoteCacheItem
         if (options.isGracefulRetainEnabled && staleItem) {
           this.logger.trace({ key, cache: this.name, opId: options.id }, 'returns stale value')
           return staleItem.getValue()
