@@ -15,32 +15,6 @@ export type DriverCommonOptions = {
 }
 
 /**
- * Options for Cloudflare KV driver
- */
-export type CloudflareKvConfig = {
-  /**
-   * Cloudflare account ID
-   */
-  accountId: string
-
-  /**
-   * Your Cloudflare KV namespace ID
-   */
-  namespaceId: string
-
-  /**
-   * API token from https://dash.cloudflare.com/profile/api-tokens
-   */
-  apiToken: string
-
-  /**
-   * Should the driver not throw an error when the minimum
-   * TTL is not respected ( 60 seconds )
-   */
-  ignoreMinTtlError?: boolean
-} & DriverCommonOptions
-
-/**
  * Options for DynamoDB driver
  */
 export type DynamoDBConfig = {
