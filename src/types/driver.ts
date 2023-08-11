@@ -2,7 +2,7 @@ import type { MaybePromise } from './helpers.js'
 
 export interface CacheDriver {
   /**
-   * Returns a new instance of the driver namespaced
+   * Returns a new instance of the driver namespace
    */
   namespace(namespace: string): CacheDriver
 

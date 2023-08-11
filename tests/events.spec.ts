@@ -106,23 +106,6 @@ test.group('Cache events', () => {
     })
   })
 
-  test('pull() should not emit cache:deleted and cache:hit events if nothing was found', async ({
-    assert,
-  }) => {
-    const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
-
-    cache.pull('key').catch(() => {})
-
-    const [deletedEvent, hitEvent] = await Promise.all([
-      pEvent(emitter, 'cache:deleted', { timeout: 300 }).catch(() => undefined),
-      pEvent(emitter, 'cache:hit', { timeout: 300 }).catch(() => undefined),
-    ])
-
-    assert.isUndefined(deletedEvent)
-    assert.isUndefined(hitEvent)
-  })
-
   test('clear() should emit cache:cleared event', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()

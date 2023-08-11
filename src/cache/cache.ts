@@ -73,8 +73,6 @@ export class Cache implements CacheProvider {
    */
   #locks = new Locks()
 
-  // #factoryRunner: FactoryRunner
-
   constructor(
     name: string,
     options: BentoCacheOptions,
@@ -88,29 +86,20 @@ export class Cache implements CacheProvider {
     this.#defaultCacheOptions = new CacheItemOptions(options)
 
     if (drivers.localDriver) {
-      this.#localCache = new LocalCache(drivers.localDriver, this.logger)
+      this.#localCache = new LocalCache(drivers.localDriver, this.#logger)
     }
 
     if (drivers.remoteDriver) {
-      this.#remoteCache = new RemoteCache(drivers.remoteDriver, this.logger)
+      this.#remoteCache = new RemoteCache(drivers.remoteDriver, this.#logger)
     }
 
     if (drivers.busDriver && this.#localCache) {
-      this.#bus = new Bus(drivers.busDriver, this.#localCache, this.logger, options.emitter)
+      this.#bus = new Bus(drivers.busDriver, this.#localCache, this.#logger, options.emitter)
       this.#bus.subscribe()
     }
-
-    // this.#factoryRunner = new FactoryRunner(
-    //   this.name,
-    //   this.#options,
-    //   this.#locks,
-    //   this.#localCache,
-    //   this.#remoteCache,
-    //   this.#bus
-    // )
   }
 
-  get logger() {
+  get #logger() {
     return this.#options.logger
   }
 
@@ -263,7 +252,7 @@ export class Cache implements CacheProvider {
    * Refreshes the value of a cache
    */
   async #earlyExpirationRefresh(key: string, factory: Factory, options: CacheItemOptions) {
-    this.logger.debug({ key, name: this.name, opId: options.id }, 'try to early refresh')
+    this.#logger.debug({ key, name: this.name, opId: options.id }, 'try to early refresh')
     let lock = this.#locks.getOrCreateForKey(key)
 
     /**
@@ -275,7 +264,7 @@ export class Cache implements CacheProvider {
     }
 
     await lock.runExclusive(async () => {
-      this.logger.trace({ key, cache: this.name, opId: options.id }, 'acquired lock')
+      this.#logger.trace({ key, cache: this.name, opId: options.id }, 'acquired lock')
       await this.#set(key, await factory(), options)
     })
   }
@@ -305,7 +294,7 @@ export class Cache implements CacheProvider {
        * Returns the value
        */
       this.#emit(new events.CacheHit(key, localCacheItem.getValue(), this.name))
-      this.logger.trace({ key, cache: this.name, opId: options.id }, 'local cache hit')
+      this.#logger.trace({ key, cache: this.name, opId: options.id }, 'local cache hit')
       return localCacheItem.getValue()
     }
 
@@ -317,7 +306,7 @@ export class Cache implements CacheProvider {
 
     return await lock
       .runExclusive(async () => {
-        this.logger.trace({ key, cache: this.name, opId: options.id }, 'acquired lock')
+        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'acquired lock')
 
         /**
          * We have to check again if the value is in the cache
@@ -327,7 +316,7 @@ export class Cache implements CacheProvider {
         localCacheItem = await this.#localCache?.get(key, options)
         if (localCacheItem && !localCacheItem.isLogicallyExpired()) {
           this.#emit(new events.CacheHit(key, localCacheItem.getValue(), this.name))
-          this.logger.trace(
+          this.#logger.trace(
             { key, cache: this.name, opId: options.id },
             'local cache hit after lock'
           )
@@ -345,7 +334,7 @@ export class Cache implements CacheProvider {
          * We need to set it in the local cache
          */
         if (remoteCacheItem && !remoteCacheItem.isLogicallyExpired()) {
-          this.logger.trace({ key, cache: this.name, opId: options.id }, 'remote cache hit')
+          this.#logger.trace({ key, cache: this.name, opId: options.id }, 'remote cache hit')
 
           /**
            * Set the value in the local cache
@@ -381,11 +370,11 @@ export class Cache implements CacheProvider {
         /**
          * Return the value
          */
-        this.logger.trace({ key, cache: this.name, opId: options.id }, 'cache miss')
+        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'cache miss')
         return item.value
       })
       .catch((error) => {
-        this.logger.trace({ key, cache: this.name, opId: options.id }, 'factory error')
+        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'factory error')
 
         /**
          * If the factory failed and graceful retain is enabled, we have to
@@ -393,7 +382,7 @@ export class Cache implements CacheProvider {
          */
         const staleItem = localCacheItem ?? remoteCacheItem
         if (options.isGracefulRetainEnabled && staleItem) {
-          this.logger.trace({ key, cache: this.name, opId: options.id }, 'returns stale value')
+          this.#logger.trace({ key, cache: this.name, opId: options.id }, 'returns stale value')
           return staleItem.getValue()
         }
 
@@ -463,19 +452,12 @@ export class Cache implements CacheProvider {
 
   /**
    * Get the value of a key and delete it
-   *
    * Returns the value if the key exists, undefined otherwise
-   *
-   * TODO
    */
   async pull<T = any>(key: string): Promise<T | undefined | null> {
-    // const result = await this.#localCache.pull(key)
-    // const item = result === undefined ? undefined : await this.deserialize(result)
-    // if (result) {
-    //   this.#emit(new CacheHit(key, item.value, this.name))
-    //   this.#emit(new CacheDeleted(key, this.name))
-    // }
-    // return item
+    const value = await this.get<T>(key)
+    await this.delete(key)
+    return value
   }
 
   /**

@@ -61,7 +61,7 @@ export class LocalCache {
    */
   async delete(key: string, _options?: CacheItemOptions) {
     this.#logger.trace({ key }, 'deleting local cache item')
-    await this.#driver.delete(key)
+    return await this.#driver.delete(key)
   }
 
   /**

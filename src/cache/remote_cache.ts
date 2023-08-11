@@ -63,7 +63,7 @@ export class RemoteCache {
   async delete(key: string, options: CacheItemOptions) {
     try {
       this.#logger.trace({ key }, 'deleting remote cache item')
-      await this.#driver.delete(key)
+      return await this.#driver.delete(key)
     } catch (error) {
       this.#logger.error({ key, error }, 'error deleting remote cache item')
       this.#maybeRethrowError(error, options)
