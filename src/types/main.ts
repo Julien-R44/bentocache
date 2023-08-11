@@ -53,9 +53,22 @@ export type FactoryTimeoutOptions = {
 }
 
 export type GracefulRetainOptions = {
+  /**
+   * Whether to enable graceful retain
+   */
   enabled: boolean
+
+  /**
+   * The duration for which entry could still be
+   * served after the TTL has expired
+   */
   duration?: TTL
-  delay?: TTL
+
+  /**
+   * The duration for which the entry will be
+   * reconsidered valid after a failed refresh
+   */
+  fallbackDuration?: TTL
 }
 
 export type CacheDriverFactory = (config: any) => CacheDriver

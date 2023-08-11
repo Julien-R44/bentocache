@@ -43,6 +43,13 @@ export class CacheItemOptions {
     hard?: number
   }
 
+  /**
+   * Resolved graceful retain options
+   */
+  gracefulRetain:
+    | { enabled: false }
+    | { enabled: true; duration?: number; fallbackDuration?: number }
+
   constructor(options: RawCommonOptions = {}, defaults: Partial<RawCommonOptions> = {}) {
     this.id = uid()
 
@@ -51,6 +58,22 @@ export class CacheItemOptions {
     this.physicalTtl = this.#resolvePhysicalTtl()
     this.earlyExpireTtl = this.#resolveEarlyExpireTtl()
     this.timeouts = this.#resolveTimeouts()
+    this.gracefulRetain = this.#resolveGracefulRetain()
+  }
+
+  /**
+   * Resolve the graceful retain options
+   */
+  #resolveGracefulRetain() {
+    if (!this.#options.gracefulRetain || !this.#options.gracefulRetain.enabled) {
+      return { enabled: false }
+    }
+
+    return {
+      enabled: true,
+      duration: resolveTtl(this.#options.gracefulRetain.duration),
+      fallbackDuration: resolveTtl(this.#options.gracefulRetain.fallbackDuration),
+    }
   }
 
   /**

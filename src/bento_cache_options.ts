@@ -69,7 +69,7 @@ export class BentoCacheOptions {
     this.gracefulRetain = options.gracefulRetain || {
       enabled: false,
       duration: '6h',
-      delay: '30s',
+      fallbackDuration: '10s',
     }
 
     this.emitter = options.emitter || new EventEmitter()

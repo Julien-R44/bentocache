@@ -69,6 +69,12 @@ export class CacheItem {
     return new CacheItem(key, this.#serializer.deserialize(item))
   }
 
+  applyFallbackDuration(duration: number) {
+    this.#logicalExpiration += duration
+    this.#earlyExpiration = 0
+    return this
+  }
+
   serialize() {
     return CacheItem.#serializer.serialize({
       value: this.#value,

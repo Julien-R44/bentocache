@@ -254,10 +254,10 @@ test.group('Cache', () => {
     await assert.rejects(() => r3, /error in factory/)
   })
 
-  test('should use the default duration when not defined', async ({ assert }) => {
+  test('should use the default graceful duration when not defined', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .withHybridConfig()
-      .merge({ gracefulRetain: { enabled: true, duration: '100ms' } })
+      .merge({ gracefulRetain: { enabled: true, duration: '100ms', fallbackDuration: 0 } })
       .create()
 
     await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }))

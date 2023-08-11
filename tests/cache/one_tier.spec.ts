@@ -349,6 +349,76 @@ test.group('One tier tests', () => {
     await assert.rejects(async () => r3, 'Error in cb')
   })
 
+  test('if gracefully retained enabled with fallbackDuration it should not try to call factory afterwards', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory()
+      .merge({
+        ttl: 10,
+        gracefulRetain: { enabled: true, duration: '6h', fallbackDuration: '0.5s' },
+      })
+      .create()
+
+    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
+
+    // wait til key is expired
+    await setTimeout(50)
+
+    // should returns gracefully retained value
+    const r2 = await cache.getOrSet('key1', throwingFactory('Error in cb'))
+
+    // this factory should not be called since fallbackDuration is 5s
+    let factory1Called = false
+    const r3 = await cache.getOrSet('key1', async () => {
+      factory1Called = true
+      throw new Error('should not be called')
+    })
+
+    await setTimeout(500)
+
+    // wait til fallbackDuration is expired. Factory should be called
+    const r4 = await cache.getOrSet('key1', async () => ({ foo: 'baz' }))
+
+    assert.deepEqual(r1, { foo: 'bar' })
+    assert.deepEqual(r2, { foo: 'bar' })
+    assert.deepEqual(r3, { foo: 'bar' })
+    assert.deepEqual(r4, { foo: 'baz' })
+    assert.isFalse(factory1Called)
+  })
+
+  test('should not try to refresh gracefully retained value after extending ttl', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory()
+      .merge({
+        ttl: 10,
+        gracefulRetain: { enabled: true, duration: '6h', fallbackDuration: '2s' },
+        earlyExpiration: 0.2,
+      })
+      .create()
+
+    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
+
+    // wait til key is expired
+    await setTimeout(50)
+
+    // should returns gracefully retained value and extend ttl so next call should not call factory
+    const r2 = await cache.getOrSet('key1', throwingFactory('Error in cb'))
+
+    // wait until we enter the early expiration window
+    await setTimeout(300)
+    let factoryCalled = false
+    const r3 = await cache.getOrSet('key1', () => {
+      factoryCalled = true
+      throw new Error('should not be called')
+    })
+
+    assert.deepEqual(r1, { foo: 'bar' })
+    assert.deepEqual(r2, { foo: 'bar' })
+    assert.deepEqual(r3, { foo: 'bar' })
+    assert.isFalse(factoryCalled)
+  })
+
   test('early expiration', async ({ assert }) => {
     const { cache } = new CacheFactory().merge({ earlyExpiration: 0.5, ttl: 100 }).create()
 

@@ -390,7 +390,7 @@ export class Cache implements CacheProvider {
         this.#logger.trace({ key, cache: this.name, opId: options.id }, 'cache miss')
         return item.value
       })
-      .catch((error) => {
+      .catch(async (error) => {
         this.#logger.trace({ key, cache: this.name, opId: options.id }, 'factory error')
 
         /**
@@ -398,7 +398,15 @@ export class Cache implements CacheProvider {
          * return the old cached value if it exists.
          */
         const staleItem = localCacheItem ?? remoteCacheItem
-        if (options.isGracefulRetainEnabled && staleItem) {
+        if (options.gracefulRetain?.enabled && staleItem) {
+          if (options.gracefulRetain.fallbackDuration) {
+            await this.#localCache?.set(
+              key,
+              staleItem.applyFallbackDuration(options.gracefulRetain.fallbackDuration).serialize(),
+              options
+            )
+          }
+
           this.#logger.trace({ key, cache: this.name, opId: options.id }, 'returns stale value')
           return staleItem.getValue()
         }
