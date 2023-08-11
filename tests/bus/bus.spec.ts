@@ -72,4 +72,63 @@ test.group('Bus synchronization', () => {
     assert.deepEqual(await cache2.get('foo'), 3)
     assert.deepEqual(await cache3.get('foo'), 3)
   }).disableTimeout()
+
+  test('should not process retry queue if disabled', async ({ assert }) => {
+    const bus1 = new ChaosBus(new MemoryBus())
+    const bus2 = new ChaosBus(new MemoryBus())
+
+    const [cache] = new CacheFactory()
+      .withHybridConfig()
+      .merge({ busDriver: bus1, busOptions: { retryQueue: { enabled: false } } })
+      .create()
+
+    const [cache2] = new CacheFactory()
+      .withHybridConfig()
+      .merge({ busDriver: bus2, busOptions: { retryQueue: { enabled: false } } })
+      .create()
+
+    bus1.alwaysThrow()
+    bus2.alwaysThrow()
+
+    await cache.set('foo', 1)
+    await cache2.set('foo', 2)
+
+    await setTimeout(200)
+
+    bus1.neverThrow()
+    bus2.neverThrow()
+
+    await cache.set('foo2', 1)
+
+    await setTimeout(200)
+
+    assert.deepEqual(await cache.get('foo'), 1)
+    assert.deepEqual(await cache2.get('foo'), 2)
+  })
+
+  test('should queue maximum X items when retryQueue.maxSize is enabled', async ({ assert }) => {
+    const bus1 = new ChaosBus(new MemoryBus())
+    const bus2 = new MemoryBus()
+
+    const [cache1] = new CacheFactory()
+      .withHybridConfig()
+      .merge({ busDriver: bus1, busOptions: { retryQueue: { enabled: true, maxSize: 20 } } })
+      .create()
+
+    const [cache2] = new CacheFactory().withHybridConfig().merge({ busDriver: bus2 }).create()
+
+    bus1.alwaysThrow()
+
+    for (let i = 0; i < 30; i++) {
+      await cache1.set(`foo-${i}`, i)
+    }
+
+    bus1.neverThrow()
+    assert.deepEqual(bus2.receivedMessages.length, 0)
+
+    await cache2.set('foo', 1)
+    await setTimeout(1000)
+
+    assert.deepEqual(bus2.receivedMessages.length, 20)
+  }).disableTimeout()
 })

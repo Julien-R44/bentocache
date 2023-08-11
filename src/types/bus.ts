@@ -44,3 +44,21 @@ export enum CacheBusMessageType {
    */
   Delete = 'delete',
 }
+
+export type BusOptions = {
+  /**
+   * Configuration for the bus retry queue
+   */
+  retryQueue?: {
+    /**
+     * If we should retry sending messages that failed to be sent
+     */
+    enabled?: boolean
+
+    /**
+     * Maximum number of messages to keep in the retry queue. Older
+     * messages will be discarded when the queue is full.
+     */
+    maxSize?: number
+  }
+}

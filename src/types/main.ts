@@ -1,4 +1,4 @@
-import type { BusDriver } from './bus.js'
+import type { BusDriver, BusOptions } from './bus.js'
 import type { CacheDriver } from './driver.js'
 import type { Emitter } from './events.js'
 import type { Logger, TTL } from './helpers.js'
@@ -88,8 +88,7 @@ export type CreateDriverResult = {
 export type CacheBusFactory = (config: any) => BusDriver
 
 export type CreateBusDriverResult = {
-  // TODO
-  options: any
+  options: BusOptions
   factory: CacheBusFactory
 }
 

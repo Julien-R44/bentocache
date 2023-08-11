@@ -23,6 +23,7 @@ import type {
   BusDriver,
   CacheDriver,
   Logger,
+  BusOptions,
 } from '../src/types/main.js'
 
 type FactoryParameters = {
@@ -32,6 +33,7 @@ type FactoryParameters = {
   localDriver: CacheDriver
   remoteDriver: CacheDriver
   busDriver: BusDriver
+  busOptions: BusOptions
   gracefulRetain: GracefulRetainOptions
   earlyExpiration: number
   timeouts?: {
@@ -113,6 +115,7 @@ export class CacheFactory {
       localDriver: local,
       remoteDriver: remote,
       busDriver: this.#parameters.busDriver,
+      busOptions: this.#parameters.busOptions,
     })
 
     if (autoCleanup) {

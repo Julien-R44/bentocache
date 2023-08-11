@@ -20,6 +20,11 @@ export class MemoryBus implements BusDriver {
     }>
   > = new Map()
 
+  /**
+   * List of messages received by this bus
+   */
+  receivedMessages: CacheBusMessage[] = []
+
   constructor(protected id = createId()) {}
 
   /**
@@ -28,7 +33,13 @@ export class MemoryBus implements BusDriver {
   async subscribe(channelName: string, handler: (message: CacheBusMessage) => void) {
     const handlers = MemoryBus.#subscriptions.get(channelName) || []
 
-    handlers.push({ handler, busId: this.id })
+    handlers.push({
+      handler: (message) => {
+        this.receivedMessages.push(message)
+        handler(message)
+      },
+      busId: this.id,
+    })
     MemoryBus.#subscriptions.set(channelName, handlers)
   }
 

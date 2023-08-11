@@ -29,7 +29,9 @@ import type {
   TTL,
   Factory,
   BusDriver,
+  BusOptions,
 } from '../types/main.js'
+import lodash from '@poppinss/utils/lodash'
 
 export class Cache implements CacheProvider {
   /**
@@ -75,7 +77,12 @@ export class Cache implements CacheProvider {
   constructor(
     name: string,
     options: BentoCacheOptions,
-    drivers: { localDriver?: CacheDriver; remoteDriver?: CacheDriver; busDriver?: BusDriver },
+    drivers: {
+      localDriver?: CacheDriver
+      remoteDriver?: CacheDriver
+      busDriver?: BusDriver
+      busOptions?: BusOptions
+    },
     bus?: Bus
   ) {
     this.name = name
@@ -90,16 +97,18 @@ export class Cache implements CacheProvider {
       this.#remoteCache = new RemoteCache(drivers.remoteDriver, this.#logger)
     }
 
-    this.#bus = this.#createBus(drivers.busDriver, bus)
+    this.#bus = this.#createBus(drivers.busDriver, bus, drivers.busOptions)
   }
 
-  #createBus(busDriver?: BusDriver, bus?: Bus) {
+  #createBus(busDriver?: BusDriver, bus?: Bus, busOptions?: BusOptions) {
     if (bus) {
       return bus
     }
 
     if (busDriver && this.#localCache) {
-      const newBus = new Bus(busDriver, this.#localCache, this.#logger, this.#options.emitter)
+      const opts = lodash.merge({ retryQueue: { enabled: true, maxSize: undefined } }, busOptions)
+      const newBus = new Bus(busDriver, this.#localCache, this.#logger, this.#options.emitter, opts)
+
       newBus.subscribe()
       return newBus
     }

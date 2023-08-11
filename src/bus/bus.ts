@@ -5,7 +5,7 @@ import type { LocalCache } from '../cache/local_cache.js'
 import { CacheBusMessageType } from '../types/bus.js'
 import { BusMessageReceived } from '../events/bus/bus_message_received.js'
 import { BusMessagePublished } from '../events/bus/bus_message_published.js'
-import type { BusDriver, CacheBusMessage, Emitter, Logger } from '../types/main.js'
+import type { BusDriver, BusOptions, CacheBusMessage, Emitter, Logger } from '../types/main.js'
 
 /**
  * The bus is used to notify other processes about cache changes.
@@ -54,11 +54,18 @@ export class Bus {
    */
   #errorRetryQueue = new RetryQueue()
 
-  constructor(driver: BusDriver, cache: LocalCache, logger: Logger, emitter: Emitter) {
+  constructor(
+    driver: BusDriver,
+    cache: LocalCache,
+    logger: Logger,
+    emitter: Emitter,
+    options: BusOptions = {}
+  ) {
     this.#driver = driver
     this.#cache = cache
     this.#emitter = emitter
     this.#logger = logger.child({ context: 'bentocache.bus' })
+    this.#errorRetryQueue = new RetryQueue(options.retryQueue?.enabled, options.retryQueue?.maxSize)
 
     this.#driver.onReconnect(() => this.#onReconnect())
   }
@@ -96,27 +103,10 @@ export class Bus {
       `starting error retry queue processing with ${this.#errorRetryQueue.size()} messages`
     )
 
-    /**
-     * Process the error retry queue
-     */
-    while (this.#errorRetryQueue.size() > 0) {
-      const message = this.#errorRetryQueue.dequeue()
-      if (!message) break
-
-      /**
-       * Try to publish the message
-       */
-      const published = await this.publish(message)
-
-      /**
-       * If the message failed to be published, we will
-       * try again later
-       */
-      if (!published) {
-        this.#errorRetryQueue.enqueue(message)
-        break
-      }
-    }
+    await this.#errorRetryQueue.process(async (message) => {
+      await this.publish(message)
+      return true
+    })
   }
 
   /**
@@ -156,6 +146,8 @@ export class Bus {
       this.#emitter.emit('bus:message:published', new BusMessagePublished(fullMessage))
       return true
     } catch (error) {
+      this.#logger.error(error, 'failed to publish message to bus')
+
       /**
        * Add to the error retry queue
        */

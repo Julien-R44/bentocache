@@ -3,13 +3,24 @@ import type { CacheBusMessage } from '../types/bus.js'
 /**
  * The RetryQueue will hold messages that failed to be sent
  * to the bus. We will retry sending them later.
- *
- * We use a hash set for a fast lookup before inserting a
- * message into the queue to avoid duplicates.
  */
 export class RetryQueue {
-  #queuedItems: CacheBusMessage[] = []
-  #messageHashSet = new Set<string>()
+  #queue = new Map<string, CacheBusMessage>()
+
+  /**
+   * Should we enqueue messages
+   */
+  #enabled = true
+
+  /**
+   * Maximum number of messages to keep in the retry queue
+   */
+  #maxSize: number | null = null
+
+  constructor(enabled = true, maxSize: number | null = null) {
+    this.#enabled = enabled
+    this.#maxSize = maxSize
+  }
 
   /**
    * Generate a hash for the given message
@@ -20,7 +31,25 @@ export class RetryQueue {
   }
 
   size() {
-    return this.#queuedItems.length
+    return this.#queue.size
+  }
+
+  async process(handler: (message: CacheBusMessage) => Promise<boolean>) {
+    if (!this.#enabled) return
+
+    for (const message of this.#queue.values()) {
+      const result = await handler(message)
+
+      /**
+       * As soon as we get a false result, we stop processing the queue
+       * and keep the message in the queue.
+       */
+      if (result === false) {
+        break
+      }
+
+      this.dequeue()
+    }
   }
 
   /**
@@ -29,14 +58,14 @@ export class RetryQueue {
    * @returns true if the message was added, false if it was already in the queue
    */
   enqueue(message: CacheBusMessage) {
-    const hash = this.#generateMessageHash(message)
+    if (!this.#enabled) return false
 
-    if (this.#messageHashSet.has(hash)) {
-      return false
+    if (this.#maxSize && this.#queue.size >= this.#maxSize) {
+      this.dequeue()
     }
 
-    this.#messageHashSet.add(hash)
-    this.#queuedItems.push(message)
+    const hash = this.#generateMessageHash(message)
+    this.#queue.set(hash, message)
 
     return true
   }
@@ -45,13 +74,13 @@ export class RetryQueue {
    * Dequeue the next message from the queue
    */
   dequeue() {
-    const message = this.#queuedItems.shift()
-    if (!message) {
-      return
-    }
+    if (!this.#enabled) return
+
+    const message = this.#queue.values().next().value
+    if (!message) return
 
     const hash = this.#generateMessageHash(message)
-    this.#messageHashSet.delete(hash)
+    this.#queue.delete(hash)
 
     return message
   }

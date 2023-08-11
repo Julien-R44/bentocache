@@ -67,6 +67,7 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
       localDriver: registry.local.factory(localDriverOptions),
       remoteDriver: registry.remote?.factory(remoteDriverOptions),
       busDriver: registry.bus?.factory(registry.bus.options),
+      busOptions: registry.bus?.options,
     })
   }
 
