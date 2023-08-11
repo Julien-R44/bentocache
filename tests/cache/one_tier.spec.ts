@@ -21,6 +21,13 @@ test.group('One tier tests', () => {
     assert.deepEqual(await cache.get('key'), true)
   })
 
+  test('get() returns null when null is stored', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
+
+    await cache.set('key', null)
+    assert.isNull(await cache.get('key'))
+  })
+
   test('get() with default value fallback', async ({ assert }) => {
     const { cache } = new CacheFactory().create()
 
@@ -192,6 +199,15 @@ test.group('One tier tests', () => {
   })
 
   // TODO test pull ?
+
+  test('getOrSet() should returns null if null is stored', async ({ assert }) => {
+    const { cache } = new CacheFactory().create()
+
+    await cache.set('key', null)
+
+    const value = await cache.getOrSet('key', throwingFactory('shouldnt be called'))
+    assert.isNull(value)
+  })
 
   test('getOrSetForever() should set value forever', async ({ assert }) => {
     const { cache } = new CacheFactory().merge({ ttl: 100 }).create()

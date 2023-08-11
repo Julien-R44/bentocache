@@ -51,7 +51,6 @@ export class Cache implements CacheProvider {
    * The bus instance
    */
   #bus?: Bus
-  #busDriver?: BusDriver
 
   /**
    * The Bento cache options
@@ -76,13 +75,11 @@ export class Cache implements CacheProvider {
   constructor(
     name: string,
     options: BentoCacheOptions,
-    drivers: { localDriver?: CacheDriver; remoteDriver?: CacheDriver; busDriver?: BusDriver }
+    drivers: { localDriver?: CacheDriver; remoteDriver?: CacheDriver; busDriver?: BusDriver },
+    bus?: Bus
   ) {
     this.name = name
-
     this.#options = options
-    this.#busDriver = drivers.busDriver
-
     this.#defaultCacheOptions = new CacheItemOptions(options)
 
     if (drivers.localDriver) {
@@ -93,9 +90,18 @@ export class Cache implements CacheProvider {
       this.#remoteCache = new RemoteCache(drivers.remoteDriver, this.#logger)
     }
 
-    if (drivers.busDriver && this.#localCache) {
-      this.#bus = new Bus(drivers.busDriver, this.#localCache, this.#logger, options.emitter)
-      this.#bus.subscribe()
+    this.#bus = this.#createBus(drivers.busDriver, bus)
+  }
+
+  #createBus(busDriver?: BusDriver, bus?: Bus) {
+    if (bus) {
+      return bus
+    }
+
+    if (busDriver && this.#localCache) {
+      const newBus = new Bus(busDriver, this.#localCache, this.#logger, this.#options.emitter)
+      newBus.subscribe()
+      return newBus
     }
   }
 
@@ -170,11 +176,15 @@ export class Cache implements CacheProvider {
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string) {
-    return new Cache(this.name, this.#options, {
-      localDriver: this.#localCache?.namespace(namespace),
-      remoteDriver: this.#remoteCache?.namespace(namespace),
-      busDriver: this.#busDriver,
-    })
+    return new Cache(
+      this.name,
+      this.#options,
+      {
+        localDriver: this.#localCache?.namespace(namespace),
+        remoteDriver: this.#remoteCache?.namespace(namespace),
+      },
+      this.#bus
+    )
   }
 
   get<T = any>(key: string): Promise<T | undefined | null>

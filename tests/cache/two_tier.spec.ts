@@ -19,6 +19,24 @@ import { ChaosCache } from '../../test_helpers/chaos/chaos_cache.js'
 import { throwingFactory, waitAndReturnFactory } from '../../test_helpers/index.js'
 
 test.group('Cache', () => {
+  test('get() returns null if null is stored', async ({ assert }) => {
+    const { cache } = new CacheFactory().withHybridConfig().create()
+
+    await cache.set('foo', null)
+    const value = await cache.get('foo')
+
+    assert.isNull(value)
+  })
+
+  test('getOrSet returns null if null is stored', async ({ assert }) => {
+    const { cache } = new CacheFactory().withHybridConfig().create()
+
+    await cache.set('foo', null)
+    const value = await cache.getOrSet('foo', throwingFactory('should not be called'))
+
+    assert.isNull(value)
+  })
+
   test('Value not in local but in remote', async ({ assert }) => {
     const { cache, remote } = new CacheFactory().withHybridConfig().create()
 
@@ -694,5 +712,24 @@ test.group('Cache', () => {
 
     const r1 = await cache.getOrSet('foo', '10ms', throwingFactory('error in factory'))
     assert.deepEqual(r1, 'bar')
+  })
+
+  test('namespaces should work', async ({ assert }) => {
+    const { cache, local, remote } = new CacheFactory().withHybridConfig().create()
+
+    const users = cache.namespace('users')
+    await users.set('foo', 'bar')
+
+    const r1 = await users.get('foo')
+    const r2 = await cache.get('users:foo')
+    const r3 = await cache.get('foo')
+    const r4 = await local.get('users:foo')
+    const r5 = await remote.get('users:foo')
+
+    assert.deepEqual(r1, 'bar')
+    assert.deepEqual(r2, 'bar')
+    assert.isUndefined(r3)
+    assert.deepEqual(JSON.parse(r4).value, 'bar')
+    assert.deepEqual(JSON.parse(r5!).value, 'bar')
   })
 })
