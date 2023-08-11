@@ -273,10 +273,17 @@ export class Cache implements CacheProvider {
       return
     }
 
-    await lock.runExclusive(async () => {
-      this.#logger.trace({ key, cache: this.name, opId: options.id }, 'acquired lock')
-      await this.#set(key, await factory(), options)
-    })
+    await lock
+      .runExclusive(async () => {
+        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'acquired lock')
+        await this.#set(key, await factory(), options)
+      })
+      .catch((error) => {
+        const msg = 'factory error in early refresh'
+        this.#logger.error({ key, cache: this.name, opId: options.id, error }, msg)
+
+        throw error
+      })
   }
 
   async #getOrSet(key: string, factory: Factory, options: CacheItemOptions) {

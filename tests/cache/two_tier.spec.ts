@@ -12,6 +12,7 @@ import { setTimeout } from 'node:timers/promises'
 
 import { Memory } from '../../src/drivers/memory.js'
 import { CacheItem } from '../../src/cache/cache_item.js'
+import { TestLogger } from '../../test_helpers/test_logger.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 import { NullDriver } from '../../test_helpers/null/null_driver.js'
@@ -731,5 +732,29 @@ test.group('Cache', () => {
     assert.isUndefined(r3)
     assert.deepEqual(JSON.parse(r4).value, 'bar')
     assert.deepEqual(JSON.parse(r5!).value, 'bar')
+  })
+
+  test('error in factory while early refreshing should be logged', async ({ assert }) => {
+    const logger = new TestLogger()
+
+    const { cache } = new CacheFactory()
+      .merge({ earlyExpiration: 0.5, logger })
+      .withHybridConfig()
+      .create()
+
+    await cache.getOrSet('key1', '1s', () => ({ foo: 'bar' }))
+
+    await setTimeout(501)
+
+    await cache.getOrSet('key1', '1s', async () => {
+      await setTimeout(100)
+      throw new Error('foo')
+    })
+
+    await setTimeout(110)
+    const errorLog = logger.logs.find(
+      (log) => log.level === 'error' && log.msg === 'factory error in early refresh'
+    )
+    assert.isDefined(errorLog)
   })
 })
