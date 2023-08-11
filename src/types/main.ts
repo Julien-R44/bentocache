@@ -1,7 +1,7 @@
 import type { BusDriver, BusOptions } from './bus.js'
 import type { CacheDriver } from './driver.js'
 import type { Emitter } from './events.js'
-import type { Logger, TTL } from './helpers.js'
+import type { Logger, Duration } from './helpers.js'
 
 export * from './events.js'
 export * from './options.js'
@@ -31,12 +31,12 @@ export type CacheProviderOptions = {
 }
 
 export type RawCommonOptions = {
-  ttl?: TTL
+  ttl?: Duration
   gracePeriod?: GracePeriodOptions
   earlyExpiration?: number
   suppressRemoteCacheErrors?: boolean
   timeouts?: FactoryTimeoutOptions
-  lockTimeout?: TTL
+  lockTimeout?: Duration
 }
 
 /**
@@ -44,13 +44,13 @@ export type RawCommonOptions = {
  * a cache driver like `memoryDriver({ ... })
  */
 export type CacheDriverOptions = {
-  ttl?: TTL
+  ttl?: Duration
   prefix?: string
 }
 
 export type FactoryTimeoutOptions = {
-  soft?: TTL
-  hard?: TTL
+  soft?: Duration
+  hard?: Duration
 }
 
 export type GracePeriodOptions = {
@@ -63,13 +63,13 @@ export type GracePeriodOptions = {
    * The duration for which entry could still be
    * served after the TTL has expired
    */
-  duration?: TTL
+  duration?: Duration
 
   /**
    * The duration for which the entry will be
    * reconsidered valid after a failed refresh
    */
-  fallbackDuration?: TTL
+  fallbackDuration?: Duration
 }
 
 export type CacheDriverFactory = (config: any) => CacheDriver

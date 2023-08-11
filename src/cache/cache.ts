@@ -28,7 +28,7 @@ import type {
   CacheEvent,
   CacheSerializer,
   RawCommonOptions,
-  TTL,
+  Duration,
   Factory,
   BusDriver,
   BusOptions,
@@ -120,11 +120,11 @@ export class Cache implements CacheProvider {
   }
 
   protected resolveGetSetOptions(
-    ttlOrFactory: TTL | Factory,
+    ttlOrFactory: Duration | Factory,
     factoryOrOptions?: Factory | GetOrSetOptions,
     options?: GetOrSetOptions
   ) {
-    let ttl: TTL | undefined
+    let ttl: Duration | undefined
     let factory: Factory
     let resolvedOptions: GetOrSetOptions
 
@@ -434,7 +434,7 @@ export class Cache implements CacheProvider {
    */
   async getOrSet<T>(
     key: string,
-    ttlOrFactory: TTL | Factory<T>,
+    ttlOrFactory: Duration | Factory<T>,
     factoryOrOptions?: Factory<T> | GetOrSetOptions,
     maybeOptions?: GetOrSetOptions
   ): Promise<T> {

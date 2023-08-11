@@ -1,4 +1,4 @@
-import type { Factory, TTL } from './helpers.js'
+import type { Factory, Duration } from './helpers.js'
 import type { GetOrSetOptions, RawCommonOptions } from './main.js'
 
 /**
@@ -50,11 +50,11 @@ export interface CacheProvider {
   /**
    * Get or set a value in the cache with a specific TTL
    */
-  getOrSet<T>(key: string, ttl: TTL, cb: Factory<T>, opts?: GetOrSetOptions): Promise<T>
+  getOrSet<T>(key: string, ttl: Duration, cb: Factory<T>, opts?: GetOrSetOptions): Promise<T>
 
   getOrSet<T>(
     key: string,
-    ttlOrFactory: TTL | Factory<T>,
+    ttlOrFactory: Duration | Factory<T>,
     factoryOrOptions?: Factory<T> | GetOrSetOptions,
     maybeOptions?: GetOrSetOptions
   ): Promise<T>

@@ -10,7 +10,7 @@
 import type {
   CreateDriverResult,
   CacheEvents,
-  TTL,
+  Duration,
   Factory,
   GetOrSetOptions,
   RawCommonOptions,
@@ -161,7 +161,7 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
    */
   async getOrSet<T>(
     key: string,
-    ttlOrFactory: TTL | Factory<T>,
+    ttlOrFactory: Duration | Factory<T>,
     factoryOrOptions?: Factory<T> | GetOrSetOptions,
     maybeOptions?: GetOrSetOptions
   ): Promise<T> {

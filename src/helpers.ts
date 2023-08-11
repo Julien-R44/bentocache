@@ -1,11 +1,11 @@
 import string from '@poppinss/utils/string'
 
-import type { TTL } from './types/main.js'
+import type { Duration } from './types/main.js'
 
 /**
  * Resolve a TTL value to a number in milliseconds
  */
-export function resolveTtl(ttl?: TTL, defaultTtl: TTL = 30_000) {
+export function resolveTtl(ttl?: Duration, defaultTtl: Duration = 30_000) {
   /**
    * If the TTL is null, it means the value should never expire
    */
