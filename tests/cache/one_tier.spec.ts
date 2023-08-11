@@ -47,9 +47,9 @@ test.group('One tier tests', () => {
     assert.equal(r1, 'value')
   })
 
-  test('get() with graceful retain', async ({ assert }) => {
+  test('get() with grace period', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ gracefulRetain: { enabled: true, duration: '4h' } })
+      .merge({ gracePeriod: { enabled: true, duration: '4h' } })
       .create()
 
     await cache.set('key', 'value', { ttl: '100ms' })
@@ -57,21 +57,21 @@ test.group('One tier tests', () => {
 
     const r1 = await cache.get('key')
     const r2 = await cache.get('key', undefined, {
-      gracefulRetain: { enabled: false },
+      gracePeriod: { enabled: false },
     })
 
     assert.deepEqual(r1, 'value')
     assert.isUndefined(r2)
   })
 
-  test('get() should not use graceful retain when disabled', async ({ assert }) => {
+  test('get() should not use grace period when disabled', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ gracefulRetain: { enabled: false, duration: '500ms' } })
+      .merge({ gracePeriod: { enabled: false, duration: '500ms' } })
       .create()
 
     // init key with grace period
     await cache.getOrSet('key', '10ms', () => 'value', {
-      gracefulRetain: { enabled: true, duration: '500ms' },
+      gracePeriod: { enabled: true, duration: '500ms' },
     })
 
     // we should get value
@@ -85,7 +85,7 @@ test.group('One tier tests', () => {
 
     // Otherwise if we had enabled grace period, we would get value
     const result = await cache.getOrSet('key', '10ms', throwingFactory('DB call failed'), {
-      gracefulRetain: { enabled: true, duration: '500ms' },
+      gracePeriod: { enabled: true, duration: '500ms' },
     })
 
     assert.deepEqual(r1, 'value')
@@ -107,7 +107,7 @@ test.group('One tier tests', () => {
 
   test('missing() returns false even if logically expired', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ gracefulRetain: { enabled: true, duration: '500ms' } })
+      .merge({ gracePeriod: { enabled: true, duration: '500ms' } })
       .create()
 
     await cache.set('key1', 'value1', { ttl: '100ms' })
@@ -136,7 +136,7 @@ test.group('One tier tests', () => {
 
   test('has() returns true even if logically expired', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ gracefulRetain: { enabled: true, duration: '500ms' } })
+      .merge({ gracePeriod: { enabled: true, duration: '500ms' } })
       .create()
 
     await cache.set('key1', 'value1', { ttl: '100ms' })
@@ -167,7 +167,7 @@ test.group('One tier tests', () => {
 
   test('delete should delete key', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ gracefulRetain: { enabled: true, duration: '500ms' } })
+      .merge({ gracePeriod: { enabled: true, duration: '500ms' } })
       .create()
 
     await cache.set('key1', 'value1', { ttl: '100ms' })
@@ -184,7 +184,7 @@ test.group('One tier tests', () => {
 
   test('deleteMany should delete multiple keys', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ gracefulRetain: { enabled: true, duration: '500ms' } })
+      .merge({ gracePeriod: { enabled: true, duration: '500ms' } })
       .create()
 
     await cache.set('key1', 'value1', { ttl: '100ms' })
@@ -288,11 +288,11 @@ test.group('One tier tests', () => {
     assert.isUndefined(await cache.get('key1'))
   })
 
-  test('graceful retain should returns old value if factory throws', async ({ assert }) => {
+  test('grace period should returns old value if factory throws', async ({ assert }) => {
     assert.plan(3)
 
     const { cache } = new CacheFactory()
-      .merge({ ttl: 10, gracefulRetain: { enabled: true, duration: '10m' } })
+      .merge({ ttl: 10, gracePeriod: { enabled: true, duration: '10m' } })
       .create()
 
     const result = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
@@ -308,11 +308,9 @@ test.group('One tier tests', () => {
     assert.deepEqual(result2, { foo: 'bar' })
   })
 
-  test('graceful retain should not returns old value if factory doesnt throws', async ({
-    assert,
-  }) => {
+  test('grace period should not returns old value if factory doesnt throws', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ ttl: 10, gracefulRetain: { enabled: true, duration: '10m' } })
+      .merge({ ttl: 10, gracePeriod: { enabled: true, duration: '10m' } })
       .create()
 
     const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
@@ -325,9 +323,9 @@ test.group('One tier tests', () => {
     assert.deepEqual(r2, { foo: 'baz' })
   })
 
-  test('should throws if gracefully retained value is now expired', async ({ assert }) => {
+  test('should throws if graced value is now expired', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ ttl: 10, gracefulRetain: { enabled: true, duration: '100ms' } })
+      .merge({ ttl: 10, gracePeriod: { enabled: true, duration: '100ms' } })
       .create()
 
     // init cache
@@ -336,12 +334,12 @@ test.group('One tier tests', () => {
     // wait til key is expired
     await setTimeout(50)
 
-    // should returns gracefully retained value
+    // should returns graced value
     const r2 = await cache.getOrSet('key1', throwingFactory())
 
     await setTimeout(100)
 
-    // Gracefully retained value is now expired. Factory should be called
+    // Graced value is now expired. Factory should be called
     const r3 = cache.getOrSet('key1', throwingFactory('Error in cb'))
 
     assert.deepEqual(r1, { foo: 'bar' })
@@ -349,13 +347,13 @@ test.group('One tier tests', () => {
     await assert.rejects(async () => r3, 'Error in cb')
   })
 
-  test('if gracefully retained enabled with fallbackDuration it should not try to call factory afterwards', async ({
+  test('if grace enabled with fallbackDuration it should not try to call factory afterwards', async ({
     assert,
   }) => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 10,
-        gracefulRetain: { enabled: true, duration: '6h', fallbackDuration: '0.5s' },
+        gracePeriod: { enabled: true, duration: '6h', fallbackDuration: '0.5s' },
       })
       .create()
 
@@ -364,7 +362,7 @@ test.group('One tier tests', () => {
     // wait til key is expired
     await setTimeout(50)
 
-    // should returns gracefully retained value
+    // should returns graced value
     const r2 = await cache.getOrSet('key1', throwingFactory('Error in cb'))
 
     // this factory should not be called since fallbackDuration is 5s
@@ -386,13 +384,11 @@ test.group('One tier tests', () => {
     assert.isFalse(factory1Called)
   })
 
-  test('should not try to refresh gracefully retained value after extending ttl', async ({
-    assert,
-  }) => {
+  test('should not try to refresh graced value after extending ttl', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 10,
-        gracefulRetain: { enabled: true, duration: '6h', fallbackDuration: '2s' },
+        gracePeriod: { enabled: true, duration: '6h', fallbackDuration: '2s' },
         earlyExpiration: 0.2,
       })
       .create()
@@ -402,7 +398,7 @@ test.group('One tier tests', () => {
     // wait til key is expired
     await setTimeout(50)
 
-    // should returns gracefully retained value and extend ttl so next call should not call factory
+    // should returns graced value and extend ttl so next call should not call factory
     const r2 = await cache.getOrSet('key1', throwingFactory('Error in cb'))
 
     // wait until we enter the early expiration window
@@ -534,7 +530,7 @@ test.group('One tier tests', () => {
       .merge({
         ttl: 100,
         timeouts: { soft: 500 },
-        gracefulRetain: { enabled: true, duration: '10m' },
+        gracePeriod: { enabled: true, duration: '10m' },
       })
       .create()
 

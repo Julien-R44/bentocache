@@ -16,7 +16,7 @@ export class CacheItem {
 
   /**
    * The logical expiration is the time in miliseconds when the item
-   * will be considered expired. But, if Graceful Retain is enabled,
+   * will be considered expired. But, if grace period is enabled,
    * the item will still be available for a while.
    */
   #logicalExpiration: number

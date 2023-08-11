@@ -90,7 +90,7 @@ export class Bus {
      */
     if (message.type === CacheBusMessageType.Set || message.type === CacheBusMessageType.Delete) {
       for (const key of message.keys) {
-        this.#cache?.delete(key) // todo should allow graceful retain
+        this.#cache?.delete(key) // todo should allow grace periods
       }
     }
   }

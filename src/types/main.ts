@@ -24,7 +24,7 @@ export type CacheProviderOptions = {
   logger: Logger
   emitter: Emitter
   ttl: number
-  gracefulRetain: GracefulRetainOptions
+  gracePeriod: GracePeriodOptions
   earlyExpiration: number
   suppressRemoteCacheErrors: boolean
   timeouts?: FactoryTimeoutOptions
@@ -32,7 +32,7 @@ export type CacheProviderOptions = {
 
 export type RawCommonOptions = {
   ttl?: TTL
-  gracefulRetain?: GracefulRetainOptions
+  gracePeriod?: GracePeriodOptions
   earlyExpiration?: number
   suppressRemoteCacheErrors?: boolean
   timeouts?: FactoryTimeoutOptions
@@ -53,9 +53,9 @@ export type FactoryTimeoutOptions = {
   hard?: TTL
 }
 
-export type GracefulRetainOptions = {
+export type GracePeriodOptions = {
   /**
-   * Whether to enable graceful retain
+   * Whether to enable grace period
    */
   enabled: boolean
 

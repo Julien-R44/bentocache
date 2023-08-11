@@ -5,7 +5,7 @@ import { resolveTtl } from './helpers.js'
 import type {
   Emitter,
   FactoryTimeoutOptions,
-  GracefulRetainOptions,
+  GracePeriodOptions as GracePeriodOptions,
   Logger,
   RawBentoCacheOptions,
 } from './types/main.js'
@@ -30,9 +30,9 @@ export class BentoCacheOptions {
   prefix?: string
 
   /**
-   * The graceful retain options
+   * The grace period options
    */
-  gracefulRetain: GracefulRetainOptions
+  gracePeriod: GracePeriodOptions
 
   /**
    * Default early expiration percentage
@@ -72,7 +72,7 @@ export class BentoCacheOptions {
     this.earlyExpiration = options.earlyExpiration || 0
     this.suppressRemoteCacheErrors = options.suppressRemoteCacheErrors || true
     this.lockTimeout = resolveTtl(options.lockTimeout, null)
-    this.gracefulRetain = options.gracefulRetain || {
+    this.gracePeriod = options.gracePeriod || {
       enabled: false,
       duration: '6h',
       fallbackDuration: '10s',

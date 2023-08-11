@@ -6,12 +6,12 @@ test.group('Cache Options', () => {
   test('override defaults', ({ assert }) => {
     const override = {
       ttl: '10m',
-      gracefulRetain: { enabled: true, duration: '30m' },
+      gracePeriod: { enabled: true, duration: '30m' },
     }
 
     const defaults = {
       ttl: '1h',
-      gracefulRetain: { enabled: false, duration: '1h' },
+      gracePeriod: { enabled: false, duration: '1h' },
     }
 
     const options = new CacheItemOptions(override, defaults)
@@ -29,17 +29,17 @@ test.group('Cache Options', () => {
     assert.equal(options.earlyExpireTtl, string.milliseconds.parse('1m'))
   })
 
-  test('early expiration percentage with graceful retain', ({ assert }) => {
+  test('early expiration percentage with grace period', ({ assert }) => {
     const options = new CacheItemOptions({
       ttl: '10m',
       earlyExpiration: 0.1,
-      gracefulRetain: { enabled: true, duration: '30m' },
+      gracePeriod: { enabled: true, duration: '30m' },
     })
 
     assert.equal(options.earlyExpireTtl, string.milliseconds.parse('1m'))
   })
 
-  test('physical ttl should be logical ttl when graceful retain is disabled', ({ assert }) => {
+  test('physical ttl should be logical ttl when grace period is disabled', ({ assert }) => {
     const options = new CacheItemOptions({
       ttl: '10m',
     })
@@ -47,12 +47,10 @@ test.group('Cache Options', () => {
     assert.equal(options.physicalTtl, string.milliseconds.parse('10m'))
   })
 
-  test('physical ttl should be graceful retain ttl when graceful retain is enabled', ({
-    assert,
-  }) => {
+  test('physical ttl should be grace period ttl when enabled', ({ assert }) => {
     const options = new CacheItemOptions({
       ttl: '10m',
-      gracefulRetain: { enabled: true, duration: '30m' },
+      gracePeriod: { enabled: true, duration: '30m' },
     })
 
     assert.equal(options.physicalTtl, string.milliseconds.parse('30m'))
@@ -61,7 +59,7 @@ test.group('Cache Options', () => {
   test('null ttl should be kept and resolved to undefined', ({ assert }) => {
     const options = new CacheItemOptions({
       ttl: null,
-      gracefulRetain: { enabled: true, duration: '30m' },
+      gracePeriod: { enabled: true, duration: '30m' },
     })
 
     assert.deepEqual(options.logicalTtl, undefined)
@@ -70,7 +68,7 @@ test.group('Cache Options', () => {
   test('clone with null ttl should be kept and resolved as undefined', ({ assert }) => {
     const options = new CacheItemOptions({
       ttl: '10m',
-      gracefulRetain: { enabled: true, duration: '30m' },
+      gracePeriod: { enabled: true, duration: '30m' },
     })
 
     const clone = options.cloneWith({ ttl: null })
@@ -102,14 +100,14 @@ test.group('Cache Options', () => {
 
   test('cloneWith should not mutate original', ({ assert }) => {
     const r1 = new CacheItemOptions({
-      gracefulRetain: { enabled: false, duration: '30m' },
+      gracePeriod: { enabled: false, duration: '30m' },
     })
 
     const r2 = r1.cloneWith({
-      gracefulRetain: { enabled: true, duration: '60m' },
+      gracePeriod: { enabled: true, duration: '60m' },
     })
 
-    assert.isFalse(r1.isGracefulRetainEnabled)
-    assert.isTrue(r2.isGracefulRetainEnabled)
+    assert.isFalse(r1.isGracePeriodEnabled)
+    assert.isTrue(r2.isGracePeriodEnabled)
   })
 })

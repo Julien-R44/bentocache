@@ -7,6 +7,8 @@
  * file that was distributed with this source code.
  */
 
+import lodash from '@poppinss/utils/lodash'
+
 import { Locks } from './locks.js'
 import { Bus } from '../bus/bus.js'
 import { resolveTtl } from '../helpers.js'
@@ -31,7 +33,6 @@ import type {
   BusDriver,
   BusOptions,
 } from '../types/main.js'
-import lodash from '@poppinss/utils/lodash'
 
 export class Cache implements CacheProvider {
   /**
@@ -232,7 +233,7 @@ export class Cache implements CacheProvider {
       return remoteItem.getValue()
     }
 
-    if (options.isGracefulRetainEnabled) {
+    if (options.isGracePeriodEnabled) {
       if (remoteItem) {
         await this.#localCache?.set(key, remoteItem.serialize(), options)
         this.#emit(new events.CacheHit(key, remoteItem.serialize(), this.name))
@@ -403,15 +404,15 @@ export class Cache implements CacheProvider {
         this.#logger.trace({ key, cache: this.name, opId: options.id }, 'factory error')
 
         /**
-         * If the factory failed and graceful retain is enabled, we have to
+         * If the factory failed and grace period is enabled, we have to
          * return the old cached value if it exists.
          */
         const staleItem = localCacheItem ?? remoteCacheItem
-        if (options.gracefulRetain?.enabled && staleItem) {
-          if (options.gracefulRetain.fallbackDuration) {
+        if (options.gracePeriod?.enabled && staleItem) {
+          if (options.gracePeriod.fallbackDuration) {
             await this.#localCache?.set(
               key,
-              staleItem.applyFallbackDuration(options.gracefulRetain.fallbackDuration).serialize(),
+              staleItem.applyFallbackDuration(options.gracePeriod.fallbackDuration).serialize(),
               options
             )
           }

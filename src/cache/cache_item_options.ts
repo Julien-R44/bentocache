@@ -18,13 +18,13 @@ export class CacheItemOptions {
 
   /**
    * Logical TTL is when the value is considered expired
-   * but still can be in the cache ( Graceful retain )
+   * but still can be in the cache ( Grace period )
    */
   logicalTtl?: number
 
   /**
    * Physical TTL is the time when value will be automatically
-   * removed from the cache. This is the graceful retain
+   * removed from the cache. This is the Grace period
    * duration
    */
   physicalTtl?: number
@@ -44,11 +44,9 @@ export class CacheItemOptions {
   }
 
   /**
-   * Resolved graceful retain options
+   * Resolved grace period options
    */
-  gracefulRetain:
-    | { enabled: false }
-    | { enabled: true; duration?: number; fallbackDuration?: number }
+  gracePeriod: { enabled: false } | { enabled: true; duration?: number; fallbackDuration?: number }
 
   /**
    * Max time to wait for the lock to be acquired
@@ -63,22 +61,22 @@ export class CacheItemOptions {
     this.physicalTtl = this.#resolvePhysicalTtl()
     this.earlyExpireTtl = this.#resolveEarlyExpireTtl()
     this.timeouts = this.#resolveTimeouts()
-    this.gracefulRetain = this.#resolveGracefulRetain()
+    this.gracePeriod = this.#resolveGracePeriod()
     this.lockTimeout = resolveTtl(this.#options.lockTimeout, null)
   }
 
   /**
-   * Resolve the graceful retain options
+   * Resolve the grace period options
    */
-  #resolveGracefulRetain() {
-    if (!this.#options.gracefulRetain || !this.#options.gracefulRetain.enabled) {
+  #resolveGracePeriod() {
+    if (!this.#options.gracePeriod || !this.#options.gracePeriod.enabled) {
       return { enabled: false }
     }
 
     return {
       enabled: true,
-      duration: resolveTtl(this.#options.gracefulRetain.duration),
-      fallbackDuration: resolveTtl(this.#options.gracefulRetain.fallbackDuration),
+      duration: resolveTtl(this.#options.gracePeriod.duration),
+      fallbackDuration: resolveTtl(this.#options.gracePeriod.fallbackDuration),
     }
   }
 
@@ -138,17 +136,17 @@ export class CacheItemOptions {
   /**
    * Resolve the physical TTL to a duration in milliseconds
    *
-   * If graceful retain is not enabled then the physical TTL
+   * If grace period is not enabled then the physical TTL
    * is the same as the logical TTL
    */
   #resolvePhysicalTtl() {
-    return this.isGracefulRetainEnabled
-      ? resolveTtl(this.#options.gracefulRetain!.duration)
+    return this.isGracePeriodEnabled
+      ? resolveTtl(this.#options.gracePeriod!.duration)
       : this.logicalTtl
   }
 
-  get isGracefulRetainEnabled() {
-    return this.#options.gracefulRetain?.enabled
+  get isGracePeriodEnabled() {
+    return this.#options.gracePeriod?.enabled
   }
 
   get suppressRemoteCacheErrors() {
@@ -187,11 +185,11 @@ export class CacheItemOptions {
     if (!this.timeouts) return undefined
 
     /**
-     * If graceful retain is enabled, we should use the soft timeout.
+     * If grace period is enabled, we should use the soft timeout.
      * Because if the soft timeout is reached, we will
      * return the stale value.
      */
-    if (hasFallbackValue && this.isGracefulRetainEnabled) {
+    if (hasFallbackValue && this.isGracePeriodEnabled) {
       return this.timeouts.soft
     }
 

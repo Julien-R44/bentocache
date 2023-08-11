@@ -43,9 +43,9 @@ export class LocalCache {
    */
   async set(key: string, value: string, options: CacheItemOptions) {
     /**
-     * If graceful retain is disabled and Physical TTL is 0 or less, we can just delete the item.
+     * If grace period is disabled and Physical TTL is 0 or less, we can just delete the item.
      */
-    if (!options.isGracefulRetainEnabled && options.physicalTtl && options.physicalTtl <= 0) {
+    if (!options.isGracePeriodEnabled && options.physicalTtl && options.physicalTtl <= 0) {
       return this.delete(key, options)
     }
 

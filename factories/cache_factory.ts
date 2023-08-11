@@ -19,7 +19,7 @@ import { BentoCacheOptions } from '../src/bento_cache_options.js'
 import { createIsomorphicDestructurable } from '../src/helpers.js'
 import type {
   Emitter,
-  GracefulRetainOptions,
+  GracePeriodOptions,
   BusDriver,
   CacheDriver,
   Logger,
@@ -34,7 +34,7 @@ type FactoryParameters = {
   remoteDriver: CacheDriver
   busDriver: BusDriver
   busOptions: BusOptions
-  gracefulRetain: GracefulRetainOptions
+  gracePeriod: GracePeriodOptions
   earlyExpiration: number
   lockTimeout?: number
   timeouts?: {
@@ -52,7 +52,7 @@ export class CacheFactory {
    * The default parameters
    */
   #parameters: Partial<FactoryParameters> = {
-    gracefulRetain: { enabled: false },
+    gracePeriod: { enabled: false },
   }
 
   /**
@@ -104,7 +104,7 @@ export class CacheFactory {
 
     const options = new BentoCacheOptions({
       ttl: this.#parameters.ttl,
-      gracefulRetain: this.#parameters.gracefulRetain,
+      gracePeriod: this.#parameters.gracePeriod,
       earlyExpiration: this.#parameters.earlyExpiration,
       suppressRemoteCacheErrors: false,
       timeouts: this.#parameters.timeouts,

@@ -73,10 +73,10 @@ test.group('Cache', () => {
     assert.deepEqual(r1, 'bar')
   })
 
-  test('return remote item if logically expired and retain is enabled', async ({ assert }) => {
+  test('return remote item if logically expired and grace is enabled', async ({ assert }) => {
     const { cache, remote } = new CacheFactory()
       .withHybridConfig()
-      .merge({ gracefulRetain: { enabled: true } })
+      .merge({ gracePeriod: { enabled: true } })
       .create()
 
     await remote.set('foo', JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }))
@@ -85,12 +85,12 @@ test.group('Cache', () => {
     assert.deepEqual(r1, 'bar')
   })
 
-  test('doesnt return remote item if logically expired and retain is disabled', async ({
+  test('doesnt return remote item if logically expired and grace is disabled', async ({
     assert,
   }) => {
     const { cache, remote } = new CacheFactory()
       .withHybridConfig()
-      .merge({ gracefulRetain: { enabled: false } })
+      .merge({ gracePeriod: { enabled: false } })
       .create()
 
     await remote.set('foo', JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }))
@@ -99,10 +99,10 @@ test.group('Cache', () => {
     assert.isUndefined(value)
   })
 
-  test('return local item if logically expired and retain is enabled', async ({ assert }) => {
+  test('return local item if logically expired and grace is enabled', async ({ assert }) => {
     const { cache, local } = new CacheFactory()
       .withHybridConfig()
-      .merge({ gracefulRetain: { enabled: true } })
+      .merge({ gracePeriod: { enabled: true } })
       .create()
 
     await local.set('foo', JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }))
@@ -111,12 +111,12 @@ test.group('Cache', () => {
     assert.deepEqual(value, 'bar')
   })
 
-  test('doesnt return local item if logically expired and retain is disabled', async ({
+  test('doesnt return local item if logically expired and grace is disabled', async ({
     assert,
   }) => {
     const { cache, local } = new CacheFactory()
       .withHybridConfig()
-      .merge({ gracefulRetain: { enabled: false } })
+      .merge({ gracePeriod: { enabled: false } })
       .create()
 
     await local.set('foo', JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }))
@@ -197,12 +197,12 @@ test.group('Cache', () => {
     assert.isUndefined(await remote.get('key1'))
   })
 
-  test('retain should returns old value if cb throws', async ({ assert }) => {
+  test('grace should returns old value if cb throws', async ({ assert }) => {
     assert.plan(3)
 
     const { cache } = new CacheFactory()
       .withHybridConfig()
-      .merge({ gracefulRetain: { enabled: true, duration: '10m' } })
+      .merge({ gracePeriod: { enabled: true, duration: '10m' } })
       .create()
 
     // init first value
@@ -219,10 +219,10 @@ test.group('Cache', () => {
     assert.deepEqual(r2, { foo: 'bar' })
   })
 
-  test('graceful retain should not returns old value if cb doesnt throws', async ({ assert }) => {
+  test('grace period should not returns old value if cb doesnt throws', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .withHybridConfig()
-      .merge({ gracefulRetain: { enabled: true, duration: '10m' } })
+      .merge({ gracePeriod: { enabled: true, duration: '10m' } })
       .create()
 
     const r1 = await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }))
@@ -234,9 +234,9 @@ test.group('Cache', () => {
     assert.deepEqual(r2, { foo: 'baz' })
   })
 
-  test('should throws if gracefully retained value is outdated', async ({ assert }) => {
+  test('should throws if graced value is outdated', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ gracefulRetain: { enabled: true, duration: '100ms' } })
+      .merge({ gracePeriod: { enabled: true, duration: '100ms' } })
       .create()
 
     // init factory
@@ -254,10 +254,10 @@ test.group('Cache', () => {
     await assert.rejects(() => r3, /error in factory/)
   })
 
-  test('should use the default graceful duration when not defined', async ({ assert }) => {
+  test('should use the default graced duration when not defined', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .withHybridConfig()
-      .merge({ gracefulRetain: { enabled: true, duration: '100ms', fallbackDuration: 0 } })
+      .merge({ gracePeriod: { enabled: true, duration: '100ms', fallbackDuration: 0 } })
       .create()
 
     await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }))
@@ -393,14 +393,13 @@ test.group('Cache', () => {
   })
 
   // TODO check backplane + early refresh
-  // todo early refresh that fails
 
   // todo may need to see how to handle that with timeouts and failsafe
   test('rethrows error when suppressRemoteCacheErrors is false', async ({ assert }) => {
     const remoteDriver = new ChaosCache(new Memory({ maxSize: 10, prefix: 'test' }))
 
     const { cache } = new CacheFactory()
-      .merge({ remoteDriver, gracefulRetain: { enabled: true, duration: '2h' } })
+      .merge({ remoteDriver, gracePeriod: { enabled: true, duration: '2h' } })
       .withHybridConfig()
       .create()
 
@@ -687,11 +686,11 @@ test.group('Cache', () => {
     assert.isTrue(bus2.published.length === 0)
   })
 
-  test('if only graceful retained item is found in the remote cache it should be returned', async ({
+  test('if only grace perioded item is found in the remote cache it should be returned', async ({
     assert,
   }) => {
     const { cache, remote } = new CacheFactory()
-      .merge({ gracefulRetain: { enabled: true, duration: '10m' } })
+      .merge({ gracePeriod: { enabled: true, duration: '10m' } })
       .withHybridConfig()
       .create()
 
@@ -701,11 +700,11 @@ test.group('Cache', () => {
     assert.deepEqual(r1, 'bar')
   })
 
-  test('if only graceful retained item is found in the local cache it should be returned with getOrSet', async ({
+  test('if only grace perioded item is found in the local cache it should be returned with getOrSet', async ({
     assert,
   }) => {
     const { cache, remote } = new CacheFactory()
-      .merge({ gracefulRetain: { enabled: true, duration: '10m' } })
+      .merge({ gracePeriod: { enabled: true, duration: '10m' } })
       .withHybridConfig()
       .create()
 
