@@ -7,7 +7,7 @@ import type { CreateDriverResult, CreateBusDriverResult } from '../src/types/mai
 export function hybridDriver(options: {
   local: ReturnType<typeof memoryDriver>
   remote: CreateDriverResult
-  bus: CreateBusDriverResult
+  bus?: CreateBusDriverResult
 }): CreateDriverResult {
   return { local: options.local.local, remote: options.remote.local, bus: options.bus }
 }
