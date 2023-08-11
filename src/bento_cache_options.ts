@@ -59,6 +59,11 @@ export class BentoCacheOptions {
    */
   emitter: Emitter
 
+  /**
+   * Max time to wait for the lock to be acquired
+   */
+  lockTimeout?: number
+
   constructor(options: RawBentoCacheOptions) {
     this.prefix = options.prefix
     this.ttl = resolveTtl(options.ttl, '30m')!
@@ -66,6 +71,7 @@ export class BentoCacheOptions {
     this.timeouts = options.timeouts
     this.earlyExpiration = options.earlyExpiration || 0
     this.suppressRemoteCacheErrors = options.suppressRemoteCacheErrors || true
+    this.lockTimeout = resolveTtl(options.lockTimeout, null)
     this.gracefulRetain = options.gracefulRetain || {
       enabled: false,
       duration: '6h',

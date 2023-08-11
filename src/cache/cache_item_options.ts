@@ -50,6 +50,11 @@ export class CacheItemOptions {
     | { enabled: false }
     | { enabled: true; duration?: number; fallbackDuration?: number }
 
+  /**
+   * Max time to wait for the lock to be acquired
+   */
+  lockTimeout?: number
+
   constructor(options: RawCommonOptions = {}, defaults: Partial<RawCommonOptions> = {}) {
     this.id = uid()
 
@@ -59,6 +64,7 @@ export class CacheItemOptions {
     this.earlyExpireTtl = this.#resolveEarlyExpireTtl()
     this.timeouts = this.#resolveTimeouts()
     this.gracefulRetain = this.#resolveGracefulRetain()
+    this.lockTimeout = resolveTtl(this.#options.lockTimeout, null)
   }
 
   /**

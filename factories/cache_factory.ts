@@ -36,6 +36,7 @@ type FactoryParameters = {
   busOptions: BusOptions
   gracefulRetain: GracefulRetainOptions
   earlyExpiration: number
+  lockTimeout?: number
   timeouts?: {
     soft?: number
     hard?: number
@@ -109,6 +110,7 @@ export class CacheFactory {
       timeouts: this.#parameters.timeouts,
       logger: this.#parameters.logger,
       emitter: this.#parameters.emitter,
+      lockTimeout: this.#parameters.lockTimeout,
     })
 
     const cache = new Cache('primary', options, {

@@ -36,6 +36,7 @@ export type RawCommonOptions = {
   earlyExpiration?: number
   suppressRemoteCacheErrors?: boolean
   timeouts?: FactoryTimeoutOptions
+  lockTimeout?: TTL
 }
 
 /**

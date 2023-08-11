@@ -558,4 +558,21 @@ test.group('One tier tests', () => {
   })
     .disableTimeout()
     .skip()
+
+  test('should be able to specify a lock timeout', async ({ assert }) => {
+    const { cache } = new CacheFactory().merge({ lockTimeout: 100 }).create()
+
+    const r1 = cache.getOrSet('key1', '10ms', async () => {
+      await setTimeout(500)
+      return 'value'
+    })
+
+    const r2 = cache.getOrSet('key1', '10ms', throwingFactory())
+
+    const [result1, result2] = await Promise.allSettled([r1, r2])
+
+    // @ts-ignore
+    assert.deepEqual(result1.value, 'value')
+    assert.equal(result2.status, 'rejected')
+  })
 })

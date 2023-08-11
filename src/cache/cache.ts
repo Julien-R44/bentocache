@@ -328,7 +328,7 @@ export class Cache implements CacheProvider {
      * We didn't find the value in the local or remote cache
      * We need to run the factory and set the value in the different caches
      */
-    const lock = this.#locks.getOrCreateForKey(key)
+    const lock = this.#locks.getOrCreateForKey(key, options.lockTimeout)
 
     return await lock
       .runExclusive(async () => {

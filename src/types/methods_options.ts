@@ -5,5 +5,5 @@ import type { RawCommonOptions } from './main.js'
  */
 export type GetOrSetOptions = Pick<
   RawCommonOptions,
-  'earlyExpiration' | 'gracefulRetain' | 'suppressRemoteCacheErrors'
+  'earlyExpiration' | 'gracefulRetain' | 'suppressRemoteCacheErrors' | 'lockTimeout'
 >
