@@ -4,6 +4,10 @@ import type { BusDriver, CacheBusMessage } from '../../src/types/bus.js'
  * A dummy bus driver that does nothing
  */
 export class NullBus implements BusDriver {
+  setId(_id: string): BusDriver {
+    return this
+  }
+
   onReconnect(): void {
     return
   }

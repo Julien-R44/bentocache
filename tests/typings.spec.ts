@@ -84,9 +84,9 @@ test.group('Typings', () => {
   test('getOrSet() typings on cache', async ({ expectTypeOf }) => {
     const { cache } = new CacheFactory().create()
 
-    const r1 = await cache.getOrSet<string>('key', '1m', () => 'hey')
+    const r1 = await cache.getOrSet<string>('key', () => 'hey')
     const r2 = await cache.getOrSet('key', () => 32)
-    const r3 = await cache.getOrSet('key', '50s', () => 50_000)
+    const r3 = await cache.getOrSet('key', () => 50_000)
 
     expectTypeOf(r1).toEqualTypeOf<string>()
     expectTypeOf(r2).toEqualTypeOf<number>()
@@ -96,9 +96,9 @@ test.group('Typings', () => {
   test('getOrSet() typings on bento', async ({ expectTypeOf }) => {
     const { bento } = new BentoCacheFactory().create()
 
-    const r1 = await bento.getOrSet<string>('key', '1m', () => 'hey')
+    const r1 = await bento.getOrSet<string>('key', () => 'hey')
     const r2 = await bento.getOrSet('key', () => 32)
-    const r3 = await bento.getOrSet('key', '50s', () => 50_000)
+    const r3 = await bento.getOrSet('key', () => 50_000)
 
     expectTypeOf(r1).toEqualTypeOf<string>()
     expectTypeOf(r2).toEqualTypeOf<number>()

@@ -70,7 +70,8 @@ test.group('One tier tests', () => {
       .create()
 
     // init key with grace period
-    await cache.getOrSet('key', '10ms', () => 'value', {
+    await cache.getOrSet('key', () => 'value', {
+      ttl: '10ms',
       gracePeriod: { enabled: true, duration: '500ms' },
     })
 
@@ -84,7 +85,8 @@ test.group('One tier tests', () => {
     const r2 = await cache.get('key')
 
     // Otherwise if we had enabled grace period, we would get value
-    const result = await cache.getOrSet('key', '10ms', throwingFactory('DB call failed'), {
+    const result = await cache.getOrSet('key', throwingFactory('DB call failed'), {
+      ttl: '10ms',
       gracePeriod: { enabled: true, duration: '500ms' },
     })
 
@@ -282,7 +284,9 @@ test.group('One tier tests', () => {
   test('getOrSet() with specific ttl', async ({ assert }) => {
     const { cache } = new CacheFactory().create()
 
-    await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }))
+    await cache.getOrSet('key1', () => ({ foo: 'bar' }), {
+      ttl: '10ms',
+    })
     await setTimeout(20)
 
     assert.isUndefined(await cache.get('key1'))
@@ -558,12 +562,11 @@ test.group('One tier tests', () => {
   test('should be able to specify a lock timeout', async ({ assert }) => {
     const { cache } = new CacheFactory().merge({ lockTimeout: 100 }).create()
 
-    const r1 = cache.getOrSet('key1', '10ms', async () => {
-      await setTimeout(500)
-      return 'value'
-    })
+    const r1 = cache.getOrSet('key1', waitAndReturnFactory(500, 'value'), { ttl: '10ms' })
 
-    const r2 = cache.getOrSet('key1', '10ms', throwingFactory())
+    const r2 = cache.getOrSet('key1', throwingFactory(), {
+      ttl: '10ms',
+    })
 
     const [result1, result2] = await Promise.allSettled([r1, r2])
 

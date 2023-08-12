@@ -189,7 +189,10 @@ test.group('Cache', () => {
   test('with specific ttl', async ({ assert }) => {
     const { cache, local, remote } = new CacheFactory().withHybridConfig().create()
 
-    await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }))
+    await cache.getOrSet('key1', () => ({ foo: 'bar' }), {
+      ttl: '10ms',
+    })
+
     await setTimeout(20)
 
     assert.isUndefined(await cache.get('key1'))
@@ -206,14 +209,20 @@ test.group('Cache', () => {
       .create()
 
     // init first value
-    const r1 = await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }))
+    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }), {
+      ttl: '10ms',
+    })
 
     await setTimeout(100)
-    const r2 = await cache.getOrSet('key1', '10ms', () => {
-      // Since key1 is logically expired, this factory should be called
-      assert.incrementAssertionsCount()
-      throw new Error('foo')
-    })
+    const r2 = await cache.getOrSet(
+      'key1',
+      () => {
+        // Since key1 is logically expired, this factory should be called
+        assert.incrementAssertionsCount()
+        throw new Error('foo')
+      },
+      { ttl: '10ms' }
+    )
 
     assert.deepEqual(r1, { foo: 'bar' })
     assert.deepEqual(r2, { foo: 'bar' })
@@ -225,10 +234,10 @@ test.group('Cache', () => {
       .merge({ gracePeriod: { enabled: true, duration: '10m' } })
       .create()
 
-    const r1 = await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }))
+    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '10ms' })
     await setTimeout(100)
 
-    const r2 = await cache.getOrSet('key1', '10ms', () => ({ foo: 'baz' }))
+    const r2 = await cache.getOrSet('key1', () => ({ foo: 'baz' }), { ttl: '10ms' })
 
     assert.deepEqual(r1, { foo: 'bar' })
     assert.deepEqual(r2, { foo: 'baz' })
@@ -240,14 +249,16 @@ test.group('Cache', () => {
       .create()
 
     // init factory
-    const r1 = await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }))
+    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '10ms' })
 
     // re-get with throwing factory. still in grace period
-    const r2 = await cache.getOrSet('key1', '10ms', throwingFactory('should not be called'))
+    const r2 = await cache.getOrSet('key1', throwingFactory('should not be called'), {
+      ttl: '10ms',
+    })
     await setTimeout(101)
 
     // re-get with throwing factory. out of grace period. should throws
-    const r3 = cache.getOrSet('key1', '10ms', throwingFactory('error in factory'))
+    const r3 = cache.getOrSet('key1', throwingFactory('error in factory'), { ttl: '10ms' })
 
     assert.deepEqual(r1, { foo: 'bar' })
     assert.deepEqual(r2, { foo: 'bar' })
@@ -260,13 +271,13 @@ test.group('Cache', () => {
       .merge({ gracePeriod: { enabled: true, duration: '100ms', fallbackDuration: 0 } })
       .create()
 
-    await cache.getOrSet('key1', '10ms', () => ({ foo: 'bar' }))
+    await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '10ms' })
     await setTimeout(50)
 
-    const r1 = await cache.getOrSet('key1', '10ms', throwingFactory())
+    const r1 = await cache.getOrSet('key1', throwingFactory(), { ttl: '10ms' })
 
     await setTimeout(50)
-    const r2 = cache.getOrSet('key1', '10ms', throwingFactory('fail'))
+    const r2 = cache.getOrSet('key1', throwingFactory('fail'), { ttl: '10ms' })
 
     assert.deepEqual(r1, { foo: 'bar' })
     await assert.rejects(() => r2, /fail/)
@@ -404,7 +415,7 @@ test.group('Cache', () => {
       .create()
 
     // init cache
-    await cache.getOrSet('key1', '100ms', () => ({ foo: 'bar' }))
+    await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '100ms' })
 
     // make the remote cache fail
     remoteDriver.alwaysThrow()
@@ -720,7 +731,7 @@ test.group('Cache', () => {
 
     remote.set('foo', JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }))
 
-    const r1 = await cache.getOrSet('foo', '10ms', throwingFactory('error in factory'))
+    const r1 = await cache.getOrSet('foo', throwingFactory('error in factory'), { ttl: '10ms' })
     assert.deepEqual(r1, 'bar')
   })
 
@@ -763,14 +774,18 @@ test.group('Cache', () => {
       .withHybridConfig()
       .create()
 
-    await cache.getOrSet('key1', '1s', () => ({ foo: 'bar' }))
+    await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '1s' })
 
     await setTimeout(501)
 
-    await cache.getOrSet('key1', '1s', async () => {
-      await setTimeout(100)
-      throw new Error('foo')
-    })
+    await cache.getOrSet(
+      'key1',
+      async () => {
+        await setTimeout(100)
+        throw new Error('foo')
+      },
+      { ttl: '1s' }
+    )
 
     await setTimeout(110)
     const errorLog = logger.logs.find(

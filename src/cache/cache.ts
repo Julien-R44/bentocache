@@ -11,7 +11,6 @@ import lodash from '@poppinss/utils/lodash'
 
 import { Locks } from './locks.js'
 import { Bus } from '../bus/bus.js'
-import { resolveTtl } from '../helpers.js'
 import { events } from '../events/index.js'
 import { LocalCache } from './local_cache.js'
 import { RemoteCache } from './remote_cache.js'
@@ -23,12 +22,10 @@ import { CacheItemOptions } from './cache_item_options.js'
 import type { BentoCacheOptions } from '../bento_cache_options.js'
 import type {
   CacheDriver,
-  CachedValue,
   GetOrSetOptions,
   CacheEvent,
   CacheSerializer,
   RawCommonOptions,
-  Duration,
   Factory,
   BusDriver,
   BusOptions,
@@ -117,33 +114,6 @@ export class Cache implements CacheProvider {
 
   get #logger() {
     return this.#options.logger
-  }
-
-  protected resolveGetSetOptions(
-    ttlOrFactory: Duration | Factory,
-    factoryOrOptions?: Factory | GetOrSetOptions,
-    options?: GetOrSetOptions
-  ) {
-    let ttl: Duration | undefined
-    let factory: Factory
-    let resolvedOptions: GetOrSetOptions
-
-    if (typeof ttlOrFactory === 'function') {
-      factory = ttlOrFactory
-      resolvedOptions = factoryOrOptions || options
-    } else {
-      ttl = resolveTtl(ttlOrFactory)!
-      factory = factoryOrOptions
-      resolvedOptions = options!
-    }
-
-    const cacheOptions = this.#defaultCacheOptions.cloneWith({
-      ttl: ttl,
-      timeouts: undefined,
-      ...resolvedOptions,
-    })
-
-    return { ttl, factory, options: cacheOptions }
   }
 
   /**
@@ -432,19 +402,9 @@ export class Cache implements CacheProvider {
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory and return it
    */
-  async getOrSet<T>(
-    key: string,
-    ttlOrFactory: Duration | Factory<T>,
-    factoryOrOptions?: Factory<T> | GetOrSetOptions,
-    maybeOptions?: GetOrSetOptions
-  ): Promise<T> {
-    let { factory, options } = this.resolveGetSetOptions(
-      ttlOrFactory,
-      factoryOrOptions,
-      maybeOptions
-    )
-
-    return this.#getOrSet(key, factory, options)
+  async getOrSet<T>(key: string, factory: Factory<T>, options?: GetOrSetOptions): Promise<T> {
+    const cacheOptions = this.#defaultCacheOptions.cloneWith(options)
+    return this.#getOrSet(key, factory, cacheOptions)
   }
 
   /**
@@ -453,19 +413,11 @@ export class Cache implements CacheProvider {
    */
   async getOrSetForever<T>(
     key: string,
-    factory: () => CachedValue | Promise<CachedValue>,
-    rawOptions?: GetOrSetOptions
+    factory: Factory<T>,
+    options?: GetOrSetOptions
   ): Promise<T> {
-    /**
-     * Create a CacheOptions instance with a null `ttl`
-     * for keeping the value forever
-     */
-    const options = this.#defaultCacheOptions.cloneWith({
-      ttl: null,
-      ...rawOptions,
-    })
-
-    return this.#getOrSet(key, factory, options)
+    const cacheOptions = this.#defaultCacheOptions.cloneWith({ ttl: null, ...options })
+    return this.#getOrSet(key, factory, cacheOptions)
   }
 
   /**

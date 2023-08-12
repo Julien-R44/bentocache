@@ -1,4 +1,4 @@
-import type { RawCommonOptions } from './main.js'
+import type { Duration, RawCommonOptions } from './main.js'
 
 /**
  * Options accepted by the `getOrSet` method
@@ -6,4 +6,4 @@ import type { RawCommonOptions } from './main.js'
 export type GetOrSetOptions = Pick<
   RawCommonOptions,
   'earlyExpiration' | 'gracePeriod' | 'suppressRemoteCacheErrors' | 'lockTimeout'
->
+> & { ttl?: Duration }

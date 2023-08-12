@@ -10,14 +10,13 @@
 import type {
   CreateDriverResult,
   CacheEvents,
-  Duration,
   Factory,
   GetOrSetOptions,
   RawCommonOptions,
   RawBentoCacheOptions,
 } from './types/main.js'
-import { resolveTtl } from './helpers.js'
 import { Cache } from './cache/cache.js'
+import { resolveTtl } from './helpers.js'
 import type { CacheProvider } from './types/provider.js'
 import { BentoCacheOptions } from './bento_cache_options.js'
 
@@ -159,13 +158,8 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory and return it
    */
-  async getOrSet<T>(
-    key: string,
-    ttlOrFactory: Duration | Factory<T>,
-    factoryOrOptions?: Factory<T> | GetOrSetOptions,
-    maybeOptions?: GetOrSetOptions
-  ): Promise<T> {
-    return this.use().getOrSet(key, ttlOrFactory, factoryOrOptions, maybeOptions)
+  async getOrSet<T>(key: string, factory: Factory<T>, options?: GetOrSetOptions): Promise<T> {
+    return this.use().getOrSet(key, factory, options)
   }
 
   /**
