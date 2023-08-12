@@ -60,6 +60,7 @@
     "defu": "^6.1.2",
     "del-cli": "^5.0.0",
     "dotenv": "^16.3.1",
+    "emittery": "^1.0.1",
     "eslint": "^8.46.0",
     "got": "^13.0.0",
     "ioredis": "^5.3.2",
@@ -81,7 +82,6 @@
     "@poppinss/utils": "6.5.0-3",
     "@sindresorhus/chunkify": "^0.2.0",
     "async-mutex": "^0.4.0",
-    "emittery": "^1.0.1",
     "quick-lru": "^6.1.1",
     "typescript-log": "^2.0.0",
     "uid": "^2.0.2"

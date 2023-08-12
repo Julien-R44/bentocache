@@ -380,6 +380,11 @@ export class Cache implements CacheProvider {
         const staleItem = localCacheItem ?? remoteCacheItem
         if (options.gracePeriod?.enabled && staleItem) {
           if (options.gracePeriod.fallbackDuration) {
+            this.#logger.trace(
+              { key, cache: this.name, opId: options.id },
+              'apply fallback duration'
+            )
+
             await this.#localCache?.set(
               key,
               staleItem.applyFallbackDuration(options.gracePeriod.fallbackDuration).serialize(),
