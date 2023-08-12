@@ -1,3 +1,12 @@
+/*
+ * @quakjs/bentocache
+ *
+ * (c) Quak
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
@@ -131,4 +140,8 @@ test.group('Bus synchronization', () => {
 
     assert.deepEqual(bus2.receivedMessages.length, 20)
   }).disableTimeout()
+
+  test(
+    'a message of type set should not totally delete the key from the cache if grace period are enabled'
+  )
 })

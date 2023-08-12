@@ -1,7 +1,7 @@
 /*
- * @adonisjs/cache
+ * @quakjs/bentocache
  *
- * (c) AdonisJS
+ * (c) Quak
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.

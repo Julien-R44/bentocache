@@ -1,3 +1,12 @@
+/*
+ * @quakjs/bentocache
+ *
+ * (c) Quak
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 import { CacheItem } from './cache_item.js'
 import type { CacheItemOptions } from './cache_item_options.js'
 import type { CacheDriver, Logger } from '../types/main.js'

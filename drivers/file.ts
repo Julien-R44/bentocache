@@ -1,3 +1,12 @@
+/*
+ * @quakjs/bentocache
+ *
+ * (c) Quak
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 import { File } from '../src/drivers/file.js'
 import type { FileConfig } from '../src/types/options.js'
 import type { CreateDriverResult } from '../src/types/main.js'

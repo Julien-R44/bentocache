@@ -1,3 +1,12 @@
+/*
+ * @quakjs/bentocache
+ *
+ * (c) Quak
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 import QuickLRU from 'quick-lru'
 
 import { BaseDriver } from './base_driver.js'
