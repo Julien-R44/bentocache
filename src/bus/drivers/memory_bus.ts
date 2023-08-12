@@ -7,7 +7,7 @@
  * file that was distributed with this source code.
  */
 
-import type { BusDriver, CacheBusMessage } from '../../types/bus.js'
+import type { Logger, BusDriver, CacheBusMessage } from '../../types/main.js'
 
 /**
  * A simple in-memory bus driver for easy
@@ -34,9 +34,15 @@ export class MemoryBus implements BusDriver {
   receivedMessages: CacheBusMessage[] = []
 
   #id!: string
+  _logger?: Logger
 
   setId(id: string) {
     this.#id = id
+    return this
+  }
+
+  setLogger(logger: Logger) {
+    this._logger = logger
     return this
   }
 

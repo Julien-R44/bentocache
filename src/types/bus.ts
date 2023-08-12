@@ -1,3 +1,5 @@
+import type { Logger } from './main.js'
+
 /**
  * Interface for the a bus driver
  */
@@ -12,6 +14,7 @@ export interface BusDriver {
 
   onReconnect(callback: () => void): void
   setId(id: string): BusDriver
+  setLogger(logger: Logger): BusDriver
 }
 
 /**

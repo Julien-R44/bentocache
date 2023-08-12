@@ -9,9 +9,8 @@
 
 import { Redis as IoRedis, type RedisOptions as IoRedisOptions } from 'ioredis'
 
-import type { BusEncoder } from '../../types/bus.js'
 import { BinaryEncoder } from '../encoders/binary_encoder.js'
-import { type BusDriver, type CacheBusMessage } from '../../types/bus.js'
+import type { BusEncoder, Logger, BusDriver, CacheBusMessage } from '../../types/main.js'
 
 /**
  * A Redis Bus driver
@@ -41,6 +40,7 @@ export class RedisBus implements BusDriver {
    */
   #encoder: BusEncoder
   #id!: string
+  #logger?: Logger
 
   constructor(connection: IoRedisOptions, encoder?: BusEncoder) {
     this.#subscriber = new IoRedis(connection)
@@ -50,6 +50,11 @@ export class RedisBus implements BusDriver {
 
   setId(id: string) {
     this.#id = id
+    return this
+  }
+
+  setLogger(logger: Logger) {
+    this.#logger = logger
     return this
   }
 
@@ -74,14 +79,17 @@ export class RedisBus implements BusDriver {
     this.#subscriber.on('message', (receivedChannel, message) => {
       if (channelName !== receivedChannel) return
 
-      const data = this.#encoder.decode(message)
+      try {
+        const data = this.#encoder.decode(message)
+        /**
+         * Ignore messages published by this bus instance
+         */
+        if (data.busId === this.#id) return
 
-      /**
-       * Ignore messages published by this bus instance
-       */
-      if (data.busId === this.#id) return
-
-      handler(data)
+        handler(data)
+      } catch (error) {
+        this.#logger?.warn({ error }, 'Invalid message received')
+      }
     })
   }
 

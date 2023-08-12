@@ -99,17 +99,14 @@ export class Cache implements CacheProvider {
   }
 
   #createBus(busDriver?: BusDriver, bus?: Bus, busOptions?: BusOptions) {
-    if (bus) {
-      return bus
-    }
+    if (bus) return bus
+    if (!busDriver || !this.#localCache) return
 
-    if (busDriver && this.#localCache) {
-      const opts = lodash.merge({ retryQueue: { enabled: true, maxSize: undefined } }, busOptions)
-      const newBus = new Bus(busDriver, this.#localCache, this.#logger, this.#options.emitter, opts)
+    const opts = lodash.merge({ retryQueue: { enabled: true, maxSize: undefined } }, busOptions)
+    const newBus = new Bus(busDriver, this.#localCache, this.#logger, this.#options.emitter, opts)
 
-      newBus.subscribe()
-      return newBus
-    }
+    newBus.subscribe()
+    return newBus
   }
 
   get #logger() {

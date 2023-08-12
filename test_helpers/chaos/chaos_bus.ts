@@ -26,7 +26,12 @@ export class ChaosBus implements BusDriver {
 
   setId(id: string) {
     this.#innerBus.setId(id)
-    return this
+    return this.#innerBus
+  }
+
+  setLogger(logger: any) {
+    this.#innerBus.setLogger(logger)
+    return this.#innerBus
   }
 
   /**

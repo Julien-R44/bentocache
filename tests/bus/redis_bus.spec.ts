@@ -16,6 +16,8 @@ import { RedisBus } from '../../src/bus/drivers/redis_bus.js'
 import { REDIS_CREDENTIALS } from '../../test_helpers/index.js'
 import { JsonEncoder } from '../../src/bus/encoders/json_encoder.js'
 import { BinaryEncoder } from '../../src/bus/encoders/binary_encoder.js'
+import { Redis } from 'ioredis'
+import { TestLogger } from '../../test_helpers/test_logger.js'
 
 test.group('Redis Bus', () => {
   test('Bus1 should not receive message emitted by itself', async ({ assert, cleanup }) => {
@@ -96,4 +98,32 @@ test.group('Redis Bus', () => {
 
     await bus2.publish('foo', data)
   }).waitForDone()
+
+  test('if invalid message is received it should not throw an error', async ({
+    assert,
+    cleanup,
+  }) => {
+    const testLogger = new TestLogger()
+
+    const bus1 = new RedisBus(REDIS_CREDENTIALS, new BinaryEncoder())
+      .setId(createId())
+      .setLogger(testLogger)
+
+    const redis = new Redis(REDIS_CREDENTIALS)
+
+    cleanup(async () => {
+      await bus1.disconnect()
+      redis.disconnect()
+    })
+
+    bus1.subscribe('bentocache.notifications', () => assert.fail('Should not receive message'))
+    await redis.publish('bentocache.notifications', 'invalid message')
+
+    await setTimeout(1000)
+
+    const log = testLogger.logs.find(
+      (x) => x.level === 'warn' && x.msg === 'Invalid message received'
+    )
+    assert.isDefined(log)
+  })
 })
