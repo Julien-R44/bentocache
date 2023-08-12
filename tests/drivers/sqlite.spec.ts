@@ -16,7 +16,6 @@ registerApiTestSuite({
   driver: Sqlite,
   supportsMilliseconds: true,
   config: {
-    ttl: 30 * 100,
     prefix: 'japa',
     connection: {
       filename: 'cache.sqlite3',

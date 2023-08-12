@@ -16,7 +16,6 @@ registerApiTestSuite({
   driver: Mysql,
   supportsMilliseconds: false,
   config: {
-    ttl: 30 * 100,
     prefix: 'japa',
     connection: {
       user: 'root',

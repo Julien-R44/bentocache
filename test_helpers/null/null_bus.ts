@@ -1,10 +1,14 @@
-import type { BusDriver, CacheBusMessage } from '../../src/types/bus.js'
+import type { BusDriver, CacheBusMessage, Logger } from '../../src/types/main.js'
 
 /**
  * A dummy bus driver that does nothing
  */
 export class NullBus implements BusDriver {
   setId(_id: string): BusDriver {
+    return this
+  }
+
+  setLogger(_logger: Logger): BusDriver {
     return this
   }
 

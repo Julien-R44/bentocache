@@ -149,22 +149,6 @@ export class File extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Add the given amount to the value of a key.
-   * Creates the key if it doesn't exist
-   */
-  async add(key: string, amount: number) {
-    const currentValue = await this.get(key)
-    if (!currentValue) {
-      await this.set(key, amount.toString(), this.config.ttl)
-      return amount
-    }
-
-    const newValue = +currentValue + amount
-    await this.set(key, newValue.toString(), this.config.ttl)
-    return newValue
-  }
-
-  /**
    * Check if a key exists in the cache
    */
   async has(key: string) {

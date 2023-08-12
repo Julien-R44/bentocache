@@ -8,21 +8,18 @@
  */
 
 import type {
-  CreateDriverResult,
   CacheEvents,
   Factory,
   GetOrSetOptions,
   RawCommonOptions,
   RawBentoCacheOptions,
+  StoreEntry,
 } from './types/main.js'
 import { Cache } from './cache/cache.js'
-import { resolveTtl } from './helpers.js'
 import type { CacheProvider } from './types/provider.js'
 import { BentoCacheOptions } from './bento_cache_options.js'
 
-export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
-  implements CacheProvider
-{
+export class BentoCache<KnownCaches extends Record<string, StoreEntry>> implements CacheProvider {
   /**
    * Name of the default cache
    */
@@ -51,22 +48,20 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
     this.#options.logger.trace('bentocache initialized')
   }
 
-  #createProvider(cacheName: string, registry: CreateDriverResult): CacheProvider {
-    const localDriverOptions = {
-      prefix: registry.local.options.prefix || this.#options.prefix,
-      ttl: resolveTtl(registry.local.options.ttl, this.#options.ttl),
-    }
+  #createProvider(cacheName: string, registry: StoreEntry): CacheProvider {
+    const driverItemOptions = this.#options.cloneWith(registry)
 
-    const remoteDriverOptions = {
-      prefix: registry.remote?.options.prefix || this.#options.prefix,
-      ttl: resolveTtl(registry.remote?.options.ttl, this.#options.ttl),
-    }
-
-    return new Cache(cacheName, this.#options, {
-      localDriver: registry.local.factory(localDriverOptions),
-      remoteDriver: registry.remote?.factory(remoteDriverOptions),
-      busDriver: registry.bus?.factory(registry.bus.options),
-      busOptions: registry.bus?.options,
+    return new Cache(cacheName, driverItemOptions, {
+      localDriver: registry.driver.l1.factory({
+        prefix: driverItemOptions.prefix,
+        ...registry.driver.l1.options,
+      }),
+      remoteDriver: registry.driver.l2?.factory({
+        prefix: driverItemOptions.prefix,
+        ...registry.driver.l2.options,
+      }),
+      busDriver: registry.driver.bus?.factory(registry.driver.bus?.options),
+      busOptions: registry.driver.bus?.options,
     })
   }
 
@@ -213,6 +208,13 @@ export class BentoCache<KnownCaches extends Record<string, CreateDriverResult>>
    */
   async clear() {
     return this.use().clear()
+  }
+
+  /**
+   * Remove all items from all caches
+   */
+  async clearAll() {
+    await Promise.all(Object.keys(this.#stores).map((cache) => this.use(cache).clear()))
   }
 
   /**

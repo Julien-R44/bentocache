@@ -19,7 +19,6 @@ registerApiTestSuite({
   test,
   driver: Redis,
   config: {
-    ttl: 30 * 100,
     prefix: 'japa',
     connection: REDIS_CREDENTIALS,
   },
@@ -29,7 +28,7 @@ test.group('Redis driver', (group) => {
   let redis: Redis
 
   group.each.setup(async () => {
-    redis = new Redis({ connection: REDIS_CREDENTIALS, prefix: 'japa', ttl: 1000 })
+    redis = new Redis({ connection: REDIS_CREDENTIALS, prefix: 'japa' })
 
     return async () => {
       await redis.clear()
@@ -39,7 +38,7 @@ test.group('Redis driver', (group) => {
 
   test('should be able to provide an instance of ioredis', async ({ assert }) => {
     const ioredis = new IoRedis(REDIS_CREDENTIALS)
-    const redis2 = new Redis({ connection: ioredis, ttl: 1000 })
+    const redis2 = new Redis({ connection: ioredis })
 
     assert.equal(redis2.getConnection(), ioredis)
 

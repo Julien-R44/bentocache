@@ -10,16 +10,16 @@
 import QuickLRU from 'quick-lru'
 
 import { BaseDriver } from './base_driver.js'
-import type { CacheDriver, CachedValue, MemoryConfig as MemoryConfig } from '../types/main.js'
+import type { CacheDriver, MemoryConfig as MemoryConfig } from '../types/main.js'
 
 /**
  * A memory caching driver using LRU algorithm
  */
 export class Memory extends BaseDriver implements CacheDriver {
-  #lru: QuickLRU<string, CachedValue>
+  #lru: QuickLRU<string, string>
   declare config: MemoryConfig
 
-  constructor(config: MemoryConfig & { lruInstance?: QuickLRU<string, CachedValue> }) {
+  constructor(config: MemoryConfig & { lruInstance?: QuickLRU<string, string> }) {
     super(config)
 
     if (config.lruInstance) {
@@ -27,7 +27,7 @@ export class Memory extends BaseDriver implements CacheDriver {
       return
     }
 
-    this.#lru = new QuickLRU({ maxSize: config.maxSize ?? 1000, maxAge: config.ttl })
+    this.#lru = new QuickLRU({ maxSize: config.maxSize ?? 1000 })
   }
 
   /**
@@ -65,7 +65,7 @@ export class Memory extends BaseDriver implements CacheDriver {
    * Put a value in the cache
    * Returns true if the value was set, false otherwise
    */
-  set<T extends CachedValue>(key: string, value: T, ttl?: number) {
+  set(key: string, value: string, ttl?: number) {
     this.#lru.set(this.getItemKey(key), value, { maxAge: ttl ?? Number.POSITIVE_INFINITY })
     return true
   }

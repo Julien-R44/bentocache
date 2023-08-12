@@ -85,6 +85,7 @@ export class Cache implements CacheProvider {
   ) {
     this.name = name
     this.#options = options
+
     this.#defaultCacheOptions = new CacheItemOptions(options)
 
     if (drivers.localDriver) {

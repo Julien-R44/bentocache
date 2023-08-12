@@ -10,7 +10,7 @@
 import { Redis as IoRedis } from 'ioredis'
 
 import { BaseDriver } from './base_driver.js'
-import type { CacheDriver, CachedValue, RedisConfig } from '../types/main.js'
+import type { CacheDriver, RedisConfig } from '../types/main.js'
 
 /**
  * Caching driver for Redis
@@ -68,7 +68,7 @@ export class Redis extends BaseDriver implements CacheDriver {
    * Put a value in the cache
    * Returns true if the value was set, false otherwise
    */
-  async set(key: string, value: CachedValue, ttl?: number) {
+  async set(key: string, value: string, ttl?: number) {
     key = this.getItemKey(key)
 
     if (!ttl) {

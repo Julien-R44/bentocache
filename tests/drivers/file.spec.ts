@@ -18,7 +18,6 @@ registerApiTestSuite({
   test,
   driver: File,
   config: {
-    ttl: 30 * 100,
     prefix: 'japa',
     directory: fileURLToPath(BASE_URL),
   },

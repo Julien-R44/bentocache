@@ -20,8 +20,8 @@ test.group('Typings', () => {
     const bento = new BentoCache({
       default: 'primary',
       stores: {
-        primary: memoryDriver({ maxSize: 100, ttl: 30_000 }),
-        secondary: memoryDriver({ maxSize: 100, ttl: 30_000 }),
+        primary: { driver: memoryDriver({ maxSize: 100 }) },
+        secondary: { driver: memoryDriver({ maxSize: 100 }) },
       },
     })
 
@@ -121,6 +121,13 @@ test.group('Typings', () => {
 
     bento.on('cache:cleared', (payload) => {
       expectTypeOf(payload).toEqualTypeOf<CacheEvents['cache:cleared']>()
+    })
+  })
+
+  test('stores entries should accept raw options', async ({ expectTypeOf }) => {
+    expectTypeOf(BentoCache).toBeConstructibleWith({
+      default: 'memory',
+      stores: { memory: { driver: memoryDriver({}), gracePeriod: { enabled: true } } },
     })
   })
 })

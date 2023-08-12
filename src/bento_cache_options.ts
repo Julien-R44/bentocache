@@ -9,9 +9,10 @@
 
 import EventEmitter from 'node:events'
 import { noopLogger } from 'typescript-log'
+import lodash from '@poppinss/utils/lodash'
 
-import { resolveTtl } from './helpers.js'
 import type {
+  Duration,
   Emitter,
   FactoryTimeoutOptions,
   GracePeriodOptions as GracePeriodOptions,
@@ -26,68 +27,79 @@ import type {
  * or on a per-operation basis
  */
 export class BentoCacheOptions {
+  #options: RawBentoCacheOptions
+
   /**
    * The default TTL for all caches
    *
    * @default 30m
    */
-  ttl: number
+  ttl: Duration = '30m'
 
   /**
    * Default prefix for all caches
    */
-  prefix?: string
+  prefix: string = 'bentocache'
 
   /**
    * The grace period options
    */
-  gracePeriod: GracePeriodOptions
+  gracePeriod: GracePeriodOptions = {
+    enabled: false,
+    duration: '6h',
+    fallbackDuration: '10s',
+  }
 
   /**
    * Default early expiration percentage
    */
-  earlyExpiration: number
+  earlyExpiration: number = 0
 
   /**
    * Whether to suppress remote cache errors
    */
-  suppressRemoteCacheErrors: boolean
+  suppressRemoteCacheErrors: boolean = true
 
   /**
    * The soft and hard timeouts for the factories
    */
-  timeouts?: FactoryTimeoutOptions
+  timeouts?: FactoryTimeoutOptions = {
+    soft: null,
+    hard: null,
+  }
 
   /**
    * The logger used throughout the library
    */
-  logger: Logger
+  logger: Logger = noopLogger()
 
   /**
    * The emitter used throughout the library
    */
-  emitter: Emitter
+  emitter: Emitter = new EventEmitter()
 
   /**
    * Max time to wait for the lock to be acquired
    */
-  lockTimeout?: number
+  lockTimeout?: Duration = null
 
   constructor(options: RawBentoCacheOptions) {
-    this.prefix = options.prefix
-    this.ttl = resolveTtl(options.ttl, '30m')!
+    this.#options = lodash.merge({}, this, options)
 
-    this.timeouts = options.timeouts
-    this.earlyExpiration = options.earlyExpiration || 0
-    this.suppressRemoteCacheErrors = options.suppressRemoteCacheErrors || true
-    this.lockTimeout = resolveTtl(options.lockTimeout, null)
-    this.gracePeriod = options.gracePeriod || {
-      enabled: false,
-      duration: '6h',
-      fallbackDuration: '10s',
-    }
+    this.prefix = this.#options.prefix!
+    this.ttl = this.#options.ttl!
+    this.timeouts = this.#options.timeouts
+    this.earlyExpiration = this.#options.earlyExpiration!
+    this.suppressRemoteCacheErrors = this.#options.suppressRemoteCacheErrors!
+    this.lockTimeout = this.#options.lockTimeout
+    this.gracePeriod = this.#options.gracePeriod!
 
-    this.emitter = options.emitter || new EventEmitter()
-    this.logger = (options.logger || noopLogger()).child({ pkg: 'bentocache' })
+    this.emitter = this.#options.emitter!
+    this.logger = this.#options.logger!.child({ pkg: 'bentocache' })
+  }
+
+  cloneWith(options: RawBentoCacheOptions) {
+    const newOptions = lodash.merge({}, this.#options, options)
+    return new BentoCacheOptions(newOptions)
   }
 }

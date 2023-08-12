@@ -51,7 +51,6 @@ registerApiTestSuite({
   driver: DynamoDB,
   supportsMilliseconds: false,
   config: {
-    ttl: 30 * 100,
     prefix: 'japa',
     region: 'eu-west-3',
     endpoint: process.env.DYNAMODB_ENDPOINT,

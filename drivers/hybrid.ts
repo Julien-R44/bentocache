@@ -18,5 +18,9 @@ export function hybridDriver(options: {
   remote: CreateDriverResult
   bus?: CreateBusDriverResult
 }): CreateDriverResult {
-  return { local: options.local.local, remote: options.remote.local, bus: options.bus }
+  return {
+    l1: options.local.l1,
+    l2: options.remote.l1,
+    bus: options.bus,
+  }
 }

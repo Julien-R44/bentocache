@@ -59,7 +59,7 @@ export class CacheFactory {
    */
   #createLocalDriver() {
     if (this.#parameters.localDriver) return this.#parameters.localDriver
-    return new Memory({ maxSize: 100, ttl: this.#parameters.ttl, prefix: 'test' })
+    return new Memory({ maxSize: 100, prefix: 'test' })
   }
 
   /**
@@ -106,7 +106,6 @@ export class CacheFactory {
       ttl: this.#parameters.ttl,
       gracePeriod: this.#parameters.gracePeriod,
       earlyExpiration: this.#parameters.earlyExpiration,
-      suppressRemoteCacheErrors: false,
       timeouts: this.#parameters.timeouts,
       logger: this.#parameters.logger,
       emitter: this.#parameters.emitter,

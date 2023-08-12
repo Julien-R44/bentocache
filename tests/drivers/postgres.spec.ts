@@ -15,7 +15,6 @@ registerApiTestSuite({
   test,
   driver: Postgres,
   config: {
-    ttl: 30 * 100,
     prefix: 'japa',
     connection: { user: 'postgres', password: 'postgres' },
   },

@@ -16,7 +16,6 @@ registerApiTestSuite({
   test,
   driver: Memory,
   config: {
-    ttl: 30 * 100,
     maxSize: 1000,
     prefix: 'japa',
   },

@@ -8,12 +8,14 @@
  */
 
 import { Sqlite } from '../src/drivers/sql/sqlite.js'
-import type { SqlConfig } from '../src/types/options.js'
-import type { CreateDriverResult } from '../src/types/main.js'
+import type { SqlConfig } from '../src/types/options/drivers_options.js'
+import type { CacheDriverOptions, CreateDriverResult } from '../src/types/main.js'
 
 /**
  * Create a new sqlite driver
  */
-export function sqliteDriver(options: SqlConfig): CreateDriverResult {
-  return { local: { options, factory: (config: SqlConfig) => new Sqlite(config) } }
+export function sqliteDriver(options: SqlConfig & CacheDriverOptions): CreateDriverResult {
+  return {
+    l1: { options, factory: (config: SqlConfig) => new Sqlite(config) },
+  }
 }

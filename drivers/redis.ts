@@ -10,7 +10,7 @@
 import type { RedisOptions as IoRedisOptions } from 'ioredis'
 
 import { Redis } from '../src/drivers/redis.js'
-import type { RedisConfig } from '../src/types/options.js'
+import type { RedisConfig } from '../src/types/options/drivers_options.js'
 import { RedisBus } from '../src/bus/drivers/redis_bus.js'
 import type { BusOptions, CreateBusDriverResult, CreateDriverResult } from '../src/types/main.js'
 
@@ -18,7 +18,9 @@ import type { BusOptions, CreateBusDriverResult, CreateDriverResult } from '../s
  * Create a new cache redis driver
  */
 export function redisDriver(options: RedisConfig): CreateDriverResult {
-  return { local: { options, factory: (config: RedisConfig) => new Redis(config) } }
+  return {
+    l1: { options, factory: (config: RedisConfig) => new Redis(config) },
+  }
 }
 
 /**

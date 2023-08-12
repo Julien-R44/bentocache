@@ -1,3 +1,12 @@
+/*
+ * @quakjs/bentocache
+ *
+ * (c) Quak
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 import type { Logger } from './main.js'
 
 /**
@@ -12,9 +21,9 @@ export interface BusDriver {
   unsubscribe(channel: string): Promise<void>
   disconnect(): Promise<void>
 
-  onReconnect(callback: () => void): void
   setId(id: string): BusDriver
   setLogger(logger: Logger): BusDriver
+  onReconnect(callback: () => void): void
 }
 
 /**

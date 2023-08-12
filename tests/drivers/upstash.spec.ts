@@ -16,7 +16,6 @@ registerApiTestSuite({
   test,
   driver: Redis,
   config: {
-    ttl: 30 * 100,
     prefix: 'japa',
     connection: {
       host: process.env.UPSTASH_HOST!,
