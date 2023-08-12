@@ -19,16 +19,14 @@ import { redisBusDriver, redisDriver } from '../drivers/redis.js'
 import { BentoCacheFactory } from '../factories/bentocache_factory.js'
 
 test.group('Bento Cache', () => {
-  test('should accept EventEmitter or Emittery', async () => {
-    // This test only rely type-checking
-
-    new BentoCache({
+  test('should accept EventEmitter or Emittery', async ({ expectTypeOf }) => {
+    expectTypeOf(BentoCache).toBeConstructibleWith({
       default: 'memory',
       stores: { memory: memoryDriver({}) },
       emitter: new EventEmitter(),
     })
 
-    new BentoCache({
+    expectTypeOf(BentoCache).toBeConstructibleWith({
       default: 'memory',
       stores: { memory: memoryDriver({}) },
       emitter: new Emittery(),
@@ -89,7 +87,7 @@ test.group('Bento Cache', () => {
         hybrid: hybridDriver({
           local: memoryDriver({ maxSize: 1000 }),
           remote: redisDriver({ connection: REDIS_CREDENTIALS }),
-          bus: redisBusDriver(REDIS_CREDENTIALS),
+          bus: redisBusDriver({ connection: REDIS_CREDENTIALS }),
         }),
       },
     })

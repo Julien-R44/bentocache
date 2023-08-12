@@ -3,7 +3,7 @@ import { resolveTtl } from '../src/helpers.js'
 import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
 
 test.group('Utils', () => {
-  test('Resolve TTL with undefined', ({ assert }) => {
+  test('resolve TTL with undefined', ({ assert }) => {
     assert.equal(30_000, resolveTtl(undefined))
   })
 
@@ -11,11 +11,11 @@ test.group('Utils', () => {
     assert.equal(86_400_000, resolveTtl(undefined, '1d'))
   })
 
-  test('Resolve TTL with number', ({ assert }) => {
+  test('resolve TTL with number', ({ assert }) => {
     assert.equal(10_000, resolveTtl(10_000))
   })
 
-  test('Resolve TTL with string', ({ assert }) => {
+  test('resolve TTL with string', ({ assert }) => {
     assert.equal(10_000, resolveTtl('10s'))
   })
 
@@ -31,8 +31,8 @@ test.group('Utils', () => {
   test('Two memory bus instances should be able to communicate', ({ assert }) => {
     assert.plan(1)
 
-    const bus1 = new MemoryBus()
-    const bus2 = new MemoryBus()
+    const bus1 = new MemoryBus().setId('bus1')
+    const bus2 = new MemoryBus().setId('bus2')
 
     bus1.subscribe('channel', (message: any) => assert.equal(message.data, 'test'))
     bus2.publish('channel', { data: 'test' } as any)

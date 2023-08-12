@@ -9,7 +9,6 @@
 
 import lodash from '@poppinss/utils/lodash'
 import { getActiveTest } from '@japa/runner'
-import { createId } from '@paralleldrive/cuid2'
 
 import { Cache } from '../src/cache/cache.js'
 import { Redis } from '../src/drivers/redis.js'
@@ -87,8 +86,9 @@ export class CacheFactory {
   withHybridConfig() {
     this.#parameters.localDriver = this.#createLocalDriver()
     this.#parameters.remoteDriver = this.#createRemoteDriver()
-    this.#parameters.busDriver = this.#parameters.busDriver ?? new MemoryBus(createId())
-    // this.#parameters.busDriver = new RedisBus(createId(), REDIS_CREDENTIALS)
+    this.#parameters.busDriver = this.#parameters.busDriver ?? new MemoryBus()
+    // this.#parameters.busDriver =
+    //   this.#parameters.busDriver ?? (new RedisBus(REDIS_CREDENTIALS) as BusDriver)
 
     return this
   }

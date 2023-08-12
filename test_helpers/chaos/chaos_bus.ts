@@ -24,6 +24,11 @@ export class ChaosBus implements BusDriver {
     this.#chaosInjector = new ChaosInjector()
   }
 
+  setId(id: string) {
+    this.#innerBus.setId(id)
+    return this
+  }
+
   /**
    * Make the cache always throw an error
    */

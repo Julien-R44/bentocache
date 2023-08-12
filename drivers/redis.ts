@@ -1,4 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
 import type { RedisOptions as IoRedisOptions } from 'ioredis'
 
 import { Redis } from '../src/drivers/redis.js'
@@ -19,5 +18,5 @@ export function redisDriver(options: RedisConfig): CreateDriverResult {
 export function redisBusDriver(
   options: { connection: IoRedisOptions } & BusOptions
 ): CreateBusDriverResult {
-  return { options, factory: (config: IoRedisOptions) => new RedisBus(createId(), config) }
+  return { options, factory: (config: IoRedisOptions) => new RedisBus(config) }
 }

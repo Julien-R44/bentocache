@@ -11,6 +11,7 @@ export interface BusDriver {
   disconnect(): Promise<void>
 
   onReconnect(callback: () => void): void
+  setId(id: string): BusDriver
 }
 
 /**

@@ -476,6 +476,8 @@ test.group('Cache', () => {
     // then we update it from another cache
     await cache2.set('foo', 'baz')
 
+    await setTimeout(100)
+
     // so local cache of cache1 should be invalidated
     const r1 = await local1.get('foo')
 
@@ -541,6 +543,8 @@ test.group('Cache', () => {
     // then we delete it from another cache
     await cache2.deleteMany(['foo', 'bar'])
 
+    await setTimeout(100)
+
     // so local cache of cache1 should be invalidated
     const r1 = await local1.get('foo')
     const r2 = await local1.get('bar')
@@ -563,6 +567,8 @@ test.group('Cache', () => {
     // then we delete it from another cache. remote will throw
     remoteDriver.alwaysThrow()
     await cache2.deleteMany(['foo', 'bar'])
+
+    await setTimeout(100)
 
     // so local cache of cache1 should be invalidated
     const r1 = await local1.get('foo')
@@ -627,6 +633,8 @@ test.group('Cache', () => {
     // then we delete it from another cache
     await cache2.delete('foo')
 
+    await setTimeout(100)
+
     // so local cache of cache1 should be invalidated
     let r1 = await local1.get('foo')
 
@@ -649,6 +657,8 @@ test.group('Cache', () => {
     // then we delete it from another cache. remote will throw
     remoteDriver.alwaysThrow()
     await cache2.delete('foo')
+
+    await setTimeout(100)
 
     // so local cache of cache1 should be invalidated
     let r1 = await local1.get('foo')
@@ -731,6 +741,18 @@ test.group('Cache', () => {
     assert.isUndefined(r3)
     assert.deepEqual(JSON.parse(r4).value, 'bar')
     assert.deepEqual(JSON.parse(r5!).value, 'bar')
+  })
+
+  test('Bus shouldnt receive messages emitted by itself', async ({ assert }) => {
+    const { cache, local } = new CacheFactory().withHybridConfig().create()
+
+    const r1 = await cache.getOrSet('foo', () => ({ foo: 'bar' }))
+
+    // Should still be in local cache and not invalidated by the bus
+    const r2 = await local.get('foo')
+
+    assert.deepEqual(r1, { foo: 'bar' })
+    assert.deepEqual(JSON.parse(r2!).value, { foo: 'bar' })
   })
 
   test('error in factory while early refreshing should be logged', async ({ assert }) => {

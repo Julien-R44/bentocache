@@ -1,4 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
 import type { BusDriver, CacheBusMessage } from '../../types/bus.js'
 
 /**
@@ -25,7 +24,12 @@ export class MemoryBus implements BusDriver {
    */
   receivedMessages: CacheBusMessage[] = []
 
-  constructor(protected id = createId()) {}
+  #id!: string
+
+  setId(id: string) {
+    this.#id = id
+    return this
+  }
 
   /**
    * Subscribes to the given channel
@@ -38,7 +42,7 @@ export class MemoryBus implements BusDriver {
         this.receivedMessages.push(message)
         handler(message)
       },
-      busId: this.id,
+      busId: this.#id,
     })
     MemoryBus.#subscriptions.set(channelName, handlers)
   }
@@ -51,7 +55,7 @@ export class MemoryBus implements BusDriver {
 
     MemoryBus.#subscriptions.set(
       channelName,
-      handlers.filter((handlerInfo) => handlerInfo.busId !== this.id)
+      handlers.filter((handlerInfo) => handlerInfo.busId !== this.#id)
     )
   }
 
@@ -62,10 +66,10 @@ export class MemoryBus implements BusDriver {
     const handlers = MemoryBus.#subscriptions.get(channelName)
     if (!handlers) return
 
-    const fullMessage: CacheBusMessage = { ...message, busId: this.id }
+    const fullMessage: CacheBusMessage = { ...message, busId: this.#id }
 
     for (const { handler, busId } of handlers) {
-      if (busId === this.id) continue
+      if (busId === this.#id) continue
 
       handler(fullMessage)
     }

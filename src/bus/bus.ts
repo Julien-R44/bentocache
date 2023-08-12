@@ -67,6 +67,7 @@ export class Bus {
     this.#logger = logger.child({ context: 'bentocache.bus' })
     this.#errorRetryQueue = new RetryQueue(options.retryQueue?.enabled, options.retryQueue?.maxSize)
 
+    driver.setId(this.#busId)
     this.#driver.onReconnect(() => this.#onReconnect())
   }
 

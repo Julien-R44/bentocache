@@ -31,15 +31,17 @@ export class RedisBus implements BusDriver {
    * file for more information
    */
   #encoder: BusEncoder
+  #id!: string
 
-  constructor(
-    protected id: string,
-    connection: IoRedisOptions,
-    encoder?: BusEncoder
-  ) {
+  constructor(connection: IoRedisOptions, encoder?: BusEncoder) {
     this.#subscriber = new IoRedis(connection)
     this.#publisher = new IoRedis(connection)
     this.#encoder = encoder ?? new BinaryEncoder()
+  }
+
+  setId(id: string) {
+    this.#id = id
+    return this
   }
 
   /**
@@ -68,7 +70,7 @@ export class RedisBus implements BusDriver {
       /**
        * Ignore messages published by this bus instance
        */
-      if (data.busId === this.id) return
+      if (data.busId === this.#id) return
 
       handler(data)
     })
@@ -85,7 +87,8 @@ export class RedisBus implements BusDriver {
    * Publishes a message to the given channel
    */
   async publish(channelName: string, message: Omit<CacheBusMessage, 'busId'>): Promise<void> {
-    const encoded = this.#encoder.encode({ busId: this.id, ...message })
+    const encoded = this.#encoder.encode({ busId: this.#id, ...message })
+
     await this.#publisher.publish(channelName, encoded)
   }
 
