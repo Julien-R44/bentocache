@@ -12,7 +12,6 @@ import { getActiveTest } from '@japa/runner'
 
 import { Cache } from '../src/cache/cache.js'
 import { Redis } from '../src/drivers/redis.js'
-import { MemoryLru } from '../src/drivers/lru.js'
 import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
 import { BentoCacheOptions } from '../src/bento_cache_options.js'
 import { createIsomorphicDestructurable } from '../src/helpers.js'

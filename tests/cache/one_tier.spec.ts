@@ -209,8 +209,6 @@ test.group('One tier tests', () => {
     assert.isFalse(await cache.has('key2'))
   })
 
-  // TODO test pull ?
-
   test('getOrSet() should returns null if null is stored', async ({ assert }) => {
     const { cache } = new CacheFactory().create()
 

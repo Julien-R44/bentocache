@@ -11,14 +11,13 @@ import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
 import { MemoryLru } from '../../src/drivers/lru.js'
-import { Memory } from '../../src/drivers/memory.js'
 import { CacheItem } from '../../src/cache/cache_item.js'
 import { TestLogger } from '../../test_helpers/test_logger.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 import { NullDriver } from '../../test_helpers/null/null_driver.js'
 import { ChaosCache } from '../../test_helpers/chaos/chaos_cache.js'
-import { throwingFactory, traceLogger, waitAndReturnFactory } from '../../test_helpers/index.js'
+import { throwingFactory, waitAndReturnFactory } from '../../test_helpers/index.js'
 
 test.group('Cache', () => {
   test('get() returns null if null is stored', async ({ assert }) => {
