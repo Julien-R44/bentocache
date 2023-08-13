@@ -7,38 +7,40 @@
  * file that was distributed with this source code.
  */
 
-import TTLCache from '@isaacs/ttlcache'
+import QuickLRU from 'quick-lru'
 
 import { BaseDriver } from './base_driver.js'
 import type { CacheDriver, MemoryConfig as MemoryConfig } from '../types/main.js'
 
 /**
- * A memory caching driver
+ * A memory caching driver using LRU algorithm
  *
- * Will really remove entries as soon as they expire
- * ( using a setTimeout ) unlike the Lru driver
+ * Notes that expired entries will not be deleted until they are accessed
+ * using this driver. If you need something primary based on time, use
+ * the Memory driver instead
  */
-export class Memory extends BaseDriver implements CacheDriver {
-  #cache: TTLCache<string, string>
+export class MemoryLru extends BaseDriver implements CacheDriver {
+  #lru: QuickLRU<string, string>
   declare config: MemoryConfig
 
-  constructor(config: MemoryConfig & { cacheInstance?: TTLCache<string, string> }) {
+  constructor(config: MemoryConfig & { lruInstance?: QuickLRU<string, string> }) {
     super(config)
 
-    if (config.cacheInstance) {
-      this.#cache = config.cacheInstance
-    } else {
-      this.#cache = new TTLCache({ max: config.maxSize, checkAgeOnGet: true })
+    if (config.lruInstance) {
+      this.#lru = config.lruInstance
+      return
     }
+
+    this.#lru = new QuickLRU({ maxSize: config.maxSize ?? 1000 })
   }
 
   /**
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string) {
-    return new Memory({
+    return new MemoryLru({
       ...this.config,
-      cacheInstance: this.#cache,
+      lruInstance: this.#lru,
       prefix: this.createNamespacePrefix(namespace),
     })
   }
@@ -47,7 +49,7 @@ export class Memory extends BaseDriver implements CacheDriver {
    * Get a value from the cache
    */
   get(key: string) {
-    return this.#cache.get(this.getItemKey(key))
+    return this.#lru.get(this.getItemKey(key))
   }
 
   /**
@@ -68,35 +70,24 @@ export class Memory extends BaseDriver implements CacheDriver {
    * Returns true if the value was set, false otherwise
    */
   set(key: string, value: string, ttl?: number) {
-    this.#cache.set(this.getItemKey(key), value, { ttl: ttl ?? Number.POSITIVE_INFINITY })
+    this.#lru.set(this.getItemKey(key), value, { maxAge: ttl ?? Number.POSITIVE_INFINITY })
     return true
-  }
-
-  /**
-   * Returns the remaining ttl of a key
-   */
-  getRemainingTtl(key: string) {
-    return this.#cache.getRemainingTTL(this.getItemKey(key))
   }
 
   /**
    * Check if a key exists in the cache
    */
   has(key: string) {
-    return this.#cache.has(this.getItemKey(key))
+    return this.#lru.has(this.getItemKey(key))
   }
 
   /**
    * Remove all items from the cache
    */
   async clear() {
-    // @ts-expect-error. keys() and entries() values doesn't
-    // return keys that are stored forever. So we need
-    // to use this internal `data` property
-    // See https://github.com/isaacs/ttlcache/issues/27
-    for (const [key] of this.#cache.data) {
+    for (const key of this.#lru.keys()) {
       if (key.startsWith(this.prefix)) {
-        this.#cache.delete(key)
+        this.#lru.delete(key)
       }
     }
   }
@@ -106,7 +97,7 @@ export class Memory extends BaseDriver implements CacheDriver {
    * Returns true if the key was deleted, false otherwise
    */
   delete(key: string) {
-    return this.#cache.delete(this.getItemKey(key))
+    return this.#lru.delete(this.getItemKey(key))
   }
 
   /**

@@ -13,15 +13,8 @@ import { CacheItemOptions } from '../../src/cache/cache_item_options.js'
 
 test.group('Cache Options', () => {
   test('override defaults', ({ assert }) => {
-    const override = {
-      ttl: '10m',
-      gracePeriod: { enabled: true, duration: '30m' },
-    }
-
-    const defaults = {
-      ttl: '1h',
-      gracePeriod: { enabled: false, duration: '1h' },
-    }
+    const override = { ttl: '10m', gracePeriod: { enabled: true, duration: '30m' } }
+    const defaults = { ttl: '1h', gracePeriod: { enabled: false, duration: '1h' } }
 
     const options = new CacheItemOptions(override, defaults)
 
@@ -30,11 +23,7 @@ test.group('Cache Options', () => {
   })
 
   test('early expiration percentage', ({ assert }) => {
-    const options = new CacheItemOptions({
-      ttl: '10m',
-      earlyExpiration: 0.1,
-    })
-
+    const options = new CacheItemOptions({ ttl: '10m', earlyExpiration: 0.1 })
     assert.equal(options.earlyExpireTtl, string.milliseconds.parse('1m'))
   })
 
@@ -49,9 +38,7 @@ test.group('Cache Options', () => {
   })
 
   test('physical ttl should be logical ttl when grace period is disabled', ({ assert }) => {
-    const options = new CacheItemOptions({
-      ttl: '10m',
-    })
+    const options = new CacheItemOptions({ ttl: '10m' })
 
     assert.equal(options.physicalTtl, string.milliseconds.parse('10m'))
   })
@@ -108,13 +95,8 @@ test.group('Cache Options', () => {
   })
 
   test('cloneWith should not mutate original', ({ assert }) => {
-    const r1 = new CacheItemOptions({
-      gracePeriod: { enabled: false, duration: '30m' },
-    })
-
-    const r2 = r1.cloneWith({
-      gracePeriod: { enabled: true, duration: '60m' },
-    })
+    const r1 = new CacheItemOptions({ gracePeriod: { enabled: false, duration: '30m' } })
+    const r2 = r1.cloneWith({ gracePeriod: { enabled: true, duration: '60m' } })
 
     assert.isFalse(r1.isGracePeriodEnabled)
     assert.isTrue(r2.isGracePeriodEnabled)

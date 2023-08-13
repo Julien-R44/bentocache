@@ -10,6 +10,7 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
+import { MemoryLru } from '../../src/drivers/lru.js'
 import { Memory } from '../../src/drivers/memory.js'
 import { CacheItem } from '../../src/cache/cache_item.js'
 import { TestLogger } from '../../test_helpers/test_logger.js'
@@ -17,7 +18,7 @@ import { CacheFactory } from '../../factories/cache_factory.js'
 import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 import { NullDriver } from '../../test_helpers/null/null_driver.js'
 import { ChaosCache } from '../../test_helpers/chaos/chaos_cache.js'
-import { throwingFactory, waitAndReturnFactory } from '../../test_helpers/index.js'
+import { throwingFactory, traceLogger, waitAndReturnFactory } from '../../test_helpers/index.js'
 
 test.group('Cache', () => {
   test('get() returns null if null is stored', async ({ assert }) => {
@@ -178,8 +179,8 @@ test.group('Cache', () => {
 
     const value = await cache.getOrSet('key1', waitAndReturnFactory(40, 'bar'))
 
-    const localeValue = CacheItem.fromDriver('key1', await local.get('key1'))
-    const remoteValue = CacheItem.fromDriver('key1', (await remote.get('key1')) as any)
+    const localeValue = CacheItem.fromDriver('key1', (await local.get('key1'))!)
+    const remoteValue = CacheItem.fromDriver('key1', (await remote.get('key1'))!)
 
     assert.deepEqual(value, 'bar')
     assert.deepEqual(localeValue.getValue(), 'bar')
@@ -407,7 +408,7 @@ test.group('Cache', () => {
 
   // todo may need to see how to handle that with timeouts and failsafe
   test('rethrows error when suppressRemoteCacheErrors is false', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Memory({ maxSize: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new MemoryLru({ maxSize: 10, prefix: 'test' }))
 
     const { cache } = new CacheFactory()
       .merge({ remoteDriver, gracePeriod: { enabled: true, duration: '2h' } })
@@ -436,7 +437,7 @@ test.group('Cache', () => {
 
     await cache.set('foo', 'bar')
 
-    const r1 = CacheItem.fromDriver('foo', await local.get('foo'))
+    const r1 = CacheItem.fromDriver('foo', (await local.get('foo'))!)
     const r2 = CacheItem.fromDriver('foo', (await remote.get('foo'))!)
 
     assert.deepEqual(r1.getValue(), 'bar')
@@ -451,7 +452,7 @@ test.group('Cache', () => {
 
     await cache.set('foo', 'bar')
 
-    const r1 = CacheItem.fromDriver('foo', await local.get('foo'))
+    const r1 = CacheItem.fromDriver('foo', (await local.get('foo'))!)
     const r2 = CacheItem.fromDriver('foo', (await remote.get('foo'))!)
 
     const earlyExpiration = Date.now() + 30 * 1000
@@ -468,7 +469,7 @@ test.group('Cache', () => {
 
     await cache.set('foo', 'bar', { earlyExpiration: 0.25 })
 
-    const r1 = CacheItem.fromDriver('foo', await local.get('foo'))
+    const r1 = CacheItem.fromDriver('foo', (await local.get('foo'))!)
     const r2 = CacheItem.fromDriver('foo', (await remote.get('foo'))!)
 
     const earlyExpiration = Date.now() + 15 * 1000
@@ -477,7 +478,7 @@ test.group('Cache', () => {
     assert.closeTo(r2.getEarlyExpiration(), earlyExpiration, 100)
   })
 
-  test('set should invalidate others local cache', async ({ assert }) => {
+  test('set should expires others local cache', async ({ assert }) => {
     const [cache1, local1] = new CacheFactory().withHybridConfig().create()
     const [cache2] = new CacheFactory().withHybridConfig().create()
 
@@ -495,7 +496,10 @@ test.group('Cache', () => {
     // a get should return the new value
     const r2 = await cache1.get('foo')
 
-    assert.isUndefined(r1)
+    await setTimeout(100)
+
+    assert.isDefined(r1)
+    assert.isBelow(JSON.parse(r1!).logicalExpiration, Date.now())
     assert.equal(r2, 'baz')
   })
 
@@ -525,7 +529,7 @@ test.group('Cache', () => {
   test('deleteMany should throw if remote fail and suppressRemoteCacheErrors is on', async ({
     assert,
   }) => {
-    const remoteDriver = new ChaosCache(new Memory({ maxSize: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new MemoryLru({ maxSize: 10, prefix: 'test' }))
     const { cache, local } = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
 
     await cache.set('foo', 'bar')
@@ -565,7 +569,7 @@ test.group('Cache', () => {
   })
 
   test('a deleteMany should delete others local cache even if remote fail', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Memory({ maxSize: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new MemoryLru({ maxSize: 10, prefix: 'test' }))
 
     const [cache1, local1] = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
     const [cache2] = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
@@ -615,7 +619,7 @@ test.group('Cache', () => {
   test('delete should throw if remote fail and suppressRemoteCacheErrors is on', async ({
     assert,
   }) => {
-    const remoteDriver = new ChaosCache(new Memory({ maxSize: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new MemoryLru({ maxSize: 10, prefix: 'test' }))
 
     const { cache, local } = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
 
@@ -657,7 +661,7 @@ test.group('Cache', () => {
   })
 
   test('a delete should delete others local cache even if remote fail', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Memory({ maxSize: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new MemoryLru({ maxSize: 10, prefix: 'test' }))
 
     const [cache1, local1] = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
     const [cache2] = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
@@ -750,7 +754,7 @@ test.group('Cache', () => {
     assert.deepEqual(r1, 'bar')
     assert.deepEqual(r2, 'bar')
     assert.isUndefined(r3)
-    assert.deepEqual(JSON.parse(r4).value, 'bar')
+    assert.deepEqual(JSON.parse(r4!).value, 'bar')
     assert.deepEqual(JSON.parse(r5!).value, 'bar')
   })
 
@@ -792,5 +796,21 @@ test.group('Cache', () => {
       (log) => log.level === 'error' && log.msg === 'factory error in early refresh'
     )
     assert.isDefined(errorLog)
+  })
+
+  test('when local and remote hitted items are logically it should prioritize remote', async ({
+    assert,
+  }) => {
+    const { cache, local, remote } = new CacheFactory()
+      .merge({ gracePeriod: { enabled: true, duration: '6h' } })
+      .withHybridConfig()
+      .create()
+
+    await local.set('foo', JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }))
+    await remote.set('foo', JSON.stringify({ value: 'baz', logicalExpiration: Date.now() - 1000 }))
+
+    const r1 = await cache.getOrSet('foo', throwingFactory('fail'))
+
+    assert.deepEqual(r1, 'baz')
   })
 })

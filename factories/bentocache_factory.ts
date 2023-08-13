@@ -8,7 +8,7 @@
  */
 
 import { BentoCache } from '../src/bento_cache.js'
-import { memoryDriver } from '../drivers/memory.js'
+import { lruDriver } from '../drivers/lru.js'
 import type { RawBentoCacheOptions } from '../src/types/main.js'
 
 /**
@@ -34,8 +34,8 @@ export class BentoCacheFactory {
       default: 'primary',
       ttl: '30s',
       stores: {
-        primary: { driver: memoryDriver({ maxSize: 100 }) },
-        secondary: { driver: memoryDriver({ maxSize: 100 }) },
+        primary: { driver: lruDriver({ maxSize: 100 }) },
+        secondary: { driver: lruDriver({ maxSize: 100 }) },
       },
       ...this.#parameters,
     })

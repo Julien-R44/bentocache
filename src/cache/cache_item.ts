@@ -84,6 +84,12 @@ export class CacheItem {
     return this
   }
 
+  expire() {
+    this.#logicalExpiration = Date.now() - 100
+    this.#earlyExpiration = 0
+    return this
+  }
+
   serialize() {
     return CacheItem.#serializer.serialize({
       value: this.#value,

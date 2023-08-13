@@ -10,8 +10,8 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
-import { throwingFactory, waitAndReturnFactory } from '../../test_helpers/index.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
+import { throwingFactory, waitAndReturnFactory } from '../../test_helpers/index.js'
 
 test.group('One tier tests', () => {
   test('get() returns deserialized value', async ({ assert }) => {

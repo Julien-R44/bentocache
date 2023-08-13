@@ -8,6 +8,7 @@
  */
 
 import { test } from '@japa/runner'
+
 import { RetryQueue } from '../../src/bus/retry_queue.js'
 import { CacheBusMessageType } from '../../src/types/bus.js'
 

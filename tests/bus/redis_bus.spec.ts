@@ -7,17 +7,17 @@
  * file that was distributed with this source code.
  */
 
+import { Redis } from 'ioredis'
 import { test } from '@japa/runner'
 import { createId } from '@paralleldrive/cuid2'
 import { setTimeout } from 'node:timers/promises'
 
 import { CacheBusMessageType } from '../../src/types/bus.js'
 import { RedisBus } from '../../src/bus/drivers/redis_bus.js'
+import { TestLogger } from '../../test_helpers/test_logger.js'
 import { REDIS_CREDENTIALS } from '../../test_helpers/index.js'
 import { JsonEncoder } from '../../src/bus/encoders/json_encoder.js'
 import { BinaryEncoder } from '../../src/bus/encoders/binary_encoder.js'
-import { Redis } from 'ioredis'
-import { TestLogger } from '../../test_helpers/test_logger.js'
 
 test.group('Redis Bus', () => {
   test('Bus1 should not receive message emitted by itself', async ({ assert, cleanup }) => {

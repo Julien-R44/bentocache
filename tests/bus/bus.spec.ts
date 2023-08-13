@@ -10,9 +10,12 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
+import { Memory } from '../../src/drivers/memory.js'
+import { throwingFactory } from '../../test_helpers/index.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 import { ChaosBus } from '../../test_helpers/chaos/chaos_bus.js'
+import { ChaosCache } from '../../test_helpers/chaos/chaos_cache.js'
 
 test.group('Bus synchronization', () => {
   test('Should works', async ({ assert }) => {
@@ -141,7 +144,36 @@ test.group('Bus synchronization', () => {
     assert.deepEqual(bus2.receivedMessages.length, 20)
   }).disableTimeout()
 
-  test(
-    'a message of type set should not totally delete the key from the cache if grace period are enabled'
-  )
+  test('when a entry is set, other nodes should just logically invalidate the entry, but keep for grace period', async ({
+    assert,
+  }) => {
+    const remoteDriver = new ChaosCache(new Memory({ maxSize: 10, prefix: 'test' }))
+
+    const [cache1] = new CacheFactory()
+      .merge({ remoteDriver, gracePeriod: { enabled: true, duration: '12h' } })
+      .withHybridConfig()
+      .create()
+
+    const [cache2] = new CacheFactory()
+      .merge({ remoteDriver, ttl: 100, gracePeriod: { enabled: true, duration: '12h' } })
+      .withHybridConfig()
+      .create()
+
+    remoteDriver.alwaysThrow()
+
+    await cache1.set('foo', 'bar')
+    await cache2.set('foo', 'baz')
+
+    await setTimeout(110)
+
+    remoteDriver.neverThrow()
+    const result = await cache1.getOrSet('foo', throwingFactory('fail'))
+
+    // - We failed to set `foo`: `baz` in the remote driver
+    // - But, bus succesfully published the invalidation message
+    // - So, bus should have invalidated and not totally deleted the old
+    //  `foo`: `bar` entry. So we should be able to get it since
+    //   grace period is enabled
+    assert.deepEqual(result, 'bar')
+  })
 })

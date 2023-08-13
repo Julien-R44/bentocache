@@ -10,6 +10,7 @@
 import { CacheItem } from './cache_item.js'
 import type { CacheItemOptions } from './cache_item_options.js'
 import type { Logger, CacheDriver } from '../types/main.js'
+import type { Memory } from '../drivers/memory.js'
 
 /**
  * LocalCache is a wrapper around a CacheDriver that provides a
@@ -33,7 +34,7 @@ export class LocalCache {
     /**
      * Try to get the item from the local cache
      */
-    this.#logger.trace({ key }, 'getting local cache item')
+    this.#logger.trace({ key }, 'try getting local cache item')
     value = await this.#driver.get(key)
 
     /**
@@ -71,6 +72,21 @@ export class LocalCache {
   async delete(key: string, _options?: CacheItemOptions) {
     this.#logger.trace({ key }, 'deleting local cache item')
     return await this.#driver.delete(key)
+  }
+
+  async logicallyExpire(key: string) {
+    this.#logger.trace({ key }, 'logically expiring local cache item')
+
+    // This is a nasty hack that needs to be fixed
+    const driver = this.#driver as Memory
+    const value = await this.#driver.get(key)
+    if (value === undefined) return
+
+    return await this.#driver.set(
+      key,
+      CacheItem.fromDriver(key, value).expire().serialize(),
+      driver.getRemainingTtl(key)
+    )
   }
 
   /**

@@ -100,10 +100,12 @@ export class Bus {
     /**
      * Process the message
      */
-    if (message.type === CacheBusMessageType.Set || message.type === CacheBusMessageType.Delete) {
-      for (const key of message.keys) {
-        this.#cache?.delete(key) // todo should allow grace periods
-      }
+    if (message.type === CacheBusMessageType.Delete) {
+      for (const key of message.keys) this.#cache?.delete(key)
+    }
+
+    if (message.type === CacheBusMessageType.Set) {
+      for (const key of message.keys) this.#cache?.logicallyExpire(key)
     }
   }
 

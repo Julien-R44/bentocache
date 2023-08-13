@@ -29,6 +29,7 @@ import type {
   Factory,
   BusDriver,
   BusOptions,
+  Logger,
 } from '../types/main.js'
 
 export class Cache implements CacheProvider {
@@ -71,6 +72,7 @@ export class Cache implements CacheProvider {
    * A map that will hold active locks for each key
    */
   #locks = new Locks()
+  #logger: Logger
 
   constructor(
     name: string,
@@ -87,6 +89,7 @@ export class Cache implements CacheProvider {
     this.#options = options
 
     this.#defaultCacheOptions = new CacheItemOptions(options)
+    this.#logger = options.logger.child({ cache: this.name })
 
     if (drivers.localDriver) {
       this.#localCache = new LocalCache(drivers.localDriver, this.#logger)
@@ -108,10 +111,6 @@ export class Cache implements CacheProvider {
 
     newBus.subscribe()
     return newBus
-  }
-
-  get #logger() {
-    return this.#options.logger
   }
 
   /**
@@ -253,7 +252,7 @@ export class Cache implements CacheProvider {
 
     await lock
       .runExclusive(async () => {
-        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'acquired lock')
+        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'acquired lock for refresh')
         await this.#set(key, await factory(), options)
       })
       .catch((error) => {
@@ -266,7 +265,6 @@ export class Cache implements CacheProvider {
 
   async #getOrSet(key: string, factory: Factory, options: CacheItemOptions) {
     let localCacheItem: CacheItem | undefined
-
     let remoteCacheItem: CacheItem | undefined
 
     /**
@@ -375,7 +373,7 @@ export class Cache implements CacheProvider {
          * If the factory failed and grace period is enabled, we have to
          * return the old cached value if it exists.
          */
-        const staleItem = localCacheItem ?? remoteCacheItem
+        const staleItem = remoteCacheItem ?? localCacheItem
         if (options.gracePeriod?.enabled && staleItem) {
           if (options.gracePeriod.fallbackDuration) {
             this.#logger.trace(
