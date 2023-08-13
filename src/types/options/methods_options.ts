@@ -7,12 +7,12 @@
  * file that was distributed with this source code.
  */
 
-import type { Duration, RawCommonOptions } from '../main.js'
+import type { RawCommonOptions } from '../main.js'
 
 /**
  * Options accepted by the `getOrSet` method
  */
 export type GetOrSetOptions = Pick<
   RawCommonOptions,
-  'earlyExpiration' | 'gracePeriod' | 'suppressRemoteCacheErrors' | 'lockTimeout'
-> & { ttl?: Duration }
+  'earlyExpiration' | 'gracePeriod' | 'suppressRemoteCacheErrors' | 'lockTimeout' | 'ttl'
+>

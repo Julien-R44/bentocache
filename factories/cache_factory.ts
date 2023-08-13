@@ -50,9 +50,7 @@ export class CacheFactory {
   /**
    * The default parameters
    */
-  #parameters: Partial<FactoryParameters> = {
-    gracePeriod: { enabled: false },
-  }
+  #parameters: Partial<FactoryParameters> = {}
 
   /**
    * Instantiate and return the local driver
