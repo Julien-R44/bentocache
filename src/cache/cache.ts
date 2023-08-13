@@ -204,12 +204,12 @@ export class Cache implements CacheProvider {
     if (options.isGracePeriodEnabled) {
       if (remoteItem) {
         await this.#localCache?.set(key, remoteItem.serialize(), options)
-        this.#emit(new events.CacheHit(key, remoteItem.serialize(), this.name))
+        this.#emit(new events.CacheHit(key, remoteItem.serialize(), this.name, true))
         return remoteItem.getValue()
       }
 
       if (localItem) {
-        this.#emit(new events.CacheHit(key, localItem.serialize(), this.name))
+        this.#emit(new events.CacheHit(key, localItem.serialize(), this.name, true))
         return localItem.getValue()
       }
     }
@@ -391,6 +391,7 @@ export class Cache implements CacheProvider {
           }
 
           this.#logger.trace({ key, cache: this.name, opId: options.id }, 'returns stale value')
+          this.#emit(new events.CacheHit(key, staleItem.getValue(), this.name, true))
           return staleItem.getValue()
         }
 

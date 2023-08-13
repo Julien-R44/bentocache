@@ -10,8 +10,10 @@
 import { test } from '@japa/runner'
 import EventEmitter from 'node:events'
 import { pEvent, pEventMultiple } from 'p-event'
+import { setTimeout } from 'node:timers/promises'
 
 import { CacheBusMessageType } from '../src/types/bus.js'
+import { throwingFactory } from '../test_helpers/index.js'
 import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
 import { CacheFactory } from '../factories/cache_factory.js'
 import { ChaosBus } from '../test_helpers/chaos/chaos_bus.js'
@@ -182,5 +184,43 @@ test.group('Cache events', () => {
       keys: ['foo'],
       type: CacheBusMessageType.Set,
     })
+  })
+
+  test('a graced value should be marked as graced with get', async ({ assert }) => {
+    const emitter = new EventEmitter()
+    const { cache } = new CacheFactory()
+      .merge({
+        emitter,
+        gracePeriod: { enabled: true, duration: '2h' },
+      })
+      .create()
+
+    await cache.set('foo', 'bar', { ttl: '10ms' })
+    await setTimeout(50)
+
+    cache.get('foo')
+
+    const event = await pEvent(emitter, 'cache:hit')
+
+    assert.isTrue(event.graced)
+  })
+
+  test('a graced value should be marked as graced with getOrSet', async ({ assert }) => {
+    const emitter = new EventEmitter()
+    const { cache } = new CacheFactory()
+      .merge({
+        emitter,
+        gracePeriod: { enabled: true, duration: '2h' },
+      })
+      .create()
+
+    await cache.set('foo', 'bar', { ttl: '10ms' })
+    await setTimeout(50)
+
+    cache.getOrSet('foo', throwingFactory('foo'))
+
+    const event = await pEvent(emitter, 'cache:hit')
+
+    assert.isTrue(event.graced)
   })
 })

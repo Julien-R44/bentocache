@@ -18,7 +18,8 @@ export class CacheHit implements CacheEvent {
   constructor(
     readonly key: string,
     readonly value: any,
-    readonly store: string
+    readonly store: string,
+    readonly graced: boolean = false
   ) {}
 
   toJSON() {
@@ -26,6 +27,7 @@ export class CacheHit implements CacheEvent {
       key: this.key,
       value: this.value,
       store: this.store,
+      graced: this.graced,
     }
   }
 }
