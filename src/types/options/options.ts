@@ -57,11 +57,35 @@ export type GracePeriodOptions = {
  * - Core methods
  */
 export type RawCommonOptions = {
-  ttl?: Duration
-  gracePeriod?: GracePeriodOptions
-  earlyExpiration?: number
-  suppressRemoteCacheErrors?: boolean
   timeouts?: FactoryTimeoutOptions
+
+  /**
+   * The duration for which the entry will be
+   * considered valid
+   */
+  ttl?: Duration
+
+  /**
+   * Grace period options
+   */
+  gracePeriod?: GracePeriodOptions
+
+  /**
+   * A percentage of the TTL that will be used
+   * as a threshold for an early refresh
+   */
+  earlyExpiration?: number
+
+  /**
+   * Whether to suppress errors that occur when
+   * trying to fetch from remote (l2) cache
+   */
+  suppressRemoteCacheErrors?: boolean
+
+  /**
+   * Maximum time for which a lock can try to be acquired
+   * before running a factory
+   */
   lockTimeout?: Duration
 }
 
@@ -69,9 +93,24 @@ export type RawCommonOptions = {
  * Options accepted by Bentocache
  */
 export type RawBentoCacheOptions = {
-  logger?: Logger
-  emitter?: Emitter
   prefix?: string
+
+  /**
+   * A logger instance that will be used to log
+   * multiple events occurring in the cache
+   *
+   * Pino is compatible out of the box
+   */
+  logger?: Logger
+
+  /**
+   * An emitter instance that will be used to
+   * emit multiple events occurring in the cache
+   *
+   * Emittery and node EventEmitter are compatible
+   * out of the box
+   */
+  emitter?: Emitter
 } & RawCommonOptions
 
 /**

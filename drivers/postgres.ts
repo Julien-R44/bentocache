@@ -11,7 +11,7 @@ import { Postgres } from '../src/drivers/sql/postgres.js'
 import type { CreateDriverResult, SqlConfig } from '../src/types/main.js'
 
 /**
- * Create a new postgres driver
+ * Create a new Postgres driver
  */
 export function postgresDriver(options: SqlConfig): CreateDriverResult {
   return {

@@ -12,6 +12,7 @@ import { getActiveTest } from '@japa/runner'
 
 import { Cache } from '../src/cache/cache.js'
 import { Redis } from '../src/drivers/redis.js'
+import { Memory } from '../src/drivers/memory.js'
 import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
 import { BentoCacheOptions } from '../src/bento_cache_options.js'
 import { createIsomorphicDestructurable } from '../src/helpers.js'
@@ -23,7 +24,6 @@ import type {
   Logger,
   BusOptions,
 } from '../src/types/main.js'
-import { Memory } from '../src/drivers/memory.js'
 
 type FactoryParameters = {
   emitter: Emitter
@@ -65,8 +65,6 @@ export class CacheFactory {
    */
   #createRemoteDriver() {
     if (this.#parameters.remoteDriver) return this.#parameters.remoteDriver
-
-    // TODO: maybe try replace with memory remote driver
     return new Redis({ connection: { host: '127.0.0.1', port: 6379 }, prefix: 'test' })
   }
 
