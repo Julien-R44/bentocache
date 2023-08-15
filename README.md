@@ -1,1 +1,1 @@
-# @quakjs/bentocache
+# @blizzle/bentocache

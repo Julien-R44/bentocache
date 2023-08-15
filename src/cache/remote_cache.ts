@@ -1,7 +1,7 @@
 /*
- * @quakjs/bentocache
+ * @blizzle/bentocache
  *
- * (c) Quak
+ * (c) Blizzle
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.

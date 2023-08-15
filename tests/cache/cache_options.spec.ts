@@ -1,7 +1,7 @@
 /*
- * @quakjs/bentocache
+ * @blizzle/bentocache
  *
- * (c) Quak
+ * (c) Blizzle
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -100,5 +100,40 @@ test.group('Cache Options', () => {
 
     assert.isFalse(r1.isGracePeriodEnabled)
     assert.isTrue(r2.isGracePeriodEnabled)
+  })
+
+  test('timeout should be soft one if fallback value and grace period enabled', ({ assert }) => {
+    const options = new CacheItemOptions({
+      gracePeriod: { enabled: true, duration: '30m' },
+      timeouts: { soft: '1m', hard: '2m' },
+    })
+
+    assert.deepEqual(options.factoryTimeout(true), string.milliseconds.parse('1m'))
+  })
+
+  test('timeout should be hard one if fallback value but grace period disabled', ({ assert }) => {
+    const options = new CacheItemOptions({
+      gracePeriod: { enabled: false, duration: '30m' },
+      timeouts: { soft: '1m', hard: '2m' },
+    })
+
+    assert.deepEqual(options.factoryTimeout(true), string.milliseconds.parse('2m'))
+  })
+
+  test('timeout should be hard one if no fallback value and no grace period', ({ assert }) => {
+    const options = new CacheItemOptions({
+      gracePeriod: { enabled: false, duration: '30m' },
+      timeouts: { soft: '1m', hard: '2m' },
+    })
+
+    assert.deepEqual(options.factoryTimeout(false), string.milliseconds.parse('2m'))
+  })
+
+  test('no timeouts if not set', ({ assert }) => {
+    const options = new CacheItemOptions({})
+
+    assert.isUndefined(options.timeouts)
+    assert.isUndefined(options.factoryTimeout(true))
+    assert.isUndefined(options.factoryTimeout(false))
   })
 })
