@@ -54,12 +54,27 @@ export type DynamoDBConfig = {
  */
 export type MemoryConfig = {
   /**
-   * Maximum       number of items to store in the cache
-   * before removing the least recently used items
+   * Maximum number of items to store in the cache.
+   *
+   * Note that fewer items may be stored if you
+   * are also using `maxSize` and the cache is full.
    *
    * @default 1000
    */
+  maxItems?: number
+
+  /**
+   * Maximum size of the cache in bytes.
+   */
   maxSize?: number
+
+  /**
+   * Maximum size of one entry in bytes.
+   *
+   * If an entry is larger than this value,
+   * it will NOT be stored
+   */
+  maxEntrySize?: number
 } & DriverCommonOptions
 
 /**

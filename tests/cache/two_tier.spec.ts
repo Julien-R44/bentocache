@@ -10,7 +10,7 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
-import { MemoryLru } from '../../src/drivers/lru.js'
+import { Memory } from '../../src/drivers/memory.js'
 import { CacheItem } from '../../src/cache/cache_item.js'
 import { TestLogger } from '../../test_helpers/test_logger.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
@@ -407,7 +407,7 @@ test.group('Cache', () => {
 
   // todo may need to see how to handle that with timeouts and failsafe
   test('rethrows error when suppressRemoteCacheErrors is false', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new MemoryLru({ maxSize: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
 
     const { cache } = new CacheFactory()
       .merge({ remoteDriver, gracePeriod: { enabled: true, duration: '2h' } })
@@ -528,7 +528,7 @@ test.group('Cache', () => {
   test('deleteMany should throw if remote fail and suppressRemoteCacheErrors is on', async ({
     assert,
   }) => {
-    const remoteDriver = new ChaosCache(new MemoryLru({ maxSize: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
     const { cache, local } = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
 
     await cache.set('foo', 'bar')
@@ -568,7 +568,7 @@ test.group('Cache', () => {
   })
 
   test('a deleteMany should delete others local cache even if remote fail', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new MemoryLru({ maxSize: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
 
     const [cache1, local1] = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
     const [cache2] = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
@@ -618,7 +618,7 @@ test.group('Cache', () => {
   test('delete should throw if remote fail and suppressRemoteCacheErrors is on', async ({
     assert,
   }) => {
-    const remoteDriver = new ChaosCache(new MemoryLru({ maxSize: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
 
     const { cache, local } = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
 
@@ -660,7 +660,7 @@ test.group('Cache', () => {
   })
 
   test('a delete should delete others local cache even if remote fail', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new MemoryLru({ maxSize: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
 
     const [cache1, local1] = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
     const [cache2] = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()

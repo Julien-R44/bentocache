@@ -34,8 +34,8 @@ export class BentoCacheFactory {
       default: 'primary',
       ttl: '30s',
       stores: {
-        primary: { driver: memoryDriver({ maxSize: 100 }) },
-        secondary: { driver: memoryDriver({ maxSize: 100 }) },
+        primary: { driver: memoryDriver({ maxItems: 100 }) },
+        secondary: { driver: memoryDriver({ maxItems: 100 }) },
       },
       ...this.#parameters,
     })

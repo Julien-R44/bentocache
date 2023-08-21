@@ -78,12 +78,11 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@isaacs/ttlcache": "^1.4.1",
     "@paralleldrive/cuid2": "^2.2.1",
     "@poppinss/utils": "6.5.0-3",
     "@sindresorhus/chunkify": "^0.2.0",
     "async-mutex": "^0.4.0",
-    "quick-lru": "^6.1.1",
+    "lru-cache": "^10.0.1",
     "typescript-log": "^2.0.0",
     "uid": "^2.0.2"
   },

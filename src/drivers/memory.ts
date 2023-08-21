@@ -7,29 +7,37 @@
  * file that was distributed with this source code.
  */
 
-import TTLCache from '@isaacs/ttlcache'
+import { LRUCache } from 'lru-cache'
 
 import { BaseDriver } from './base_driver.js'
 import type { CacheDriver, MemoryConfig as MemoryConfig } from '../types/main.js'
 
 /**
  * A memory caching driver
- *
- * Will really remove entries as soon as they expire
- * ( using a setTimeout ) unlike the Lru driver
  */
 export class Memory extends BaseDriver implements CacheDriver {
-  #cache: TTLCache<string, string>
+  #cache: LRUCache<string, string>
   declare config: MemoryConfig
 
-  constructor(config: MemoryConfig & { cacheInstance?: TTLCache<string, string> }) {
+  constructor(config: MemoryConfig & { cacheInstance?: LRUCache<string, string> }) {
     super(config)
 
     if (config.cacheInstance) {
       this.#cache = config.cacheInstance
-    } else {
-      this.#cache = new TTLCache({ max: config.maxSize, checkAgeOnGet: true })
+      return
     }
+
+    this.#cache = new LRUCache({
+      max: config.maxItems ?? 1000,
+      maxEntrySize: config.maxEntrySize,
+      ttlAutopurge: true,
+      ...(config.maxSize
+        ? {
+            maxSize: config.maxSize,
+            sizeCalculation: (value) => Buffer.byteLength(value, 'utf-8'),
+          }
+        : {}),
+    })
   }
 
   /**
@@ -90,11 +98,7 @@ export class Memory extends BaseDriver implements CacheDriver {
    * Remove all items from the cache
    */
   async clear() {
-    // @ts-expect-error. keys() and entries() values doesn't
-    // return keys that are stored forever. So we need
-    // to use this internal `data` property
-    // See https://github.com/isaacs/ttlcache/issues/27
-    for (const [key] of this.#cache.data) {
+    for (const key of this.#cache.keys()) {
       if (key.startsWith(this.prefix)) {
         this.#cache.delete(key)
       }

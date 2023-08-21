@@ -13,7 +13,7 @@ import { test } from '@japa/runner'
 import EventEmitter from 'node:events'
 
 import { BentoCache } from '../src/bento_cache.js'
-import { lruDriver } from '../drivers/lru.js'
+import { memoryDriver } from '../drivers/memory.js'
 import { hybridDriver } from '../drivers/hybrid.js'
 import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
 import { redisBusDriver, redisDriver } from '../drivers/redis.js'
@@ -23,13 +23,13 @@ test.group('Bento Cache', () => {
   test('should accept EventEmitter or Emittery', async ({ expectTypeOf }) => {
     expectTypeOf(BentoCache).toBeConstructibleWith({
       default: 'memory',
-      stores: { memory: { driver: lruDriver({}) } },
+      stores: { memory: { driver: memoryDriver({}) } },
       emitter: new EventEmitter(),
     })
 
     expectTypeOf(BentoCache).toBeConstructibleWith({
       default: 'memory',
-      stores: { memory: { driver: lruDriver({}) } },
+      stores: { memory: { driver: memoryDriver({}) } },
       emitter: new Emittery(),
     })
   })
@@ -64,7 +64,7 @@ test.group('Bento Cache', () => {
     const bento = new BentoCache({
       default: 'memory',
       stores: {
-        memory: { driver: lruDriver({}) },
+        memory: { driver: memoryDriver({}) },
         redis: { driver: redisDriver({ connection: REDIS_CREDENTIALS }) },
       },
     })
@@ -84,12 +84,12 @@ test.group('Bento Cache', () => {
       default: 'memory',
       stores: {
         memory: {
-          driver: lruDriver({}),
+          driver: memoryDriver({}),
         },
 
         hybrid: {
           driver: hybridDriver({
-            local: lruDriver({ maxSize: 1000 }),
+            local: memoryDriver({ maxItems: 1000 }),
             remote: redisDriver({ connection: REDIS_CREDENTIALS }),
             bus: redisBusDriver({ connection: REDIS_CREDENTIALS }),
           }),

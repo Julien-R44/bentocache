@@ -57,7 +57,7 @@ export class CacheFactory {
    */
   #createLocalDriver() {
     if (this.#parameters.localDriver) return this.#parameters.localDriver
-    return new Memory({ maxSize: 100, prefix: 'test' })
+    return new Memory({ maxItems: 100, prefix: 'test' })
   }
 
   /**
