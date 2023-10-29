@@ -1,17 +1,8 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
 import { CacheFactory } from '../../factories/cache_factory.js'
-import { throwingFactory, waitAndReturnFactory } from '../../test_helpers/index.js'
+import { throwingFactory, slowFactory } from '../../test_helpers/index.js'
 
 test.group('One tier tests', () => {
   test('get() returns deserialized value', async ({ assert }) => {
@@ -491,13 +482,16 @@ test.group('One tier tests', () => {
   })
 
   test('early expiration of >= 0 or <= 1 should be ignored', async ({ assert }) => {
-    const { cache, local } = new CacheFactory().merge({ ttl: 100 }).create()
+    const { cache, local, stack } = new CacheFactory().merge({ ttl: 100 }).create()
 
     await cache.getOrSet('key1', () => ({ foo: 'bar' }), { earlyExpiration: 1 })
     await cache.getOrSet('key2', () => ({ foo: 'bar' }), { earlyExpiration: 0 })
 
-    assert.notInclude(local.get('key1'), 'earlyExpiration')
-    assert.notInclude(local.get('key2'), 'earlyExpiration')
+    const r1 = await local.get('key1', stack.defaultOptions)
+    const r2 = await local.get('key2', stack.defaultOptions)
+
+    assert.isUndefined(r1?.getEarlyExpiration())
+    assert.isUndefined(r2?.getEarlyExpiration())
   })
 
   test('early refresh should re-increment physical/logical ttls', async ({ assert }) => {
@@ -511,7 +505,7 @@ test.group('One tier tests', () => {
 
     // call factory. should returns the old value.
     // Disable early expiration to test physical ttl
-    const r2 = await cache.getOrSet('key1', waitAndReturnFactory(50, { foo: 'baz' }), {
+    const r2 = await cache.getOrSet('key1', slowFactory(50, { foo: 'baz' }), {
       earlyExpiration: undefined,
     })
 
@@ -552,7 +546,7 @@ test.group('One tier tests', () => {
     await setTimeout(100)
 
     // factory that will exceed soft timeout
-    const r2 = await cache.getOrSet('key1', waitAndReturnFactory(550, { foo: 'baz' }))
+    const r2 = await cache.getOrSet('key1', slowFactory(550, { foo: 'baz' }))
 
     // wait til factory is done
     await setTimeout(50)
@@ -562,14 +556,12 @@ test.group('One tier tests', () => {
 
     assert.deepEqual(r1, r2)
     assert.deepEqual(r3, { foo: 'baz' })
-  })
-    .disableTimeout()
-    .skip()
+  }).disableTimeout()
 
   test('should be able to specify a lock timeout', async ({ assert }) => {
     const { cache } = new CacheFactory().merge({ lockTimeout: 100 }).create()
 
-    const r1 = cache.getOrSet('key1', waitAndReturnFactory(500, 'value'), { ttl: '10ms' })
+    const r1 = cache.getOrSet('key1', slowFactory(500, 'value'), { ttl: '10ms' })
 
     const r2 = cache.getOrSet('key1', throwingFactory(), {
       ttl: '10ms',

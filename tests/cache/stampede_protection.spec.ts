@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
@@ -15,6 +6,36 @@ import { throwingFactory } from '../../test_helpers/index.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 
 test.group('Cache | Stampede protection', () => {
+  test('only one background factory should be executed if soft timeout is triggered', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory()
+      .merge({ gracePeriod: { enabled: true, duration: '6h' }, timeouts: { soft: '100ms' } })
+      .create()
+
+    await cache.set('key', 'value', { ttl: '100ms' })
+    await setTimeout(110)
+
+    let factoryCalls = 0
+    const factory = async () => {
+      factoryCalls++
+      await setTimeout(300)
+      return 'value'
+    }
+
+    const promises = []
+
+    for (let i = 0; i < 100; i++) {
+      promises.push(cache.getOrSet('key', factory))
+      await setTimeout(1)
+    }
+
+    const results = await Promise.all(promises)
+
+    assert.isTrue(results.every((result) => result === 'value'))
+    assert.equal(factoryCalls, 1)
+  })
+
   test('multiple concurrent calls should ask remote only once', async ({ assert }) => {
     class RemoteDriver extends MemoryLru {
       askedKeys: string[] = []

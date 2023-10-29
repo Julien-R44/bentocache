@@ -1,17 +1,8 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { uid } from 'uid'
 import lodash from '@poppinss/utils/lodash'
 
-import { resolveTtl } from '../helpers.js'
-import type { RawCommonOptions } from '../types/main.js'
+import { resolveTtl } from '../../helpers.js'
+import type { RawCommonOptions } from '../../types/main.js'
 
 export class CacheItemOptions {
   /**
@@ -198,10 +189,29 @@ export class CacheItemOptions {
      * Because if the soft timeout is reached, we will
      * return the stale value.
      */
-    if (hasFallbackValue && this.isGracePeriodEnabled) {
+    if (hasFallbackValue && this.isGracePeriodEnabled && this.timeouts.soft) {
       return this.timeouts.soft
     }
 
     return this.timeouts.hard
+  }
+
+  /**
+   * Compute the maximum time we should wait for the
+   * lock to be acquired
+   */
+  getApplicableLockTimeout(hasFallbackValue: boolean) {
+    if (this.lockTimeout) {
+      return this.lockTimeout
+    }
+
+    /**
+     * If we have a fallback value and grace period is enabled,
+     * that means we should wait at most for the soft timeout
+     * duration.
+     */
+    if (hasFallbackValue && this.isGracePeriodEnabled && this.timeouts?.soft) {
+      return this.timeouts.soft
+    }
   }
 }

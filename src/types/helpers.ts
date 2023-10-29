@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 /**
  * A Duration can be a number in milliseconds or a string formatted as a duration
  *

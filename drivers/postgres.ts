@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { Postgres } from '../src/drivers/sql/postgres.js'
 import type { CreateDriverResult, SqlConfig } from '../src/types/main.js'
 

@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import Emittery from 'emittery'
 import { Redis } from 'ioredis'
 import { test } from '@japa/runner'
@@ -83,9 +74,7 @@ test.group('Bento Cache', () => {
     const bento = new BentoCache({
       default: 'memory',
       stores: {
-        memory: {
-          driver: lruDriver({}),
-        },
+        memory: { driver: lruDriver({}) },
 
         hybrid: {
           driver: hybridDriver({

@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { BentoCache } from '../src/bento_cache.js'
 import { memoryDriver } from '../drivers/memory.js'
 import type { RawBentoCacheOptions } from '../src/types/main.js'

@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { test } from '@japa/runner'
 import { DeleteTableCommand, CreateTableCommand, DynamoDBClient } from '@aws-sdk/client-dynamodb'
 
@@ -16,6 +7,7 @@ import { registerApiTestSuite } from '../../test_helpers/driver_test_suite.js'
 const dynamoClient = new DynamoDBClient({
   region: 'eu-west-3',
   endpoint: process.env.DYNAMODB_ENDPOINT,
+  credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
 })
 
 /**
@@ -54,6 +46,7 @@ registerApiTestSuite({
     prefix: 'japa',
     region: 'eu-west-3',
     endpoint: process.env.DYNAMODB_ENDPOINT,
+    credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
     table: {
       name: 'cache',
     },

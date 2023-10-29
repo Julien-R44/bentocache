@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
@@ -18,16 +9,15 @@ import { ChaosBus } from '../../test_helpers/chaos/chaos_bus.js'
 import { ChaosCache } from '../../test_helpers/chaos/chaos_cache.js'
 
 test.group('Bus synchronization', () => {
-  test('Should works', async ({ assert }) => {
+  test('synchronize multiple cache', async ({ assert }) => {
     const key = 'foo'
 
     const [cache1] = new CacheFactory().withHybridConfig().create()
     const [cache2] = new CacheFactory().withHybridConfig().create()
     const [cache3] = new CacheFactory().withHybridConfig().create()
 
-    await setTimeout(300)
     await cache1.set(key, 24)
-    await setTimeout(300)
+    await setTimeout(100)
 
     assert.equal(await cache1.get(key), 24)
     assert.equal(await cache2.get(key), 24)
@@ -35,7 +25,7 @@ test.group('Bus synchronization', () => {
 
     await cache1.delete(key)
 
-    await setTimeout(300)
+    await setTimeout(100)
 
     assert.isUndefined(await cache1.get(key))
     assert.isUndefined(await cache2.get(key))
@@ -170,9 +160,11 @@ test.group('Bus synchronization', () => {
     const result = await cache1.getOrSet('foo', throwingFactory('fail'))
 
     // - We failed to set `foo`: `baz` in the remote driver
-    // - But, bus succesfully published the invalidation message
-    // - So, bus should have invalidated and not totally deleted the old
-    //  `foo`: `bar` entry. So we should be able to get it since
+    //
+    // - But, bus successfully published the invalidation message
+    //
+    // - Bus should have only invalidated and not totally deleted the old
+    //  `foo`: `bar` entry. So, we should be able to get it since
     //   grace period is enabled
     assert.deepEqual(result, 'bar')
   })

@@ -1,16 +1,7 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { createId } from '@paralleldrive/cuid2'
 
 import { RetryQueue } from './retry_queue.js'
-import type { LocalCache } from '../cache/local_cache.js'
+import type { LocalCache } from '../cache/facades/local_cache.js'
 import { CacheBusMessageType } from '../types/bus.js'
 import { BusMessageReceived } from '../events/bus/bus_message_received.js'
 import { BusMessagePublished } from '../events/bus/bus_message_published.js'
@@ -83,6 +74,20 @@ export class Bus {
   }
 
   /**
+   * Process the error retry queue
+   */
+  async #processErrorRetryQueue() {
+    this.#logger.debug(
+      `starting error retry queue processing with ${this.#errorRetryQueue.size()} messages`
+    )
+
+    await this.#errorRetryQueue.process(async (message) => {
+      await this.publish(message)
+      return true
+    })
+  }
+
+  /**
    * When a message is received through the bus.
    * This is where we update the local cache.
    */
@@ -107,20 +112,6 @@ export class Bus {
     if (message.type === CacheBusMessageType.Set) {
       for (const key of message.keys) this.#cache?.logicallyExpire(key)
     }
-  }
-
-  /**
-   * Process the error retry queue
-   */
-  async #processErrorRetryQueue() {
-    this.#logger.debug(
-      `starting error retry queue processing with ${this.#errorRetryQueue.size()} messages`
-    )
-
-    await this.#errorRetryQueue.process(async (message) => {
-      await this.publish(message)
-      return true
-    })
   }
 
   /**

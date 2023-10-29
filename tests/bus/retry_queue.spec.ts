@@ -1,80 +1,41 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { test } from '@japa/runner'
 
 import { RetryQueue } from '../../src/bus/retry_queue.js'
 import { CacheBusMessageType } from '../../src/types/bus.js'
 
 test.group('RetryQueue', () => {
-  test('Does not insert duplicates', ({ assert }) => {
+  test('does not insert duplicates', ({ assert }) => {
     const queue = new RetryQueue()
 
-    queue.enqueue({
-      busId: 'foo',
-      type: CacheBusMessageType.Set,
-      keys: ['foo'],
-    })
-
+    queue.enqueue({ busId: 'foo', type: CacheBusMessageType.Set, keys: ['foo'] })
     const r1 = queue.size()
 
-    queue.enqueue({
-      busId: 'foo',
-      type: CacheBusMessageType.Set,
-      keys: ['foo'],
-    })
-
+    queue.enqueue({ busId: 'foo', type: CacheBusMessageType.Set, keys: ['foo'] })
     const r2 = queue.size()
 
     assert.equal(r1, r2)
   })
 
-  test('Does not insert duplicates ( different keys orders )', ({ assert }) => {
+  test('does not insert duplicates ( different keys orders )', ({ assert }) => {
     const queue = new RetryQueue()
 
-    queue.enqueue({
-      busId: 'foo',
-      type: CacheBusMessageType.Set,
-      keys: ['foo', 'foo1'],
-    })
-
+    queue.enqueue({ busId: 'foo', type: CacheBusMessageType.Set, keys: ['foo', 'foo1'] })
     const r1 = queue.size()
 
-    queue.enqueue({
-      busId: 'foo',
-      type: CacheBusMessageType.Set,
-      keys: ['foo1', 'foo'],
-    })
-
+    queue.enqueue({ busId: 'foo', type: CacheBusMessageType.Set, keys: ['foo1', 'foo'] })
     const r2 = queue.size()
 
     assert.equal(r1, 1)
     assert.equal(r2, 1)
   })
 
-  test('Enqueue multiple messages', ({ assert }) => {
+  test('enqueue multiple messages', ({ assert }) => {
     const queue = new RetryQueue()
 
-    queue.enqueue({
-      busId: 'foo',
-      type: CacheBusMessageType.Set,
-      keys: ['foo', 'foo1'],
-    })
-
+    queue.enqueue({ busId: 'foo', type: CacheBusMessageType.Set, keys: ['foo', 'foo1'] })
     const r1 = queue.size()
 
-    queue.enqueue({
-      busId: 'foo',
-      type: CacheBusMessageType.Delete,
-      keys: ['foo1', 'foo'],
-    })
-
+    queue.enqueue({ busId: 'foo', type: CacheBusMessageType.Delete, keys: ['foo1', 'foo'] })
     const r2 = queue.size()
 
     assert.equal(r1, 1)
@@ -85,21 +46,11 @@ test.group('RetryQueue', () => {
     const queue = new RetryQueue(true, 5)
 
     for (let i = 0; i < 5; i++) {
-      queue.enqueue({
-        busId: 'foo',
-        type: CacheBusMessageType.Set,
-        keys: [`foo-${i}`],
-      })
+      queue.enqueue({ busId: 'foo', type: CacheBusMessageType.Set, keys: [`foo-${i}`] })
     }
-
     const r1 = queue.size()
 
-    queue.enqueue({
-      busId: 'foo',
-      type: CacheBusMessageType.Set,
-      keys: [`foo-5`],
-    })
-
+    queue.enqueue({ busId: 'foo', type: CacheBusMessageType.Set, keys: [`foo-5`] })
     const r2 = queue.size()
 
     const queuedItems = []
@@ -116,11 +67,7 @@ test.group('RetryQueue', () => {
     const queue = new RetryQueue()
 
     for (let i = 0; i < 5; i++) {
-      queue.enqueue({
-        busId: 'foo',
-        type: CacheBusMessageType.Set,
-        keys: [`foo-${i}`],
-      })
+      queue.enqueue({ busId: 'foo', type: CacheBusMessageType.Set, keys: [`foo-${i}`] })
     }
 
     let count = 0
@@ -139,11 +86,7 @@ test.group('RetryQueue', () => {
     const queue = new RetryQueue()
 
     for (let i = 0; i < 5; i++) {
-      queue.enqueue({
-        busId: 'foo',
-        type: CacheBusMessageType.Set,
-        keys: [`foo-${i}`],
-      })
+      queue.enqueue({ busId: 'foo', type: CacheBusMessageType.Set, keys: [`foo-${i}`] })
     }
 
     let count = 0
@@ -151,6 +94,27 @@ test.group('RetryQueue', () => {
       count++
 
       if (count === 3) return false
+      return true
+    })
+
+    assert.equal(count, 3)
+    assert.equal(queue.size(), 3)
+  })
+
+  test('process should stop processing and re-add message to the queue if handler throws', async ({
+    assert,
+  }) => {
+    const queue = new RetryQueue()
+
+    for (let i = 0; i < 5; i++) {
+      queue.enqueue({ busId: 'foo', type: CacheBusMessageType.Set, keys: [`foo-${i}`] })
+    }
+
+    let count = 0
+    await queue.process(async () => {
+      count++
+
+      if (count === 3) throw new Error('foo')
       return true
     })
 

@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import type { test as JapaTest } from '@japa/runner'
 import type { CacheDriver } from '../src/types/main.js'
 import { setTimeout } from 'node:timers/promises'

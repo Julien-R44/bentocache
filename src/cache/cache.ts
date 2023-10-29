@@ -1,130 +1,27 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-import lodash from '@poppinss/utils/lodash'
-
-import { Locks } from './locks.js'
-import { Bus } from '../bus/bus.js'
 import { events } from '../events/index.js'
-import { LocalCache } from './local_cache.js'
-import { RemoteCache } from './remote_cache.js'
-import type { CacheItem } from './cache_item.js'
+import type { CacheStack } from './stack/cache_stack.js'
+import { GetSetHandler } from './get_set_handler.js'
 import { CacheBusMessageType } from '../types/main.js'
-import { JsonSerializer } from '../serializers/json.js'
 import type { CacheProvider } from '../types/provider.js'
-import { CacheItemOptions } from './cache_item_options.js'
-import type { BentoCacheOptions } from '../bento_cache_options.js'
-import type {
-  CacheDriver,
-  GetOrSetOptions,
-  CacheEvent,
-  CacheSerializer,
-  RawCommonOptions,
-  Factory,
-  BusDriver,
-  BusOptions,
-  Logger,
-} from '../types/main.js'
+import { CacheStackWriter } from './stack/cache_stack_writer.js'
+import type { GetOrSetOptions, RawCommonOptions, Factory } from '../types/main.js'
 
 export class Cache implements CacheProvider {
   /**
-   * Name of the cache
+   * The name of the cache
    */
   name: string
 
-  /**
-   * The local cache instance
-   */
-  #localCache?: LocalCache
+  #getSetHandler: GetSetHandler
+  #cacheWriter: CacheStackWriter
+  #stack: CacheStack
 
-  /**
-   * The remote cache instance
-   */
-  #remoteCache?: RemoteCache
-
-  /**
-   * The bus instance
-   */
-  #bus?: Bus
-
-  /**
-   * The Bento cache options
-   */
-  #options: BentoCacheOptions
-
-  /**
-   * The default CacheItemOptions
-   */
-  #defaultCacheOptions: CacheItemOptions
-
-  /**
-   * The Cache serializer
-   */
-  #serializer: CacheSerializer = new JsonSerializer()
-
-  /**
-   * A map that will hold active locks for each key
-   */
-  #locks = new Locks()
-  #logger: Logger
-
-  constructor(
-    name: string,
-    options: BentoCacheOptions,
-    drivers: {
-      localDriver?: CacheDriver
-      remoteDriver?: CacheDriver
-      busDriver?: BusDriver
-      busOptions?: BusOptions
-    },
-    bus?: Bus
-  ) {
+  constructor(name: string, stack: CacheStack) {
     this.name = name
-    this.#options = options
 
-    this.#defaultCacheOptions = new CacheItemOptions(options)
-    this.#logger = options.logger.child({ cache: this.name })
-
-    if (drivers.localDriver) {
-      this.#localCache = new LocalCache(drivers.localDriver, this.#logger)
-    }
-
-    if (drivers.remoteDriver) {
-      this.#remoteCache = new RemoteCache(drivers.remoteDriver, this.#logger)
-    }
-
-    this.#bus = this.#createBus(drivers.busDriver, bus, drivers.busOptions)
-  }
-
-  #createBus(busDriver?: BusDriver, bus?: Bus, busOptions?: BusOptions) {
-    if (bus) return bus
-    if (!busDriver || !this.#localCache) return
-
-    const opts = lodash.merge({ retryQueue: { enabled: true, maxSize: undefined } }, busOptions)
-    const newBus = new Bus(busDriver, this.#localCache, this.#logger, this.#options.emitter, opts)
-
-    newBus.subscribe()
-    return newBus
-  }
-
-  /**
-   * Serialize a value
-   */
-  #serialize(value: any) {
-    return this.#serializer.serialize(value)
-  }
-
-  /**
-   * Emit a CacheEvent using the emitter
-   */
-  #emit(event: CacheEvent) {
-    return this.#options.emitter?.emit(event.name, event.toJSON())
+    this.#stack = stack
+    this.#cacheWriter = new CacheStackWriter(this.#stack)
+    this.#getSetHandler = new GetSetHandler(this.#stack, this.#cacheWriter)
   }
 
   #resolveDefaultValue(defaultValue?: Factory) {
@@ -132,36 +29,10 @@ export class Cache implements CacheProvider {
   }
 
   /**
-   * Set a value in the cache
-   */
-  async #set(key: string, value: any, options: CacheItemOptions) {
-    const item = this.#serializer.serialize({
-      value: value,
-      logicalExpiration: options.logicalTtlFromNow(),
-      earlyExpiration: options.earlyExpireTtlFromNow(),
-    })
-
-    await this.#localCache?.set(key, item, options)
-    await this.#remoteCache?.set(key, item, options)
-    await this.#bus?.publish({ type: CacheBusMessageType.Set, keys: [key] })
-
-    this.#emit(new events.CacheWritten(key, value, this.name))
-    return true
-  }
-
-  /**
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string) {
-    return new Cache(
-      this.name,
-      this.#options,
-      {
-        localDriver: this.#localCache?.namespace(namespace),
-        remoteDriver: this.#remoteCache?.namespace(namespace),
-      },
-      this.#bus
-    )
+    return new Cache(this.name, this.#stack.namespace(namespace))
   }
 
   get<T = any>(key: string): Promise<T | undefined | null>
@@ -172,49 +43,37 @@ export class Cache implements CacheProvider {
     defaultValue?: Factory<T>,
     rawOptions?: GetOrSetOptions
   ): Promise<T | undefined | null> {
-    const options = this.#defaultCacheOptions.cloneWith(rawOptions)
-    const localItem = await this.#localCache?.get(key, options)
+    const options = this.#stack.defaultOptions.cloneWith(rawOptions)
+    const localItem = await this.#stack.l1?.get(key, options)
 
-    /**
-     * Item found in local cache and is not logically expired. So we can
-     * return it right away
-     */
     if (localItem !== undefined && !localItem.isLogicallyExpired()) {
-      this.#emit(new events.CacheHit(key, localItem.getValue(), this.name))
+      this.#stack.emit(new events.CacheHit(key, localItem.getValue(), this.name))
       return localItem.getValue()
     }
 
-    /**
-     * Item wasn't found in the local cache. So let's try
-     * with the remote cache
-     */
-    const remoteItem = await this.#remoteCache?.get(key, options)
+    const remoteItem = await this.#stack.l2?.get(key, options)
 
-    /**
-     * Item found in remote cache and is not logically expired. So we can
-     * save it to the local cache and return it right away
-     */
     if (remoteItem !== undefined && !remoteItem.isLogicallyExpired()) {
-      await this.#localCache?.set(key, remoteItem.serialize(), options)
-      this.#emit(new events.CacheHit(key, remoteItem.getValue(), this.name))
+      await this.#stack.l1?.set(key, remoteItem.serialize(), options)
+      this.#stack.emit(new events.CacheHit(key, remoteItem.getValue(), this.name))
       return remoteItem.getValue()
     }
 
-    if (options.isGracePeriodEnabled) {
-      if (remoteItem) {
-        await this.#localCache?.set(key, remoteItem.serialize(), options)
-        this.#emit(new events.CacheHit(key, remoteItem.serialize(), this.name, true))
-        return remoteItem.getValue()
-      }
-
-      if (localItem) {
-        this.#emit(new events.CacheHit(key, localItem.serialize(), this.name, true))
-        return localItem.getValue()
-      }
+    if (!options.isGracePeriodEnabled) {
+      this.#stack.emit(new events.CacheMiss(key, this.name))
+      return this.#resolveDefaultValue(defaultValue)
     }
 
-    this.#emit(new events.CacheMiss(key, this.name))
-    return this.#resolveDefaultValue(defaultValue)
+    if (remoteItem) {
+      await this.#stack.l1?.set(key, remoteItem.serialize(), options)
+      this.#stack.emit(new events.CacheHit(key, remoteItem.serialize(), this.name, true))
+      return remoteItem.getValue()
+    }
+
+    if (localItem) {
+      this.#stack.emit(new events.CacheHit(key, localItem.serialize(), this.name, true))
+      return localItem.getValue()
+    }
   }
 
   /**
@@ -222,8 +81,8 @@ export class Cache implements CacheProvider {
    * Returns true if the value was set, false otherwise
    */
   async set(key: string, value: any, rawOptions?: RawCommonOptions) {
-    const options = this.#defaultCacheOptions.cloneWith(rawOptions)
-    return this.#set(key, value, options)
+    const options = this.#stack.defaultOptions.cloneWith(rawOptions)
+    return this.#cacheWriter.set(key, value, options)
   }
 
   /**
@@ -231,173 +90,8 @@ export class Cache implements CacheProvider {
    * Returns true if the value was set, false otherwise
    */
   async setForever<T>(key: string, value: T, rawOptions?: RawCommonOptions) {
-    const options = this.#defaultCacheOptions.cloneWith({ ttl: null, ...rawOptions })
-    return this.#set(key, value, options)
-  }
-
-  /**
-   * Refreshes the value of a cache
-   */
-  async #earlyExpirationRefresh(key: string, factory: Factory, options: CacheItemOptions) {
-    this.#logger.debug({ key, name: this.name, opId: options.id }, 'try to early refresh')
-    let lock = this.#locks.getOrCreateForKey(key)
-
-    /**
-     * If lock is already acquired, then just exit. We only want to run
-     * the factory once, in background.
-     */
-    if (lock.isLocked()) {
-      return
-    }
-
-    await lock
-      .runExclusive(async () => {
-        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'acquired lock for refresh')
-        await this.#set(key, await factory(), options)
-      })
-      .catch((error) => {
-        const msg = 'factory error in early refresh'
-        this.#logger.error({ key, cache: this.name, opId: options.id, error }, msg)
-
-        throw error
-      })
-  }
-
-  async #getOrSet(key: string, factory: Factory, options: CacheItemOptions) {
-    let localCacheItem: CacheItem | undefined
-    let remoteCacheItem: CacheItem | undefined
-
-    /**
-     * First we check the local cache
-     */
-    localCacheItem = await this.#localCache?.get(key, options)
-
-    /**
-     * We found the value in the local cache and it's not logically expired
-     */
-    if (localCacheItem && !localCacheItem.isLogicallyExpired()) {
-      /**
-       * Check if we need to early refresh the value
-       */
-      if (localCacheItem.isEarlyExpired()) {
-        this.#earlyExpirationRefresh(key, factory, options)
-      }
-
-      /**
-       * Returns the value
-       */
-      this.#emit(new events.CacheHit(key, localCacheItem.getValue(), this.name))
-      this.#logger.trace({ key, cache: this.name, opId: options.id }, 'local cache hit')
-      return localCacheItem.getValue()
-    }
-
-    /**
-     * We didn't find the value in the local or remote cache
-     * We need to run the factory and set the value in the different caches
-     */
-    const lock = this.#locks.getOrCreateForKey(key, options.lockTimeout)
-
-    return await lock
-      .runExclusive(async () => {
-        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'acquired lock')
-
-        /**
-         * We have to check again if the value is in the cache
-         * since another request might have resolved it while
-         * we were waiting for the lock
-         */
-        localCacheItem = await this.#localCache?.get(key, options)
-        if (localCacheItem && !localCacheItem.isLogicallyExpired()) {
-          this.#emit(new events.CacheHit(key, localCacheItem.getValue(), this.name))
-          this.#logger.trace(
-            { key, cache: this.name, opId: options.id },
-            'local cache hit after lock'
-          )
-          return localCacheItem.getValue()
-        }
-
-        /**
-         * Since we didn't find the value in the local cache,
-         * we check the remote cache
-         */
-        remoteCacheItem = await this.#remoteCache?.get(key, options)
-
-        /**
-         * We found the value in the remote cache and it's not logically expired
-         * We need to set it in the local cache
-         */
-        if (remoteCacheItem && !remoteCacheItem.isLogicallyExpired()) {
-          this.#logger.trace({ key, cache: this.name, opId: options.id }, 'remote cache hit')
-
-          /**
-           * Set the value in the local cache
-           */
-          await this.#localCache?.set(key, remoteCacheItem.serialize(), options)
-
-          /**
-           * Returns the value
-           */
-          this.#emit(new events.CacheHit(key, remoteCacheItem.getValue(), this.name))
-          return remoteCacheItem.getValue()
-        }
-
-        /**
-         * Execute the factory and prepare the cache item to store
-         */
-        const item = {
-          value: await factory(),
-          logicalExpiration: options.logicalTtlFromNow(),
-          earlyExpiration: options.earlyExpireTtlFromNow(),
-        }
-
-        await this.#localCache?.set(key, this.#serialize(item), options)
-        await this.#remoteCache?.set(key, this.#serialize(item), options)
-        await this.#bus?.publish({ keys: [key], type: CacheBusMessageType.Set })
-
-        /**
-         * Emit cache:miss and cache:written events
-         */
-        this.#emit(new events.CacheMiss(key, this.name))
-        this.#emit(new events.CacheWritten(key, item.value, this.name))
-
-        /**
-         * Return the value
-         */
-        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'cache miss')
-        return item.value
-      })
-      .catch(async (error) => {
-        this.#logger.trace({ key, cache: this.name, opId: options.id }, 'factory error')
-
-        /**
-         * If the factory failed and grace period is enabled, we have to
-         * return the old cached value if it exists.
-         */
-        const staleItem = remoteCacheItem ?? localCacheItem
-        if (options.gracePeriod?.enabled && staleItem) {
-          if (options.gracePeriod.fallbackDuration) {
-            this.#logger.trace(
-              { key, cache: this.name, opId: options.id },
-              'apply fallback duration'
-            )
-
-            await this.#localCache?.set(
-              key,
-              staleItem.applyFallbackDuration(options.gracePeriod.fallbackDuration).serialize(),
-              options
-            )
-          }
-
-          this.#logger.trace({ key, cache: this.name, opId: options.id }, 'returns stale value')
-          this.#emit(new events.CacheHit(key, staleItem.getValue(), this.name, true))
-          return staleItem.getValue()
-        }
-
-        throw error
-      })
-      .finally(() => {
-        this.#locks.delete(key)
-      })
+    const options = this.#stack.defaultOptions.cloneWith({ ttl: null, ...rawOptions })
+    return this.#cacheWriter.set(key, value, options)
   }
 
   /**
@@ -405,8 +99,8 @@ export class Cache implements CacheProvider {
    * provided by the factory and return it
    */
   async getOrSet<T>(key: string, factory: Factory<T>, options?: GetOrSetOptions): Promise<T> {
-    const cacheOptions = this.#defaultCacheOptions.cloneWith(options)
-    return this.#getOrSet(key, factory, cacheOptions)
+    const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
+    return this.#getSetHandler.handle(key, factory, cacheOptions)
   }
 
   /**
@@ -418,16 +112,16 @@ export class Cache implements CacheProvider {
     factory: Factory<T>,
     options?: GetOrSetOptions
   ): Promise<T> {
-    const cacheOptions = this.#defaultCacheOptions.cloneWith({ ttl: null, ...options })
-    return this.#getOrSet(key, factory, cacheOptions)
+    const cacheOptions = this.#stack.defaultOptions.cloneWith({ ttl: null, ...options })
+    return this.#getSetHandler.handle(key, factory, cacheOptions)
   }
 
   /**
    * Check if a key exists in the cache
    */
   async has(key: string) {
-    const inRemote = await this.#remoteCache?.has(key)
-    const inLocal = await this.#localCache?.has(key)
+    const inRemote = await this.#stack.l2?.has(key)
+    const inLocal = await this.#stack.l1?.has(key)
 
     return !!(inRemote || inLocal)
   }
@@ -454,14 +148,14 @@ export class Cache implements CacheProvider {
    * publish invalidation through the bus
    */
   async delete(key: string, rawOptions?: GetOrSetOptions): Promise<boolean> {
-    const options = this.#defaultCacheOptions.cloneWith(rawOptions)
+    const options = this.#stack.defaultOptions.cloneWith(rawOptions)
 
-    await this.#localCache?.delete(key)
-    await this.#remoteCache?.delete(key, options)
+    await this.#stack.l1?.delete(key, options)
+    await this.#stack.l2?.delete(key, options)
 
-    this.#emit(new events.CacheDeleted(key, this.name))
+    this.#stack.emit(new events.CacheDeleted(key, this.name))
 
-    await this.#bus?.publish({ type: CacheBusMessageType.Delete, keys: [key] })
+    await this.#stack.bus?.publish({ type: CacheBusMessageType.Delete, keys: [key] })
 
     return true
   }
@@ -472,14 +166,14 @@ export class Cache implements CacheProvider {
    * And finally publish invalidation through the bus
    */
   async deleteMany(keys: string[], rawOptions?: GetOrSetOptions): Promise<boolean> {
-    const options = this.#defaultCacheOptions.cloneWith(rawOptions)
+    const options = this.#stack.defaultOptions.cloneWith(rawOptions)
 
-    await this.#localCache?.deleteMany(keys)
-    await this.#remoteCache?.deleteMany(keys, options)
+    await this.#stack.l1?.deleteMany(keys, options)
+    await this.#stack.l2?.deleteMany(keys, options)
 
-    keys.forEach((key) => this.#emit(new events.CacheDeleted(key, this.name)))
+    keys.forEach((key) => this.#stack.emit(new events.CacheDeleted(key, this.name)))
 
-    await this.#bus?.publish({ type: CacheBusMessageType.Delete, keys })
+    await this.#stack.bus?.publish({ type: CacheBusMessageType.Delete, keys })
 
     return true
   }
@@ -488,8 +182,8 @@ export class Cache implements CacheProvider {
    * Remove all items from the cache
    */
   async clear() {
-    await Promise.all([this.#localCache?.clear(), this.#remoteCache?.clear()])
-    this.#emit(new events.CacheCleared(this.name))
+    await Promise.all([this.#stack.l1?.clear(), this.#stack.l2?.clear()])
+    this.#stack.emit(new events.CacheCleared(this.name))
   }
 
   /**
@@ -497,9 +191,9 @@ export class Cache implements CacheProvider {
    */
   async disconnect() {
     await Promise.all([
-      this.#localCache?.disconnect(),
-      this.#remoteCache?.disconnect(),
-      this.#bus?.disconnect(),
+      this.#stack.l1?.disconnect(),
+      this.#stack.l2?.disconnect(),
+      this.#stack.bus?.disconnect(),
     ])
   }
 }

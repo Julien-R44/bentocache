@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import type {
   CacheEvents,
   Factory,
@@ -17,6 +8,7 @@ import type {
 } from './types/main.js'
 import { Cache } from './cache/cache.js'
 import type { CacheProvider } from './types/provider.js'
+import { CacheStack } from './cache/stack/cache_stack.js'
 import { BentoCacheOptions } from './bento_cache_options.js'
 
 export class BentoCache<KnownCaches extends Record<string, StoreEntry>> implements CacheProvider {
@@ -50,8 +42,7 @@ export class BentoCache<KnownCaches extends Record<string, StoreEntry>> implemen
 
   #createProvider(cacheName: string, registry: StoreEntry): CacheProvider {
     const driverItemOptions = this.#options.cloneWith(registry)
-
-    return new Cache(cacheName, driverItemOptions, {
+    const cacheStack = new CacheStack(cacheName, driverItemOptions, {
       localDriver: registry.driver.l1.factory({
         prefix: driverItemOptions.prefix,
         ...registry.driver.l1.options,
@@ -63,6 +54,8 @@ export class BentoCache<KnownCaches extends Record<string, StoreEntry>> implemen
       busDriver: registry.driver.bus?.factory(registry.driver.bus?.options),
       busOptions: registry.driver.bus?.options,
     })
+
+    return new Cache(cacheName, cacheStack)
   }
 
   /**

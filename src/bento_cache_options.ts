@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import EventEmitter from 'node:events'
 import { noopLogger } from 'typescript-log'
 import lodash from '@poppinss/utils/lodash'

@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import type { CacheHit } from '../events/cache/cache_hit.js'
 import type { CacheMiss } from '../events/cache/cache_miss.js'
 import type { CacheWritten } from '../events/cache/cache_written.js'

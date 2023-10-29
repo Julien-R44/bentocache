@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import type { BusDriver, BusOptions } from './bus.js'
 import type { CacheDriver } from './driver.js'
 import type { RawCommonOptions } from './options/options.js'
@@ -55,4 +46,14 @@ export type CreateBusDriverResult = {
 export interface CacheSerializer {
   serialize: (value: any) => string
   deserialize: (value: any) => any
+}
+
+/**
+ * Stack of cache drivers
+ */
+export type CacheStackDrivers = {
+  localDriver?: CacheDriver
+  remoteDriver?: CacheDriver
+  busDriver?: BusDriver
+  busOptions?: BusOptions
 }

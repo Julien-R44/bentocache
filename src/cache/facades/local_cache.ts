@@ -1,16 +1,7 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-import { CacheItem } from './cache_item.js'
-import type { CacheItemOptions } from './cache_item_options.js'
-import type { Logger, CacheDriver } from '../types/main.js'
-import type { Memory } from '../drivers/memory.js'
+import { CacheItem } from '../cache_item/cache_item.js'
+import type { CacheItemOptions } from '../cache_item/cache_item_options.js'
+import type { Logger, CacheDriver } from '../../types/main.js'
+import type { Memory } from '../../drivers/memory.js'
 
 /**
  * LocalCache is a wrapper around a CacheDriver that provides a
@@ -28,20 +19,20 @@ export class LocalCache {
   /**
    * Get an item from the local cache
    */
-  async get(key: string, _options: CacheItemOptions) {
+  async get(key: string, options: CacheItemOptions) {
     let value: undefined | string
 
     /**
      * Try to get the item from the local cache
      */
-    this.#logger.trace({ key }, 'try getting local cache item')
+    this.#logger.trace({ key, opId: options.id }, 'try getting local cache item')
     value = await this.#driver.get(key)
 
     /**
      * If the item is not found, return undefined
      */
     if (value === undefined) {
-      this.#logger.trace({ key }, 'local cache item not found')
+      this.#logger.trace({ key, opId: options.id }, 'local cache item not found')
       return
     }
 
@@ -62,15 +53,15 @@ export class LocalCache {
     /**
      * Save the item to the local cache
      */
-    this.#logger.trace({ key, value }, 'saving local cache item')
+    this.#logger.trace({ key, value, opId: options.id }, 'saving local cache item')
     await this.#driver.set(key, value, options.physicalTtl)
   }
 
   /**
    * Delete an item from the local cache
    */
-  async delete(key: string, _options?: CacheItemOptions) {
-    this.#logger.trace({ key }, 'deleting local cache item')
+  async delete(key: string, options?: CacheItemOptions) {
+    this.#logger.trace({ key, opId: options?.id }, 'deleting local cache item')
     return await this.#driver.delete(key)
   }
 
@@ -92,8 +83,8 @@ export class LocalCache {
   /**
    * Delete many item from the local cache
    */
-  async deleteMany(keys: string[], options?: CacheItemOptions) {
-    this.#logger.trace({ keys, options }, 'deleting local cache items')
+  async deleteMany(keys: string[], options: CacheItemOptions) {
+    this.#logger.trace({ keys, options, opId: options.id }, 'deleting local cache items')
     await this.#driver.deleteMany(keys)
   }
 

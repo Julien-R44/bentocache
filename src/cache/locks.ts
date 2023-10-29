@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { Mutex, withTimeout, type MutexInterface } from 'async-mutex'
 
 export class Locks {
@@ -30,10 +21,8 @@ export class Locks {
     return timeout ? withTimeout(lock, timeout) : lock
   }
 
-  /**
-   * Remove a lock from the map
-   */
-  delete(key: string) {
+  release(key: string, releaser: MutexInterface.Releaser) {
+    releaser()
     this.#locks.delete(key)
   }
 }

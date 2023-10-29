@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import string from '@poppinss/utils/string'
 
 import type { Duration } from './types/main.js'
@@ -60,4 +51,23 @@ export function createIsomorphicDestructurable<
   })
 
   return clone as T & A
+}
+
+/**
+ * Resolve a promise and return the error/result as a tuple
+ */
+export function to<T, U = Error>(
+  promise: Promise<T>,
+  errorExt?: object
+): Promise<[U, undefined] | [null, T]> {
+  return promise
+    .then<[null, T]>((data: T) => [null, data])
+    .catch<[U, undefined]>((err: U) => {
+      if (errorExt) {
+        const parsedError = Object.assign({}, err, errorExt)
+        return [parsedError, undefined]
+      }
+
+      return [err, undefined]
+    })
 }

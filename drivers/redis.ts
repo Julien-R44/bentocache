@@ -1,17 +1,8 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import type { RedisOptions as IoRedisOptions } from 'ioredis'
 
 import { Redis } from '../src/drivers/redis.js'
-import type { RedisConfig } from '../src/types/options/drivers_options.js'
 import { RedisBus } from '../src/bus/drivers/redis_bus.js'
+import type { RedisConfig } from '../src/types/options/drivers_options.js'
 import type { BusOptions, CreateBusDriverResult, CreateDriverResult } from '../src/types/main.js'
 
 /**

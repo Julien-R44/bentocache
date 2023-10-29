@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { BaseSql } from './base_sql.js'
 import type { SqlConfig } from '../../types/options/drivers_options.js'
 import type { CacheDriver } from '../../types/driver.js'

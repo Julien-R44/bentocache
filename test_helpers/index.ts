@@ -1,12 +1,3 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 import { pino } from 'pino'
 import { setTimeout } from 'node:timers/promises'
 
@@ -29,7 +20,7 @@ export function throwingFactory(errorMsg = 'error') {
 /**
  * Returns a factory that will take some time to return the given value
  */
-export function waitAndReturnFactory(ms: number, value: any) {
+export function slowFactory(ms: number, value: any) {
   return async () => {
     await setTimeout(ms)
     return value
@@ -40,5 +31,27 @@ export function waitAndReturnFactory(ms: number, value: any) {
  * Pino logger that could be injected in
  * cache classes for manual and quick testing
  */
-export const traceLogger = (pretty = true) =>
-  pino({ level: 'trace', ...(pretty ? { transport: { target: 'pino-pretty' } } : {}) })
+import pinoLoki from 'pino-loki'
+
+const loadNs = process.hrtime()
+const loadMs = new Date().getTime()
+
+function nanoseconds() {
+  let diffNs = process.hrtime(loadNs)
+  return BigInt(loadMs) * BigInt(1e6) + BigInt(diffNs[0] * 1e9 + diffNs[1])
+}
+
+export const traceLogger = (pretty = true) => {
+  if (pretty) {
+    return pino({ level: 'trace', ...(pretty ? { transport: { target: 'pino-pretty' } } : {}) })
+  }
+
+  return pino(
+    { level: 'trace', timestamp: () => `,"time":${nanoseconds()}` },
+    pinoLoki({
+      batching: false,
+      labels: { application: 'bentocache' },
+      host: 'http://localhost:3100',
+    })
+  )
+}

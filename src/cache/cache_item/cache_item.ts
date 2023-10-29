@@ -1,16 +1,7 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-import { JsonSerializer } from '../serializers/json.js'
+import { JsonSerializer } from '../../serializers/json.js'
 
 /**
- * Represents a cache item stored inside a distributed cache driver.
+ * Represents a cache item stored inside a cache driver.
  */
 export class CacheItem {
   /**

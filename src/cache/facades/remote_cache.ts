@@ -1,15 +1,6 @@
-/*
- * @blizzle/bentocache
- *
- * (c) Blizzle
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-import { CacheItem } from './cache_item.js'
-import type { CacheItemOptions } from './cache_item_options.js'
-import type { CacheDriver, Logger } from '../types/main.js'
+import { CacheItem } from '../cache_item/cache_item.js'
+import type { CacheItemOptions } from '../cache_item/cache_item_options.js'
+import type { CacheDriver, Logger } from '../../types/main.js'
 
 /**
  * RemoteCache is a wrapper around a CacheDriver that provides
@@ -56,10 +47,10 @@ export class RemoteCache {
    */
   async set(key: string, value: string, options: CacheItemOptions) {
     try {
-      this.#logger.trace({ key, value }, 'saving remote cache item')
+      this.#logger.trace({ key, value, opId: options.id }, 'saving remote cache item')
       await this.#driver.set(key, value, options.physicalTtl)
     } catch (error) {
-      this.#logger.error({ key, value, error }, 'error saving remote cache item')
+      this.#logger.error({ key, value, error, opId: options.id }, 'error saving remote cache item')
       this.#maybeRethrowError(error, options)
 
       return false
@@ -71,10 +62,10 @@ export class RemoteCache {
    */
   async delete(key: string, options: CacheItemOptions) {
     try {
-      this.#logger.trace({ key }, 'deleting remote cache item')
+      this.#logger.trace({ key, opId: options.id }, 'deleting remote cache item')
       return await this.#driver.delete(key)
     } catch (error) {
-      this.#logger.error({ key, error }, 'error deleting remote cache item')
+      this.#logger.error({ key, error, opId: options.id }, 'error deleting remote cache item')
       this.#maybeRethrowError(error, options)
 
       return false
@@ -86,10 +77,10 @@ export class RemoteCache {
    */
   async deleteMany(keys: string[], options: CacheItemOptions) {
     try {
-      this.#logger.trace({ keys }, 'deleting remote cache items')
+      this.#logger.trace({ keys, opId: options.id }, 'deleting remote cache items')
       await this.#driver.deleteMany(keys)
     } catch (error) {
-      this.#logger.error({ keys, error }, 'error deleting remote cache items')
+      this.#logger.error({ keys, opId: options.id, error }, 'error deleting remote cache items')
       this.#maybeRethrowError(error, options)
 
       return false
