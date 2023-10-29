@@ -4,8 +4,8 @@ import { Bus } from '../../bus/bus.js'
 import { LocalCache } from '../facades/local_cache.js'
 import { RemoteCache } from '../facades/remote_cache.js'
 import { JsonSerializer } from '../../serializers/json.js'
-import { CacheItemOptions } from '../cache_item/cache_item_options.js'
 import type { BentoCacheOptions } from '../../bento_cache_options.js'
+import { CacheItemOptions } from '../cache_item/cache_item_options.js'
 import type {
   BusDriver,
   BusOptions,

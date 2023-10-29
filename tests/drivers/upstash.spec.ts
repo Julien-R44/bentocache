@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+
 import { Redis } from '../../src/drivers/redis.js'
 import { registerApiTestSuite } from '../../test_helpers/driver_test_suite.js'
 

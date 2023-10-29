@@ -1,5 +1,6 @@
-import pTimeout from 'p-timeout'
 import type { MutexInterface } from 'async-mutex'
+
+import pTimeout from 'p-timeout'
 
 import type { Locks } from './locks.js'
 import { events } from '../events/index.js'

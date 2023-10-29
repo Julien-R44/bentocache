@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+
 import { BentoCacheOptions } from '../src/bento_cache_options.js'
 
 test.group('Bento Cache Options', () => {

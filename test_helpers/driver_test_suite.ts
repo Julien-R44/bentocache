@@ -1,6 +1,8 @@
 import type { test as JapaTest } from '@japa/runner'
-import type { CacheDriver } from '../src/types/main.js'
+
 import { setTimeout } from 'node:timers/promises'
+
+import type { CacheDriver } from '../src/types/main.js'
 
 type CacheDriverConstructor = {
   new (config: any): CacheDriver

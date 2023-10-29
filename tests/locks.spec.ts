@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+
 import { Locks } from '../src/cache/locks.js'
 
 test.group('Locks', () => {

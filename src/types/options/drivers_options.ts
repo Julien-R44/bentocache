@@ -1,6 +1,6 @@
+import type { Knex } from 'knex'
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
 import type { Redis as IoRedis, RedisOptions as IoRedisOptions } from 'ioredis'
-import type { Knex } from 'knex'
 
 /**
  * Options that are common to all drivers

@@ -8,8 +8,8 @@ import { FactoryRunner } from './factory_runner.js'
 import type { CacheEvent } from '../types/events.js'
 import type { CacheStack } from './stack/cache_stack.js'
 import type { CacheItem } from './cache_item/cache_item.js'
-import type { CacheItemOptions } from './cache_item/cache_item_options.js'
 import type { CacheStackWriter } from './stack/cache_stack_writer.js'
+import type { CacheItemOptions } from './cache_item/cache_item_options.js'
 
 export class GetSetHandler {
   /**

@@ -1,5 +1,6 @@
-import string from '@poppinss/utils/string'
 import { test } from '@japa/runner'
+import string from '@poppinss/utils/string'
+
 import { CacheItemOptions } from '../../src/cache/cache_item/cache_item_options.js'
 
 test.group('Cache Options', () => {

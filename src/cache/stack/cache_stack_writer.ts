@@ -1,7 +1,7 @@
 import type { CacheStack } from './cache_stack.js'
 import { CacheBusMessageType } from '../../types/main.js'
-import type { CacheItemOptions } from '../cache_item/cache_item_options.js'
 import { CacheWritten } from '../../events/cache/cache_written.js'
+import type { CacheItemOptions } from '../cache_item/cache_item_options.js'
 
 export class CacheStackWriter {
   constructor(protected cacheStack: CacheStack) {}

@@ -1,8 +1,7 @@
-import 'dotenv/config'
-
 import Benchmark from 'benchmark'
 import { createId } from '@paralleldrive/cuid2'
 
+import 'dotenv/config'
 import { CacheBusMessageType } from '../src/types/bus.js'
 import { JsonEncoder } from '../src/bus/encoders/json_encoder.js'
 import { BinaryEncoder } from '../src/bus/encoders/binary_encoder.js'

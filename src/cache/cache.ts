@@ -1,7 +1,7 @@
 import { events } from '../events/index.js'
-import type { CacheStack } from './stack/cache_stack.js'
 import { GetSetHandler } from './get_set_handler.js'
 import { CacheBusMessageType } from '../types/main.js'
+import type { CacheStack } from './stack/cache_stack.js'
 import type { CacheProvider } from '../types/provider.js'
 import { CacheStackWriter } from './stack/cache_stack_writer.js'
 import type { GetOrSetOptions, RawCommonOptions, Factory } from '../types/main.js'

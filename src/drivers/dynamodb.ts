@@ -1,3 +1,4 @@
+import chunkify from '@sindresorhus/chunkify'
 import {
   DynamoDBClient,
   GetItemCommand,
@@ -8,7 +9,6 @@ import {
   type AttributeValue,
   ConditionalCheckFailedException,
 } from '@aws-sdk/client-dynamodb'
-import chunkify from '@sindresorhus/chunkify'
 
 import { BaseDriver } from './base_driver.js'
 import type { CacheDriver, DynamoDBConfig } from '../types/main.js'

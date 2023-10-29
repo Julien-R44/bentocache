@@ -1,7 +1,7 @@
-import { CacheItem } from '../cache_item/cache_item.js'
-import type { CacheItemOptions } from '../cache_item/cache_item_options.js'
-import type { Logger, CacheDriver } from '../../types/main.js'
 import type { Memory } from '../../drivers/memory.js'
+import { CacheItem } from '../cache_item/cache_item.js'
+import type { Logger, CacheDriver } from '../../types/main.js'
+import type { CacheItemOptions } from '../cache_item/cache_item_options.js'
 
 /**
  * LocalCache is a wrapper around a CacheDriver that provides a

@@ -1,3 +1,7 @@
+import { Cache } from './cache/cache.js'
+import type { CacheProvider } from './types/provider.js'
+import { CacheStack } from './cache/stack/cache_stack.js'
+import { BentoCacheOptions } from './bento_cache_options.js'
 import type {
   CacheEvents,
   Factory,
@@ -6,10 +10,6 @@ import type {
   RawBentoCacheOptions,
   StoreEntry,
 } from './types/main.js'
-import { Cache } from './cache/cache.js'
-import type { CacheProvider } from './types/provider.js'
-import { CacheStack } from './cache/stack/cache_stack.js'
-import { BentoCacheOptions } from './bento_cache_options.js'
 
 export class BentoCache<KnownCaches extends Record<string, StoreEntry>> implements CacheProvider {
   /**

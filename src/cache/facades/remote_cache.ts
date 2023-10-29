@@ -1,6 +1,6 @@
 import { CacheItem } from '../cache_item/cache_item.js'
-import type { CacheItemOptions } from '../cache_item/cache_item_options.js'
 import type { CacheDriver, Logger } from '../../types/main.js'
+import type { CacheItemOptions } from '../cache_item/cache_item_options.js'
 
 /**
  * RemoteCache is a wrapper around a CacheDriver that provides

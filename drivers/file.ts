@@ -1,6 +1,6 @@
 import { File } from '../src/drivers/file.js'
-import type { FileConfig } from '../src/types/options/drivers_options.js'
 import type { CreateDriverResult } from '../src/types/main.js'
+import type { FileConfig } from '../src/types/options/drivers_options.js'
 
 /**
  * Create a new file driver
