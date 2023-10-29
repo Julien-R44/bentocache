@@ -60,6 +60,7 @@
     "dotenv": "^16.3.1",
     "emittery": "^1.0.1",
     "eslint": "^8.52.0",
+    "eslint-plugin-perfectionist": "^2.2.0",
     "ioredis": "^5.3.2",
     "knex": "^3.0.1",
     "mysql2": "^3.6.2",
@@ -80,8 +81,8 @@
     "@poppinss/utils": "6.5.0",
     "@sindresorhus/chunkify": "^0.2.0",
     "async-mutex": "^0.4.0",
-    "p-timeout": "^6.1.2",
     "lru-cache": "^10.0.1",
+    "p-timeout": "^6.1.2",
     "typescript-log": "^2.0.0",
     "uid": "^2.0.2"
   },
@@ -110,12 +111,45 @@
   "keywords": [],
   "eslintConfig": {
     "extends": "@adonisjs/eslint-config/package",
+    "plugins": [
+      "perfectionist"
+    ],
     "rules": {
       "@typescript-eslint/consistent-type-imports": [
         "error",
         {
           "prefer": "type-imports",
           "disallowTypeAnnotations": false
+        }
+      ],
+      "perfectionist/sort-imports": [
+        "error",
+        {
+          "type": "line-length",
+          "order": "asc",
+          "groups": [
+            "type",
+            "react",
+            "nanostores",
+            [
+              "builtin",
+              "external"
+            ],
+            [
+              "internal-type",
+              "internal",
+              "parent-type",
+              "sibling-type",
+              "index-type",
+              "parent",
+              "sibling",
+              "index",
+              "side-effect",
+              "style",
+              "object",
+              "unknown"
+            ]
+          ]
         }
       ]
     }
