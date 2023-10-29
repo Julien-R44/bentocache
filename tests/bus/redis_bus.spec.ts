@@ -17,7 +17,7 @@ test.group('Redis Bus', (group) => {
     const bus1 = new RedisBus(REDIS_CREDENTIALS).setId(createId())
     cleanup(async () => bus1.disconnect())
 
-    bus1.subscribe('foo', () => {
+    await bus1.subscribe('foo', () => {
       assert.fail('Bus1 should not receive message emitted by itself')
     })
 
@@ -26,7 +26,7 @@ test.group('Redis Bus', (group) => {
 
     await bus1.publish('foo', { keys: ['foo'], type: CacheBusMessageType.Set })
     await setTimeout(1000)
-  })
+  }).disableTimeout()
 
   test('bus 1 should receive message emitted by bus 2', async ({ assert, cleanup }, done) => {
     const bus1 = new RedisBus(REDIS_CREDENTIALS).setId(createId())

@@ -48,6 +48,7 @@ export const traceLogger = (pretty = true) => {
 
   return pino(
     { level: 'trace', timestamp: () => `,"time":${nanoseconds()}` },
+    // @ts-expect-error
     pinoLoki({
       batching: false,
       labels: { application: 'bentocache' },

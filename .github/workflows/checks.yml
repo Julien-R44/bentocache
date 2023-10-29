@@ -1,14 +1,77 @@
 name: CI
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 21
+
+    - name: Install pnpm
+      run: |
+        corepack enable
+        corepack prepare pnpm@latest --activate
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Lint
+      run: pnpm lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 21
+
+    - name: Install pnpm
+      run: |
+        corepack enable
+        corepack prepare pnpm@latest --activate
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Typecheck
+      run: pnpm typecheck
+
   build:
     runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 21
+
+    - name: Install pnpm
+      run: |
+        corepack enable
+        corepack prepare pnpm@latest --activate
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Typecheck
+      run: pnpm build
+
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     services:
       redis:
@@ -45,24 +108,23 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '16'
+        node-version: 21
 
-    - name: Cache pnpm modules
-      uses: actions/cache@v2
-      with:
-        path: ~/.pnpm-store
-        key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-pnpm-
+    - name: Install pnpm
+      run: |
+        corepack enable
+        corepack prepare pnpm@latest --activate
 
     - name: Install dependencies
       run: pnpm install
 
-    - name: Lint
-      run: pnpm lint
-
-    - name: Typecheck
-      run: pnpm typecheck
-
     - name: Run tests
-      run: pnpm test
+      env:
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
+        DYNAMODB_ENDPOINT: http://localhost:8000
+        UPSTASH_HOST: ${{ secrets.UPSTASH_HOST }}
+        UPSTASH_PORT: ${{ secrets.UPSTASH_PORT }}
+        UPSTASH_USERNAME: ${{ secrets.UPSTASH_USERNAME }}
+        UPSTASH_PASSWORD: ${{ secrets.UPSTASH_PASSWORD }}
+      run: FORCE_COLOR=1 pnpm test

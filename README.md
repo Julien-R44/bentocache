@@ -1,4 +1,4 @@
-# @blizzle/bentocache
+# Bentocache
 
 
 Bentocache is a robust multi-tier caching solution for Node.js applications

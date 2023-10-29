@@ -97,10 +97,12 @@ export function registerApiTestSuite<T extends CacheDriverConstructor>({
     })
 
     test('set() store a value with expiration', async ({ assert }) => {
-      await cache.set('key', 'value', 10)
+      await cache.delete('key')
+
+      await cache.set('key', 'value', 1500)
       assert.deepEqual(await cache.get('key'), 'value')
 
-      await setTimeout(sleepTime)
+      await setTimeout(2500)
       assert.deepEqual(await cache.get('key'), undefined)
     })
 

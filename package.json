@@ -1,5 +1,5 @@
 {
-  "name": "@blizzle/bentocache",
+  "name": "bentocache",
   "description": "Multi-tier cache module for Node.js. Redis, Upstash, CloudfareKV, File, in-memory and others drivers",
   "version": "0.0.0",
   "engines": {
