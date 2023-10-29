@@ -339,7 +339,7 @@ test.group('One tier tests', () => {
     // should returns graced value
     const r2 = await cache.getOrSet('key1', throwingFactory())
 
-    await setTimeout(100)
+    await setTimeout(300)
 
     // Graced value is now expired. Factory should be called
     const r3 = cache.getOrSet('key1', throwingFactory('Error in cb'))
