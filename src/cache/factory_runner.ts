@@ -3,10 +3,10 @@ import type { MutexInterface } from 'async-mutex'
 import pTimeout from 'p-timeout'
 
 import type { Locks } from './locks.js'
+import * as exceptions from '../errors.js'
 import { events } from '../events/index.js'
 import type { Factory } from '../types/helpers.js'
 import type { CacheStack } from './stack/cache_stack.js'
-import { FactoryHardTimeout, FactorySoftTimeout } from '../errors.js'
 import type { CacheStackWriter } from './stack/cache_stack_writer.js'
 import type { CacheItemOptions } from './cache_item/cache_item_options.js'
 
@@ -56,7 +56,9 @@ export class FactoryRunner {
   ) {
     const timeoutDuration = options.factoryTimeout(hasFallback)
     const timeoutException =
-      timeoutDuration === options.timeouts?.hard ? FactoryHardTimeout : FactorySoftTimeout
+      timeoutDuration === options.timeouts?.hard
+        ? exceptions.E_FACTORY_HARD_TIMEOUT
+        : exceptions.E_FACTORY_SOFT_TIMEOUT
 
     const promisifiedFactory = async () => await factory()
 
