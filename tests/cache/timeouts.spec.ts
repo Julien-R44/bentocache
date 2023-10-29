@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
-import { FactoryHardTimeout } from '../../src/errors.js'
+import { E_FACTORY_HARD_TIMEOUT } from '../../src/errors.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { throwingFactory, slowFactory } from '../../test_helpers/index.js'
 
@@ -129,7 +129,7 @@ test.group('Hard timeout', () => {
 
     const now = Date.now()
     const r1 = cache.getOrSet('key', slowFactory(400, 'new factory value'))
-    await assert.rejects(async () => r1, FactoryHardTimeout.message)
+    await assert.rejects(async () => r1, new E_FACTORY_HARD_TIMEOUT().message)
 
     const elapsed = Date.now() - now
     assert.isBelow(elapsed, 300)
@@ -147,7 +147,7 @@ test.group('Hard timeout', () => {
       .create()
 
     const r1 = cache.getOrSet('key', slowFactory(400, 'new factory value'))
-    await assert.rejects(async () => r1, FactoryHardTimeout.message)
+    await assert.rejects(async () => r1, new E_FACTORY_HARD_TIMEOUT().message)
 
     await setTimeout(410)
 
