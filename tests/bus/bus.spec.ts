@@ -137,7 +137,7 @@ test.group('Bus synchronization', () => {
   test('when a entry is set, other nodes should just logically invalidate the entry, but keep for grace period', async ({
     assert,
   }) => {
-    const remoteDriver = new ChaosCache(new Memory({ maxSize: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
 
     const [cache1] = new CacheFactory()
       .merge({ remoteDriver, gracePeriod: { enabled: true, duration: '12h' } })

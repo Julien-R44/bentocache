@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
-import { MemoryLru } from '../../src/drivers/lru.js'
+import { Memory } from '../../src/drivers/memory.js'
 import { throwingFactory } from '../../test_helpers/index.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 
@@ -37,7 +37,7 @@ test.group('Cache | Stampede protection', () => {
   })
 
   test('multiple concurrent calls should ask remote only once', async ({ assert }) => {
-    class RemoteDriver extends MemoryLru {
+    class RemoteDriver extends Memory {
       askedKeys: string[] = []
 
       get(key: string) {
