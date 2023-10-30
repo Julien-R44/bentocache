@@ -29,7 +29,8 @@ const bentocache = new BentoCache({
   },
 })
 
-const keyv = new KeyvTiered({ remote: new Keyv('redis://localhost:6379'), local: new Keyv() })
+const keyvRedis = new Keyv('redis://localhost:6379')
+const keyv = new KeyvTiered({ remote: keyvRedis as any, local: new Keyv() })
 
 const cacheManagerMemory = await caching('memory')
 const cacheManagerRedis = await caching(await redisStore({ host: 'localhost', port: 6379 }))
@@ -61,4 +62,9 @@ bench
 await bench.run()
 console.table(bench.table())
 
-await Promise.all([bentocache.disconnectAll(), ioredis.quit()])
+await Promise.all([
+  bentocache.disconnectAll(),
+  ioredis.quit(),
+  cacheManagerRedis.store.client.disconnect(),
+  keyvRedis.disconnect(),
+])
