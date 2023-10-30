@@ -1,5 +1,4 @@
 import { uid } from 'uid'
-import lodash from '@poppinss/utils/lodash'
 
 import { resolveTtl } from '../../helpers.js'
 import type { RawCommonOptions } from '../../types/main.js'
@@ -56,7 +55,12 @@ export class CacheItemOptions {
   constructor(options: RawCommonOptions = {}, defaults: Partial<RawCommonOptions> = {}) {
     this.id = uid()
 
-    this.#options = lodash.merge({}, defaults, options)
+    this.#options = {
+      ...defaults,
+      ...options,
+      gracePeriod: { ...defaults.gracePeriod, ...options.gracePeriod } as any,
+      timeouts: options.timeouts,
+    }
     this.logicalTtl = this.#resolveLogicalTtl()
     this.physicalTtl = this.#resolvePhysicalTtl()
     this.earlyExpireTtl = this.#resolveEarlyExpireTtl()
