@@ -1,7 +1,10 @@
-import { uid } from 'uid'
+import hexoid from 'hexoid'
 
 import { resolveTtl } from '../../helpers.js'
 import type { RawCommonOptions } from '../../types/main.js'
+
+// @ts-expect-error wrongly typed
+const toId = hexoid()
 
 export class CacheEntryOptions {
   /**
@@ -53,7 +56,7 @@ export class CacheEntryOptions {
   lockTimeout?: number
 
   constructor(options: RawCommonOptions = {}, defaults: Partial<RawCommonOptions> = {}) {
-    this.id = uid()
+    this.id = toId()
 
     const timeouts = { ...defaults.timeouts, ...options.timeouts }
     this.#options = {

@@ -86,10 +86,10 @@
     "@poppinss/utils": "6.5.0",
     "@sindresorhus/chunkify": "^0.2.0",
     "async-mutex": "^0.4.0",
+    "hexoid": "^1.0.0",
     "lru-cache": "^10.0.1",
     "p-timeout": "^6.1.2",
-    "typescript-log": "^2.0.0",
-    "uid": "^2.0.2"
+    "typescript-log": "^2.0.0"
   },
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": "^3.438.0",

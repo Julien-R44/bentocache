@@ -23,6 +23,9 @@ dependencies:
   async-mutex:
     specifier: ^0.4.0
     version: 0.4.0
+  hexoid:
+    specifier: ^1.0.0
+    version: 1.0.0
   lru-cache:
     specifier: ^10.0.1
     version: 10.0.1
@@ -32,9 +35,6 @@ dependencies:
   typescript-log:
     specifier: ^2.0.0
     version: 2.0.0(tslib@2.6.2)
-  uid:
-    specifier: ^2.0.2
-    version: 2.0.2
 
 devDependencies:
   '@adonisjs/eslint-config':
@@ -1175,11 +1175,6 @@ packages:
     resolution: {integrity: sha512-yN599ZBuMPPK4tdoToLlvgJB4CLK8fGl7ntfy0Wn7U6ttNvHYurd81bfUiK/6sMkiIwm65R6ck4L6+Y3DfVbNQ==}
     engines: {node: '>= 0.4'}
     dev: true
-
-  /@lukeed/csprng@1.1.0:
-    resolution: {integrity: sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==}
-    engines: {node: '>=8'}
-    dev: false
 
   /@lukeed/ms@2.0.1:
     resolution: {integrity: sha512-Xs/4RZltsAL7pkvaNStUQt7netTkyxrS0K+RILcVr3TRMS/ToOg4I6uNfhB9SlGsnWBym4U+EaXq0f0cEMNkHA==}
@@ -4019,6 +4014,11 @@ packages:
       glob: 8.1.0
       readable-stream: 3.6.2
     dev: true
+
+  /hexoid@1.0.0:
+    resolution: {integrity: sha512-QFLV0taWQOZtvIRIAdBChesmogZrtuXvVWsFHZTk2SU+anspqZ2vMnoLg7IE1+Uk16N19APic1BuF8bC8c2m5g==}
+    engines: {node: '>=8'}
+    dev: false
 
   /hosted-git-info@2.8.9:
     resolution: {integrity: sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==}
@@ -7024,13 +7024,6 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
     dev: true
-
-  /uid@2.0.2:
-    resolution: {integrity: sha512-u3xV3X7uzvi5b1MncmZo3i2Aw222Zk1keqLA1YkHldREkAhAqi65wuPfe7lHx8H/Wzy+8CE7S7uS3jekIM5s8g==}
-    engines: {node: '>=8'}
-    dependencies:
-      '@lukeed/csprng': 1.1.0
-    dev: false
 
   /undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
