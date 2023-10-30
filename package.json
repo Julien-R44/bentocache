@@ -68,7 +68,6 @@
     "keyv": "^4.5.4",
     "knex": "^3.0.1",
     "mysql2": "^3.6.2",
-    "np": "^8.0.4",
     "p-event": "^6.0.0",
     "pg": "^8.11.3",
     "pino": "^8.16.1",
@@ -82,7 +81,6 @@
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",
-    "@poppinss/hooks": "7.2.0",
     "@poppinss/utils": "6.5.0",
     "@sindresorhus/chunkify": "^0.2.0",
     "async-mutex": "^0.4.0",
