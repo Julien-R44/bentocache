@@ -1,7 +1,7 @@
 import type { Memory } from '../../drivers/memory.js'
-import { CacheItem } from '../cache_item/cache_item.js'
+import { CacheEntry } from '../cache_entry/cache_entry.js'
 import type { Logger, CacheDriver } from '../../types/main.js'
-import type { CacheItemOptions } from '../cache_item/cache_item_options.js'
+import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 
 /**
  * LocalCache is a wrapper around a CacheDriver that provides a
@@ -19,7 +19,7 @@ export class LocalCache {
   /**
    * Get an item from the local cache
    */
-  async get(key: string, options: CacheItemOptions) {
+  async get(key: string, options: CacheEntryOptions) {
     let value: undefined | string
 
     /**
@@ -36,13 +36,13 @@ export class LocalCache {
       return
     }
 
-    return CacheItem.fromDriver(key, value)
+    return CacheEntry.fromDriver(key, value)
   }
 
   /**
    * Set a new item in the local cache
    */
-  async set(key: string, value: string, options: CacheItemOptions) {
+  async set(key: string, value: string, options: CacheEntryOptions) {
     /**
      * If grace period is disabled and Physical TTL is 0 or less, we can just delete the item.
      */
@@ -60,7 +60,7 @@ export class LocalCache {
   /**
    * Delete an item from the local cache
    */
-  async delete(key: string, options?: CacheItemOptions) {
+  async delete(key: string, options?: CacheEntryOptions) {
     this.#logger.trace({ key, opId: options?.id }, 'deleting local cache item')
     return await this.#driver.delete(key)
   }
@@ -75,7 +75,7 @@ export class LocalCache {
 
     return await this.#driver.set(
       key,
-      CacheItem.fromDriver(key, value).expire().serialize(),
+      CacheEntry.fromDriver(key, value).expire().serialize(),
       driver.getRemainingTtl(key)
     )
   }
@@ -83,7 +83,7 @@ export class LocalCache {
   /**
    * Delete many item from the local cache
    */
-  async deleteMany(keys: string[], options: CacheItemOptions) {
+  async deleteMany(keys: string[], options: CacheEntryOptions) {
     this.#logger.trace({ keys, options, opId: options.id }, 'deleting local cache items')
     await this.#driver.deleteMany(keys)
   }

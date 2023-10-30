@@ -5,7 +5,7 @@ import { LocalCache } from '../facades/local_cache.js'
 import { RemoteCache } from '../facades/remote_cache.js'
 import { JsonSerializer } from '../../serializers/json.js'
 import type { BentoCacheOptions } from '../../bento_cache_options.js'
-import { CacheItemOptions } from '../cache_item/cache_item_options.js'
+import { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 import type {
   BusDriver,
   BusOptions,
@@ -20,7 +20,7 @@ export class CacheStack {
   l1?: LocalCache
   l2?: RemoteCache
   bus?: Bus
-  defaultOptions: CacheItemOptions
+  defaultOptions: CacheEntryOptions
   logger: Logger
 
   constructor(
@@ -35,7 +35,7 @@ export class CacheStack {
     if (drivers.remoteDriver) this.l2 = new RemoteCache(drivers.remoteDriver, this.logger)
 
     this.bus = this.#createBus(drivers.busDriver, bus, drivers.busOptions)
-    this.defaultOptions = new CacheItemOptions(options)
+    this.defaultOptions = new CacheEntryOptions(options)
   }
 
   get emitter() {

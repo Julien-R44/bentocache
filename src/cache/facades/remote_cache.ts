@@ -1,6 +1,6 @@
-import { CacheItem } from '../cache_item/cache_item.js'
+import { CacheEntry } from '../cache_entry/cache_entry.js'
 import type { CacheDriver, Logger } from '../../types/main.js'
-import type { CacheItemOptions } from '../cache_item/cache_item_options.js'
+import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 
 /**
  * RemoteCache is a wrapper around a CacheDriver that provides
@@ -18,7 +18,7 @@ export class RemoteCache {
   /**
    * Rethrow the error if suppressRemoteCacheErrors is disabled
    */
-  #maybeRethrowError(error: Error, options: CacheItemOptions) {
+  #maybeRethrowError(error: Error, options: CacheEntryOptions) {
     if (options.suppressRemoteCacheErrors === false) {
       throw error
     }
@@ -27,13 +27,13 @@ export class RemoteCache {
   /**
    * Get an item from the remote cache
    */
-  async get(key: string, options: CacheItemOptions) {
+  async get(key: string, options: CacheEntryOptions) {
     let value: undefined | string
     try {
       value = await this.#driver.get(key)
       if (value === undefined) return
 
-      return CacheItem.fromDriver(key, value)
+      return CacheEntry.fromDriver(key, value)
     } catch (error) {
       this.#logger.error({ key, error }, 'error getting remote cache item')
       this.#maybeRethrowError(error, options)
@@ -45,7 +45,7 @@ export class RemoteCache {
   /**
    * Set a new item in the remote cache
    */
-  async set(key: string, value: string, options: CacheItemOptions) {
+  async set(key: string, value: string, options: CacheEntryOptions) {
     try {
       this.#logger.trace({ key, value, opId: options.id }, 'saving remote cache item')
       await this.#driver.set(key, value, options.physicalTtl)
@@ -60,7 +60,7 @@ export class RemoteCache {
   /**
    * Delete an item from the remote cache
    */
-  async delete(key: string, options: CacheItemOptions) {
+  async delete(key: string, options: CacheEntryOptions) {
     try {
       this.#logger.trace({ key, opId: options.id }, 'deleting remote cache item')
       return await this.#driver.delete(key)
@@ -75,7 +75,7 @@ export class RemoteCache {
   /**
    * Delete multiple items from the remote cache
    */
-  async deleteMany(keys: string[], options: CacheItemOptions) {
+  async deleteMany(keys: string[], options: CacheEntryOptions) {
     try {
       this.#logger.trace({ keys, opId: options.id }, 'deleting remote cache items')
       await this.#driver.deleteMany(keys)

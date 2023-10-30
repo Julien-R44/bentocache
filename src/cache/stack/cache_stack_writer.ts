@@ -1,7 +1,7 @@
 import type { CacheStack } from './cache_stack.js'
 import { CacheBusMessageType } from '../../types/main.js'
 import { CacheWritten } from '../../events/cache/cache_written.js'
-import type { CacheItemOptions } from '../cache_item/cache_item_options.js'
+import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 
 export class CacheStackWriter {
   constructor(protected cacheStack: CacheStack) {}
@@ -13,7 +13,7 @@ export class CacheStackWriter {
    * - Publish a message to the bus
    * - Emit a CacheWritten event
    */
-  async set(key: string, value: any, options: CacheItemOptions) {
+  async set(key: string, value: any, options: CacheEntryOptions) {
     const item = this.cacheStack.serialize({
       value: value,
       logicalExpiration: options.logicalTtlFromNow(),

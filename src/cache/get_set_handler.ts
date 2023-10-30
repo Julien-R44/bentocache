@@ -7,9 +7,9 @@ import { FactoryRunner } from './factory_runner.js'
 import type { CacheEvent } from '../types/events.js'
 import { E_FACTORY_SOFT_TIMEOUT } from '../errors.js'
 import type { CacheStack } from './stack/cache_stack.js'
-import type { CacheItem } from './cache_item/cache_item.js'
+import type { CacheEntry } from './cache_entry/cache_entry.js'
 import type { CacheStackWriter } from './stack/cache_stack_writer.js'
-import type { CacheItemOptions } from './cache_item/cache_item_options.js'
+import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
 
 export class GetSetHandler {
   /**
@@ -43,7 +43,7 @@ export class GetSetHandler {
   /**
    * Refresh a cache item before it expires
    */
-  async #earlyExpirationRefresh(key: string, factory: Factory, options: CacheItemOptions) {
+  async #earlyExpirationRefresh(key: string, factory: Factory, options: CacheEntryOptions) {
     this.logger.debug({ key, name: this.stack.name, opId: options.id }, 'try to early refresh')
     let lock = this.#locks.getOrCreateForKey(key)
 
@@ -75,7 +75,12 @@ export class GetSetHandler {
   /**
    * Returns a value from the local cache and emit a CacheHit event
    */
-  #returnLocalCacheValue(key: string, item: CacheItem, options: CacheItemOptions, logMsg?: string) {
+  #returnLocalCacheValue(
+    key: string,
+    item: CacheEntry,
+    options: CacheEntryOptions,
+    logMsg?: string
+  ) {
     const isLogicallyExpired = item.isLogicallyExpired()
     logMsg = logMsg ?? 'local cache hit'
 
@@ -88,7 +93,7 @@ export class GetSetHandler {
   /**
    * Returns a value from the remote cache and emit a CacheHit event
    */
-  async #returnRemoteCacheValue(key: string, item: CacheItem, options: CacheItemOptions) {
+  async #returnRemoteCacheValue(key: string, item: CacheEntry, options: CacheEntryOptions) {
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'remote cache hit')
 
     await this.stack.l1?.set(key, item.serialize(), options)
@@ -103,15 +108,15 @@ export class GetSetHandler {
    * If we have a fallback value, grace period enabled, and a soft timeout configured
    * we will wait at most the soft timeout to acquire the lock
    */
-  #acquireLock(key: string, hasFallback: boolean, options: CacheItemOptions) {
+  #acquireLock(key: string, hasFallback: boolean, options: CacheEntryOptions) {
     const lock = this.#locks.getOrCreateForKey(key, options.getApplicableLockTimeout(hasFallback))
     return lock.acquire()
   }
 
   #returnGracedValueOrThrow(
     key: string,
-    item: CacheItem | undefined,
-    options: CacheItemOptions,
+    item: CacheEntry | undefined,
+    options: CacheEntryOptions,
     err: Error
   ) {
     if (options.isGracePeriodEnabled && item) {
@@ -123,8 +128,8 @@ export class GetSetHandler {
 
   async #applyFallbackAndReturnGracedValue(
     key: string,
-    item: CacheItem,
-    options: CacheItemOptions
+    item: CacheEntry,
+    options: CacheEntryOptions
   ) {
     if (options.gracePeriod.enabled && options.gracePeriod.fallbackDuration) {
       this.logger.trace(
@@ -147,13 +152,13 @@ export class GetSetHandler {
   /**
    * Check if a cache item is not undefined and not logically expired
    */
-  #isItemValid(item: CacheItem | undefined): item is CacheItem {
+  #isItemValid(item: CacheEntry | undefined): item is CacheEntry {
     return !!item && !item.isLogicallyExpired()
   }
 
-  async handle(key: string, factory: Factory, options: CacheItemOptions) {
-    let localItem: CacheItem | undefined
-    let remoteItem: CacheItem | undefined
+  async handle(key: string, factory: Factory, options: CacheEntryOptions) {
+    let localItem: CacheEntry | undefined
+    let remoteItem: CacheEntry | undefined
 
     /**
      * First we check the local cache. If we have a valid item, just

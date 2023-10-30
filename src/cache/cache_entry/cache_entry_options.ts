@@ -3,7 +3,7 @@ import { uid } from 'uid'
 import { resolveTtl } from '../../helpers.js'
 import type { RawCommonOptions } from '../../types/main.js'
 
-export class CacheItemOptions {
+export class CacheEntryOptions {
   /**
    * The options that were passed to the constructor
    */
@@ -129,7 +129,7 @@ export class CacheItemOptions {
    * options overriding the current
    */
   cloneWith(options?: Partial<RawCommonOptions>) {
-    return new CacheItemOptions(options, this.#options)
+    return new CacheEntryOptions(options, this.#options)
   }
 
   /**

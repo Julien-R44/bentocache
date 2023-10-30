@@ -8,7 +8,7 @@ import { events } from '../events/index.js'
 import type { Factory } from '../types/helpers.js'
 import type { CacheStack } from './stack/cache_stack.js'
 import type { CacheStackWriter } from './stack/cache_stack_writer.js'
-import type { CacheItemOptions } from './cache_item/cache_item_options.js'
+import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
 
 /**
  * Factory Runner is responsible for executing factories
@@ -27,7 +27,7 @@ export class FactoryRunner {
   async saveBackgroundFactoryResult(
     key: string,
     factoryResult: unknown,
-    options: CacheItemOptions,
+    options: CacheEntryOptions,
     lockReleaser: MutexInterface.Releaser
   ) {
     await this.#stackWriter.set(key, factoryResult, options)
@@ -37,7 +37,7 @@ export class FactoryRunner {
   async writeFactoryResult(
     key: string,
     item: unknown,
-    options: CacheItemOptions,
+    options: CacheEntryOptions,
     lockReleaser: MutexInterface.Releaser
   ) {
     await this.#stackWriter.set(key, item, options)
@@ -51,7 +51,7 @@ export class FactoryRunner {
     key: string,
     factory: Factory,
     hasFallback: boolean,
-    options: CacheItemOptions,
+    options: CacheEntryOptions,
     lockReleaser: MutexInterface.Releaser
   ) {
     const timeoutDuration = options.factoryTimeout(hasFallback)
