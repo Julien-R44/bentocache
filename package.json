@@ -8,20 +8,12 @@
   "main": "build/index.js",
   "type": "module",
   "files": [
-    "src",
-    "providers",
-    "index.ts",
-    "build/src",
-    "build/services",
-    "build/providers",
-    "build/stubs",
-    "build/index.d.ts",
-    "build/index.js"
+    "build"
   ],
   "exports": {
     ".": "./build/index.js",
     "./drivers/*": "./build/drivers/*.js",
-    "./types": "./build/types/main.js"
+    "./types": "./build/src/types/main.js"
   },
   "scripts": {
     "clean": "del-cli build",
@@ -184,7 +176,7 @@
   "tsup": {
     "entry": [
       "./index.ts",
-      "./src/types.ts",
+      "./src/types/main.ts",
       "./drivers/*.ts"
     ],
     "outDir": "./build",
