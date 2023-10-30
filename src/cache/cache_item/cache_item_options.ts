@@ -55,12 +55,14 @@ export class CacheItemOptions {
   constructor(options: RawCommonOptions = {}, defaults: Partial<RawCommonOptions> = {}) {
     this.id = uid()
 
+    const timeouts = { ...defaults.timeouts, ...options.timeouts }
     this.#options = {
       ...defaults,
       ...options,
       gracePeriod: { ...defaults.gracePeriod, ...options.gracePeriod } as any,
-      timeouts: options.timeouts,
+      timeouts: Object.keys(timeouts).length ? timeouts : undefined,
     }
+
     this.logicalTtl = this.#resolveLogicalTtl()
     this.physicalTtl = this.#resolvePhysicalTtl()
     this.earlyExpireTtl = this.#resolveEarlyExpireTtl()

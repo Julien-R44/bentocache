@@ -128,4 +128,25 @@ test.group('Cache Options', () => {
     assert.isUndefined(options.factoryTimeout(true))
     assert.isUndefined(options.factoryTimeout(false))
   })
+
+  test('use default timeouts if not specified', ({ assert }) => {
+    const options = new CacheItemOptions({}, { timeouts: { soft: '1m', hard: '2m' } })
+
+    assert.deepEqual(options.timeouts, {
+      soft: string.milliseconds.parse('1m'),
+      hard: string.milliseconds.parse('2m'),
+    })
+  })
+
+  test('override default timeouts', ({ assert }) => {
+    const options = new CacheItemOptions(
+      { timeouts: { soft: '1m' } },
+      { timeouts: { soft: '3m', hard: '4m' } }
+    )
+
+    assert.deepEqual(options.timeouts, {
+      soft: string.milliseconds.parse('1m'),
+      hard: string.milliseconds.parse('4m'),
+    })
+  })
 })

@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import string from '@poppinss/utils/string'
 
 import { BentoCacheOptions } from '../src/bento_cache_options.js'
 
@@ -6,7 +7,7 @@ test.group('Bento Cache Options', () => {
   test('default values', ({ assert }) => {
     const options = new BentoCacheOptions({})
 
-    assert.deepEqual(options.ttl, '30m')
+    assert.deepEqual(options.ttl, string.milliseconds.parse('30m'))
     assert.deepEqual(options.prefix, 'bentocache')
     assert.deepEqual(options.suppressRemoteCacheErrors, true)
   })
@@ -26,8 +27,8 @@ test.group('Bento Cache Options', () => {
     assert.deepEqual(options.prefix, 'foo')
     assert.deepEqual(options.gracePeriod, {
       enabled: false,
-      duration: '6h',
-      fallbackDuration: '10s',
+      duration: string.milliseconds.parse('6h'),
+      fallbackDuration: string.milliseconds.parse('10s'),
     })
     assert.deepEqual(options.suppressRemoteCacheErrors, true)
   })
