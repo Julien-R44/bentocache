@@ -48,13 +48,13 @@ const ioredis = new Redis()
  */
 bench
   .add('BentoCache', async () => {
-    await bentocacheTiered.get('key')
+    await bentocacheTiered.set('key', 'value')
   })
   .add('Keyv', async () => {
-    await keyv.get('key')
+    await keyv.set('key', 'value')
   })
   .add('CacheManager', async () => {
-    await multiCache.get('key')
+    await multiCache.set('key', 'value')
   })
 
 await bench.run()

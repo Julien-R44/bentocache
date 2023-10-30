@@ -68,7 +68,7 @@ export class LocalCache {
   async logicallyExpire(key: string) {
     this.#logger.trace({ key }, 'logically expiring local cache item')
 
-    // This is a nasty hack that needs to be fixed
+    // TODO This is a nasty hack that needs to be fixed
     const driver = this.#driver as Memory
     const value = await this.#driver.get(key)
     if (value === undefined) return
