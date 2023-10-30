@@ -6,9 +6,11 @@ import type {
   CacheEvents,
   Factory,
   GetOrSetOptions,
-  RawCommonOptions,
   RawBentoCacheOptions,
   StoreEntry,
+  GetOptions,
+  DeleteOptions,
+  SetOptions,
 } from './types/main.js'
 
 export class BentoCache<KnownCaches extends Record<string, StoreEntry>> implements CacheProvider {
@@ -117,12 +119,8 @@ export class BentoCache<KnownCaches extends Record<string, StoreEntry>> implemen
    */
   get<T = any>(key: string): Promise<T | undefined | null>
   get<T = any>(key: string, defaultValue: Factory<T>): Promise<T>
-  get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOrSetOptions): Promise<T>
-  async get<T = any>(
-    key: string,
-    defaultValue?: Factory<T>,
-    rawOptions?: GetOrSetOptions
-  ): Promise<T> {
+  get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOptions): Promise<T>
+  async get<T = any>(key: string, defaultValue?: Factory<T>, rawOptions?: GetOptions): Promise<T> {
     return this.use().get<T>(key, defaultValue, rawOptions)
   }
 
@@ -130,7 +128,7 @@ export class BentoCache<KnownCaches extends Record<string, StoreEntry>> implemen
    * Put a value in the cache
    * Returns true if the value was set, false otherwise
    */
-  async set(key: string, value: any, options?: RawCommonOptions) {
+  async set(key: string, value: any, options?: SetOptions) {
     return this.use().set(key, value, options)
   }
 
@@ -138,8 +136,8 @@ export class BentoCache<KnownCaches extends Record<string, StoreEntry>> implemen
    * Put a value in the cache forever
    * Returns true if the value was set, false otherwise
    */
-  async setForever(key: string, value: any) {
-    return this.use().setForever(key, value)
+  async setForever(key: string, value: any, options?: SetOptions) {
+    return this.use().setForever(key, value, options)
   }
 
   /**
@@ -185,15 +183,15 @@ export class BentoCache<KnownCaches extends Record<string, StoreEntry>> implemen
    * Delete a key from the cache
    * Returns true if the key was deleted, false otherwise
    */
-  async delete(key: string) {
-    return this.use().delete(key)
+  async delete(key: string, options?: DeleteOptions) {
+    return this.use().delete(key, options)
   }
 
   /**
    * Delete multiple keys from the cache
    */
-  async deleteMany(keys: string[]): Promise<boolean> {
-    return this.use().deleteMany(keys)
+  async deleteMany(keys: string[], options?: DeleteOptions): Promise<boolean> {
+    return this.use().deleteMany(keys, options)
   }
 
   /**

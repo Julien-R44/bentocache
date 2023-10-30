@@ -2,9 +2,11 @@ import { test } from '@japa/runner'
 
 import { BentoCache } from '../src/bento_cache.js'
 import { memoryDriver } from '../drivers/memory.js'
+import type { Duration } from '../src/types/helpers.js'
 import type { CacheEvents } from '../src/types/events.js'
 import { CacheFactory } from '../factories/cache_factory.js'
 import { BentoCacheFactory } from '../factories/bentocache_factory.js'
+import type { FactoryTimeoutOptions, GracePeriodOptions } from '../src/types/main.js'
 
 test.group('Typings', () => {
   test('named caches typings', async ({ expectTypeOf }) => {
@@ -113,6 +115,74 @@ test.group('Typings', () => {
     bento.on('cache:cleared', (payload) => {
       expectTypeOf(payload).toEqualTypeOf<CacheEvents['cache:cleared']>()
     })
+  })
+
+  test('getOrSet() options parameters typings', async ({ expectTypeOf }) => {
+    const { bento } = new BentoCacheFactory().create()
+
+    expectTypeOf(bento.getOrSet).parameter(2).exclude(undefined).toMatchTypeOf<{
+      ttl?: Duration
+      timeouts?: FactoryTimeoutOptions
+      gracePeriod?: GracePeriodOptions
+      earlyexpiration?: number
+      suppressRemoteCacheErrors?: boolean
+      lockTimeout?: Duration
+    }>()
+  })
+
+  test('get() options parameters typings', async ({ expectTypeOf }) => {
+    const { bento } = new BentoCacheFactory().create()
+
+    expectTypeOf(bento.get).parameter(2).exclude(undefined).not.toHaveProperty('lockTimeout')
+    expectTypeOf(bento.get).parameter(2).exclude(undefined).not.toHaveProperty('timeouts')
+  })
+
+  test('delete() options parameters typings', async ({ expectTypeOf }) => {
+    const { bento } = new BentoCacheFactory().create()
+
+    expectTypeOf(bento.delete).parameter(1).exclude(undefined).not.toHaveProperty('lockTimeout')
+    expectTypeOf(bento.delete).parameter(1).exclude(undefined).not.toHaveProperty('timeouts')
+    expectTypeOf(bento.delete)
+      .parameter(2)
+      .exclude(undefined)
+      .toHaveProperty('suppressRemoteCacheErrors')
+  })
+
+  test('deleteMany() options parameters typings', async ({ expectTypeOf }) => {
+    const { bento } = new BentoCacheFactory().create()
+
+    expectTypeOf(bento.deleteMany).parameter(1).exclude(undefined).not.toHaveProperty('lockTimeout')
+    expectTypeOf(bento.deleteMany).parameter(1).exclude(undefined).not.toHaveProperty('timeouts')
+    expectTypeOf(bento.deleteMany)
+      .parameter(2)
+      .exclude(undefined)
+      .toHaveProperty('suppressRemoteCacheErrors')
+  })
+
+  test('set() options parameters typings', async ({ expectTypeOf }) => {
+    const { bento } = new BentoCacheFactory().create()
+
+    expectTypeOf(bento.set).parameter(2).exclude(undefined).toMatchTypeOf<{
+      ttl?: Duration
+      timeouts?: FactoryTimeoutOptions
+      gracePeriod?: GracePeriodOptions
+      earlyexpiration?: number
+      suppressRemoteCacheErrors?: boolean
+      lockTimeout?: Duration
+    }>()
+  })
+
+  test('setForever() options parameters typings', async ({ expectTypeOf }) => {
+    const { bento } = new BentoCacheFactory().create()
+
+    expectTypeOf(bento.setForever).parameter(2).exclude(undefined).toMatchTypeOf<{
+      ttl?: Duration
+      timeouts?: FactoryTimeoutOptions
+      gracePeriod?: GracePeriodOptions
+      earlyexpiration?: number
+      suppressRemoteCacheErrors?: boolean
+      lockTimeout?: Duration
+    }>()
   })
 
   test('stores entries should accept raw options', async ({ expectTypeOf }) => {

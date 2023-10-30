@@ -1,5 +1,5 @@
 import type { Factory } from './helpers.js'
-import type { GetOrSetOptions, RawCommonOptions } from './main.js'
+import type { DeleteOptions, GetOptions, GetOrSetOptions, SetOptions } from './main.js'
 
 /**
  * A cache provider is a class that wraps an underlying cache driver
@@ -10,12 +10,12 @@ export interface CacheProvider {
    * Set a value in the cache
    * Returns true if the value was set, false otherwise
    */
-  set(key: string, value: any, options?: RawCommonOptions): Promise<boolean>
+  set(key: string, value: any, options?: SetOptions): Promise<boolean>
 
   /**
    * Set a value in the cache forever
    */
-  setForever(key: string, value: any): Promise<boolean>
+  setForever(key: string, value: any, options?: SetOptions): Promise<boolean>
 
   /**
    * Get a value from the cache
@@ -40,7 +40,7 @@ export interface CacheProvider {
    * @param defaultValue Default value if the key is not found
    * @param options Options to set
    */
-  get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOrSetOptions): Promise<T>
+  get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOptions): Promise<T>
 
   /**
    * Get or set a value in the cache
@@ -58,11 +58,41 @@ export interface CacheProvider {
    */
   missing(key: string): Promise<boolean>
 
+  /**
+   * Returns a new instance of the driver namespaced
+   */
   namespace(namespace: string): CacheProvider
+
+  /**
+   * Check if a key exists in the cache
+   */
   has(key: string): Promise<boolean>
+
+  /**
+   * Get the value of a key and delete it
+   *
+   * Returns the value if the key exists, undefined otherwise
+   */
   pull<T = any>(key: string): Promise<T | undefined | null>
-  delete(key: string): Promise<boolean>
-  deleteMany(keys: string[]): Promise<boolean>
+
+  /**
+   * Delete a key from the cache
+   * Returns true if the key was deleted, false otherwise
+   */
+  delete(key: string, options?: DeleteOptions): Promise<boolean>
+
+  /**
+   * Delete multiple keys from the cache
+   */
+  deleteMany(keys: string[], options?: DeleteOptions): Promise<boolean>
+
+  /**
+   * Remove all items from the cache
+   */
   clear(): Promise<void>
+
+  /**
+   * Closes the connection to the cache
+   */
   disconnect(): Promise<void>
 }
