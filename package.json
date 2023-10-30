@@ -36,7 +36,8 @@
     "postbuild": "npm run copy:templates",
     "release": "np",
     "version": "npm run build",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "checks": "pnpm lint && pnpm typecheck"
   },
   "devDependencies": {
     "@adonisjs/eslint-config": "^1.1.8",
