@@ -11,19 +11,19 @@ Bentocache is a robust multi-tier caching solution for Node.js applications
 - 🗂️ Namespaces. Group your keys by categories.
 - 🛑 Cache stamped protection.
 - 🏷️ Named caches
-- 📖 Well documented + JSDoc annotations everywhere.
+- 📖 Well documented + handy JSDoc annotations
 - 📊 Events. Useful for monitoring and metrics
 - 🧩 Easily extendable with your own driver
 
 ## Why Bentocache ? 
 
-There are already caching libraries for Node: `keyv`, `cache-manager`, or `unstorage`. However, I think that we could rather consider these libraries as bridges that allow different stores to be used via a unified API, rather than true caching solutions as such.
+There are already caching libraries for Node: [`keyv`](https://keyv.org/), [`cache-manager`](https://github.com/node-cache-manager/node-cache-manager#readme), or [`unstorage`](https://unstorage.unjs.io/). However, I think that we could rather consider these libraries as bridges that allow different stores to be used via a unified API, rather than true caching solutions as such.
 
-Not to knock them, on the contrary, they have their use cases and cool. Some are even "marketed" as such and are still very handy. But yeah, they serve a different purpose.
+Not to knock them, on the contrary, they have their use cases and cool. Some are even "marketed" as such and are still very handy for simple caching system.
 
-Bentocache, on the other hand, is a **true caching solution for web applications**. We indeed have this notion of unified access to differents drivers, but in addition to that, we have a ton of features that will allow you to do serious and robust caching.
+Bentocache, on the other hand, is a **full-featured caching solution**. We indeed have this notion of unified access to differents drivers, but in addition to that, we have a ton of features that will allow you to do robust caching.
 
-If we start from this principle, then I believe there is simply no serious alternative to Bentocache in the JavaScript ecosystem. Which is regrettable, because all other languages have powerful solutions. This is why Bentocache was created.
+With that in mind, then I believe there is no serious alternative to Bentocache in the JavaScript ecosystem. Which is regrettable, because all other languages have powerful solutions. This is why Bentocache was created.
 
 ## Quick presentation
 
