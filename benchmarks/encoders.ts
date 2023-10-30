@@ -1,7 +1,6 @@
-import Benchmark from 'benchmark'
+import { Bench } from 'tinybench'
 import { createId } from '@paralleldrive/cuid2'
 
-import 'dotenv/config'
 import { CacheBusMessageType } from '../src/types/bus.js'
 import { JsonEncoder } from '../src/bus/encoders/json_encoder.js'
 import { BinaryEncoder } from '../src/bus/encoders/binary_encoder.js'
@@ -19,7 +18,7 @@ import { BinaryEncoder } from '../src/bus/encoders/binary_encoder.js'
  * will be the smallest most of the time
  */
 
-const suite = new Benchmark.Suite()
+const bench = new Bench()
 
 const jsonEncoder = new JsonEncoder()
 const binaryEncoder = new BinaryEncoder()
@@ -45,11 +44,9 @@ console.log('Binary size: %d bytes', binarySize)
 /**
  * Then run the benchmark
  */
-suite
+bench
   .add('JsonEncoder', () => jsonEncoder.decode(jsonEncoder.encode(data)))
   .add('BinaryEncoder', () => binaryEncoder.decode(binaryEncoder.encode(data)))
-  .on('cycle', (event: any) => console.log(String(event.target)))
-  .on('complete', function (this: Benchmark.Suite) {
-    console.log('\nFastest is ' + this.filter('fastest').map('name'))
-  })
-  .run({ async: true })
+
+await bench.run()
+console.table(bench.table())
