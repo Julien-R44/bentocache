@@ -15,6 +15,8 @@ Bentocache is a robust multi-tier caching solution for Node.js applications
 - 📊 Events. Useful for monitoring and metrics
 - 🧩 Easily extendable with your own driver
 
+See documentation at [bentocache-docs.pages.dev](https://bentocache-docs.pages.dev/docs/introduction)
+
 ## Why Bentocache ? 
 
 There are already caching libraries for Node: [`keyv`](https://keyv.org/), [`cache-manager`](https://github.com/node-cache-manager/node-cache-manager#readme), or [`unstorage`](https://unstorage.unjs.io/). However, I think that we could rather consider these libraries as bridges that allow different stores to be used via a unified API, rather than true caching solutions as such.
@@ -64,15 +66,15 @@ Multi-layer caching allows you to combine the speed of in-memory caching with th
 
 Many drivers available to suit all situations: Redis, Upstash, Database (MySQL, SQLite, PostgreSQL), DynamoDB, Filesystem, In-memory (LRU Cache), Vercel KV...
 
-See the [drivers documentation](./cache_drivers.md) for list of available drivers. Also very easy to extend the library and [add your own driver](tbd)
+See the [drivers documentation](https://bentocache-docs.pages.dev/docs/cache-drivers) for list of available drivers. Also very easy to extend the library and [add your own driver](https://bentocache-docs.pages.dev/docs/custom-cache-driver)
 
 ### Resiliency
 
-- [Grace period](./grace_periods.md): Keep your application running smoothly with the ability to temporarily use expired cache entries when your database is down, or when a factory is failing.
+- [Grace period](https://bentocache-docs.pages.dev/docs/grace-periods): Keep your application running smoothly with the ability to temporarily use expired cache entries when your database is down, or when a factory is failing.
 
-- [Cache stamped prevention](./stampede_protection.md): Ensuring that only one factory is executed at the same time.
+- [Cache stamped prevention](https://bentocache-docs.pages.dev/docs/stampede-protection): Ensuring that only one factory is executed at the same time.
 
-- [Retry queue](./hybrid_driver.md#retry-queue-strategy) : When a application fails to publish something to the bus, it is added to a queue and retried later.
+- [Retry queue](https://bentocache-docs.pages.dev/docs/hybrid-driver#retry-queue-strategy) : When a application fails to publish something to the bus, it is added to a queue and retried later.
 
 ### Timeouts 
 
@@ -101,7 +103,7 @@ bento.on('cache:miss', () => {})
 // ...
 ```
 
-See the [events documentation](./digging_deeper/events.md) for more information.
+See the [events documentation](https://bentocache-docs.pages.dev/docs/events) for more information.
 
 ### Friendly TTLs
 
@@ -142,7 +144,7 @@ const bento = new BentoCache({
 })
 ```
 
-See the [logging documentation](./digging_deeper/logging.md) for more information.
+See the [logging documentation](https://bentocache-docs.pages.dev/docs/logging) for more information.
 
 ## Sponsor
 
