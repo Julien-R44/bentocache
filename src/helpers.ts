@@ -6,6 +6,8 @@ import type { Duration } from './types/main.js'
  * Resolve a TTL value to a number in milliseconds
  */
 export function resolveTtl(ttl?: Duration, defaultTtl: Duration = 30_000) {
+  if (typeof ttl === 'number') return ttl
+
   /**
    * If the TTL is null, it means the value should never expire
    */
@@ -19,8 +21,6 @@ export function resolveTtl(ttl?: Duration, defaultTtl: Duration = 30_000) {
 
     return undefined
   }
-
-  if (typeof ttl === 'number') return ttl
 
   return string.milliseconds.parse(ttl)
 }

@@ -1,6 +1,7 @@
 import EventEmitter from 'node:events'
 import { noopLogger } from 'typescript-log'
 import lodash from '@poppinss/utils/lodash'
+import string from '@poppinss/utils/string'
 
 import type {
   Duration,
@@ -25,7 +26,7 @@ export class BentoCacheOptions {
    *
    * @default 30m
    */
-  ttl: Duration = '30m'
+  ttl: Duration = string.milliseconds.parse('30m')
 
   /**
    * Default prefix for all caches
@@ -37,8 +38,8 @@ export class BentoCacheOptions {
    */
   gracePeriod: GracePeriodOptions = {
     enabled: false,
-    duration: '6h',
-    fallbackDuration: '10s',
+    duration: string.milliseconds.parse('6h'),
+    fallbackDuration: string.milliseconds.parse('10s'),
   }
 
   /**
