@@ -5,9 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
-  '@fastify/deepmerge':
-    specifier: ^1.3.0
-    version: 1.3.0
   '@paralleldrive/cuid2':
     specifier: ^2.2.2
     version: 2.2.2
@@ -73,15 +70,9 @@ devDependencies:
   '@swc/core':
     specifier: 1.3.68
     version: 1.3.68
-  '@types/benchmark':
-    specifier: ^2.1.4
-    version: 2.1.4
   '@types/node':
     specifier: ^20.8.9
     version: 20.8.9
-  benchmark:
-    specifier: ^2.1.4
-    version: 2.1.4
   better-sqlite3:
     specifier: ^8.7.0
     version: 8.7.0
@@ -1000,10 +991,6 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@fastify/deepmerge@1.3.0:
-    resolution: {integrity: sha512-J8TOSBq3SoZbDhM9+R/u77hP93gz/rajSA+K2kGyijPpORPWUXHUpTaleoj+92As0S9uPRP7Oi8IqMf0u+ro6A==}
-    dev: false
-
   /@humanwhocodes/config-array@0.11.13:
     resolution: {integrity: sha512-JSBDMiDKSzQVngfRjOdFXgFfklaXI4K9nLF49Auh21lmBWRLIK3+xTErTWD4KU54pb6coM6ESE7Awz/FNU3zgQ==}
     engines: {node: '>=10.10.0'}
@@ -1887,10 +1874,6 @@ packages:
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
     dev: true
 
-  /@types/benchmark@2.1.4:
-    resolution: {integrity: sha512-rVCCileCU5NhP9Ix1e03sIn4gd0mpjh7VNULVQAxzF+9vddk6A5QAHzp2h5kXH8pkv1Ow45fUf3QP3wOEiISvA==}
-    dev: true
-
   /@types/bytes@3.1.2:
     resolution: {integrity: sha512-92b6q7CSYBMVZDtMZh5PuKm3LjZwcU7s6H8e9sU20Z1tOrTuXN+Hz3VuP9E8axiQRaCoiEOMN1duqPCEIhamrQ==}
     dev: false
@@ -2440,13 +2423,6 @@ packages:
 
   /base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
-    dev: true
-
-  /benchmark@2.1.4:
-    resolution: {integrity: sha512-l9MlfN4M1K/H2fbhfMy3B7vJd6AGKJVQn2h6Sg/Yx+KckoUA7ewS5Vv6TjSq18ooE1kS9hhAlQRH3AkXIh/aOQ==}
-    dependencies:
-      lodash: 4.17.21
-      platform: 1.3.6
     dev: true
 
   /better-sqlite3@8.7.0:
@@ -5816,10 +5792,6 @@ packages:
     engines: {node: '>=14.16'}
     dependencies:
       find-up: 6.3.0
-    dev: true
-
-  /platform@1.3.6:
-    resolution: {integrity: sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg==}
     dev: true
 
   /pluralize@8.0.0:
