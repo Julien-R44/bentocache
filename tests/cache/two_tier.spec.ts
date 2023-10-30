@@ -417,9 +417,6 @@ test.group('Cache', () => {
     assert.isUndefined(r5)
   })
 
-  // TODO check backplane + early refresh
-
-  // todo may need to see how to handle that with timeouts and failsafe
   test('rethrows error when suppressRemoteCacheErrors is false', async ({ assert }) => {
     const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
 

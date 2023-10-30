@@ -23,7 +23,6 @@ export class CacheItem {
 
   #earlyExpiration: number
 
-  // TODO
   static #serializer = new JsonSerializer()
 
   constructor(key: string, item: Record<string, any>) {

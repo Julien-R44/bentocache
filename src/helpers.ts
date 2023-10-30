@@ -52,22 +52,3 @@ export function createIsomorphicDestructurable<
 
   return clone as T & A
 }
-
-/**
- * Resolve a promise and return the error/result as a tuple
- */
-export function to<T, U = Error>(
-  promise: Promise<T>,
-  errorExt?: object
-): Promise<[U, undefined] | [null, T]> {
-  return promise
-    .then<[null, T]>((data: T) => [null, data])
-    .catch<[U, undefined]>((err: U) => {
-      if (errorExt) {
-        const parsedError = Object.assign({}, err, errorExt)
-        return [parsedError, undefined]
-      }
-
-      return [err, undefined]
-    })
-}
