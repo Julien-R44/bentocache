@@ -2,6 +2,7 @@ import { Redis } from 'ioredis'
 import { test } from '@japa/runner'
 import { createId } from '@paralleldrive/cuid2'
 import { setTimeout } from 'node:timers/promises'
+import { GenericContainer } from 'testcontainers'
 
 import { CacheBusMessageType } from '../../src/types/bus.js'
 import { RedisBus } from '../../src/bus/drivers/redis_bus.js'
@@ -118,5 +119,30 @@ test.group('Redis Bus', (group) => {
     )
 
     assert.isDefined(log)
+  })
+
+  test('trigger onReconnect when the redis client reconnects', async ({ assert, cleanup }) => {
+    let container = await new GenericContainer('redis')
+      .withExposedPorts({ container: 6379, host: 5643 })
+      .start()
+
+    const bus = new RedisBus({ port: 5643, host: 'localhost' }).setId(createId())
+
+    cleanup(() => {
+      bus.disconnect()
+      container.stop()
+    })
+
+    let reconnectCalled = false
+    bus.onReconnect(() => {
+      if (reconnectCalled) return
+
+      reconnectCalled = true
+    })
+
+    await container.restart()
+    await setTimeout(200)
+
+    assert.isTrue(reconnectCalled)
   })
 })

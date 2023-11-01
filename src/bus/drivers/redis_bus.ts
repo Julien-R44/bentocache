@@ -72,6 +72,7 @@ export class RedisBus implements BusDriver {
 
       try {
         const data = this.#encoder.decode(message)
+
         /**
          * Ignore messages published by this bus instance
          */
