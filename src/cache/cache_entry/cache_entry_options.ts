@@ -4,7 +4,7 @@ import { resolveTtl } from '../../helpers.js'
 import type { RawCommonOptions } from '../../types/main.js'
 
 // @ts-expect-error wrongly typed
-const toId = hexoid()
+const toId = hexoid(12)
 
 export class CacheEntryOptions {
   /**
