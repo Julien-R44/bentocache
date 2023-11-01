@@ -105,7 +105,14 @@
   },
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",
-  "keywords": [],
+  "keywords": [
+    "caching",
+    "redis",
+    "in-memory",
+    "cache",
+    "multi-tier",
+    "tiered"
+  ],
   "eslintConfig": {
     "extends": "@adonisjs/eslint-config/package",
     "plugins": [
