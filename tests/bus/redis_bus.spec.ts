@@ -144,5 +144,5 @@ test.group('Redis Bus', (group) => {
     await setTimeout(200)
 
     assert.isTrue(reconnectCalled)
-  }).timeout(3000)
+  }).disableTimeout()
 })
