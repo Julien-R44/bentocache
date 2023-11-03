@@ -4,44 +4,44 @@ import { BaseDriver } from '../../src/drivers/base_driver.js'
 /**
  * A dummy cache driver that does nothing
  */
-export class NullDriver extends BaseDriver implements CacheDriver {
+export class NullDriver extends BaseDriver implements CacheDriver<any> {
   constructor(_config: any) {
     super(_config)
   }
 
-  namespace() {
+  namespace(): any {
     return this
   }
 
-  get(_key: string) {
+  get(_key: string): any {
     return undefined
   }
 
-  pull(_key: string) {
+  pull(_key: string): any {
     return undefined
   }
 
-  set(_key: string, _value: string, _ttl?: number | undefined) {
+  set(_key: string, _value: string, _ttl?: number | undefined): any {
     return true
   }
 
-  has(_key: string) {
+  has(_key: string): any {
     return false
   }
 
-  clear() {
+  clear(): any {
     return
   }
 
-  delete(_key: string) {
+  delete(_key: string): any {
     return true
   }
 
-  deleteMany(_keys: string[]) {
+  deleteMany(_keys: string[]): any {
     return true
   }
 
-  disconnect() {
+  disconnect(): any {
     return
   }
 }

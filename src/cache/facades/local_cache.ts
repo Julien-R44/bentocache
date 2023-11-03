@@ -8,10 +8,10 @@ import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
  * some handy methods for interacting with a local cache ( in-memory )
  */
 export class LocalCache {
-  #driver: CacheDriver
+  #driver: CacheDriver<false>
   #logger: Logger
 
-  constructor(driver: CacheDriver, logger: Logger) {
+  constructor(driver: CacheDriver<false>, logger: Logger) {
     this.#driver = driver
     this.#logger = logger.child({ context: 'bentocache.localCache' })
   }
@@ -19,14 +19,14 @@ export class LocalCache {
   /**
    * Get an item from the local cache
    */
-  async get(key: string, options: CacheEntryOptions) {
+  get(key: string, options: CacheEntryOptions) {
     let value: undefined | string
 
     /**
      * Try to get the item from the local cache
      */
     this.#logger.trace({ key, opId: options.id }, 'try getting local cache item')
-    value = await this.#driver.get(key)
+    value = this.#driver.get(key)
 
     /**
      * If the item is not found, return undefined
@@ -42,7 +42,7 @@ export class LocalCache {
   /**
    * Set a new item in the local cache
    */
-  async set(key: string, value: string, options: CacheEntryOptions) {
+  set(key: string, value: string, options: CacheEntryOptions) {
     /**
      * If grace period is disabled and Physical TTL is 0 or less, we can just delete the item.
      */
@@ -54,26 +54,26 @@ export class LocalCache {
      * Save the item to the local cache
      */
     this.#logger.trace({ key, value, opId: options.id }, 'saving local cache item')
-    await this.#driver.set(key, value, options.physicalTtl)
+    this.#driver.set(key, value, options.physicalTtl)
   }
 
   /**
    * Delete an item from the local cache
    */
-  async delete(key: string, options?: CacheEntryOptions) {
+  delete(key: string, options?: CacheEntryOptions) {
     this.#logger.trace({ key, opId: options?.id }, 'deleting local cache item')
-    return await this.#driver.delete(key)
+    return this.#driver.delete(key)
   }
 
-  async logicallyExpire(key: string) {
+  logicallyExpire(key: string) {
     this.#logger.trace({ key }, 'logically expiring local cache item')
 
     // TODO This is a nasty hack that needs to be fixed
     const driver = this.#driver as Memory
-    const value = await this.#driver.get(key)
+    const value = this.#driver.get(key)
     if (value === undefined) return
 
-    return await this.#driver.set(
+    return this.#driver.set(
       key,
       CacheEntry.fromDriver(key, value).expire().serialize(),
       driver.getRemainingTtl(key)
@@ -83,9 +83,9 @@ export class LocalCache {
   /**
    * Delete many item from the local cache
    */
-  async deleteMany(keys: string[], options: CacheEntryOptions) {
+  deleteMany(keys: string[], options: CacheEntryOptions) {
     this.#logger.trace({ keys, options, opId: options.id }, 'deleting local cache items')
-    await this.#driver.deleteMany(keys)
+    this.#driver.deleteMany(keys)
   }
 
   /**

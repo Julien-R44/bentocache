@@ -8,7 +8,6 @@ import type { L1CacheDriver, MemoryConfig as MemoryConfig } from '../types/main.
  */
 export class Memory extends BaseDriver implements L1CacheDriver {
   type = 'l1' as const
-
   #cache: LRUCache<string, string>
   declare config: MemoryConfig
 

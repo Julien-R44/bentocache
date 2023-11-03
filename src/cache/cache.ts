@@ -50,7 +50,7 @@ export class Cache implements CacheProvider {
     rawOptions?: GetOptions
   ): Promise<T | undefined | null> {
     const options = this.#stack.defaultOptions.cloneWith(rawOptions)
-    const localItem = await this.#stack.l1?.get(key, options)
+    const localItem = this.#stack.l1?.get(key, options)
 
     if (localItem !== undefined && !localItem.isLogicallyExpired()) {
       this.#stack.emit(new events.CacheHit(key, localItem.getValue(), this.name))
@@ -60,7 +60,7 @@ export class Cache implements CacheProvider {
     const remoteItem = await this.#stack.l2?.get(key, options)
 
     if (remoteItem !== undefined && !remoteItem.isLogicallyExpired()) {
-      await this.#stack.l1?.set(key, remoteItem.serialize(), options)
+      this.#stack.l1?.set(key, remoteItem.serialize(), options)
       this.#stack.emit(new events.CacheHit(key, remoteItem.getValue(), this.name))
       return remoteItem.getValue()
     }
@@ -71,7 +71,7 @@ export class Cache implements CacheProvider {
     }
 
     if (remoteItem) {
-      await this.#stack.l1?.set(key, remoteItem.serialize(), options)
+      this.#stack.l1?.set(key, remoteItem.serialize(), options)
       this.#stack.emit(new events.CacheHit(key, remoteItem.serialize(), this.name, true))
       return remoteItem.getValue()
     }
@@ -127,7 +127,7 @@ export class Cache implements CacheProvider {
    */
   async has(key: string) {
     const inRemote = await this.#stack.l2?.has(key)
-    const inLocal = await this.#stack.l1?.has(key)
+    const inLocal = this.#stack.l1?.has(key)
 
     return !!(inRemote || inLocal)
   }
@@ -156,7 +156,7 @@ export class Cache implements CacheProvider {
   async delete(key: string, rawOptions?: DeleteOptions): Promise<boolean> {
     const options = this.#stack.defaultOptions.cloneWith(rawOptions)
 
-    await this.#stack.l1?.delete(key, options)
+    this.#stack.l1?.delete(key, options)
     await this.#stack.l2?.delete(key, options)
 
     this.#stack.emit(new events.CacheDeleted(key, this.name))
@@ -174,7 +174,7 @@ export class Cache implements CacheProvider {
   async deleteMany(keys: string[], rawOptions?: DeleteOptions): Promise<boolean> {
     const options = this.#stack.defaultOptions.cloneWith(rawOptions)
 
-    await this.#stack.l1?.deleteMany(keys, options)
+    this.#stack.l1?.deleteMany(keys, options)
     await this.#stack.l2?.deleteMany(keys, options)
 
     keys.forEach((key) => this.#stack.emit(new events.CacheDeleted(key, this.name)))

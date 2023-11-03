@@ -24,10 +24,12 @@ test.group('Cache events', () => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
 
+    const eventPromise = pEvent(emitter, 'cache:hit')
+
     await cache.set('key', 'value')
     cache.get('key')
 
-    const event = await pEvent(emitter, 'cache:hit')
+    const event = await eventPromise
     assert.deepEqual(event, { key: 'key', value: 'value', store: 'primary', graced: false })
   })
 
@@ -73,16 +75,13 @@ test.group('Cache events', () => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
 
+    const promises = Promise.all([pEvent(emitter, 'cache:deleted'), pEvent(emitter, 'cache:hit')])
     await cache.set('key', 'value')
     cache.pull('key')
 
-    const [deletedEvent, hitEvent] = await Promise.all([
-      pEvent(emitter, 'cache:deleted'),
-      pEvent(emitter, 'cache:hit'),
-    ])
+    const [deletedEvent, hitEvent] = await promises
 
     assert.deepEqual(deletedEvent, { key: 'key', store: 'primary' })
-
     assert.deepEqual(hitEvent, { key: 'key', value: 'value', store: 'primary', graced: false })
   })
 
