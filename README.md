@@ -1,7 +1,12 @@
-# Bentocache
+![image](https://github.com/Julien-R44/bentocache/assets/8337858/4aa1023f-7a4f-4d73-8400-05baafbc899a)
 
+<p align="center">
+  <br/>
+  <a href="https://bentocache.julr.dev/">Bentocache</a> is a robust multi-tier caching solution for Node.js applications
+  <br/>
+</p>
 
-Bentocache is a robust multi-tier caching solution for Node.js applications
+## Features
 
 - 🗄️ Multi-tier caching
 - 🔄 Synchronization of local cache via Bus
