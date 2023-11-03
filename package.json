@@ -192,5 +192,15 @@
     "format": "esm",
     "dts": true,
     "target": "esnext"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore(release): ${version}",
+      "tagAnnotation": "release ${version}"
+    },
+    "github": {
+      "release": true,
+      "web": true
+    }
   }
 }
