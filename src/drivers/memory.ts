@@ -11,7 +11,7 @@ export class Memory extends BaseDriver implements L1CacheDriver {
   #cache: LRUCache<string, string>
   declare config: MemoryConfig
 
-  constructor(config: MemoryConfig & { cacheInstance?: LRUCache<string, string> }) {
+  constructor(config: MemoryConfig & { cacheInstance?: LRUCache<string, string> } = {}) {
     super(config)
 
     if (config.cacheInstance) {
