@@ -5,8 +5,9 @@ import type { MemoryConfig } from '../src/types/options/drivers_options.js'
 /**
  * Create a new memory driver
  */
-export function memoryDriver(options: MemoryConfig): CreateDriverResult {
+export function memoryDriver(options: MemoryConfig): CreateDriverResult<Memory> {
   return {
-    l1: { options, factory: (config: MemoryConfig) => new Memory(config) },
+    options,
+    factory: (config: MemoryConfig) => new Memory(config),
   }
 }

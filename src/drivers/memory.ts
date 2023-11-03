@@ -1,12 +1,14 @@
 import { LRUCache } from 'lru-cache'
 
 import { BaseDriver } from './base_driver.js'
-import type { CacheDriver, MemoryConfig as MemoryConfig } from '../types/main.js'
+import type { L1CacheDriver, MemoryConfig as MemoryConfig } from '../types/main.js'
 
 /**
  * A memory caching driver
  */
-export class Memory extends BaseDriver implements CacheDriver {
+export class Memory extends BaseDriver implements L1CacheDriver {
+  type = 'l1' as const
+
   #cache: LRUCache<string, string>
   declare config: MemoryConfig
 

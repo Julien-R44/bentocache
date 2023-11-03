@@ -1,5 +1,6 @@
 import { test } from '@japa/runner'
 
+import { bentostore } from '../src/bento_store.js'
 import { BentoCache } from '../src/bento_cache.js'
 import { memoryDriver } from '../drivers/memory.js'
 import type { Duration } from '../src/types/helpers.js'
@@ -13,8 +14,8 @@ test.group('Typings', () => {
     const bento = new BentoCache({
       default: 'primary',
       stores: {
-        primary: { driver: memoryDriver({ maxItems: 100 }) },
-        secondary: { driver: memoryDriver({ maxItems: 100 }) },
+        primary: bentostore().useL1Layer(memoryDriver({ maxItems: 100 })),
+        secondary: bentostore().useL1Layer(memoryDriver({ maxItems: 100 })),
       },
     })
 
@@ -186,9 +187,6 @@ test.group('Typings', () => {
   })
 
   test('stores entries should accept raw options', async ({ expectTypeOf }) => {
-    expectTypeOf(BentoCache).toBeConstructibleWith({
-      default: 'memory',
-      stores: { memory: { driver: memoryDriver({}), gracePeriod: { enabled: true } } },
-    })
+    expectTypeOf(bentostore).toBeCallableWith({ gracePeriod: { enabled: true } })
   })
 })

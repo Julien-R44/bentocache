@@ -1,35 +1,35 @@
 import type { CacheDriver } from './driver.js'
 import type { BusDriver, BusOptions } from './bus.js'
-import type { RawCommonOptions } from './options/options.js'
 
-export * from './events.js'
-export * from './helpers.js'
-export * from './driver.js'
-export * from './provider.js'
 export * from './bus.js'
+export * from './events.js'
+export * from './driver.js'
+export * from './helpers.js'
+export * from './provider.js'
+export * from './options/options.js'
 export * from './options/drivers_options.js'
 export * from './options/methods_options.js'
-export * from './options/options.js'
 
 /**
- * A store entry passed to the BentoCache constructor
+ * Interface for a L1 cache driver. Probably a memory driver
  */
-export type StoreEntry = {
-  driver: CreateDriverResult
-} & RawCommonOptions & { prefix?: string }
-
-export type CacheDriverEntryDefinition = {
-  options: Record<string, any>
-  factory: (config: any) => CacheDriver
+export interface L1CacheDriver extends CacheDriver {
+  type: 'l1'
 }
 
 /**
- * Contract for a cache driver factory
+ * Interface for a L2, distributed cache driver.
  */
-export type CreateDriverResult = {
-  l1: CacheDriverEntryDefinition
-  l2?: CacheDriverEntryDefinition
-  bus?: CreateBusDriverResult
+export interface L2CacheDriver extends CacheDriver {
+  type: 'l2'
+}
+
+/**
+ * Factory result for a cache driver
+ */
+export interface CreateDriverResult<T extends L1CacheDriver | L2CacheDriver> {
+  options: Record<string, any>
+  factory: (config: any) => T
 }
 
 /**
@@ -52,8 +52,8 @@ export interface CacheSerializer {
  * Stack of cache drivers
  */
 export type CacheStackDrivers = {
-  localDriver?: CacheDriver
-  remoteDriver?: CacheDriver
+  l1Driver?: CacheDriver
+  l2Driver?: CacheDriver
   busDriver?: BusDriver
   busOptions?: BusOptions
 }

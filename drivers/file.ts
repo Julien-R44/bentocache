@@ -5,8 +5,9 @@ import type { FileConfig } from '../src/types/options/drivers_options.js'
 /**
  * Create a new file driver
  */
-export function fileDriver(options: FileConfig): CreateDriverResult {
+export function fileDriver(options: FileConfig): CreateDriverResult<File> {
   return {
-    l1: { options, factory: (config: FileConfig) => new File(config) },
+    options,
+    factory: (config: FileConfig) => new File(config),
   }
 }

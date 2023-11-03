@@ -13,6 +13,8 @@ import type { CacheDriver, FileConfig } from '../types/main.js'
  * - If the expireTimestamp is -1, the value should never expire
  */
 export class File extends BaseDriver implements CacheDriver {
+  type = 'l2' as const
+
   /**
    * Root directory for storing the cache files
    */
