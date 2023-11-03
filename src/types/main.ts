@@ -1,4 +1,5 @@
 import type { CacheDriver } from './driver.js'
+import type { BentoCache } from '../bento_cache.js'
 import type { BusDriver, BusOptions } from './bus.js'
 
 export * from './bus.js'
@@ -35,7 +36,7 @@ export interface CreateDriverResult<T extends L1CacheDriver | L2CacheDriver> {
 /**
  * Contract for a bus driver factory
  */
-export type CreateBusDriverResult = {
+export interface CreateBusDriverResult {
   options: BusOptions
   factory: (config: any) => BusDriver
 }
@@ -51,9 +52,16 @@ export interface CacheSerializer {
 /**
  * Stack of cache drivers
  */
-export type CacheStackDrivers = {
+export interface CacheStackDrivers {
   l1Driver?: CacheDriver<false>
   l2Driver?: CacheDriver<true>
   busDriver?: BusDriver
   busOptions?: BusOptions
+}
+
+/**
+ * A Bentocache Plugin
+ */
+export interface BentoCachePlugin {
+  register(bentocache: BentoCache<any>): void
 }

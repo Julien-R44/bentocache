@@ -11,6 +11,7 @@ import type {
   GetOptions,
   DeleteOptions,
   SetOptions,
+  BentoCachePlugin,
 } from './types/main.js'
 
 export class BentoCache<KnownCaches extends Record<string, BentoStore>> implements CacheProvider {
@@ -34,12 +35,23 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    */
   #options: BentoCacheOptions
 
-  constructor(config: RawBentoCacheOptions & { default: keyof KnownCaches; stores: KnownCaches }) {
+  constructor(
+    config: RawBentoCacheOptions & {
+      default: keyof KnownCaches
+      stores: KnownCaches
+      plugins?: BentoCachePlugin[]
+    }
+  ) {
     this.#stores = config.stores
     this.#defaultCache = config.default
 
     this.#options = new BentoCacheOptions(config)
     this.#options.logger.trace('bentocache initialized')
+
+    /**
+     * Register plugins
+     */
+    if (config.plugins) config.plugins.forEach((plugin) => plugin.register(this))
   }
 
   #createProvider(cacheName: string, store: BentoStore): CacheProvider {

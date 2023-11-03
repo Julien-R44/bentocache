@@ -194,4 +194,48 @@ test.group('Bento Cache', () => {
     assert.isAbove(a1Ttl, 6 * 60 * 60 - 1)
     assert.isAbove(a2Ttl, 12 * 60 * 60 - 1)
   })
+
+  test('able to register a plugin', async ({ assert }) => {
+    assert.plan(2)
+
+    new BentoCache({
+      default: 'memory',
+      stores: {
+        memory: bentostore().useL1Layer(memoryDriver({})),
+      },
+      plugins: [
+        {
+          register(bentocache) {
+            assert.instanceOf(bentocache, BentoCache)
+            assert.isDefined(bentocache.use('memory'))
+          },
+        },
+      ],
+    })
+  })
+
+  test('able to register multiple plugins', async ({ assert }) => {
+    assert.plan(4)
+
+    new BentoCache({
+      default: 'memory',
+      stores: {
+        memory: bentostore().useL1Layer(memoryDriver({})),
+      },
+      plugins: [
+        {
+          register(bentocache) {
+            assert.instanceOf(bentocache, BentoCache)
+            assert.isDefined(bentocache.use('memory'))
+          },
+        },
+        {
+          register(bentocache) {
+            assert.instanceOf(bentocache, BentoCache)
+            assert.isDefined(bentocache.use('memory'))
+          },
+        },
+      ],
+    })
+  })
 })

@@ -13,7 +13,8 @@
   "exports": {
     ".": "./build/index.js",
     "./drivers/*": "./build/drivers/*.js",
-    "./types": "./build/src/types/main.js"
+    "./types": "./build/src/types/main.js",
+    "./plugins/*": "./build/plugins/*.js"
   },
   "scripts": {
     "clean": "del-cli build",
@@ -185,7 +186,8 @@
     "entry": [
       "./index.ts",
       "./src/types/main.ts",
-      "./drivers/*.ts"
+      "./drivers/*.ts",
+      "./plugins/*.ts"
     ],
     "outDir": "./build",
     "clean": true,
