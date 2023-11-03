@@ -130,9 +130,12 @@ export class CacheEntryOptions {
    * Returns a new instance of `CacheItemOptions` with the same
    * options as the current instance, but with any provided
    * options overriding the current
+   *
+   * For performance reasons, if no options are provided, the
+   * current instance is returned
    */
   cloneWith(options?: Partial<RawCommonOptions>) {
-    return new CacheEntryOptions(options, this.#options)
+    return options ? new CacheEntryOptions(options, this.#options) : this
   }
 
   /**
