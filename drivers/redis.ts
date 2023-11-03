@@ -8,14 +8,16 @@ import type { BusOptions, CreateBusDriverResult, CreateDriverResult } from '../s
 /**
  * Create a new cache redis driver
  */
-export function redisDriver(options: RedisConfig): CreateDriverResult {
+export function redisDriver(options: RedisConfig): CreateDriverResult<Redis> {
   return {
-    l1: { options, factory: (config: RedisConfig) => new Redis(config) },
+    options,
+    factory: (config: RedisConfig) => new Redis(config),
   }
 }
 
 /**
- * Create a new bus redis driver
+ * Create a new bus redis driver. It leverages the Pub/sub capabilities of Redis
+ * to sending messages between your different processes.
  */
 export function redisBusDriver(
   options: { connection: IoRedisOptions } & BusOptions

@@ -1,4 +1,5 @@
 import { Cache } from './cache/cache.js'
+import type { BentoStore } from './bento_store.js'
 import type { CacheProvider } from './types/provider.js'
 import { CacheStack } from './cache/stack/cache_stack.js'
 import { BentoCacheOptions } from './bento_cache_options.js'
@@ -7,13 +8,12 @@ import type {
   Factory,
   GetOrSetOptions,
   RawBentoCacheOptions,
-  StoreEntry,
   GetOptions,
   DeleteOptions,
   SetOptions,
 } from './types/main.js'
 
-export class BentoCache<KnownCaches extends Record<string, StoreEntry>> implements CacheProvider {
+export class BentoCache<KnownCaches extends Record<string, BentoStore>> implements CacheProvider {
   /**
    * Name of the default cache
    */
@@ -42,19 +42,14 @@ export class BentoCache<KnownCaches extends Record<string, StoreEntry>> implemen
     this.#options.logger.trace('bentocache initialized')
   }
 
-  #createProvider(cacheName: string, registry: StoreEntry): CacheProvider {
-    const driverItemOptions = this.#options.cloneWith(registry)
+  #createProvider(cacheName: string, store: BentoStore): CacheProvider {
+    const entry = store.entry
+    const driverItemOptions = this.#options.cloneWith(entry.options)
     const cacheStack = new CacheStack(cacheName, driverItemOptions, {
-      localDriver: registry.driver.l1.factory({
-        prefix: driverItemOptions.prefix,
-        ...registry.driver.l1.options,
-      }),
-      remoteDriver: registry.driver.l2?.factory({
-        prefix: driverItemOptions.prefix,
-        ...registry.driver.l2.options,
-      }),
-      busDriver: registry.driver.bus?.factory(registry.driver.bus?.options),
-      busOptions: registry.driver.bus?.options,
+      l1Driver: entry.l1?.factory({ prefix: driverItemOptions.prefix, ...entry.l1.options }),
+      l2Driver: entry.l2?.factory({ prefix: driverItemOptions.prefix, ...entry.l2.options }),
+      busDriver: entry.bus?.factory(entry.bus?.options),
+      busOptions: entry.bus?.options,
     })
 
     return new Cache(cacheName, cacheStack)

@@ -19,6 +19,8 @@ const { knex } = KnexPkg
  *   the table, we check if it's expired. If it is, we delete the row
  */
 export abstract class BaseSql extends BaseDriver {
+  type = 'l2' as const
+
   /**
    * Knex connection instance
    */

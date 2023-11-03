@@ -1,3 +1,4 @@
+import { bentostore } from '../src/bento_store.js'
 import { BentoCache } from '../src/bento_cache.js'
 import { memoryDriver } from '../drivers/memory.js'
 import type { RawBentoCacheOptions } from '../src/types/main.js'
@@ -25,8 +26,8 @@ export class BentoCacheFactory {
       default: 'primary',
       ttl: '30s',
       stores: {
-        primary: { driver: memoryDriver({ maxItems: 100 }) },
-        secondary: { driver: memoryDriver({ maxItems: 100 }) },
+        primary: bentostore().useL1Layer(memoryDriver({ maxItems: 100 })),
+        secondary: bentostore().useL1Layer(memoryDriver({ maxItems: 100 })),
       },
       ...this.#parameters,
     })

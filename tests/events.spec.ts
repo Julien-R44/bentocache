@@ -59,7 +59,7 @@ test.group('Cache events', () => {
     const bus = new ChaosBus(new MemoryBus())
     const { cache } = new CacheFactory()
       .merge({ busDriver: bus, emitter })
-      .withHybridConfig()
+      .withL1L2Config()
       .create()
 
     bus.alwaysThrow()
@@ -151,7 +151,7 @@ test.group('Cache events', () => {
 
   test('emit event when publish a message on bus', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().withHybridConfig().merge({ emitter }).create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
     cache.getOrSet('foo', () => 'baz')
 
@@ -163,8 +163,8 @@ test.group('Cache events', () => {
 
   test('emit event when receive a message on bus', async ({ assert }) => {
     const emitter = new EventEmitter()
-    new CacheFactory().withHybridConfig().merge({ emitter }).create()
-    const [cache2] = new CacheFactory().withHybridConfig().create()
+    new CacheFactory().withL1L2Config().merge({ emitter }).create()
+    const [cache2] = new CacheFactory().withL1L2Config().create()
 
     cache2.getOrSet('foo', () => 'baz')
 

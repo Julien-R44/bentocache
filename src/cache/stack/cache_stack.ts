@@ -31,8 +31,8 @@ export class CacheStack {
   ) {
     this.logger = options.logger.child({ cache: this.name })
 
-    if (drivers.localDriver) this.l1 = new LocalCache(drivers.localDriver, this.logger)
-    if (drivers.remoteDriver) this.l2 = new RemoteCache(drivers.remoteDriver, this.logger)
+    if (drivers.l1Driver) this.l1 = new LocalCache(drivers.l1Driver, this.logger)
+    if (drivers.l2Driver) this.l2 = new RemoteCache(drivers.l2Driver, this.logger)
 
     this.bus = this.#createBus(drivers.busDriver, bus, drivers.busOptions)
     this.defaultOptions = new CacheEntryOptions(options)
@@ -58,8 +58,8 @@ export class CacheStack {
       this.name,
       this.options,
       {
-        localDriver: this.l1?.namespace(namespace),
-        remoteDriver: this.l2?.namespace(namespace),
+        l1Driver: this.l1?.namespace(namespace),
+        l2Driver: this.l2?.namespace(namespace),
       },
       this.bus
     )

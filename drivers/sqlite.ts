@@ -5,8 +5,9 @@ import type { CacheDriverOptions, CreateDriverResult } from '../src/types/main.j
 /**
  * Create a new sqlite driver
  */
-export function sqliteDriver(options: SqlConfig & CacheDriverOptions): CreateDriverResult {
+export function sqliteDriver(options: SqlConfig & CacheDriverOptions): CreateDriverResult<Sqlite> {
   return {
-    l1: { options, factory: (config: SqlConfig) => new Sqlite(config) },
+    options,
+    factory: (config: SqlConfig) => new Sqlite(config),
   }
 }

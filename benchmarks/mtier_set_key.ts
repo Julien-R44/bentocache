@@ -8,7 +8,7 @@ import { redisStore } from 'cache-manager-ioredis-yet'
 import 'dotenv/config'
 import { BentoCache } from '../index.js'
 import { redisDriver } from '../drivers/redis.js'
-import { hybridDriver } from '../drivers/hybrid.js'
+import { bentostore } from '../src/bento_store.js'
 import { memoryDriver } from '../drivers/memory.js'
 import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
 
@@ -17,15 +17,10 @@ const bench = new Bench()
 const bentocache = new BentoCache({
   default: 'tiered',
   stores: {
-    redis: {
-      driver: redisDriver({ connection: REDIS_CREDENTIALS }),
-    },
-    tiered: {
-      driver: hybridDriver({
-        local: memoryDriver({}),
-        remote: redisDriver({ connection: REDIS_CREDENTIALS }),
-      }),
-    },
+    redis: bentostore().useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS })),
+    tiered: bentostore()
+      .useL1Layer(memoryDriver({}))
+      .useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS })),
   },
 })
 

@@ -3,9 +3,9 @@ import { Redis } from 'ioredis'
 import { test } from '@japa/runner'
 import EventEmitter from 'node:events'
 
+import { bentostore } from '../src/bento_store.js'
 import { BentoCache } from '../src/bento_cache.js'
 import { memoryDriver } from '../drivers/memory.js'
-import { hybridDriver } from '../drivers/hybrid.js'
 import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
 import { redisBusDriver, redisDriver } from '../drivers/redis.js'
 import { BentoCacheFactory } from '../factories/bentocache_factory.js'
@@ -14,13 +14,13 @@ test.group('Bento Cache', () => {
   test('should accept EventEmitter or Emittery', async ({ expectTypeOf }) => {
     expectTypeOf(BentoCache).toBeConstructibleWith({
       default: 'memory',
-      stores: { memory: { driver: memoryDriver({}) } },
+      stores: { memory: bentostore().useL1Layer(memoryDriver({})) },
       emitter: new EventEmitter(),
     })
 
     expectTypeOf(BentoCache).toBeConstructibleWith({
       default: 'memory',
-      stores: { memory: { driver: memoryDriver({}) } },
+      stores: { memory: bentostore().useL1Layer(memoryDriver({})) },
       emitter: new Emittery(),
     })
   })
@@ -55,8 +55,8 @@ test.group('Bento Cache', () => {
     const bento = new BentoCache({
       default: 'memory',
       stores: {
-        memory: { driver: memoryDriver({}) },
-        redis: { driver: redisDriver({ connection: REDIS_CREDENTIALS }) },
+        memory: bentostore().useL1Layer(memoryDriver({})),
+        redis: bentostore().useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS })),
       },
     })
 
@@ -70,27 +70,24 @@ test.group('Bento Cache', () => {
     await bento.disconnectAll()
   })
 
-  test('create store with hybrid driver', async ({ assert, cleanup }) => {
+  test('create store with multiple layers', async ({ assert, cleanup }) => {
     const bento = new BentoCache({
       default: 'memory',
       stores: {
-        memory: { driver: memoryDriver({}) },
+        memory: bentostore().useL1Layer(memoryDriver({})),
 
-        hybrid: {
-          driver: hybridDriver({
-            local: memoryDriver({ maxItems: 1000 }),
-            remote: redisDriver({ connection: REDIS_CREDENTIALS }),
-            bus: redisBusDriver({ connection: REDIS_CREDENTIALS }),
-          }),
-        },
+        multi: bentostore()
+          .useL1Layer(memoryDriver({}))
+          .useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS }))
+          .useBus(redisBusDriver({ connection: REDIS_CREDENTIALS })),
       },
     })
 
     cleanup(() => bento.disconnectAll())
 
-    await bento.use('hybrid').set('foo', 'bar')
+    await bento.use('multi').set('foo', 'bar')
 
-    assert.equal(await bento.use('hybrid').get('foo'), 'bar')
+    assert.equal(await bento.use('multi').get('foo'), 'bar')
   })
 
   test('use custom logger', async ({ assert, cleanup }) => {
@@ -114,8 +111,8 @@ test.group('Bento Cache', () => {
     const bento = new BentoCache({
       default: 'a1',
       stores: {
-        a1: { prefix: 'memory', driver: redisDriver({ connection: REDIS_CREDENTIALS }) },
-        a2: { prefix: 'redis', driver: redisDriver({ connection: REDIS_CREDENTIALS }) },
+        a1: bentostore().useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'one' })),
+        a2: bentostore().useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'two' })),
       },
     })
 
@@ -127,8 +124,8 @@ test.group('Bento Cache', () => {
     await bento.use('a1').set('foo', 'bar')
     await bento.use('a2').set('foo', 'baz')
 
-    assert.include(await redis.get('memory:foo'), '"bar"')
-    assert.include(await redis.get('redis:foo'), '"baz"')
+    assert.include(await redis.get('one:foo'), '"bar"')
+    assert.include(await redis.get('two:foo'), '"baz"')
   })
 
   test('use default options', async ({ assert, cleanup }) => {
@@ -141,15 +138,11 @@ test.group('Bento Cache', () => {
         duration: '24h',
       },
       stores: {
-        a1: {
-          driver: redisDriver({ connection: REDIS_CREDENTIALS }),
-          prefix: 'memory',
+        a1: bentostore({
           gracePeriod: { enabled: true, duration: '12h' },
-        },
-        a2: {
-          driver: redisDriver({ connection: REDIS_CREDENTIALS }),
-          prefix: 'redis',
-        },
+        }).useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'one' })),
+
+        a2: bentostore().useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'two' })),
       },
     })
 
@@ -162,8 +155,8 @@ test.group('Bento Cache', () => {
     await bento.use('a1').set('foo', 'bar')
     await bento.use('a2').set('foo', 'baz')
 
-    const a1Ttl = await redis.ttl('memory:foo')
-    const a2Ttl = await redis.ttl('redis:foo')
+    const a1Ttl = await redis.ttl('one:foo')
+    const a2Ttl = await redis.ttl('two:foo')
 
     // a1 TTL should be 12h
     assert.closeTo(a1Ttl, 12 * 60 * 60, 1)
@@ -177,16 +170,12 @@ test.group('Bento Cache', () => {
     const bento = new BentoCache({
       default: 'a1',
       stores: {
-        a1: {
-          driver: redisDriver({ connection: REDIS_CREDENTIALS }),
-          prefix: 'memory',
+        a1: bentostore({
           gracePeriod: { enabled: true, duration: '6h' },
-        },
-        a2: {
-          driver: redisDriver({ connection: REDIS_CREDENTIALS }),
-          prefix: 'redis',
+        }).useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'one' })),
+        a2: bentostore({
           gracePeriod: { enabled: true, duration: '12h' },
-        },
+        }).useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'two' })),
       },
     })
 
@@ -199,8 +188,8 @@ test.group('Bento Cache', () => {
     await bento.use('a1').set('foo', 'bar')
     await bento.use('a2').set('foo', 'baz')
 
-    const a1Ttl = await redis.ttl('memory:foo')
-    const a2Ttl = await redis.ttl('redis:foo')
+    const a1Ttl = await redis.ttl('one:foo')
+    const a2Ttl = await redis.ttl('two:foo')
 
     assert.isAbove(a1Ttl, 6 * 60 * 60 - 1)
     assert.isAbove(a2Ttl, 12 * 60 * 60 - 1)

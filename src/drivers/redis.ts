@@ -1,12 +1,13 @@
 import { Redis as IoRedis } from 'ioredis'
 
 import { BaseDriver } from './base_driver.js'
-import type { CacheDriver, RedisConfig } from '../types/main.js'
+import type { L2CacheDriver, RedisConfig } from '../types/main.js'
 
 /**
  * Caching driver for Redis
  */
-export class Redis extends BaseDriver implements CacheDriver {
+export class Redis extends BaseDriver implements L2CacheDriver {
+  type = 'l2' as const
   #connection: IoRedis
   declare config: RedisConfig
 

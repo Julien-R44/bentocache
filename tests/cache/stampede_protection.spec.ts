@@ -47,7 +47,7 @@ test.group('Cache | Stampede protection', () => {
     }
 
     const remoteDriver = new RemoteDriver({})
-    const { cache } = new CacheFactory().merge({ remoteDriver }).withHybridConfig().create()
+    const { cache } = new CacheFactory().merge({ l2Driver: remoteDriver }).withL1L2Config().create()
 
     const results = await Promise.all([
       cache.getOrSet('key', async () => 42),

@@ -12,9 +12,9 @@ test.group('Bus synchronization', () => {
   test('synchronize multiple cache', async ({ assert }) => {
     const key = 'foo'
 
-    const [cache1] = new CacheFactory().withHybridConfig().create()
-    const [cache2] = new CacheFactory().withHybridConfig().create()
-    const [cache3] = new CacheFactory().withHybridConfig().create()
+    const [cache1] = new CacheFactory().withL1L2Config().create()
+    const [cache2] = new CacheFactory().withL1L2Config().create()
+    const [cache3] = new CacheFactory().withL1L2Config().create()
 
     await cache1.set(key, 24)
     await setTimeout(100)
@@ -37,9 +37,9 @@ test.group('Bus synchronization', () => {
     const bus2 = new ChaosBus(new MemoryBus())
     const bus3 = new ChaosBus(new MemoryBus())
 
-    const [cache1] = new CacheFactory().withHybridConfig().merge({ busDriver: bus1 }).create()
-    const [cache2] = new CacheFactory().withHybridConfig().merge({ busDriver: bus2 }).create()
-    const [cache3] = new CacheFactory().withHybridConfig().merge({ busDriver: bus3 }).create()
+    const [cache1] = new CacheFactory().withL1L2Config().merge({ busDriver: bus1 }).create()
+    const [cache2] = new CacheFactory().withL1L2Config().merge({ busDriver: bus2 }).create()
+    const [cache3] = new CacheFactory().withL1L2Config().merge({ busDriver: bus3 }).create()
 
     bus1.alwaysThrow()
     bus2.alwaysThrow()
@@ -80,12 +80,12 @@ test.group('Bus synchronization', () => {
     const bus2 = new ChaosBus(new MemoryBus())
 
     const [cache] = new CacheFactory()
-      .withHybridConfig()
+      .withL1L2Config()
       .merge({ busDriver: bus1, busOptions: { retryQueue: { enabled: false } } })
       .create()
 
     const [cache2] = new CacheFactory()
-      .withHybridConfig()
+      .withL1L2Config()
       .merge({ busDriver: bus2, busOptions: { retryQueue: { enabled: false } } })
       .create()
 
@@ -113,11 +113,11 @@ test.group('Bus synchronization', () => {
     const bus2 = new MemoryBus()
 
     const [cache1] = new CacheFactory()
-      .withHybridConfig()
+      .withL1L2Config()
       .merge({ busDriver: bus1, busOptions: { retryQueue: { enabled: true, maxSize: 20 } } })
       .create()
 
-    const [cache2] = new CacheFactory().withHybridConfig().merge({ busDriver: bus2 }).create()
+    const [cache2] = new CacheFactory().withL1L2Config().merge({ busDriver: bus2 }).create()
 
     bus1.alwaysThrow()
 
@@ -140,13 +140,13 @@ test.group('Bus synchronization', () => {
     const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
 
     const [cache1] = new CacheFactory()
-      .merge({ remoteDriver, gracePeriod: { enabled: true, duration: '12h' } })
-      .withHybridConfig()
+      .merge({ l2Driver: remoteDriver, gracePeriod: { enabled: true, duration: '12h' } })
+      .withL1L2Config()
       .create()
 
     const [cache2] = new CacheFactory()
-      .merge({ remoteDriver, ttl: 100, gracePeriod: { enabled: true, duration: '12h' } })
-      .withHybridConfig()
+      .merge({ l2Driver: remoteDriver, ttl: 100, gracePeriod: { enabled: true, duration: '12h' } })
+      .withL1L2Config()
       .create()
 
     remoteDriver.alwaysThrow()

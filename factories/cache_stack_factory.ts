@@ -26,7 +26,7 @@ export class CacheStackFactory {
    * Instantiate and return the local driver
    */
   #createLocalDriver() {
-    if (this.#parameters.localDriver) return this.#parameters.localDriver
+    if (this.#parameters.l1Driver) return this.#parameters.l1Driver
     return new Memory({ maxSize: 100, prefix: 'test' })
   }
 
@@ -34,7 +34,7 @@ export class CacheStackFactory {
    * Instantiate and return the remote driver
    */
   #createRemoteDriver() {
-    if (this.#parameters.remoteDriver) return this.#parameters.remoteDriver
+    if (this.#parameters.l2Driver) return this.#parameters.l2Driver
     return new Redis({ connection: { host: '127.0.0.1', port: 6379 }, prefix: 'test' })
   }
 
@@ -47,11 +47,11 @@ export class CacheStackFactory {
   }
 
   /**
-   * Apply the hybrid driver configuration to the factory
+   * Add L1/L2 and bus configuration to the stack
    */
-  withHybridConfig() {
-    this.#parameters.localDriver = this.#createLocalDriver()
-    this.#parameters.remoteDriver = this.#createRemoteDriver()
+  withL1L2Config() {
+    this.#parameters.l1Driver = this.#createLocalDriver()
+    this.#parameters.l2Driver = this.#createRemoteDriver()
     this.#parameters.busDriver = this.#parameters.busDriver ?? new MemoryBus()
 
     return this
@@ -82,8 +82,8 @@ export class CacheStackFactory {
     })
 
     const stack = new CacheStack('primary', options, {
-      localDriver: local,
-      remoteDriver: remote,
+      l1Driver: local,
+      l2Driver: remote,
       busDriver: this.#parameters.busDriver,
       busOptions: this.#parameters.busOptions,
     })

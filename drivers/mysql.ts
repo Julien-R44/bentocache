@@ -4,8 +4,9 @@ import type { CreateDriverResult, SqlConfig } from '../src/types/main.js'
 /**
  * Create a new MySQL driver
  */
-export function mysqlDriver(options: SqlConfig): CreateDriverResult {
+export function mysqlDriver(options: SqlConfig): CreateDriverResult<Mysql> {
   return {
-    l1: { options, factory: (config: SqlConfig) => new Mysql(config) },
+    options,
+    factory: (config: SqlConfig) => new Mysql(config),
   }
 }

@@ -15,7 +15,7 @@ import type { RawBentoCacheOptions } from '../src/types/options/options.js'
 export class CacheFactory {
   #stack?: CacheStack
   #parameters: Partial<RawBentoCacheOptions & CacheStackDrivers> = {}
-  enabledHybridConfig: boolean = false
+  enabledL1L2Config: boolean = false
 
   #cleanupCache(cache: Cache) {
     getActiveTest()?.cleanup(async () => {
@@ -30,7 +30,7 @@ export class CacheFactory {
     const factory = new CacheStackFactory()
 
     if (this.#parameters) factory.merge(this.#parameters)
-    if (this.enabledHybridConfig) factory.withHybridConfig()
+    if (this.enabledL1L2Config) factory.withL1L2Config()
 
     const { stack } = factory.create()
     return stack
@@ -49,8 +49,8 @@ export class CacheFactory {
     return this
   }
 
-  withHybridConfig() {
-    this.enabledHybridConfig = true
+  withL1L2Config() {
+    this.enabledL1L2Config = true
     return this
   }
 

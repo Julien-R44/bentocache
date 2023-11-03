@@ -4,8 +4,9 @@ import type { CreateDriverResult, DynamoDBConfig } from '../src/types/main.js'
 /**
  * Create a new DynamoDB driver
  */
-export function dynamoDbDriver(options: DynamoDBConfig): CreateDriverResult {
+export function dynamoDbDriver(options: DynamoDBConfig): CreateDriverResult<DynamoDB> {
   return {
-    l1: { options, factory: (config: DynamoDBConfig) => new DynamoDB(config) },
+    options,
+    factory: (config: DynamoDBConfig) => new DynamoDB(config),
   }
 }

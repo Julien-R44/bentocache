@@ -17,6 +17,8 @@ import type { CacheDriver, DynamoDBConfig } from '../types/main.js'
  * Caching driver for DynamoDB
  */
 export class DynamoDB extends BaseDriver implements CacheDriver {
+  type = 'l2' as const
+
   /**
    * DynamoDB client
    */
