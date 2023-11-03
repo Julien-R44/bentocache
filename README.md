@@ -51,13 +51,18 @@ For those looking to go further, you can use the two-levels caching system. Here
 
 Here is a simplified diagram of the flow :
 
-![Bentocache hybrid](https://bentocache.julr.dev/assets/hybrid-flow-8a8bdade.png)
+![Bentocache Flow](./assets/bentocache_flow.png)
 
 All of this is managed invisibly for you via Bentocache. The only thing to do is to set up a bus in your infrastructure. But if you need multi-level cache, you're probably already using Redis rather than your database as a distributed cache. So you can leverage it to synchronize your local caches
 
 The major benefit of multi-tier caching, is that it allows for responses between 2,000x and 5,000x faster. While Redis is fast, accessing RAM is REALLY MUCH faster.
 
-It's a quite common pattern in the business world, and to quote an example, it's what Stackoverflow does, for example. I invite you to read [this article](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/#layers-of-cache-at-stack-overflow) on the same subject, which is very interesting.
+In fact, it's a quite common pattern : to quote an example, it's [what Stackoverflow does](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/#layers-of-cache-at-stack-overflow). 
+
+
+To give some perspective, here's a simple benchmark that shows the difference between a simple distributed cache ( using Redis ) vs a multi-tier cache ( using Redis + In-memory cache ) :
+
+![Redis vs Multi-tier caching](./assets/redis_vs_mtier.png) 
 
 ## Features
 
@@ -79,7 +84,7 @@ See the [drivers documentation](https://bentocache.julr.dev/docs/cache-drivers) 
 
 - [Cache stamped prevention](https://bentocache.julr.dev/docs/stampede-protection): Ensuring that only one factory is executed at the same time.
 
-- [Retry queue](https://bentocache.julr.dev/docs/hybrid-driver#retry-queue-strategy) : When a application fails to publish something to the bus, it is added to a queue and retried later.
+- [Retry queue](https://bentocache.julr.dev/docs/multi-tier#retry-queue-strategy) : When a application fails to publish something to the bus, it is added to a queue and retried later.
 
 ### Timeouts 
 
