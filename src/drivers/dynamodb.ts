@@ -264,7 +264,7 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
   /**
    * Closes the connection to the cache
    */
-  disconnect() {
+  async disconnect() {
     this.#client.destroy()
   }
 }

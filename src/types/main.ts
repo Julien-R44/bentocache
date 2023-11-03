@@ -13,14 +13,14 @@ export * from './options/methods_options.js'
 /**
  * Interface for a L1 cache driver. Probably a memory driver
  */
-export interface L1CacheDriver extends CacheDriver {
+export interface L1CacheDriver extends CacheDriver<false> {
   type: 'l1'
 }
 
 /**
  * Interface for a L2, distributed cache driver.
  */
-export interface L2CacheDriver extends CacheDriver {
+export interface L2CacheDriver extends CacheDriver<true> {
   type: 'l2'
 }
 
@@ -52,8 +52,8 @@ export interface CacheSerializer {
  * Stack of cache drivers
  */
 export type CacheStackDrivers = {
-  l1Driver?: CacheDriver
-  l2Driver?: CacheDriver
+  l1Driver?: CacheDriver<false>
+  l2Driver?: CacheDriver<true>
   busDriver?: BusDriver
   busOptions?: BusOptions
 }

@@ -1,54 +1,54 @@
-import type { MaybePromise } from './helpers.js'
+export type PromiseOr<T, Async extends boolean> = Async extends true ? Promise<T> : T
 
-export interface CacheDriver {
+export interface CacheDriver<Async extends boolean = true> {
   /**
    * Returns a new instance of the driver namespace
    */
-  namespace(namespace: string): CacheDriver
+  namespace(namespace: string): CacheDriver<Async>
 
   /**
    * Get a value from the cache
    */
-  get(key: string): MaybePromise<string | undefined>
+  get(key: string): PromiseOr<string | undefined, Async>
 
   /**
    * Get the value of a key and delete it
    *
    * Returns the value if the key exists, undefined otherwise
    */
-  pull(key: string): MaybePromise<string | undefined>
+  pull(key: string): PromiseOr<string | undefined, Async>
 
   /**
    * Put a value in the cache.
    * If `ttl` is not defined, the value will be stored forever
    * Returns true if the value was set, false otherwise
    */
-  set(key: string, value: string, ttl?: number): MaybePromise<boolean>
+  set(key: string, value: string, ttl?: number): PromiseOr<boolean, Async>
 
   /**
    * Check if a key exists in the cache
    */
-  has(key: string): MaybePromise<boolean>
+  has(key: string): PromiseOr<boolean, Async>
 
   /**
    * Remove all items from the cache
    */
-  clear(): MaybePromise<void>
+  clear(): PromiseOr<void, Async>
 
   /**
    * Delete a key from the cache
    * Returns true if the key was deleted, false otherwise
    */
-  delete(key: string): MaybePromise<boolean>
+  delete(key: string): PromiseOr<boolean, Async>
 
   /**
    * Delete multiple keys from the cache
    */
-  deleteMany(keys: string[]): MaybePromise<boolean>
+  deleteMany(keys: string[]): PromiseOr<boolean, Async>
 
   /**
    * Closes the connection to the cache.
    * Some drivers may not need this
    */
-  disconnect(): MaybePromise<void>
+  disconnect(): PromiseOr<void, Async>
 }

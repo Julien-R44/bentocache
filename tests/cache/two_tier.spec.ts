@@ -47,14 +47,14 @@ test.group('Cache', () => {
   test('value only in local should returns value without fetching from remote', async ({
     assert,
   }) => {
-    class RemoteDriver extends NullDriver {
+    class L2Driver extends NullDriver {
       get(): any {
         assert.fail('should not be called')
       }
     }
 
     const { cache, local, stack } = new CacheFactory()
-      .merge({ l2Driver: new RemoteDriver({}) })
+      .merge({ l2Driver: new L2Driver({}) })
       .withL1L2Config()
       .create()
 

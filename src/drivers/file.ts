@@ -207,5 +207,5 @@ export class File extends BaseDriver implements CacheDriver {
     return true
   }
 
-  disconnect() {}
+  async disconnect() {}
 }

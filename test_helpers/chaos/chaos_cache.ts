@@ -19,7 +19,7 @@ export class ChaosCache implements CacheDriver {
    */
   #chaosInjector: ChaosInjector
 
-  constructor(innerCache: CacheDriver) {
+  constructor(innerCache: CacheDriver<any>) {
     this.#innerCache = innerCache
     this.#chaosInjector = new ChaosInjector()
   }
