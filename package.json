@@ -87,15 +87,11 @@
   },
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": "^3.438.0",
-    "@vercel/kv": "^0.2.3",
     "ioredis": "^5.3.2",
     "knex": "^3.0.1"
   },
   "peerDependenciesMeta": {
     "@aws-sdk/client-dynamodb": {
-      "optional": true
-    },
-    "@vercel/kv": {
       "optional": true
     },
     "ioredis": {
