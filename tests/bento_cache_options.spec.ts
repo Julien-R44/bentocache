@@ -9,7 +9,7 @@ test.group('Bento Cache Options', () => {
 
     assert.deepEqual(options.ttl, string.milliseconds.parse('30m'))
     assert.deepEqual(options.prefix, 'bentocache')
-    assert.deepEqual(options.suppressRemoteCacheErrors, true)
+    assert.deepEqual(options.suppressL2Errors, true)
   })
 
   test('override defaults', ({ assert }) => {
@@ -17,7 +17,7 @@ test.group('Bento Cache Options', () => {
 
     assert.deepEqual(options.ttl, '10m')
     assert.deepEqual(options.prefix, 'foo')
-    assert.deepEqual(options.suppressRemoteCacheErrors, true)
+    assert.deepEqual(options.suppressL2Errors, true)
   })
 
   test('override with cloneWith', ({ assert }) => {
@@ -30,6 +30,6 @@ test.group('Bento Cache Options', () => {
       duration: string.milliseconds.parse('6h'),
       fallbackDuration: string.milliseconds.parse('10s'),
     })
-    assert.deepEqual(options.suppressRemoteCacheErrors, true)
+    assert.deepEqual(options.suppressL2Errors, true)
   })
 })

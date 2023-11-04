@@ -16,10 +16,10 @@ export class RemoteCache {
   }
 
   /**
-   * Rethrow the error if suppressRemoteCacheErrors is disabled
+   * Rethrow the error if suppressL2Errors is disabled
    */
   #maybeRethrowError(error: Error, options: CacheEntryOptions) {
-    if (options.suppressRemoteCacheErrors === false) {
+    if (options.suppressL2Errors === false) {
       throw error
     }
   }

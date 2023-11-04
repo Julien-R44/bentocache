@@ -161,8 +161,8 @@ export class CacheEntryOptions {
     return this.#options.gracePeriod?.enabled
   }
 
-  get suppressRemoteCacheErrors() {
-    return this.#options.suppressRemoteCacheErrors
+  get suppressL2Errors() {
+    return this.#options.suppressL2Errors
   }
 
   /**

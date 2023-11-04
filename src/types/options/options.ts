@@ -71,7 +71,7 @@ export type RawCommonOptions = {
    * Whether to suppress errors that occur when
    * trying to fetch from remote (l2) cache
    */
-  suppressRemoteCacheErrors?: boolean
+  suppressL2Errors?: boolean
 
   /**
    * Maximum time for which a lock can try to be acquired

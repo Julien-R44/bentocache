@@ -126,7 +126,7 @@ test.group('Typings', () => {
       timeouts?: FactoryTimeoutOptions
       gracePeriod?: GracePeriodOptions
       earlyexpiration?: number
-      suppressRemoteCacheErrors?: boolean
+      suppressL2Errors?: boolean
       lockTimeout?: Duration
     }>()
   })
@@ -143,10 +143,7 @@ test.group('Typings', () => {
 
     expectTypeOf(bento.delete).parameter(1).exclude(undefined).not.toHaveProperty('lockTimeout')
     expectTypeOf(bento.delete).parameter(1).exclude(undefined).not.toHaveProperty('timeouts')
-    expectTypeOf(bento.delete)
-      .parameter(2)
-      .exclude(undefined)
-      .toHaveProperty('suppressRemoteCacheErrors')
+    expectTypeOf(bento.delete).parameter(2).exclude(undefined).toHaveProperty('suppressL2Errors')
   })
 
   test('deleteMany() options parameters typings', async ({ expectTypeOf }) => {
@@ -157,7 +154,7 @@ test.group('Typings', () => {
     expectTypeOf(bento.deleteMany)
       .parameter(2)
       .exclude(undefined)
-      .toHaveProperty('suppressRemoteCacheErrors')
+      .toHaveProperty('suppressL2Errors')
   })
 
   test('set() options parameters typings', async ({ expectTypeOf }) => {
@@ -168,7 +165,7 @@ test.group('Typings', () => {
       timeouts?: FactoryTimeoutOptions
       gracePeriod?: GracePeriodOptions
       earlyexpiration?: number
-      suppressRemoteCacheErrors?: boolean
+      suppressL2Errors?: boolean
       lockTimeout?: Duration
     }>()
   })
@@ -181,7 +178,7 @@ test.group('Typings', () => {
       timeouts?: FactoryTimeoutOptions
       gracePeriod?: GracePeriodOptions
       earlyexpiration?: number
-      suppressRemoteCacheErrors?: boolean
+      suppressL2Errors?: boolean
       lockTimeout?: Duration
     }>()
   })

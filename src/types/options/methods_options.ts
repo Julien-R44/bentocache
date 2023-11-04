@@ -5,12 +5,7 @@ import type { RawCommonOptions } from '../main.js'
  */
 export type GetOrSetOptions = Pick<
   RawCommonOptions,
-  | 'earlyExpiration'
-  | 'gracePeriod'
-  | 'suppressRemoteCacheErrors'
-  | 'lockTimeout'
-  | 'ttl'
-  | 'timeouts'
+  'earlyExpiration' | 'gracePeriod' | 'suppressL2Errors' | 'lockTimeout' | 'ttl' | 'timeouts'
 >
 
 /**
@@ -23,10 +18,10 @@ export type SetOptions = GetOrSetOptions
  */
 export type GetOptions = Pick<
   RawCommonOptions,
-  'earlyExpiration' | 'gracePeriod' | 'suppressRemoteCacheErrors' | 'ttl'
+  'earlyExpiration' | 'gracePeriod' | 'suppressL2Errors' | 'ttl'
 >
 
 /**
  * Options accepted by the `delete` method
  */
-export type DeleteOptions = Pick<RawCommonOptions, 'suppressRemoteCacheErrors'>
+export type DeleteOptions = Pick<RawCommonOptions, 'suppressL2Errors'>

@@ -48,9 +48,9 @@ export class BentoCacheOptions {
   earlyExpiration: number = 0
 
   /**
-   * Whether to suppress remote cache errors
+   * Whether to suppress L2 cache errors
    */
-  suppressRemoteCacheErrors: boolean = true
+  suppressL2Errors: boolean = true
 
   /**
    * The soft and hard timeouts for the factories
@@ -82,7 +82,7 @@ export class BentoCacheOptions {
     this.ttl = this.#options.ttl!
     this.timeouts = this.#options.timeouts
     this.earlyExpiration = this.#options.earlyExpiration!
-    this.suppressRemoteCacheErrors = this.#options.suppressRemoteCacheErrors!
+    this.suppressL2Errors = this.#options.suppressL2Errors!
     this.lockTimeout = this.#options.lockTimeout
     this.gracePeriod = this.#options.gracePeriod!
 

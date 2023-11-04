@@ -414,7 +414,7 @@ test.group('Cache', () => {
     assert.isUndefined(r5)
   })
 
-  test('rethrows error when suppressRemoteCacheErrors is false', async ({ assert }) => {
+  test('rethrows error when suppressL2Errors is false', async ({ assert }) => {
     const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
 
     const { cache } = new CacheFactory()
@@ -433,7 +433,7 @@ test.group('Cache', () => {
 
     // get the value again
     const r2 = cache.getOrSet('key1', () => ({ foo: 'baz' }), {
-      suppressRemoteCacheErrors: false,
+      suppressL2Errors: false,
     })
 
     await assert.rejects(() => r2, 'Chaos: Random error')
@@ -533,9 +533,7 @@ test.group('Cache', () => {
     assert.isUndefined(r4)
   })
 
-  test('deleteMany should throw if remote fail and suppressRemoteCacheErrors is on', async ({
-    assert,
-  }) => {
+  test('deleteMany should throw if remote fail and suppressL2Errors is on', async ({ assert }) => {
     const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
     const { cache, local, stack } = new CacheFactory()
       .merge({ l2Driver: remoteDriver })
@@ -546,7 +544,7 @@ test.group('Cache', () => {
     await cache.set('bar', 'baz')
 
     remoteDriver.alwaysThrow()
-    const r1 = cache.deleteMany(['foo', 'bar'], { suppressRemoteCacheErrors: false })
+    const r1 = cache.deleteMany(['foo', 'bar'], { suppressL2Errors: false })
 
     await assert.rejects(() => r1, 'Chaos: Random error')
 
@@ -629,9 +627,7 @@ test.group('Cache', () => {
     assert.isUndefined(r2)
   })
 
-  test('delete should throw if remote fail and suppressRemoteCacheErrors is on', async ({
-    assert,
-  }) => {
+  test('delete should throw if remote fail and suppressL2Errors is on', async ({ assert }) => {
     const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
 
     const { cache, local, stack } = new CacheFactory()
@@ -642,9 +638,9 @@ test.group('Cache', () => {
     // first we initialize the cache with a value
     await cache.set('foo', 'bar')
 
-    // then we delete it and disable suppressRemoteCacheErrors so this method will throw
+    // then we delete it and disable suppressL2Errors so this method will throw
     remoteDriver.alwaysThrow()
-    const r1 = cache.delete('foo', { suppressRemoteCacheErrors: false })
+    const r1 = cache.delete('foo', { suppressL2Errors: false })
 
     await assert.rejects(() => r1, 'Chaos: Random error')
 
