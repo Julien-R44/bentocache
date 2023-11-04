@@ -3,9 +3,9 @@ import { Redis as IoRedis } from 'ioredis'
 
 import { Redis } from '../../src/drivers/redis.js'
 import { REDIS_CREDENTIALS } from '../../test_helpers/index.js'
-import { registerApiTestSuite } from '../../test_helpers/driver_test_suite.js'
+import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_suite.js'
 
-registerApiTestSuite({
+registerCacheDriverTestSuite({
   name: 'Redis',
   test,
   driver: Redis,

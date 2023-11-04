@@ -3,9 +3,9 @@ import { fileURLToPath } from 'node:url'
 
 import { File } from '../../src/drivers/file.js'
 import { BASE_URL } from '../../test_helpers/index.js'
-import { registerApiTestSuite } from '../../test_helpers/driver_test_suite.js'
+import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_suite.js'
 
-registerApiTestSuite({
+registerCacheDriverTestSuite({
   test,
   driver: File,
   config: {

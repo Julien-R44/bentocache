@@ -2,7 +2,7 @@ import { test } from '@japa/runner'
 import { DeleteTableCommand, CreateTableCommand, DynamoDBClient } from '@aws-sdk/client-dynamodb'
 
 import { DynamoDB } from '../../src/drivers/dynamodb.js'
-import { registerApiTestSuite } from '../../test_helpers/driver_test_suite.js'
+import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_suite.js'
 
 const dynamoClient = new DynamoDBClient({
   region: 'eu-west-3',
@@ -38,7 +38,7 @@ async function deleteTable() {
   )
 }
 
-registerApiTestSuite({
+registerCacheDriverTestSuite({
   test,
   driver: DynamoDB,
   supportsMilliseconds: false,

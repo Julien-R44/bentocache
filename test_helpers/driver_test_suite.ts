@@ -1,14 +1,12 @@
+/// <reference types="@japa/assert" />
+
 import type { test as JapaTest } from '@japa/runner'
 
 import { setTimeout } from 'node:timers/promises'
 
 import type { CacheDriver } from '../src/types/main.js'
 
-type CacheDriverConstructor = {
-  new (config: any): CacheDriver<any>
-}
-
-export function registerApiTestSuite<T extends CacheDriverConstructor>({
+export function registerCacheDriverTestSuite<T extends { new (options: any): CacheDriver<any> }>({
   name,
   test,
   driver,
@@ -52,7 +50,7 @@ export function registerApiTestSuite<T extends CacheDriverConstructor>({
    * If the driver support milliseconds for TTLs
    */
   supportsMilliseconds?: boolean
-}) {
+}): any {
   name = name || driver.prototype.constructor.name
   const sleepTime = supportsMilliseconds ? 20 : 1000
 

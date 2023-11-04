@@ -14,7 +14,8 @@
     ".": "./build/index.js",
     "./drivers/*": "./build/drivers/*.js",
     "./types": "./build/src/types/main.js",
-    "./plugins/*": "./build/plugins/*.js"
+    "./plugins/*": "./build/plugins/*.js",
+    "./test_suite": "./build/src/test_suite.js"
   },
   "scripts": {
     "clean": "del-cli build",
@@ -187,7 +188,8 @@
       "./index.ts",
       "./src/types/main.ts",
       "./drivers/*.ts",
-      "./plugins/*.ts"
+      "./plugins/*.ts",
+      "./src/test_suite.ts"
     ],
     "outDir": "./build",
     "clean": true,

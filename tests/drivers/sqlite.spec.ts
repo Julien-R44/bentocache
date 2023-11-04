@@ -1,9 +1,9 @@
 import { test } from '@japa/runner'
 
 import { Sqlite } from '../../src/drivers/sql/sqlite.js'
-import { registerApiTestSuite } from '../../test_helpers/driver_test_suite.js'
+import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_suite.js'
 
-registerApiTestSuite({
+registerCacheDriverTestSuite({
   test,
   driver: Sqlite,
   supportsMilliseconds: true,
