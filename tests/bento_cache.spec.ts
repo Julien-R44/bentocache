@@ -238,4 +238,10 @@ test.group('Bento Cache', () => {
       ],
     })
   })
+
+  test('should expose the default store name', async ({ assert }) => {
+    const { bento } = new BentoCacheFactory().create()
+
+    assert.equal(bento.defaultStoreName, 'primary')
+  })
 })

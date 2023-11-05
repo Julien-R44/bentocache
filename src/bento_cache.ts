@@ -18,7 +18,7 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
   /**
    * Name of the default cache
    */
-  #defaultCache: keyof KnownCaches
+  #defaultStoreName: keyof KnownCaches
 
   /**
    * List of registered caches
@@ -43,7 +43,7 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
     }
   ) {
     this.#stores = config.stores
-    this.#defaultCache = config.default
+    this.#defaultStoreName = config.default
 
     this.#options = new BentoCacheOptions(config)
     this.#options.logger.trace('bentocache initialized')
@@ -67,11 +67,15 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
     return new Cache(cacheName, cacheStack)
   }
 
+  get defaultStoreName() {
+    return this.#defaultStoreName as string
+  }
+
   /**
    * Use a registered cache driver
    */
   use<CacheName extends keyof KnownCaches>(cache?: CacheName) {
-    let cacheToUse: keyof KnownCaches | undefined = cache || this.#defaultCache
+    let cacheToUse: keyof KnownCaches | undefined = cache || this.#defaultStoreName
     if (!cacheToUse) throw new Error('No cache driver selected')
 
     /**
