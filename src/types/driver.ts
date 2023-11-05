@@ -1,4 +1,4 @@
-export type PromiseOr<T, Async extends boolean> = Async extends true ? Promise<T> : T
+type PromiseOr<T, Async extends boolean> = Async extends true ? Promise<T> : T
 
 export interface CacheDriver<Async extends boolean = true> {
   /**

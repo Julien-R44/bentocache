@@ -1,13 +1,15 @@
 import { test } from '@japa/runner'
 
-import { Mysql } from '../../src/drivers/sql/mysql.js'
-import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_suite.js'
+import { Sql } from '../../../src/drivers/sql.js'
+import { registerCacheDriverTestSuite } from '../../../test_helpers/driver_test_suite.js'
 
 registerCacheDriverTestSuite({
+  name: 'mysql',
   test,
-  driver: Mysql,
+  driver: Sql,
   supportsMilliseconds: false,
   config: {
+    dialect: 'mysql2',
     prefix: 'japa',
     connection: {
       user: 'root',

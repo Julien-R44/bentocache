@@ -69,6 +69,7 @@
     "pino-pretty": "^10.2.3",
     "prettier": "^3.0.3",
     "release-it": "^16.2.1",
+    "sqlite3": "^5.1.6",
     "testcontainers": "^10.2.2",
     "tinybench": "^2.5.1",
     "ts-node": "^10.9.1",

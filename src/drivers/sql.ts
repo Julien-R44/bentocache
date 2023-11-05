@@ -1,13 +1,13 @@
 import KnexPkg from 'knex'
 import { type Knex } from 'knex'
 
-import { BaseDriver } from '../base_driver.js'
-import type { SqlConfig } from '../../types/main.js'
+import { BaseDriver } from './base_driver.js'
+import type { DialectName, SqlConfig } from '../types/main.js'
 
 const { knex } = KnexPkg
 
 /**
- * The base for each SQL driver
+ * A Knex based driver for SQL databases
  *
  * Some notes :
  * - when creating a new instance of a driver, we
@@ -18,7 +18,7 @@ const { knex } = KnexPkg
  *   expiration date in the cache table. Then we a value from
  *   the table, we check if it's expired. If it is, we delete the row
  */
-export abstract class BaseSql extends BaseDriver {
+export class Sql extends BaseDriver {
   type = 'l2' as const
 
   /**
@@ -39,9 +39,9 @@ export abstract class BaseSql extends BaseDriver {
   /**
    * The SQL dialect used by the driver
    */
-  protected dialect: 'pg' | 'mysql2' | 'better-sqlite3'
+  protected dialect: DialectName
 
-  constructor(config: SqlConfig & { dialect: 'pg' | 'mysql2' | 'better-sqlite3' }) {
+  constructor(config: SqlConfig & { dialect: DialectName }) {
     super(config)
 
     this.dialect = config.dialect

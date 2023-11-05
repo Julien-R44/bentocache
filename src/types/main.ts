@@ -65,3 +65,8 @@ export interface CacheStackDrivers {
 export interface BentoCachePlugin {
   register(bentocache: BentoCache<any>): void
 }
+
+/**
+ * Dialect available for the SQL driver
+ */
+export type DialectName = 'pg' | 'mysql2' | 'better-sqlite3' | 'sqlite3'
