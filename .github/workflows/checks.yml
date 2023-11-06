@@ -78,10 +78,6 @@ jobs:
         image: redis:6.2-alpine
         ports:
           - 6379:6379
-      redis-insight:
-        image: redislabs/redisinsight:latest
-        ports:
-          - 8001:8001
       dynamodb:
         image: amazon/dynamodb-local
         ports:
