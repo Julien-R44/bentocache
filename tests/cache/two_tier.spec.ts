@@ -58,8 +58,8 @@ test.group('Cache', () => {
       .withL1L2Config()
       .create()
 
-    await local.set('foo', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
-    await local.set('foo', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
+    local.set('foo', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
+    local.set('foo', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
     const r1 = await cache.get('foo')
 
     assert.deepEqual(r1, 'bar')
@@ -105,7 +105,7 @@ test.group('Cache', () => {
       .merge({ gracePeriod: { enabled: true } })
       .create()
 
-    await local.set(
+    local.set(
       'foo',
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
       stack.defaultOptions
@@ -123,7 +123,7 @@ test.group('Cache', () => {
       .merge({ gracePeriod: { enabled: false } })
       .create()
 
-    await local.set(
+    local.set(
       'foo',
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
       stack.defaultOptions
@@ -139,7 +139,7 @@ test.group('Cache', () => {
     await remote.set('foo', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
     await cache.get('foo')
 
-    const value = await local.get('foo', stack.defaultOptions)
+    const value = local.get('foo', stack.defaultOptions)
     assert.deepEqual(value?.getValue(), 'bar')
   })
 
@@ -153,7 +153,7 @@ test.group('Cache', () => {
   test('returns value when key exists in local', async ({ assert }) => {
     const { cache, local, stack } = new CacheFactory().withL1L2Config().create()
 
-    await local.set('key1', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
+    local.set('key1', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
     const value = await cache.getOrSet('key1', throwingFactory('should not be called'))
 
     assert.deepEqual(value, 'bar')
@@ -175,7 +175,7 @@ test.group('Cache', () => {
 
     await remote.set('key1', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
     const value = await cache.getOrSet('key1', throwingFactory('should not be called'))
-    const localeValue = await local.get('key1', stack.defaultOptions)
+    const localeValue = local.get('key1', stack.defaultOptions)
 
     assert.deepEqual(value, 'bar')
     assert.deepEqual(localeValue?.getValue(), 'bar')
@@ -186,7 +186,7 @@ test.group('Cache', () => {
 
     const value = await cache.getOrSet('key1', slowFactory(40, 'bar'))
 
-    const localeValue = await local.get('key1', stack.defaultOptions)
+    const localeValue = local.get('key1', stack.defaultOptions)
     const remoteValue = await remote.get('key1', stack.defaultOptions)
 
     assert.deepEqual(value, 'bar')
@@ -204,7 +204,7 @@ test.group('Cache', () => {
     await setTimeout(20)
 
     assert.isUndefined(await cache.get('key1'))
-    assert.isUndefined(await local.get('key1', stack.defaultOptions))
+    assert.isUndefined(local.get('key1', stack.defaultOptions))
     assert.isUndefined(await remote.get('key1', stack.defaultOptions))
   })
 
@@ -368,8 +368,8 @@ test.group('Cache', () => {
     await cache.getOrSet('key1', () => ({ foo: 'bar' }), { earlyExpiration: 1 })
     await cache.getOrSet('key2', () => ({ foo: 'bar' }), { earlyExpiration: 0 })
 
-    const r1 = await local.get('key1', stack.defaultOptions)
-    const r2 = await local.get('key2', stack.defaultOptions)
+    const r1 = local.get('key1', stack.defaultOptions)
+    const r2 = local.get('key2', stack.defaultOptions)
 
     assert.isUndefined(r1?.getEarlyExpiration())
     assert.isUndefined(r2?.getEarlyExpiration())
@@ -444,7 +444,7 @@ test.group('Cache', () => {
 
     await cache.set('foo', 'bar')
 
-    const r1 = await local.get('foo', stack.defaultOptions)
+    const r1 = local.get('foo', stack.defaultOptions)
     const r2 = await remote.get('foo', stack.defaultOptions)
 
     assert.deepEqual(r1!.getValue(), 'bar')
@@ -459,7 +459,7 @@ test.group('Cache', () => {
 
     await cache.set('foo', 'bar')
 
-    const r1 = await local.get('foo', stack.defaultOptions)
+    const r1 = local.get('foo', stack.defaultOptions)
     const r2 = await remote.get('foo', stack.defaultOptions)
 
     const earlyExpiration = Date.now() + 30 * 1000
@@ -476,7 +476,7 @@ test.group('Cache', () => {
 
     await cache.set('foo', 'bar', { earlyExpiration: 0.25 })
 
-    const r1 = await local.get('foo', stack.defaultOptions)
+    const r1 = local.get('foo', stack.defaultOptions)
     const r2 = await remote.get('foo', stack.defaultOptions)
 
     const earlyExpiration = Date.now() + 15 * 1000
@@ -498,7 +498,7 @@ test.group('Cache', () => {
     await setTimeout(100)
 
     // so local cache of cache1 should be invalidated
-    const r1 = await local1.get('foo', stack.defaultOptions)
+    const r1 = local1.get('foo', stack.defaultOptions)
 
     // a get should return the new value
     const r2 = await cache1.get('foo')
@@ -520,8 +520,8 @@ test.group('Cache', () => {
     await cache.deleteMany(['foo', 'bar'])
 
     // so local cache should be deleted
-    const r1 = await local.get('foo', stack.defaultOptions)
-    const r2 = await local.get('bar', stack.defaultOptions)
+    const r1 = local.get('foo', stack.defaultOptions)
+    const r2 = local.get('bar', stack.defaultOptions)
 
     // and remote cache should be deleted
     const r3 = await remote.get('foo', stack.defaultOptions)
@@ -548,8 +548,8 @@ test.group('Cache', () => {
 
     await assert.rejects(() => r1, 'Chaos: Random error')
 
-    const r2 = await local.get('foo', stack.defaultOptions)
-    const r3 = await local.get('bar', stack.defaultOptions)
+    const r2 = local.get('foo', stack.defaultOptions)
+    const r3 = local.get('bar', stack.defaultOptions)
 
     assert.isUndefined(r2)
     assert.isUndefined(r3)
@@ -569,8 +569,8 @@ test.group('Cache', () => {
     await setTimeout(100)
 
     // so local cache of cache1 should be invalidated
-    const r1 = await local1.get('foo', stack.defaultOptions)
-    const r2 = await local1.get('bar', stack.defaultOptions)
+    const r1 = local1.get('foo', stack.defaultOptions)
+    const r2 = local1.get('bar', stack.defaultOptions)
 
     assert.isUndefined(r1)
     assert.isUndefined(r2)
@@ -597,9 +597,9 @@ test.group('Cache', () => {
     await setTimeout(100)
 
     // so local cache of cache1 should be invalidated
-    const r1 = await local1.get('foo', stack.defaultOptions)
-    const r2 = await local1.get('bar', stack.defaultOptions)
-    const r3 = await local1.get('baz', stack.defaultOptions)
+    const r1 = local1.get('foo', stack.defaultOptions)
+    const r2 = local1.get('bar', stack.defaultOptions)
+    const r3 = local1.get('baz', stack.defaultOptions)
 
     assert.isUndefined(r1)
     assert.isUndefined(r2)
@@ -618,7 +618,7 @@ test.group('Cache', () => {
     await cache.delete('foo')
 
     // so local cache should be deleted
-    const r1 = await local.get('foo', stack.defaultOptions)
+    const r1 = local.get('foo', stack.defaultOptions)
 
     // and remote cache should be deleted
     const r2 = await remote.get('foo', stack.defaultOptions)
@@ -645,7 +645,7 @@ test.group('Cache', () => {
     await assert.rejects(() => r1, 'Chaos: Random error')
 
     // but local cache should be deleted
-    const r2 = await local.get('foo', stack.defaultOptions)
+    const r2 = local.get('foo', stack.defaultOptions)
 
     assert.isUndefined(r2)
   })
@@ -663,7 +663,7 @@ test.group('Cache', () => {
     await setTimeout(100)
 
     // so local cache of cache1 should be invalidated
-    let r1 = await local1.get('foo', stack.defaultOptions)
+    let r1 = local1.get('foo', stack.defaultOptions)
 
     // a get should return the new value
     const r2 = await cache1.get('foo')
@@ -691,7 +691,7 @@ test.group('Cache', () => {
     await setTimeout(100)
 
     // so local cache of cache1 should be invalidated
-    let r1 = await local1.get('foo', stack.defaultOptions)
+    let r1 = local1.get('foo', stack.defaultOptions)
 
     const r2 = await cache1.get('foo')
     remoteDriver.neverThrow()
@@ -771,7 +771,7 @@ test.group('Cache', () => {
     const r1 = await users.get('foo')
     const r2 = await cache.get('users:foo')
     const r3 = await cache.get('foo')
-    const r4 = await local.get('users:foo', stack.defaultOptions)
+    const r4 = local.get('users:foo', stack.defaultOptions)
     const r5 = await remote.get('users:foo', stack.defaultOptions)
 
     assert.deepEqual(r1, 'bar')
@@ -787,7 +787,7 @@ test.group('Cache', () => {
     const r1 = await cache.getOrSet('foo', () => ({ foo: 'bar' }))
 
     // Should still be in local cache and not invalidated by the bus
-    const r2 = await local.get('foo', stack.defaultOptions)
+    const r2 = local.get('foo', stack.defaultOptions)
 
     assert.deepEqual(r1, { foo: 'bar' })
     assert.deepEqual(r2?.getValue(), { foo: 'bar' })
@@ -832,7 +832,7 @@ test.group('Cache', () => {
       .withL1L2Config()
       .create()
 
-    await local.set(
+    local.set(
       'foo',
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
       stack.defaultOptions
