@@ -47,6 +47,11 @@ export enum CacheBusMessageType {
    * An item was deleted from the cache
    */
   Delete = 'delete',
+
+  /**
+   * Whole cache was cleared
+   */
+  Clear = 'clear',
 }
 
 export type BusOptions = {

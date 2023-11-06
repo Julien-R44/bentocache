@@ -112,6 +112,10 @@ export class Bus {
     if (message.type === CacheBusMessageType.Set) {
       for (const key of message.keys) this.#cache?.logicallyExpire(key)
     }
+
+    if (message.type === CacheBusMessageType.Clear) {
+      this.#cache?.clear()
+    }
   }
 
   /**

@@ -188,7 +188,12 @@ export class Cache implements CacheProvider {
    * Remove all items from the cache
    */
   async clear() {
-    await Promise.all([this.#stack.l1?.clear(), this.#stack.l2?.clear()])
+    await Promise.all([
+      this.#stack.l1?.clear(),
+      this.#stack.l2?.clear(),
+      this.#stack.bus?.publish({ type: CacheBusMessageType.Clear, keys: [] }),
+    ])
+
     this.#stack.emit(new events.CacheCleared(this.name))
   }
 

@@ -847,4 +847,27 @@ test.group('Cache', () => {
 
     assert.deepEqual(r1, 'baz')
   })
+
+  test('clear should clear local of all instances', async ({ assert }) => {
+    const [cache1, local1, , stack] = new CacheFactory().withL1L2Config().create()
+    const [cache2, local2] = new CacheFactory().withL1L2Config().create()
+
+    // init cache1 with a value
+    await cache1.set('foo', 'bar')
+
+    // init cache2 l1 with the same value
+    await cache2.get('foo')
+
+    // clear cache1
+    await cache1.clear()
+
+    // cache1 l1 should be cleared
+    const r1 = local1.get('foo', stack.defaultOptions)
+
+    // cache2 l1 should be cleared
+    const r2 = local2.get('foo', stack.defaultOptions)
+
+    assert.isUndefined(r1)
+    assert.isUndefined(r2)
+  })
 })
