@@ -1,3 +1,6 @@
+/**
+ * Benchmark a single get operation on a redis store
+ */
 import Keyv from 'keyv'
 import { Redis } from 'ioredis'
 import { Bench } from 'tinybench'
@@ -29,9 +32,6 @@ await cacheManager.set('key', 'value')
 
 const ioredis = new Redis()
 
-/**
- * Simple get benchmark
- */
 bench
   .add('ioredis', async () => {
     await ioredis.get('key')

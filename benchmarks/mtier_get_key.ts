@@ -1,3 +1,6 @@
+/**
+ * Benchmark a single get operation on a tiered store ( memory + redis )
+ */
 import Keyv from 'keyv'
 import { Redis } from 'ioredis'
 import { Bench } from 'tinybench'

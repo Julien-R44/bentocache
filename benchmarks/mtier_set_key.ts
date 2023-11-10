@@ -1,3 +1,6 @@
+/**
+ * Benchmarking a set key operation with a tiered cache ( memory + redis )
+ */
 import Keyv from 'keyv'
 import { Redis } from 'ioredis'
 import { Bench } from 'tinybench'
@@ -38,9 +41,6 @@ await multiCache.set('key', 'value')
 
 const ioredis = new Redis()
 
-/**
- * Simple get benchmark
- */
 bench
   .add('BentoCache', async () => {
     await bentocacheTiered.set('key', 'value')
