@@ -16,11 +16,26 @@ export class RemoteCache {
   }
 
   /**
-   * Rethrow the error if suppressL2Errors is disabled
+   * Try to execute a cache operation and fallback to a default value
+   * if the operation fails
    */
-  #maybeRethrowError(error: Error, options: CacheEntryOptions) {
-    if (options.suppressL2Errors === false) {
-      throw error
+  async #tryCacheOperation(
+    operation: string,
+    options: CacheEntryOptions,
+    fallbackValue: unknown,
+    fn: () => any
+  ) {
+    try {
+      return await fn()
+    } catch (error) {
+      this.#logger.error({ error, opId: options.id }, `(${operation}) failed on remote cache`)
+
+      /**
+       * Rethrow the error if suppressL2Errors is disabled
+       */
+      if (options.suppressL2Errors === false) throw error
+
+      return fallbackValue
     }
   }
 
@@ -28,63 +43,40 @@ export class RemoteCache {
    * Get an item from the remote cache
    */
   async get(key: string, options: CacheEntryOptions) {
-    let value: undefined | string
-    try {
-      value = await this.#driver.get(key)
+    return await this.#tryCacheOperation('get', options, undefined, async () => {
+      const value = await this.#driver.get(key)
       if (value === undefined) return
 
       return CacheEntry.fromDriver(key, value)
-    } catch (error) {
-      this.#logger.error({ key, error }, 'error getting remote cache item')
-      this.#maybeRethrowError(error, options)
-
-      return undefined
-    }
+    })
   }
 
   /**
    * Set a new item in the remote cache
    */
   async set(key: string, value: string, options: CacheEntryOptions) {
-    try {
-      this.#logger.trace({ key, value, opId: options.id }, 'saving remote cache item')
+    return await this.#tryCacheOperation('set', options, false, async () => {
       await this.#driver.set(key, value, options.physicalTtl)
-    } catch (error) {
-      this.#logger.error({ key, value, error, opId: options.id }, 'error saving remote cache item')
-      this.#maybeRethrowError(error, options)
-
-      return false
-    }
+      return true
+    })
   }
 
   /**
    * Delete an item from the remote cache
    */
   async delete(key: string, options: CacheEntryOptions) {
-    try {
-      this.#logger.trace({ key, opId: options.id }, 'deleting remote cache item')
+    return await this.#tryCacheOperation('delete', options, false, async () => {
       return await this.#driver.delete(key)
-    } catch (error) {
-      this.#logger.error({ key, error, opId: options.id }, 'error deleting remote cache item')
-      this.#maybeRethrowError(error, options)
-
-      return false
-    }
+    })
   }
 
   /**
    * Delete multiple items from the remote cache
    */
   async deleteMany(keys: string[], options: CacheEntryOptions) {
-    try {
-      this.#logger.trace({ keys, opId: options.id }, 'deleting remote cache items')
-      await this.#driver.deleteMany(keys)
-    } catch (error) {
-      this.#logger.error({ keys, opId: options.id, error }, 'error deleting remote cache items')
-      this.#maybeRethrowError(error, options)
-
-      return false
-    }
+    return await this.#tryCacheOperation('deleteMany', options, false, async () => {
+      return await this.#driver.deleteMany(keys)
+    })
   }
 
   /**
@@ -97,15 +89,19 @@ export class RemoteCache {
   /**
    * Check if an item exists in the remote cache
    */
-  has(key: string) {
-    return this.#driver.has(key)
+  async has(key: string, options: CacheEntryOptions) {
+    return await this.#tryCacheOperation('has', options, false, async () => {
+      return await this.#driver.has(key)
+    })
   }
 
   /**
    * Clear the remote cache
    */
-  clear() {
-    return this.#driver.clear()
+  async clear(options: CacheEntryOptions) {
+    return await this.#tryCacheOperation('clear', options, false, async () => {
+      return await this.#driver.clear()
+    })
   }
 
   /**

@@ -10,6 +10,8 @@ import type {
   GetOptions,
   DeleteOptions,
   SetOptions,
+  HasOptions,
+  ClearOptions,
 } from '../types/main.js'
 
 export class Cache implements CacheProvider {
@@ -125,8 +127,10 @@ export class Cache implements CacheProvider {
   /**
    * Check if a key exists in the cache
    */
-  async has(key: string) {
-    const inRemote = await this.#stack.l2?.has(key)
+  async has(key: string, options?: HasOptions) {
+    const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
+
+    const inRemote = await this.#stack.l2?.has(key, cacheOptions)
     const inLocal = this.#stack.l1?.has(key)
 
     return !!(inRemote || inLocal)
@@ -187,10 +191,12 @@ export class Cache implements CacheProvider {
   /**
    * Remove all items from the cache
    */
-  async clear() {
+  async clear(options: ClearOptions) {
+    const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
+
     await Promise.all([
       this.#stack.l1?.clear(),
-      this.#stack.l2?.clear(),
+      this.#stack.l2?.clear(cacheOptions),
       this.#stack.bus?.publish({ type: CacheBusMessageType.Clear, keys: [] }),
     ])
 

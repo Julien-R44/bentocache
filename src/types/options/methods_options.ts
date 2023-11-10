@@ -25,3 +25,13 @@ export type GetOptions = Pick<
  * Options accepted by the `delete` method
  */
 export type DeleteOptions = Pick<RawCommonOptions, 'suppressL2Errors'>
+
+/**
+ * Options accepted by the `has` method
+ */
+export type HasOptions = Pick<RawCommonOptions, 'suppressL2Errors'>
+
+/**
+ * Options accepted by the `clear` method
+ */
+export type ClearOptions = Pick<RawCommonOptions, 'suppressL2Errors'>

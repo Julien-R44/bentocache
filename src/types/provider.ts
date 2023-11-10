@@ -1,5 +1,12 @@
 import type { Factory } from './helpers.js'
-import type { DeleteOptions, GetOptions, GetOrSetOptions, SetOptions } from './main.js'
+import type {
+  ClearOptions,
+  DeleteOptions,
+  GetOptions,
+  GetOrSetOptions,
+  HasOptions,
+  SetOptions,
+} from './main.js'
 
 /**
  * A cache provider is a class that wraps an underlying cache driver
@@ -66,7 +73,7 @@ export interface CacheProvider {
   /**
    * Check if a key exists in the cache
    */
-  has(key: string): Promise<boolean>
+  has(key: string, options?: HasOptions): Promise<boolean>
 
   /**
    * Get the value of a key and delete it
@@ -89,7 +96,7 @@ export interface CacheProvider {
   /**
    * Remove all items from the cache
    */
-  clear(): Promise<void>
+  clear(options?: ClearOptions): Promise<void>
 
   /**
    * Closes the connection to the cache
