@@ -1,16 +1,19 @@
 import { test } from '@japa/runner'
 
-import { Memory } from '../../src/drivers/memory.js'
+import { Redis } from '../../src/drivers/redis.js'
 import { TestLogger } from '../../test_helpers/test_logger.js'
+import { REDIS_CREDENTIALS } from '../../test_helpers/index.js'
 import { ChaosCache } from '../../test_helpers/chaos/chaos_cache.js'
 import { RemoteCache } from '../../src/cache/facades/remote_cache.js'
 import { CacheEntryOptions } from '../../src/cache/cache_entry/cache_entry_options.js'
 
 test.group('Remote Cache', () => {
-  test('should rethrows errors if suppressL2Errors is disabled', async ({ assert }) => {
+  test('should rethrows errors if suppressL2Errors is disabled', async ({ assert, cleanup }) => {
     const logger = new TestLogger()
-    const chaosCacheDriver = new ChaosCache(new Memory())
+    const chaosCacheDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
     const cache = new RemoteCache(chaosCacheDriver, logger)
+
+    cleanup(() => chaosCacheDriver.disconnect())
 
     chaosCacheDriver.alwaysThrow()
 
@@ -25,10 +28,12 @@ test.group('Remote Cache', () => {
     assert.deepEqual(logger.logs.length, 5)
   })
 
-  test('should ignore errors if suppressL2Errors is enabled', async ({ assert }) => {
+  test('should ignore errors if suppressL2Errors is enabled', async ({ assert, cleanup }) => {
     const logger = new TestLogger()
-    const chaosCacheDriver = new ChaosCache(new Memory())
+    const chaosCacheDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
     const cache = new RemoteCache(chaosCacheDriver, logger)
+
+    cleanup(() => chaosCacheDriver.disconnect())
 
     chaosCacheDriver.alwaysThrow()
 

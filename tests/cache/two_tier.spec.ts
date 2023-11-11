@@ -1,13 +1,13 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
-import { Memory } from '../../src/drivers/memory.js'
+import { Redis } from '../../src/drivers/redis.js'
 import { TestLogger } from '../../test_helpers/test_logger.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 import { NullDriver } from '../../test_helpers/null/null_driver.js'
 import { ChaosCache } from '../../test_helpers/chaos/chaos_cache.js'
-import { throwingFactory, slowFactory } from '../../test_helpers/index.js'
+import { throwingFactory, slowFactory, REDIS_CREDENTIALS } from '../../test_helpers/index.js'
 
 test.group('Cache', () => {
   test('get() returns null if null is stored', async ({ assert }) => {
@@ -48,6 +48,8 @@ test.group('Cache', () => {
     assert,
   }) => {
     class L2Driver extends NullDriver {
+      type = 'l2' as const
+
       get(): any {
         assert.fail('should not be called')
       }
@@ -415,7 +417,7 @@ test.group('Cache', () => {
   })
 
   test('rethrows error when suppressL2Errors is false', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
 
     const { cache } = new CacheFactory()
       .merge({ l2Driver: remoteDriver, gracePeriod: { enabled: true, duration: '2h' } })
@@ -534,7 +536,7 @@ test.group('Cache', () => {
   })
 
   test('deleteMany should throw if remote fail and suppressL2Errors is on', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
     const { cache, local, stack } = new CacheFactory()
       .merge({ l2Driver: remoteDriver })
       .withL1L2Config()
@@ -577,7 +579,7 @@ test.group('Cache', () => {
   })
 
   test('a deleteMany should delete others local cache even if remote fail', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
 
     const [cache1, local1, , stack] = new CacheFactory()
       .merge({ l2Driver: remoteDriver })
@@ -628,7 +630,7 @@ test.group('Cache', () => {
   })
 
   test('delete should throw if remote fail and suppressL2Errors is on', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
 
     const { cache, local, stack } = new CacheFactory()
       .merge({ l2Driver: remoteDriver })
@@ -673,7 +675,7 @@ test.group('Cache', () => {
   })
 
   test('a delete should delete others local cache even if remote fail', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Memory({ maxItems: 10, prefix: 'test' }))
+    const remoteDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
 
     const [cache1, local1, , stack] = new CacheFactory()
       .merge({ l2Driver: remoteDriver })

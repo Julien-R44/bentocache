@@ -1,6 +1,5 @@
-import type { Memory } from '../../drivers/memory.js'
 import { CacheEntry } from '../cache_entry/cache_entry.js'
-import type { Logger, CacheDriver } from '../../types/main.js'
+import type { Logger, L1CacheDriver } from '../../types/main.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 
 /**
@@ -8,10 +7,10 @@ import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
  * some handy methods for interacting with a local cache ( in-memory )
  */
 export class LocalCache {
-  #driver: CacheDriver<false>
+  #driver: L1CacheDriver
   #logger: Logger
 
-  constructor(driver: CacheDriver<false>, logger: Logger) {
+  constructor(driver: L1CacheDriver, logger: Logger) {
     this.#driver = driver
     this.#logger = logger.child({ context: 'bentocache.localCache' })
   }
@@ -65,19 +64,21 @@ export class LocalCache {
     return this.#driver.delete(key)
   }
 
+  /**
+   * Make an item logically expire in the local cache
+   *
+   * That means that the item will be expired but kept in the cache
+   * in order to be able to return it to the user if the remote cache
+   * is down and the grace period is enabled
+   */
   logicallyExpire(key: string) {
     this.#logger.trace({ key }, 'logically expiring local cache item')
 
-    // TODO This is a nasty hack that needs to be fixed
-    const driver = this.#driver as Memory
     const value = this.#driver.get(key)
     if (value === undefined) return
 
-    return this.#driver.set(
-      key,
-      CacheEntry.fromDriver(key, value).expire().serialize(),
-      driver.getRemainingTtl(key)
-    )
+    const newEntry = CacheEntry.fromDriver(key, value).expire().serialize()
+    return this.#driver.set(key, newEntry, this.#driver.getRemainingTtl(key))
   }
 
   /**
@@ -92,7 +93,7 @@ export class LocalCache {
    * Create a new namespace for the local cache
    */
   namespace(namespace: string) {
-    return this.#driver.namespace(namespace)
+    return this.#driver.namespace(namespace) as L1CacheDriver
   }
 
   /**

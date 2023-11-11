@@ -1,5 +1,6 @@
 import { ChaosInjector } from './chaos_injector.js'
 import type { CacheDriver } from '../../src/types/driver.js'
+import type { L1CacheDriver, L2CacheDriver } from '../../src/types/main.js'
 
 /**
  * ChaosCache is a CacheDriver Wrapper that adds chaos to the cache
@@ -8,20 +9,30 @@ import type { CacheDriver } from '../../src/types/driver.js'
  * This is handy for testing the resilience of the cache within
  * our test suite.
  */
-export class ChaosCache implements CacheDriver {
+export class ChaosCache<Cache extends L1CacheDriver | L2CacheDriver> implements CacheDriver {
+  type!: Cache extends L1CacheDriver ? 'l1' : 'l2'
+
   /**
    * The inner cache driver that is wrapped
    */
-  #innerCache: CacheDriver
+  #innerCache: Cache
 
   /**
    * Reference to the chaos injector
    */
   #chaosInjector: ChaosInjector
 
-  constructor(innerCache: CacheDriver<any>) {
+  constructor(innerCache: Cache) {
     this.#innerCache = innerCache
     this.#chaosInjector = new ChaosInjector()
+  }
+
+  getRemainingTtl(key: string) {
+    if ('getRemainingTtl' in this.#innerCache) {
+      return this.#innerCache.getRemainingTtl(key)
+    }
+
+    throw new Error('getRemainingTtl is not supported by this cache driver')
   }
 
   /**
@@ -53,7 +64,7 @@ export class ChaosCache implements CacheDriver {
    * with the addition of chaos logic
    */
   namespace(namespace: string) {
-    return this.#innerCache.namespace(namespace)
+    return this.#innerCache.namespace(namespace) as any
   }
 
   async get(key: string) {

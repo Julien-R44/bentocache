@@ -16,6 +16,7 @@ export * from './options/methods_options.js'
  */
 export interface L1CacheDriver extends CacheDriver<false> {
   type: 'l1'
+  getRemainingTtl(key: string): number | undefined
 }
 
 /**
@@ -53,8 +54,8 @@ export interface CacheSerializer {
  * Stack of cache drivers
  */
 export interface CacheStackDrivers {
-  l1Driver?: CacheDriver<false>
-  l2Driver?: CacheDriver<true>
+  l1Driver?: L1CacheDriver
+  l2Driver?: L2CacheDriver
   busDriver?: BusDriver
   busOptions?: BusOptions
 }

@@ -1,16 +1,16 @@
 import { CacheEntry } from '../cache_entry/cache_entry.js'
-import type { CacheDriver, Logger } from '../../types/main.js'
+import type { L2CacheDriver, Logger } from '../../types/main.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 
 /**
- * RemoteCache is a wrapper around a CacheDriver that provides
+ * RemoteCache is a wrapper around a L2 Cache Driver that provides
  * some handy methods for interacting with a remote cache ( redis, database, etc )
  */
 export class RemoteCache {
-  #driver: CacheDriver
+  #driver: L2CacheDriver
   #logger: Logger
 
-  constructor(driver: CacheDriver, logger: Logger) {
+  constructor(driver: L2CacheDriver, logger: Logger) {
     this.#driver = driver
     this.#logger = logger.child({ context: 'bentocache.remoteCache' })
   }
@@ -83,7 +83,7 @@ export class RemoteCache {
    * Create a new namespace for the remote cache
    */
   namespace(namespace: string) {
-    return this.#driver.namespace(namespace)
+    return this.#driver.namespace(namespace) as L2CacheDriver
   }
 
   /**
