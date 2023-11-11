@@ -191,7 +191,7 @@ export class Cache implements CacheProvider {
   /**
    * Remove all items from the cache
    */
-  async clear(options: ClearOptions) {
+  async clear(options?: ClearOptions) {
     const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
 
     await Promise.all([
