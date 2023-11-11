@@ -12,6 +12,8 @@ import type {
   DeleteOptions,
   SetOptions,
   BentoCachePlugin,
+  HasOptions,
+  ClearOptions,
 } from './types/main.js'
 
 export class BentoCache<KnownCaches extends Record<string, BentoStore>> implements CacheProvider {
@@ -170,15 +172,15 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
   /**
    * Check if a key exists in the cache
    */
-  async has(key: string) {
-    return this.use().has(key)
+  async has(key: string, options?: HasOptions) {
+    return this.use().has(key, options)
   }
 
   /**
    * Check if key is missing in the cache
    */
-  async missing(key: string) {
-    return this.use().missing(key)
+  async missing(key: string, options?: HasOptions) {
+    return this.use().missing(key, options)
   }
 
   /**
@@ -208,15 +210,15 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
   /**
    * Remove all items from the cache
    */
-  async clear() {
-    return this.use().clear()
+  async clear(options?: ClearOptions) {
+    return this.use().clear(options)
   }
 
   /**
    * Remove all items from all caches
    */
-  async clearAll() {
-    await Promise.all(Object.keys(this.#stores).map((cache) => this.use(cache).clear()))
+  async clearAll(options?: ClearOptions) {
+    await Promise.all(Object.keys(this.#stores).map((cache) => this.use(cache).clear(options)))
   }
 
   /**

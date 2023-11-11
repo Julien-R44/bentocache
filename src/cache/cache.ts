@@ -139,8 +139,8 @@ export class Cache implements CacheProvider {
   /**
    * Check if key is missing in the cache
    */
-  async missing(key: string) {
-    return !(await this.has(key))
+  async missing(key: string, options?: HasOptions) {
+    return !(await this.has(key, options))
   }
 
   /**

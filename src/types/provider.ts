@@ -61,11 +61,6 @@ export interface CacheProvider {
   getOrSetForever<T>(key: string, cb: Factory<T>, opts?: GetOrSetOptions): Promise<T>
 
   /**
-   * Check if a key is missing from the cache
-   */
-  missing(key: string): Promise<boolean>
-
-  /**
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string): CacheProvider
@@ -74,6 +69,11 @@ export interface CacheProvider {
    * Check if a key exists in the cache
    */
   has(key: string, options?: HasOptions): Promise<boolean>
+
+  /**
+   * Check if a key is missing from the cache
+   */
+  missing(key: string, options?: HasOptions): Promise<boolean>
 
   /**
    * Get the value of a key and delete it
