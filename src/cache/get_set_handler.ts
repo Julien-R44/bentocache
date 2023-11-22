@@ -140,7 +140,7 @@ export class GetSetHandler {
       this.stack.l1?.set(
         key,
         item.applyFallbackDuration(options.gracePeriod.fallbackDuration).serialize(),
-        options
+        options,
       )
     }
 
