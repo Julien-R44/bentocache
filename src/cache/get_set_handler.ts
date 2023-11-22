@@ -207,13 +207,15 @@ export class GetSetHandler {
     }
 
     try {
-      return await this.#factoryRunner.run(key, factory, !!localItem, options, releaser)
+      const hasFallback = !!localItem || !!remoteItem
+      return await this.#factoryRunner.run(key, factory, hasFallback, options, releaser)
     } catch (err) {
       /**
        * If we hitted a soft timeout and we have a graced value, returns it
        */
-      if (err instanceof E_FACTORY_SOFT_TIMEOUT && localItem) {
-        return this.#returnGracedValueOrThrow(key, localItem, options, err)
+      const staleItem = remoteItem ?? localItem
+      if (err instanceof E_FACTORY_SOFT_TIMEOUT && staleItem) {
+        return this.#returnGracedValueOrThrow(key, staleItem, options, err)
       }
 
       /**
@@ -225,7 +227,6 @@ export class GetSetHandler {
         'factory error'
       )
 
-      const staleItem = remoteItem ?? localItem
       if (staleItem && options.isGracePeriodEnabled) {
         this.#locks.release(key, releaser)
         return this.#applyFallbackAndReturnGracedValue(key, staleItem, options)

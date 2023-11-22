@@ -37,6 +37,30 @@ test.group('Soft Timeout', () => {
     assert.isBelow(elapsed, 300)
   })
 
+  test('should returns graced value in remote store when soft timeout is reached', async ({
+    assert,
+  }) => {
+    const { cache, remote, stack } = new CacheFactory()
+      .merge({ ttl: 100, gracePeriod: { enabled: true, duration: '6h' }, timeouts: { soft: 200 } })
+      .create()
+
+    await remote.set(
+      'key',
+      JSON.stringify({
+        value: 'graced value',
+        logicalExpiration: new Date(Date.now() - 1000).getTime(),
+      }),
+      stack.defaultOptions
+    )
+
+    const r1 = await cache.getOrSet('key', slowFactory(400, 'new factory value'))
+    await setTimeout(210)
+    const r2 = await cache.getOrSet('key', slowFactory(400, 'new factory value2'))
+
+    assert.deepEqual(r1, 'graced value')
+    assert.deepEqual(r2, 'new factory value')
+  })
+
   test('should ignore soft timeout if no graced value is set', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .merge({
