@@ -50,7 +50,7 @@ test.group('Soft Timeout', () => {
         value: 'graced value',
         logicalExpiration: new Date(Date.now() - 1000).getTime(),
       }),
-      stack.defaultOptions
+      stack.defaultOptions,
     )
 
     const r1 = await cache.getOrSet('key', slowFactory(400, 'new factory value'))

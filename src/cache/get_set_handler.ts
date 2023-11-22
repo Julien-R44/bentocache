@@ -20,7 +20,7 @@ export class GetSetHandler {
 
   constructor(
     protected stack: CacheStack,
-    protected stackWriter: CacheStackWriter
+    protected stackWriter: CacheStackWriter,
   ) {
     this.#factoryRunner = new FactoryRunner(this.stack, this.stackWriter, this.#locks)
   }
@@ -45,7 +45,7 @@ export class GetSetHandler {
    */
   async #earlyExpirationRefresh(key: string, factory: Factory, options: CacheEntryOptions) {
     this.logger.debug({ key, name: this.stack.name, opId: options.id }, 'try to early refresh')
-    let lock = this.#locks.getOrCreateForKey(key)
+    const lock = this.#locks.getOrCreateForKey(key)
 
     /**
      * If lock is already acquired, then just exit. We only want to run
@@ -59,7 +59,7 @@ export class GetSetHandler {
       .runExclusive(async () => {
         this.logger.trace(
           { key, cache: this.stack.name, opId: options.id },
-          'acquired lock for refresh'
+          'acquired lock for refresh',
         )
 
         await this.stackWriter.set(key, await factory(), options)
@@ -79,7 +79,7 @@ export class GetSetHandler {
     key: string,
     item: CacheEntry,
     options: CacheEntryOptions,
-    logMsg?: string
+    logMsg?: string,
   ) {
     const isLogicallyExpired = item.isLogicallyExpired()
     logMsg = logMsg ?? 'local cache hit'
@@ -117,7 +117,7 @@ export class GetSetHandler {
     key: string,
     item: CacheEntry | undefined,
     options: CacheEntryOptions,
-    err: Error
+    err: Error,
   ) {
     if (options.isGracePeriodEnabled && item) {
       return this.#returnLocalCacheValue(key, item, options, 'local cache hit (graced)')
@@ -129,18 +129,18 @@ export class GetSetHandler {
   async #applyFallbackAndReturnGracedValue(
     key: string,
     item: CacheEntry,
-    options: CacheEntryOptions
+    options: CacheEntryOptions,
   ) {
     if (options.gracePeriod.enabled && options.gracePeriod.fallbackDuration) {
       this.logger.trace(
         { key, cache: this.stack.name, opId: options.id },
-        'apply fallback duration'
+        'apply fallback duration',
       )
 
       await this.stack.l1?.set(
         key,
         item.applyFallbackDuration(options.gracePeriod.fallbackDuration).serialize(),
-        options
+        options,
       )
     }
 
@@ -158,7 +158,6 @@ export class GetSetHandler {
 
   async handle(key: string, factory: Factory, options: CacheEntryOptions) {
     let localItem: CacheEntry | undefined
-    let remoteItem: CacheEntry | undefined
 
     /**
      * First we check the local cache. If we have a valid item, just
@@ -200,7 +199,7 @@ export class GetSetHandler {
      * cache. If we find a valid item, we save it in the local cache
      * and returns it.
      */
-    remoteItem = await this.stack.l2?.get(key, options)
+    const remoteItem = await this.stack.l2?.get(key, options)
     if (this.#isItemValid(remoteItem)) {
       this.#locks.release(key, releaser)
       return this.#returnRemoteCacheValue(key, remoteItem, options)
@@ -224,7 +223,7 @@ export class GetSetHandler {
        */
       this.logger.trace(
         { key, cache: this.stack.name, opId: options.id, error: err },
-        'factory error'
+        'factory error',
       )
 
       if (staleItem && options.isGracePeriodEnabled) {

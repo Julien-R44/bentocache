@@ -19,13 +19,11 @@ export class LocalCache {
    * Get an item from the local cache
    */
   get(key: string, options: CacheEntryOptions) {
-    let value: undefined | string
-
     /**
      * Try to get the item from the local cache
      */
     this.#logger.trace({ key, opId: options.id }, 'try getting local cache item')
-    value = this.#driver.get(key)
+    const value = this.#driver.get(key)
 
     /**
      * If the item is not found, return undefined

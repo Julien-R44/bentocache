@@ -1,14 +1,17 @@
 {
   "name": "bentocache",
-  "description": "Multi-tier cache module for Node.js. Redis, Upstash, CloudfareKV, File, in-memory and others drivers",
-  "version": "1.0.0-beta.4",
-  "engines": {
-    "node": ">=18.16.0"
-  },
-  "main": "build/index.js",
   "type": "module",
-  "files": [
-    "build"
+  "version": "1.0.0-beta.4",
+  "description": "Multi-tier cache module for Node.js. Redis, Upstash, CloudfareKV, File, in-memory and others drivers",
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "license": "MIT",
+  "keywords": [
+    "caching",
+    "redis",
+    "in-memory",
+    "cache",
+    "multi-tier",
+    "tiered"
   ],
   "exports": {
     ".": "./build/index.js",
@@ -17,12 +20,18 @@
     "./plugins/*": "./build/plugins/*.js",
     "./test_suite": "./build/src/test_suite.js"
   },
+  "main": "build/index.js",
+  "files": [
+    "build"
+  ],
+  "engines": {
+    "node": ">=18.16.0"
+  },
   "scripts": {
     "clean": "del-cli build",
     "copy:templates": "copyfiles \"stubs/**/*.stub\" build",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext=.ts",
-    "format": "prettier --write .",
+    "lint": "eslint .",
     "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --loader=ts-node/esm bin/test.ts",
     "pretest": "pnpm lint",
     "test": "c8 pnpm quick:test",
@@ -33,15 +42,40 @@
     "prepublishOnly": "pnpm build",
     "checks": "pnpm lint && pnpm typecheck"
   },
+  "peerDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.438.0",
+    "ioredis": "^5.3.2",
+    "knex": "^3.0.1"
+  },
+  "peerDependenciesMeta": {
+    "@aws-sdk/client-dynamodb": {
+      "optional": true
+    },
+    "ioredis": {
+      "optional": true
+    },
+    "knex": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@paralleldrive/cuid2": "^2.2.2",
+    "@poppinss/utils": "6.5.0",
+    "@sindresorhus/chunkify": "^0.2.0",
+    "async-mutex": "^0.4.0",
+    "hexoid": "^1.0.0",
+    "lru-cache": "^10.0.1",
+    "p-timeout": "^6.1.2",
+    "typescript-log": "^2.0.0"
+  },
   "devDependencies": {
-    "@adonisjs/eslint-config": "^1.1.8",
-    "@adonisjs/prettier-config": "^1.1.8",
     "@adonisjs/tsconfig": "^1.1.8",
     "@aws-sdk/client-dynamodb": "^3.438.0",
     "@japa/assert": "2.0.0",
     "@japa/expect-type": "2.0.0",
     "@japa/file-system": "2.0.0",
     "@japa/runner": "3.0.4",
+    "@julr/tooling-configs": "2.0.0",
     "@keyv/redis": "^2.8.0",
     "@keyv/tiered": "^1.0.6",
     "@swc/core": "1.3.68",
@@ -57,7 +91,6 @@
     "dotenv": "^16.3.1",
     "emittery": "^1.0.1",
     "eslint": "^8.52.0",
-    "eslint-plugin-perfectionist": "^2.2.0",
     "ioredis": "^5.3.2",
     "keyv": "^4.5.4",
     "knex": "^3.0.1",
@@ -76,88 +109,7 @@
     "tsup": "^7.2.0",
     "typescript": "^5.2.2"
   },
-  "dependencies": {
-    "@paralleldrive/cuid2": "^2.2.2",
-    "@poppinss/utils": "6.5.0",
-    "@sindresorhus/chunkify": "^0.2.0",
-    "async-mutex": "^0.4.0",
-    "hexoid": "^1.0.0",
-    "lru-cache": "^10.0.1",
-    "p-timeout": "^6.1.2",
-    "typescript-log": "^2.0.0"
-  },
-  "peerDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.438.0",
-    "ioredis": "^5.3.2",
-    "knex": "^3.0.1"
-  },
-  "peerDependenciesMeta": {
-    "@aws-sdk/client-dynamodb": {
-      "optional": true
-    },
-    "ioredis": {
-      "optional": true
-    },
-    "knex": {
-      "optional": true
-    }
-  },
-  "author": "Julien Ripouteau <julien@ripouteau.com>",
-  "license": "MIT",
-  "keywords": [
-    "caching",
-    "redis",
-    "in-memory",
-    "cache",
-    "multi-tier",
-    "tiered"
-  ],
-  "eslintConfig": {
-    "extends": "@adonisjs/eslint-config/package",
-    "plugins": [
-      "perfectionist"
-    ],
-    "rules": {
-      "@typescript-eslint/consistent-type-imports": [
-        "error",
-        {
-          "prefer": "type-imports",
-          "disallowTypeAnnotations": false
-        }
-      ],
-      "perfectionist/sort-imports": [
-        "error",
-        {
-          "type": "line-length",
-          "order": "asc",
-          "groups": [
-            "type",
-            "react",
-            "nanostores",
-            [
-              "builtin",
-              "external"
-            ],
-            [
-              "internal-type",
-              "internal",
-              "parent-type",
-              "sibling-type",
-              "index-type",
-              "parent",
-              "sibling",
-              "index",
-              "side-effect",
-              "style",
-              "object",
-              "unknown"
-            ]
-          ]
-        }
-      ]
-    }
-  },
-  "prettier": "@adonisjs/prettier-config",
+  "prettier": "@julr/tooling-configs/prettier",
   "publishConfig": {
     "access": "public",
     "tag": "latest"

@@ -100,7 +100,7 @@ test.group('Bento Cache', () => {
     }
 
     // @ts-expect-error too lazy to implement the entire interface
-    const { bento } = new BentoCacheFactory().merge({ logger: logger }).create()
+    const { bento } = new BentoCacheFactory().merge({ logger }).create()
     cleanup(() => bento.disconnectAll())
 
     assert.isAbove(logger.loggedMessages.length, 0)

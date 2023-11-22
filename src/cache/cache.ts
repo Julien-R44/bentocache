@@ -44,12 +44,11 @@ export class Cache implements CacheProvider {
   }
 
   get<T = any>(key: string): Promise<T | undefined | null>
-  get<T = any>(key: string, defaultValue: Factory<T>): Promise<T>
   get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOptions): Promise<T>
   async get<T = any>(
     key: string,
     defaultValue?: Factory<T>,
-    rawOptions?: GetOptions
+    rawOptions?: GetOptions,
   ): Promise<T | undefined | null> {
     const options = this.#stack.defaultOptions.cloneWith(rawOptions)
     const localItem = this.#stack.l1?.get(key, options)
@@ -118,7 +117,7 @@ export class Cache implements CacheProvider {
   async getOrSetForever<T>(
     key: string,
     factory: Factory<T>,
-    options?: GetOrSetOptions
+    options?: GetOrSetOptions,
   ): Promise<T> {
     const cacheOptions = this.#stack.defaultOptions.cloneWith({ ttl: null, ...options })
     return this.#getSetHandler.handle(key, factory, cacheOptions)

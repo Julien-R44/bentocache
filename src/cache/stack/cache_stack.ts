@@ -27,7 +27,7 @@ export class CacheStack {
     public name: string,
     public options: BentoCacheOptions,
     drivers: CacheStackDrivers,
-    bus?: Bus
+    bus?: Bus,
   ) {
     this.logger = options.logger.child({ cache: this.name })
 
@@ -61,7 +61,7 @@ export class CacheStack {
         l1Driver: this.l1?.namespace(namespace),
         l2Driver: this.l2?.namespace(namespace),
       },
-      this.bus
+      this.bus,
     )
   }
 

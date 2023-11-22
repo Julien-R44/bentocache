@@ -76,7 +76,7 @@ test.group('Cache', () => {
     await remote.set(
       'foo',
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
-      stack.defaultOptions
+      stack.defaultOptions,
     )
     const r1 = await cache.get('foo')
 
@@ -94,7 +94,7 @@ test.group('Cache', () => {
     await remote.set(
       'foo',
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
-      stack.defaultOptions
+      stack.defaultOptions,
     )
     const value = await cache.get('foo')
 
@@ -110,7 +110,7 @@ test.group('Cache', () => {
     local.set(
       'foo',
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
-      stack.defaultOptions
+      stack.defaultOptions,
     )
     const value = await cache.get('foo')
 
@@ -128,7 +128,7 @@ test.group('Cache', () => {
     local.set(
       'foo',
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
-      stack.defaultOptions
+      stack.defaultOptions,
     )
     const value = await cache.get('foo')
 
@@ -665,7 +665,7 @@ test.group('Cache', () => {
     await setTimeout(100)
 
     // so local cache of cache1 should be invalidated
-    let r1 = local1.get('foo', stack.defaultOptions)
+    const r1 = local1.get('foo', stack.defaultOptions)
 
     // a get should return the new value
     const r2 = await cache1.get('foo')
@@ -693,7 +693,7 @@ test.group('Cache', () => {
     await setTimeout(100)
 
     // so local cache of cache1 should be invalidated
-    let r1 = local1.get('foo', stack.defaultOptions)
+    const r1 = local1.get('foo', stack.defaultOptions)
 
     const r2 = await cache1.get('foo')
     remoteDriver.neverThrow()
@@ -739,7 +739,7 @@ test.group('Cache', () => {
     remote.set(
       'foo',
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
-      stack.defaultOptions
+      stack.defaultOptions,
     )
 
     const r1 = await cache.get('foo')
@@ -757,7 +757,7 @@ test.group('Cache', () => {
     remote.set(
       'foo',
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
-      stack.defaultOptions
+      stack.defaultOptions,
     )
 
     const r1 = await cache.getOrSet('foo', throwingFactory('error in factory'), { ttl: '10ms' })
@@ -813,12 +813,12 @@ test.group('Cache', () => {
         await setTimeout(100)
         throw new Error('foo')
       },
-      { ttl: '1s' }
+      { ttl: '1s' },
     )
 
     await setTimeout(110)
     const errorLog = logger.logs.find(
-      (log) => log.level === 'error' && log.msg === 'factory error in early refresh'
+      (log) => log.level === 'error' && log.msg === 'factory error in early refresh',
     )
     assert.isDefined(errorLog)
   })
@@ -837,12 +837,12 @@ test.group('Cache', () => {
     local.set(
       'foo',
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
-      stack.defaultOptions
+      stack.defaultOptions,
     )
     await remote.set(
       'foo',
       JSON.stringify({ value: 'baz', logicalExpiration: Date.now() - 1000 }),
-      stack.defaultOptions
+      stack.defaultOptions,
     )
 
     const r1 = await cache.getOrSet('foo', throwingFactory('fail'))

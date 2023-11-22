@@ -63,7 +63,7 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
         Key: { key: { S: this.getItemKey(key) } },
         ConditionExpression: 'attribute_exists(#key)',
         ExpressionAttributeNames: { '#key': 'key' },
-      })
+      }),
     )
   }
 
@@ -80,7 +80,7 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
         ExpressionAttributeNames: { '#key': 'key' },
         ExpressionAttributeValues: { ':prefix': { S: this.prefix } },
         ExclusiveStartKey: exclusiveStartKey,
-      })
+      }),
     )
   }
 

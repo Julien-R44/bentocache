@@ -10,7 +10,7 @@ export class CacheHit implements CacheEvent {
     readonly key: string,
     readonly value: any,
     readonly store: string,
-    readonly graced: boolean = false
+    readonly graced: boolean = false,
   ) {}
 
   toJSON() {

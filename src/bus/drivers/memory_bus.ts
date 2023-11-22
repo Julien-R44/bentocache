@@ -61,7 +61,7 @@ export class MemoryBus implements BusDriver {
 
     MemoryBus.#subscriptions.set(
       channelName,
-      handlers.filter((handlerInfo) => handlerInfo.busId !== this.#id)
+      handlers.filter((handlerInfo) => handlerInfo.busId !== this.#id),
     )
   }
 

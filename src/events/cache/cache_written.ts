@@ -10,7 +10,7 @@ export class CacheWritten implements CacheEvent {
   constructor(
     readonly key: string,
     readonly value: any,
-    readonly store: string
+    readonly store: string,
   ) {}
 
   toJSON() {

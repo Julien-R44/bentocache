@@ -59,7 +59,7 @@ export class Bus {
     cache: LocalCache,
     logger: Logger,
     emitter: Emitter,
-    options: BusOptions = {}
+    options: BusOptions = {},
   ) {
     this.#driver = driver
     this.#cache = cache
@@ -78,7 +78,7 @@ export class Bus {
    */
   async #processErrorRetryQueue() {
     this.#logger.debug(
-      `starting error retry queue processing with ${this.#errorRetryQueue.size()} messages`
+      `starting error retry queue processing with ${this.#errorRetryQueue.size()} messages`,
     )
 
     await this.#errorRetryQueue.process(async (message) => {

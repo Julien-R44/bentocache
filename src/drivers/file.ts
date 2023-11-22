@@ -47,7 +47,7 @@ export class File extends BaseDriver implements CacheDriver {
     /**
      * Check if the key contains a relative path
      */
-    let re = /(\.\/|\.\.\/)/g
+    const re = /(\.\/|\.\.\/)/g
     if (re.test(key)) {
       throw new Error(`Invalid key: ${keyWithoutPrefix}. Should not contain relative paths.`)
     }
@@ -135,7 +135,7 @@ export class File extends BaseDriver implements CacheDriver {
     key = this.getItemKey(key)
     await this.#outputFile(
       this.#keyToPath(key),
-      JSON.stringify([value, ttl ? Date.now() + ttl : -1])
+      JSON.stringify([value, ttl ? Date.now() + ttl : -1]),
     )
 
     return true

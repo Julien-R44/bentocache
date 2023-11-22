@@ -115,14 +115,14 @@ test.group('Redis Bus', (group) => {
     await setTimeout(1000)
 
     const log = testLogger.logs.find(
-      (x) => x.level === 'warn' && x.msg === 'Invalid message received'
+      (x) => x.level === 'warn' && x.msg === 'Invalid message received',
     )
 
     assert.isDefined(log)
   })
 
   test('trigger onReconnect when the redis client reconnects', async ({ assert, cleanup }) => {
-    let container = await new GenericContainer('redis')
+    const container = await new GenericContainer('redis')
       .withExposedPorts({ container: 6379, host: 5643 })
       .start()
 

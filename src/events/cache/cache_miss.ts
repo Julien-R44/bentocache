@@ -8,7 +8,7 @@ export class CacheMiss implements CacheEvent {
 
   constructor(
     readonly key: string,
-    readonly store: string
+    readonly store: string,
   ) {}
 
   toJSON() {

@@ -1,11 +1,12 @@
 /**
  * Benchmark a single set operation on a memory store
  */
+import 'dotenv/config'
+
 import Keyv from 'keyv'
 import { Bench } from 'tinybench'
 import { caching } from 'cache-manager'
 
-import 'dotenv/config'
 import { BentoCache } from '../index.js'
 import { bentostore } from '../src/bento_store.js'
 import { memoryDriver } from '../drivers/memory.js'

@@ -23,7 +23,7 @@ async function createTable() {
         ReadCapacityUnits: 4,
         WriteCapacityUnits: 4,
       },
-    })
+    }),
   )
 }
 
@@ -34,7 +34,7 @@ async function deleteTable() {
   await dynamoClient.send(
     new DeleteTableCommand({
       TableName: 'cache',
-    })
+    }),
   )
 }
 

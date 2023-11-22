@@ -92,7 +92,7 @@ export class CacheStackFactory {
 
     return createIsomorphicDestructurable(
       { stack, local, remote } as const,
-      [stack, local, remote] as const
+      [stack, local, remote] as const,
     )
   }
 }

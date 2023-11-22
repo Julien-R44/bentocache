@@ -20,7 +20,7 @@ export function redisDriver(options: RedisConfig): CreateDriverResult<Redis> {
  * to sending messages between your different processes.
  */
 export function redisBusDriver(
-  options: { connection: IoRedisOptions } & BusOptions
+  options: { connection: IoRedisOptions } & BusOptions,
 ): CreateBusDriverResult {
   return { options, factory: (config: IoRedisOptions) => new RedisBus(config) }
 }

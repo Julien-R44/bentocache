@@ -169,7 +169,7 @@ export class Sql extends BaseDriver {
 
     const row = {
       key: this.getItemKey(key),
-      value: value,
+      value,
       expires_at: ttl ? new Date(Date.now() + ttl) : null,
     }
 

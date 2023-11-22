@@ -132,7 +132,7 @@ test.group('Cache | Stampede protection', () => {
       }
 
       const results = await Promise.all(
-        Array.from({ length: concurrency }).map(() => cache.getOrSet('key', factory))
+        Array.from({ length: concurrency }).map(() => cache.getOrSet('key', factory)),
       )
 
       assert.deepEqual(results, Array.from({ length: concurrency }).fill('value'))

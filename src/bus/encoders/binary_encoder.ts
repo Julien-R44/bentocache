@@ -37,7 +37,7 @@ export class BinaryEncoder implements BusEncoder {
      */
     const totalKeysLength = message.keys.reduce(
       (sum, key) => sum + 4 + Buffer.byteLength(key, 'utf8'),
-      0
+      0,
     )
 
     const totalLength = this.#busIdLength + 1 + totalKeysLength

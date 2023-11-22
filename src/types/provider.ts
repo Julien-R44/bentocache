@@ -33,14 +33,6 @@ export interface CacheProvider {
 
   /**
    * Get a value from the cache, fallback to a default value
-   *
-   * @param key Key to get
-   * @param defaultValue Default value if the key is not found
-   */
-  get<T>(key: string, defaultValue?: Factory<T>): Promise<T>
-
-  /**
-   * Get a value from the cache, fallback to a default value
    * and set options
    *
    * @param key  Key to get
@@ -52,7 +44,6 @@ export interface CacheProvider {
   /**
    * Get or set a value in the cache
    */
-  getOrSet<T>(key: string, cb: Factory<T>, opts?: GetOrSetOptions): Promise<T>
   getOrSet<T>(key: string, factory: Factory<T>, options?: Factory<T> | GetOrSetOptions): Promise<T>
 
   /**

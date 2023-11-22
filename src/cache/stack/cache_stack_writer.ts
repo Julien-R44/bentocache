@@ -15,7 +15,7 @@ export class CacheStackWriter {
    */
   async set(key: string, value: any, options: CacheEntryOptions) {
     const item = this.cacheStack.serialize({
-      value: value,
+      value,
       logicalExpiration: options.logicalTtlFromNow(),
       earlyExpiration: options.earlyExpireTtlFromNow(),
     })

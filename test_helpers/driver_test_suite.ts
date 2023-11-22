@@ -1,8 +1,7 @@
 /// <reference types="@japa/assert" />
 
-import type { test as JapaTest } from '@japa/runner'
-
 import { setTimeout } from 'node:timers/promises'
+import type { test as JapaTest } from '@japa/runner'
 
 import type { CacheDriver } from '../src/types/main.js'
 
@@ -113,7 +112,7 @@ export function registerCacheDriverTestSuite<T extends { new (options: any): Cac
 
     test('clear() remove all keys', async ({ assert }) => {
       await cache.set('key1', 'value1')
-      await cache.set('key2', 'value2', 60000)
+      await cache.set('key2', 'value2', 60_000)
 
       await cache.clear()
 

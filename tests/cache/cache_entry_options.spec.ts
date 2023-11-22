@@ -141,7 +141,7 @@ test.group('Cache Entry Options', () => {
   test('override default timeouts', ({ assert }) => {
     const options = new CacheEntryOptions(
       { timeouts: { soft: '1m' } },
-      { timeouts: { soft: '3m', hard: '4m' } }
+      { timeouts: { soft: '3m', hard: '4m' } },
     )
 
     assert.deepEqual(options.timeouts, {

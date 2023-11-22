@@ -1,6 +1,5 @@
-import type { MutexInterface } from 'async-mutex'
-
 import pTimeout from 'p-timeout'
+import type { MutexInterface } from 'async-mutex'
 
 import type { Locks } from './locks.js'
 import * as exceptions from '../errors.js'
@@ -28,7 +27,7 @@ export class FactoryRunner {
     key: string,
     factoryResult: unknown,
     options: CacheEntryOptions,
-    lockReleaser: MutexInterface.Releaser
+    lockReleaser: MutexInterface.Releaser,
   ) {
     await this.#stackWriter.set(key, factoryResult, options)
     this.#locks.release(key, lockReleaser)
@@ -38,7 +37,7 @@ export class FactoryRunner {
     key: string,
     item: unknown,
     options: CacheEntryOptions,
-    lockReleaser: MutexInterface.Releaser
+    lockReleaser: MutexInterface.Releaser,
   ) {
     await this.#stackWriter.set(key, item, options)
 
@@ -52,7 +51,7 @@ export class FactoryRunner {
     factory: Factory,
     hasFallback: boolean,
     options: CacheEntryOptions,
-    lockReleaser: MutexInterface.Releaser
+    lockReleaser: MutexInterface.Releaser,
   ) {
     const timeoutDuration = options.factoryTimeout(hasFallback)
     const timeoutException =
@@ -68,7 +67,7 @@ export class FactoryRunner {
       milliseconds: timeoutDuration ?? Number.POSITIVE_INFINITY,
       fallback: async () => {
         factoryPromise.then((result) =>
-          this.saveBackgroundFactoryResult(key, result, options, lockReleaser)
+          this.saveBackgroundFactoryResult(key, result, options, lockReleaser),
         )
 
         throw new timeoutException()

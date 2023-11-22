@@ -42,7 +42,7 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
       default: keyof KnownCaches
       stores: KnownCaches
       plugins?: BentoCachePlugin[]
-    }
+    },
   ) {
     this.#stores = config.stores
     this.#defaultStoreName = config.default
@@ -77,7 +77,7 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    * Use a registered cache driver
    */
   use<CacheName extends keyof KnownCaches>(cache?: CacheName) {
-    let cacheToUse: keyof KnownCaches | undefined = cache || this.#defaultStoreName
+    const cacheToUse: keyof KnownCaches | undefined = cache || this.#defaultStoreName
     if (!cacheToUse) throw new Error('No cache driver selected')
 
     /**
@@ -131,7 +131,6 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    * Get a value from the cache
    */
   get<T = any>(key: string): Promise<T | undefined | null>
-  get<T = any>(key: string, defaultValue: Factory<T>): Promise<T>
   get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOptions): Promise<T>
   async get<T = any>(key: string, defaultValue?: Factory<T>, rawOptions?: GetOptions): Promise<T> {
     return this.use().get<T>(key, defaultValue, rawOptions)

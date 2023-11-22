@@ -1,13 +1,14 @@
 /**
  * Benchmark a single get operation on a redis store
  */
+import 'dotenv/config'
+
 import Keyv from 'keyv'
 import { Redis } from 'ioredis'
 import { Bench } from 'tinybench'
 import { caching } from 'cache-manager'
 import { redisStore } from 'cache-manager-ioredis-yet'
 
-import 'dotenv/config'
 import { BentoCache } from '../index.js'
 import { redisDriver } from '../drivers/redis.js'
 import { bentostore } from '../src/bento_store.js'

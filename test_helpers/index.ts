@@ -1,4 +1,9 @@
 import { pino } from 'pino'
+/**
+ * Pino logger that could be injected in
+ * cache classes for manual and quick testing
+ */
+import pinoLoki from 'pino-loki'
 import { setTimeout } from 'node:timers/promises'
 
 export const BASE_URL = new URL('./tmp/', import.meta.url)
@@ -27,17 +32,11 @@ export function slowFactory(ms: number, value: any) {
   }
 }
 
-/**
- * Pino logger that could be injected in
- * cache classes for manual and quick testing
- */
-import pinoLoki from 'pino-loki'
-
 const loadNs = process.hrtime()
 const loadMs = new Date().getTime()
 
 function nanoseconds() {
-  let diffNs = process.hrtime(loadNs)
+  const diffNs = process.hrtime(loadNs)
   return BigInt(loadMs) * BigInt(1e6) + BigInt(diffNs[0] * 1e9 + diffNs[1])
 }
 
@@ -48,11 +47,11 @@ export const traceLogger = (pretty = true) => {
 
   return pino(
     { level: 'trace', timestamp: () => `,"time":${nanoseconds()}` },
-    // @ts-expect-error
+    // @ts-expect-error missing types
     pinoLoki({
       batching: false,
       labels: { application: 'bentocache' },
       host: 'http://localhost:3100',
-    })
+    }),
   )
 }

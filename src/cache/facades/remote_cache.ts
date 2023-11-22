@@ -23,7 +23,7 @@ export class RemoteCache {
     operation: string,
     options: CacheEntryOptions,
     fallbackValue: unknown,
-    fn: () => any
+    fn: () => any,
   ) {
     try {
       return await fn()

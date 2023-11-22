@@ -5,10 +5,6 @@ import { BaseDriver } from '../../src/drivers/base_driver.js'
  * A dummy cache driver that does nothing
  */
 export class NullDriver extends BaseDriver implements CacheDriver<false> {
-  constructor(_config: any) {
-    super(_config)
-  }
-
   namespace(): any {
     return this
   }

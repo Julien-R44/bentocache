@@ -9,6 +9,7 @@ export class Locks {
   /**
    * For a given key, get or create a new lock
    *
+   * @param key Key to get or create a lock for
    * @param timeout Time to wait to acquire the lock
    */
   getOrCreateForKey(key: string, timeout?: number) {
