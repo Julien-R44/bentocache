@@ -124,13 +124,12 @@ test.group('Cache events', () => {
   test('getOrSet emit cache:hit when value is found', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().merge({ emitter }).create()
+    const event = pEvent(emitter, 'cache:hit')
 
     await cache.set('foo', 'bar')
-
     cache.getOrSet('foo', () => 'baz')
 
-    const event = await pEvent(emitter, 'cache:hit')
-    assert.deepEqual(event, { key: 'foo', value: 'bar', store: 'primary', graced: false })
+    assert.deepEqual(await event, { key: 'foo', value: 'bar', store: 'primary', graced: false })
   })
 
   test('getOrSet emit cache:written and cache:miss when value is not found', async ({ assert }) => {
