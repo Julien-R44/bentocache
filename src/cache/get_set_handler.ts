@@ -96,7 +96,7 @@ export class GetSetHandler {
   async #returnRemoteCacheValue(key: string, item: CacheEntry, options: CacheEntryOptions) {
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'remote cache hit')
 
-    await this.stack.l1?.set(key, item.serialize(), options)
+    this.stack.l1?.set(key, item.serialize(), options)
 
     this.#emit(new events.CacheHit(key, item.getValue(), this.stack.name))
     return item.getValue()
@@ -137,10 +137,10 @@ export class GetSetHandler {
         'apply fallback duration',
       )
 
-      await this.stack.l1?.set(
+      this.stack.l1?.set(
         key,
         item.applyFallbackDuration(options.gracePeriod.fallbackDuration).serialize(),
-        options,
+        options
       )
     }
 
@@ -163,7 +163,7 @@ export class GetSetHandler {
      * First we check the local cache. If we have a valid item, just
      * returns it without acquiring a lock.
      */
-    localItem = await this.stack.l1?.get(key, options)
+    localItem = this.stack.l1?.get(key, options)
     if (this.#isItemValid(localItem)) {
       if (localItem?.isEarlyExpired()) this.#earlyExpirationRefresh(key, factory, options)
       return this.#returnLocalCacheValue(key, localItem, options)
@@ -188,7 +188,7 @@ export class GetSetHandler {
      * We need to check the local cache again, because another process
      * could have written a value while we were waiting for the lock.
      */
-    localItem = await this.stack.l1?.get(key, options)
+    localItem = this.stack.l1?.get(key, options)
     if (this.#isItemValid(localItem)) {
       this.#locks.release(key, releaser)
       return this.#returnLocalCacheValue(key, localItem, options, 'local cache hit after lock')
