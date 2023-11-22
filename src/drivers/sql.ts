@@ -41,6 +41,11 @@ export class Sql extends BaseDriver {
    */
   protected dialect: DialectName
 
+  /**
+   * Pruning interval
+   */
+  #pruneInterval?: NodeJS.Timeout
+
   constructor(config: SqlConfig & { dialect: DialectName }) {
     super(config)
 
@@ -48,6 +53,25 @@ export class Sql extends BaseDriver {
     this.tableName = config.tableName || this.tableName
     this.connection = this.#createConnection(config)
     this.initialized = this.#createTableIfNotExists()
+
+    if (typeof config.pruneInterval === 'number') {
+      this.#startPruneInterval(config.pruneInterval)
+    }
+  }
+
+  /**
+   * Start the interval that will prune expired entries
+   * Maybe rework this using a node Worker ?
+   */
+  #startPruneInterval(interval: number) {
+    this.#pruneInterval = setInterval(async () => {
+      await this.initialized
+      await this.connection
+        .from(this.tableName)
+        .where('expires_at', '<', new Date())
+        .delete()
+        .catch((err) => console.error('[bentocache] failed to prune expired entries', err))
+    }, interval)
   }
 
   /**
@@ -220,6 +244,10 @@ export class Sql extends BaseDriver {
    * Disconnect from the database
    */
   async disconnect() {
+    if (this.#pruneInterval) {
+      clearInterval(this.#pruneInterval)
+    }
+
     await this.connection.destroy()
   }
 }

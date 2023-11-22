@@ -107,4 +107,12 @@ export type SqlConfig = {
    * @default true
    */
   autoCreateTable?: boolean
+
+  /**
+   * The interval between each expired entry pruning
+   * run. Can be set to `false` to disable pruning.
+   *
+   * @default false
+   */
+  pruneInterval?: number | false
 } & DriverCommonOptions
