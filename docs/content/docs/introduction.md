@@ -47,7 +47,7 @@ For those looking to go further, you can use the two-levels caching system. Here
 
 Here is a simplified diagram of the flow :
 
-![Bentocache Diagram flow](content/docs/bentocache-flow.png)
+![Bentocache Diagram flow](content/docs/bentocache_flow.webp)
 
 All of this is managed invisibly for you via Bentocache. The only thing to do is to set up a bus in your infrastructure. But if you need multi-level cache, you're probably already using Redis rather than your database as a distributed cache. So you can leverage it to synchronize your local caches
 
@@ -65,7 +65,7 @@ benchmark
   .add('ioredis', async () => await ioredis.get('key'))
 ```
 
-![Redis vs Multi-tier caching](./redis_vs_mtier.png) 
+![Redis vs Multi-tier caching](content/docs/redis_vs_mtier.webp)
 
 So a pretty huge difference.
 

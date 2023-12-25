@@ -10,7 +10,7 @@ To do that, we generally use a in-memory cache as the first level cache, and a d
 
 So by using a multi-tier cache, you can have the best of both worlds. Here is a simplified diagram of the flow :
 
-![Bentocache Flow](content/docs/bentocache-flow.png)
+![Bentocache Flow](content/docs/bentocache_flow.webp)
 
 ## Setup
 
