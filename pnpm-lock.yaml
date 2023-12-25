@@ -230,6 +230,12 @@ importers:
         specifier: ^5.1.6
         version: 5.1.6
 
+  playground:
+    dependencies:
+      bentocache:
+        specifier: workspace:*
+        version: link:../packages/bentocache
+
 packages:
 
   /@aashutoshrathi/word-wrap@1.2.6:

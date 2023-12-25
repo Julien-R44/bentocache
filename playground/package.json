@@ -1,0 +1,11 @@
+{
+  "name": "@bentocache/playground",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "NODE_NO_WARNINGS=1 node --loader ts-node/esm src/index.ts"
+  },
+  "dependencies": {
+    "bentocache": "workspace:*"
+  }
+}
