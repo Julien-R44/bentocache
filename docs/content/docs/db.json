@@ -1,0 +1,104 @@
+[
+  {
+    "permalink": "introduction",
+    "title": "Introduction",
+    "contentPath": "./introduction.md",
+    "category": "Guides"
+  },
+  {
+    "permalink": "quick-setup",
+    "title": "Quick setup",
+    "contentPath": "./quick_setup.md",
+    "category": "Guides"
+  },
+  {
+    "permalink": "walkthrough",
+    "title": "Walkthrough",
+    "contentPath": "./walkthrough.md",
+    "category": "Guides"
+  },
+  {
+    "permalink": "options",
+    "title": "Options",
+    "contentPath": "./options.md",
+    "category": "Guides"
+  },
+  {
+    "permalink": "cache-drivers",
+    "title": "Cache drivers",
+    "contentPath": "./cache_drivers.md",
+    "category": "Guides"
+  },
+  {
+    "permalink": "multi-tier",
+    "title": "Multi-Tier",
+    "contentPath": "./multi_tier.md",
+    "category": "Guides"
+  },
+  {
+    "permalink": "methods",
+    "title": "Methods",
+    "contentPath": "./methods.md",
+    "category": "Guides"
+  },
+  {
+    "permalink": "namespaces",
+    "title": "Namespaces",
+    "contentPath": "./namespaces.md",
+    "category": "Guides"
+  },
+  {
+    "permalink": "named-caches",
+    "title": "Named caches",
+    "contentPath": "./named_caches.md",
+    "category": "Guides"
+  },
+  {
+    "permalink": "grace-periods",
+    "title": "Grace periods",
+    "contentPath": "./grace_periods.md",
+    "category": "Guides"
+  },
+  {
+    "permalink": "timeouts",
+    "title": "Timeouts",
+    "contentPath": "./timeouts.md",
+    "category": "Guides"
+  },
+  {
+    "permalink": "stampede-protection",
+    "title": "Stampede protection",
+    "contentPath": "./stampede_protection.md",
+    "category": "Guides"
+  },
+  {
+    "permalink": "events",
+    "title": "Events",
+    "contentPath": "./digging_deeper/events.md",
+    "category": "Digging Deeper"
+  },
+  {
+    "permalink": "logging",
+    "title": "Logging",
+    "contentPath": "./digging_deeper/logging.md",
+    "category": "Digging Deeper"
+  },
+  {
+    "permalink": "custom-cache-driver",
+    "title": "Create a custom cache driver",
+    "contentPath": "./extend/custom_cache_driver.md",
+    "category": "Extend"
+  },
+  {
+    "permalink": "custom-bus-driver",
+    "title": "Create a custom bus driver",
+    "contentPath": "./extend/custom_bus_driver.md",
+    "category": "Extend"
+  },
+  {
+    "permalink": "create-plugin",
+    "title": "Create a plugin",
+    "contentPath": "./extend/create_plugin.md",
+    "category": "Extend"
+  }
+]

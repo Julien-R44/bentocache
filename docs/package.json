@@ -1,0 +1,46 @@
+{
+  "name": "@bentocache/docs",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "export": "vite build && node --loader=ts-node/esm bin/build.ts && pnpm copy:files",
+    "copy:files": "copyfiles -u 1 public/* public/**/* dist",
+    "start": "node bin/test.js",
+    "serve": "node --loader=ts-node/esm bin/serve.ts",
+    "dev": "concurrently \"vite\" \"npm run serve\""
+  },
+  "imports": {
+    "#src/*": "./src/*.js"
+  },
+  "dependencies": {
+    "@adonisjs/core": "^6.1.5-26",
+    "@adonisjs/static": "^1.0.2",
+    "@radix-ui/colors": "^3.0.0",
+    "@ryangjchandler/alpine-tooltip": "^1.3.0",
+    "edge.js": "6.0.0-10",
+    "tippy.js": "^6.3.7"
+  },
+  "devDependencies": {
+    "@adonisjs/assembler": "^6.1.3-22",
+    "@adonisjs/vite": "^1.0.0",
+    "@alpinejs/persist": "^3.13.2",
+    "@dimerapp/content": "^4.1.0",
+    "@dimerapp/docs-theme": "^3.0.2",
+    "@dimerapp/edge": "^4.0.0",
+    "@dimerapp/shiki": "^4.1.2",
+    "@docsearch/css": "^3.5.2",
+    "@docsearch/js": "^3.5.2",
+    "alpinejs": "^3.13.2",
+    "collect.js": "^4.36.1",
+    "concurrently": "^8.2.2",
+    "edge-uikit": "^1.0.0-1",
+    "medium-zoom": "^1.0.8",
+    "pino-pretty": "^10.2.3",
+    "reflect-metadata": "^0.1.13",
+    "undici": "^5.27.1",
+    "unpoly": "^3.3.0",
+    "vite": "^4.5.0"
+  }
+}
