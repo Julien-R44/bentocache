@@ -1,0 +1,12 @@
+<script type="text/javascript">
+  let isDarkMode = localStorage.getItem('darkMode_enabled');
+  if (isDarkMode === undefined) {
+    isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  } else if (isDarkMode === 'true') {
+    isDarkMode = true
+  } else if (isDarkMode === 'false') {
+    isDarkMode = false
+  }
+
+  document.documentElement.classList.add(isDarkMode ? 'dark' : 'light');
+</script>

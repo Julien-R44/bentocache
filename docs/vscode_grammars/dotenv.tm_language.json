@@ -1,0 +1,149 @@
+{
+  "name": "DotENV",
+  "scopeName": "source.env",
+  "fileTypes": [
+    ".env",
+    ".env-sample",
+    ".env.example",
+    ".env.local",
+    ".env.dev",
+    ".env.test",
+    ".env.testing",
+    ".env.production",
+    ".env.prod"
+  ],
+  "uuid": "09d4e117-0975-453d-a74b-c2e525473f97",
+  "patterns": [
+    {
+      "comment": "Comments - starts with #",
+      "match": "(#).*$\\n?",
+      "name": "comment.line.number-sign.env",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.comment.env"
+        }
+      }
+    },
+    {
+      "comment": "Strings (double)",
+      "name": "string.quoted.double.env",
+      "begin": "(\\\")",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.string.begin.env"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#interpolation"
+        },
+        {
+          "include": "#variable"
+        },
+        {
+          "include": "#escape-characters"
+        }
+      ],
+      "end": "(\\\")",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.string.end"
+        }
+      }
+    },
+    {
+      "comment": "Strings (single)",
+      "name": "string.quoted.single.env",
+      "begin": "(\\')",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.string.begin.env"
+        }
+      },
+      "end": "(\\')",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.string.end"
+        }
+      }
+    },
+    {
+      "comment": "Assignment Operator",
+      "match": "(?<=[\\w])\\s?=",
+      "name": "keyword.operator.assignment.env"
+    },
+    {
+      "comment": "Variable",
+      "match": "([\\w]+)(?=\\s?\\=)",
+      "name": "variable.other.env"
+    },
+    {
+      "comment": "Keywords",
+      "match": "(?i)\\s?(export)",
+      "name": "keyword.other.env"
+    },
+    {
+      "comment": "Constants",
+      "match": "(?i)(?<=\\=)\\s?(true|false|null)",
+      "name": "constant.language.env"
+    },
+    {
+      "comment": "Numeric",
+      "match": "\\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)\\b",
+      "name": "constant.numeric.env"
+    }
+  ],
+  "repository": {
+    "interpolation": {
+      "comment": "Template Syntax: \"foo ${bar} {$baz}\"",
+      "begin": "(\\$\\{|\\{)",
+      "beginCaptures": {
+        "1": {
+          "name": "string.interpolated.env keyword.other.template.begin.env"
+        }
+      },
+      "patterns": [
+        {
+          "match": "(?x)(\\$+)?([a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*?\\b)",
+          "captures": {
+            "1": {
+              "name": "punctuation.definition.variable.env variable.other.env"
+            },
+            "2": {
+              "name": "variable.other.env"
+            }
+          }
+        }
+      ],
+      "end": "(\\})",
+      "endCaptures": {
+        "1": {
+          "name": "string.interpolated.env keyword.other.template.end.env"
+        }
+      }
+    },
+    "variable": {
+      "patterns": [
+        {
+          "match": "(?x)(\\$+)([a-zA-Z_\\x{7f}-\\x{ff}][a-zA-Z0-9_\\x{7f}-\\x{ff}]*?\\b)",
+          "captures": {
+            "1": {
+              "name": "punctuation.definition.variable.env variable.other.env"
+            },
+            "2": {
+              "name": "variable.other.env"
+            }
+          }
+        }
+      ]
+    },
+    "escape-characters": {
+      "patterns": [
+        {
+          "match": "\\\\[nrt\\\\\\$\\\"\\']",
+          "name": "constant.character.escape.env"
+        }
+      ]
+    }
+  }
+}
