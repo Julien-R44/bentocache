@@ -66,8 +66,8 @@ jobs:
     - name: Install dependencies
       run: pnpm install
 
-    - name: Typecheck
-      run: pnpm build
+    - name: Build
+      run: pnpm -C packages/bentocache build
 
   tests:
     runs-on: ubuntu-latest
