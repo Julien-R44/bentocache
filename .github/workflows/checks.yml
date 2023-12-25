@@ -123,4 +123,4 @@ jobs:
         UPSTASH_PORT: ${{ secrets.UPSTASH_PORT }}
         UPSTASH_USERNAME: ${{ secrets.UPSTASH_USERNAME }}
         UPSTASH_PASSWORD: ${{ secrets.UPSTASH_PASSWORD }}
-      run: FORCE_COLOR=1 pnpm test
+      run: FORCE_COLOR=1 pnpm test -r

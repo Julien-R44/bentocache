@@ -1,7 +1,7 @@
 import EventEmitter from 'node:events'
-import { noopLogger } from 'typescript-log'
 import lodash from '@poppinss/utils/lodash'
 import string from '@poppinss/utils/string'
+import { noopLogger } from 'typescript-log'
 
 import type {
   Duration,
