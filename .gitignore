@@ -8,9 +8,9 @@ cache.sqlite3
 .todo.md
 
 # Frontend assets compiled code
-public/hot
-public/build
-public/assets
+docs/public/hot
+docs/public/build
+docs/public/assets
 
 # Build tools specific
 npm-debug.log
