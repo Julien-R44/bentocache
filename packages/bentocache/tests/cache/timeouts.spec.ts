@@ -6,7 +6,7 @@ import { CacheFactory } from '../../factories/cache_factory.js'
 import { throwingFactory, slowFactory } from '../../test_helpers/index.js'
 
 test.group('Soft Timeout', () => {
-  test('should return the graced value when soft timeout is reached', async ({ assert }) => {
+  test('return the graced value when soft timeout is reached', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 100,
@@ -37,9 +37,7 @@ test.group('Soft Timeout', () => {
     assert.isBelow(elapsed, 300)
   })
 
-  test('should returns graced value in remote store when soft timeout is reached', async ({
-    assert,
-  }) => {
+  test('returns graced value in remote store when soft timeout is reached', async ({ assert }) => {
     const { cache, remote, stack } = new CacheFactory()
       .merge({ ttl: 100, gracePeriod: { enabled: true, duration: '6h' }, timeouts: { soft: 200 } })
       .create()
@@ -61,7 +59,7 @@ test.group('Soft Timeout', () => {
     assert.deepEqual(r2, 'new factory value')
   })
 
-  test('should ignore soft timeout if no graced value is set', async ({ assert }) => {
+  test('ignore soft timeout if no graced value is set', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 100,
@@ -78,7 +76,7 @@ test.group('Soft Timeout', () => {
     assert.isAbove(elapsed, 400)
   })
 
-  test('should keep the lock acquired while the factory is running', async ({ assert }) => {
+  test('keep the lock acquired while the background factory is running', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 100,
@@ -139,10 +137,64 @@ test.group('Soft Timeout', () => {
     assert.deepEqual(r2?.getValue(), 'new factory value')
     assert.deepEqual(r3?.getValue(), 'new factory value')
   })
+
+  test('background factory should not generate an unhandled promise rejection', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory()
+      .merge({
+        ttl: 100,
+        gracePeriod: { enabled: true, duration: '6h' },
+        timeouts: { soft: 200 },
+      })
+      .create()
+
+    process.on('unhandledRejection', () => assert.fail())
+
+    await cache.set('key', 'graced value')
+    await setTimeout(150)
+
+    const r1 = await cache.getOrSet('key', async () => {
+      await setTimeout(300)
+      throw new Error('factory error')
+    })
+
+    await setTimeout(210)
+
+    const r2 = await cache.get('key')
+    assert.equal(r2, 'graced value')
+    assert.equal(r1, 'graced value')
+
+    process.removeAllListeners('unhandledRejection')
+  })
+
+  test('background factory still release the lock if it fails', async ({ assert }) => {
+    const { cache } = new CacheFactory()
+      .merge({
+        ttl: 100,
+        gracePeriod: { enabled: true, duration: '6h' },
+        timeouts: { soft: 200 },
+      })
+      .create()
+
+    await cache.set('key', 'graced value')
+    await setTimeout(150)
+
+    const r1 = await cache.getOrSet('key', async () => {
+      await setTimeout(300)
+      throw new Error('factory error')
+    })
+
+    await setTimeout(400)
+    const r2 = await cache.getOrSet('key', () => 'new factory value')
+
+    assert.equal(r1, 'graced value')
+    assert.equal(r2, 'new factory value')
+  })
 })
 
 test.group('Hard timeout', () => {
-  test('should throw a FactoryHardTimeout when hard timeout is reached', async ({ assert }) => {
+  test('throw a FactoryHardTimeout when hard timeout is reached', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 100,
@@ -159,9 +211,7 @@ test.group('Hard timeout', () => {
     assert.isBelow(elapsed, 300)
   })
 
-  test('should throw a FactoryHardTimeout but continue to execute the factory', async ({
-    assert,
-  }) => {
+  test('throw a FactoryHardTimeout but continue to execute the factory', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 100,

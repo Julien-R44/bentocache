@@ -798,6 +798,8 @@ test.group('Cache', () => {
   test('error in factory while early refreshing should be logged', async ({ assert }) => {
     const logger = new TestLogger()
 
+    process.on('unhandledRejection', () => {})
+
     const { cache } = new CacheFactory()
       .merge({ earlyExpiration: 0.5, logger })
       .withL1L2Config()
@@ -821,10 +823,9 @@ test.group('Cache', () => {
       (log) => log.level === 'error' && log.msg === 'factory error in early refresh',
     )
     assert.isDefined(errorLog)
+
+    process.removeAllListeners('unhandledRejection')
   })
-    // This test emit an unhandled promise rejection but this is expected.
-    // Problem is, process is exiting with status 1 and it breaks the CI
-    .skip(!!process.env.CI)
 
   test('when local and remote hitted items are logically it should prioritize remote', async ({
     assert,

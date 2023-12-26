@@ -66,9 +66,10 @@ export class FactoryRunner {
     const factoryResult = await pTimeout(factoryPromise, {
       milliseconds: timeoutDuration ?? Number.POSITIVE_INFINITY,
       fallback: async () => {
-        factoryPromise.then((result) =>
-          this.saveBackgroundFactoryResult(key, result, options, lockReleaser),
-        )
+        factoryPromise
+          .then((result) => this.saveBackgroundFactoryResult(key, result, options, lockReleaser))
+          .catch(() => {})
+          .finally(() => this.#locks.release(key, lockReleaser))
 
         throw new timeoutException()
       },
