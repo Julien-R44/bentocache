@@ -1,0 +1,29 @@
+{
+  "name": "@bentocache/plugin-prometheus",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Prometheus plugin for Bentocache",
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "license": "MIT",
+  "keywords": [
+    "bentocache",
+    "prometheus",
+    "metrics"
+  ],
+  "main": "index.js",
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "test": "c8 pnpm quick:test",
+    "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --loader=ts-node/esm bin/test.ts"
+  },
+  "peerDependencies": {
+    "bentocache": "1.0.0-beta.5",
+    "prom-client": "^15.0.0"
+  },
+  "devDependencies": {
+    "bentocache": "workspace:*",
+    "prom-client": "^15.1.0"
+  }
+}
