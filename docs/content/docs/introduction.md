@@ -16,6 +16,7 @@ Bentocache is a robust multi-tier caching library for Node.js applications
 - 🏷️ Named caches
 - 📖 Well documented + handy JSDoc annotations
 - 📊 Events. Useful for monitoring and metrics
+- 📝 Easy Prometheus integration and ready-to-use Grafana dashboard
 - 🧩 Easily extendable with your own driver
 
 ## Why Bentocache ? 

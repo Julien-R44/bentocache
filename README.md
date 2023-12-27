@@ -18,6 +18,7 @@
 - 🏷️ Named caches
 - 📖 Well documented + handy JSDoc annotations
 - 📊 Events. Useful for monitoring and metrics
+- 📝 Easy Prometheus integration and ready-to-use Grafana dashboard
 - 🧩 Easily extendable with your own driver
 
 See documentation at [bentocache.dev](https://bentocache.dev/docs/introduction)
