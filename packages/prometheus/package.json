@@ -58,5 +58,17 @@
       "test_helpers/**",
       "factories/**"
     ]
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore(release): @bentocache/plugin-prometheus@${version}",
+      "tagAnnotation": "release ${version}",
+      "tagName": "@bentocache/plugin-prometheus@${version}"
+    },
+    "github": {
+      "release": true,
+      "releaseName": "@bentocache/plugin-prometheus@${version}",
+      "web": true
+    }
   }
 }
