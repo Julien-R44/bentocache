@@ -24,6 +24,7 @@
     "build": "tsup-node",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "release": "pnpm build && pnpm release-it",
     "prepublishOnly": "pnpm build",
     "checks": "pnpm lint && pnpm typecheck"
   },
