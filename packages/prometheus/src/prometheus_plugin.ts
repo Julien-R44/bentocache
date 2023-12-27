@@ -20,59 +20,69 @@ export class PrometheusPlugin implements BentoCachePlugin {
     this.#createMetrics()
   }
 
+  /**
+   * Build the metric name based on the prefix option.
+   */
+  #buildMetricName(name: string) {
+    return `${this.options.prefix ?? 'bentocache'}_${name}`
+  }
+
+  /**
+   * Create the Prometheus metrics.
+   */
   #createMetrics() {
     const registry = this.options.registry ?? promClient.register
 
     this.#metrics.cacheGracedHits = new promClient.Counter({
-      name: 'bentocache_graced_hits',
+      name: this.#buildMetricName('graced_hits'),
       help: 'Number of cache graced hits',
       labelNames: ['store', 'key'],
       registers: [registry],
     })
 
     this.#metrics.cacheHits = new promClient.Counter({
-      name: 'bentocache_hits',
+      name: this.#buildMetricName('hits'),
       help: 'Number of cache hits',
       labelNames: ['store', 'key'],
       registers: [registry],
     })
 
     this.#metrics.cacheMisses = new promClient.Counter({
-      name: 'bentocache_misses',
+      name: this.#buildMetricName('misses'),
       help: 'Number of cache misses',
       labelNames: ['store', 'key'],
       registers: [registry],
     })
 
     this.#metrics.cacheWrites = new promClient.Counter({
-      name: 'bentocache_writes',
+      name: this.#buildMetricName('writes'),
       help: 'Number of cache writes',
       labelNames: ['store', 'key'],
       registers: [registry],
     })
 
     this.#metrics.cacheDeletes = new promClient.Counter({
-      name: 'bentocache_deletes',
+      name: this.#buildMetricName('deletes'),
       help: 'Number of cache deletes',
       labelNames: ['store', 'key'],
       registers: [registry],
     })
 
     this.#metrics.cacheClears = new promClient.Counter({
-      name: 'bentocache_clears',
+      name: this.#buildMetricName('clears'),
       help: 'Number of cache clears',
       labelNames: ['store'],
       registers: [registry],
     })
 
     this.#metrics.busMessagesPublished = new promClient.Counter({
-      name: 'bentocache_bus_messages_published',
+      name: this.#buildMetricName('bus_messages_published'),
       help: 'Number of bus messages published',
       registers: [registry],
     })
 
     this.#metrics.busMessagesReceived = new promClient.Counter({
-      name: 'bentocache_bus_messages_received',
+      name: this.#buildMetricName('bus_messages_received'),
       help: 'Number of bus messages received',
       registers: [registry],
     })
