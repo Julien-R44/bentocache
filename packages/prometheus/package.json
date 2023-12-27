@@ -10,13 +10,22 @@
     "prometheus",
     "metrics"
   ],
-  "main": "index.js",
+  "exports": {
+    ".": "./build/index.js",
+    "./types": "./build/src/types/main.js"
+  },
+  "main": "build/index.js",
   "files": [
     "build"
   ],
   "scripts": {
     "test": "c8 pnpm quick:test",
-    "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --loader=ts-node/esm bin/test.ts"
+    "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --loader=ts-node/esm bin/test.ts",
+    "build": "tsup-node",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "prepublishOnly": "pnpm build",
+    "checks": "pnpm lint && pnpm typecheck"
   },
   "peerDependencies": {
     "bentocache": "1.0.0-beta.5",
@@ -25,5 +34,16 @@
   "devDependencies": {
     "bentocache": "workspace:*",
     "prom-client": "^15.1.0"
+  },
+  "tsup": {
+    "entry": [
+      "./index.ts",
+      "./src/types.ts"
+    ],
+    "outDir": "./build",
+    "clean": true,
+    "format": "esm",
+    "dts": true,
+    "target": "esnext"
   }
 }
