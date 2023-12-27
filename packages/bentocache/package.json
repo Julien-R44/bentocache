@@ -117,11 +117,13 @@
   },
   "release-it": {
     "git": {
-      "commitMessage": "chore(release): ${version}",
-      "tagAnnotation": "release ${version}"
+      "commitMessage": "chore(release): bentocache@${version}",
+      "tagAnnotation": "release ${version}",
+      "tagName": "bentocache@${version}"
     },
     "github": {
       "release": true,
+      "releaseName": "bentocache@${version}",
       "web": true
     }
   }
