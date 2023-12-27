@@ -84,6 +84,12 @@
     "category": "Digging Deeper"
   },
   {
+    "permalink": "plugin-prometheus",
+    "title": "Prometheus",
+    "contentPath": "./plugins/prometheus.md",
+    "category": "Plugins"
+  },
+  {
     "permalink": "custom-cache-driver",
     "title": "Create a custom cache driver",
     "contentPath": "./extend/custom_cache_driver.md",
