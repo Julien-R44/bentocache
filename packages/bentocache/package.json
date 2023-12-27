@@ -24,9 +24,6 @@
   "files": [
     "build"
   ],
-  "engines": {
-    "node": ">=18.16.0"
-  },
   "scripts": {
     "clean": "del-cli build",
     "copy:templates": "copyfiles \"stubs/**/*.stub\" build",
