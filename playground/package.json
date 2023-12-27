@@ -6,6 +6,10 @@
     "start": "NODE_NO_WARNINGS=1 node --loader ts-node/esm src/index.ts"
   },
   "dependencies": {
+    "@bentocache/plugin-prometheus": "workspace:*",
     "bentocache": "workspace:*"
+  },
+  "devDependencies": {
+    "prom-client": "^15.1.0"
   }
 }

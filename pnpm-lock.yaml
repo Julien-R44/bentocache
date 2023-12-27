@@ -241,9 +241,16 @@ importers:
 
   playground:
     dependencies:
+      '@bentocache/plugin-prometheus':
+        specifier: workspace:*
+        version: link:../packages/prometheus
       bentocache:
         specifier: workspace:*
         version: link:../packages/bentocache
+    devDependencies:
+      prom-client:
+        specifier: ^15.1.0
+        version: 15.1.0
 
 packages:
 
