@@ -1,8 +1,4 @@
 import { pino } from 'pino'
-/**
- * Pino logger that could be injected in
- * cache classes for manual and quick testing
- */
 import pinoLoki from 'pino-loki'
 import { setTimeout } from 'node:timers/promises'
 
@@ -40,6 +36,10 @@ function nanoseconds() {
   return BigInt(loadMs) * BigInt(1e6) + BigInt(diffNs[0] * 1e9 + diffNs[1])
 }
 
+/**
+ * Pino logger that could be injected in
+ * cache classes for manual and quick testing
+ */
 export const traceLogger = (pretty = true) => {
   if (pretty) {
     return pino({ level: 'trace', ...(pretty ? { transport: { target: 'pino-pretty' } } : {}) })
