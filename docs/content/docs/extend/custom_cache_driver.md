@@ -104,12 +104,14 @@ import { test } from '@japa/runner'
 import { registerCacheDriverTestSuite } from 'bentocache/test_suite'
 import { MyDriver } from '../src/my_driver.js'
 
-registerCacheDriverTestSuite({
-  test,
-  driver: MyDriver,
-  config: {
-    // Your driver options
-  }
+test.group('My Driver', (group) => {
+  registerCacheDriverTestSuite({
+    group,
+    driver: MyDriver,
+    config: {
+      // Your driver options
+    }
+  })
 })
 ```
 

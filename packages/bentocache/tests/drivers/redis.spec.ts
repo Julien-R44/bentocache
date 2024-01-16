@@ -5,16 +5,6 @@ import { Redis } from '../../src/drivers/redis.js'
 import { REDIS_CREDENTIALS } from '../../test_helpers/index.js'
 import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_suite.js'
 
-registerCacheDriverTestSuite({
-  name: 'Redis',
-  test,
-  driver: Redis,
-  config: {
-    prefix: 'japa',
-    connection: REDIS_CREDENTIALS,
-  },
-})
-
 test.group('Redis driver', (group) => {
   let redis: Redis
 
@@ -25,6 +15,12 @@ test.group('Redis driver', (group) => {
       await redis.clear()
       await redis.disconnect()
     }
+  })
+
+  registerCacheDriverTestSuite({
+    group,
+    driver: Redis,
+    config: { prefix: 'japa', connection: REDIS_CREDENTIALS },
   })
 
   test('should be able to provide an instance of ioredis', async ({ assert }) => {

@@ -31,39 +31,28 @@ async function createTable() {
  * Delete the table that stores the cache
  */
 async function deleteTable() {
-  await dynamoClient.send(
-    new DeleteTableCommand({
-      TableName: 'cache',
-    }),
-  )
+  await dynamoClient.send(new DeleteTableCommand({ TableName: 'cache' }))
 }
 
-registerCacheDriverTestSuite({
-  test,
-  driver: DynamoDB,
-  supportsMilliseconds: false,
-  config: {
-    prefix: 'japa',
-    region: 'eu-west-3',
-    endpoint: process.env.DYNAMODB_ENDPOINT,
-    credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
-    table: {
-      name: 'cache',
-    },
-  },
+test.group('DynamoDB driver', (group) => {
+  group.each.setup(async () => {
+    await createTable().catch((e) => console.error('Could not create table', e))
 
-  /**
-   * We create and delete the table between
-   * each tests
-   */
-  eachSetup: async () => {
-    await createTable().catch((e) => {
-      console.error('Could not create table', e)
-    })
-  },
-  eachTeardown: async () => {
-    await deleteTable().catch((e) => {
-      console.error('Could not delete table', e)
-    })
-  },
+    return async () => {
+      await deleteTable().catch((e) => console.error('Could not delete table', e))
+    }
+  })
+
+  registerCacheDriverTestSuite({
+    group,
+    driver: DynamoDB,
+    supportsMilliseconds: false,
+    config: {
+      prefix: 'japa',
+      region: 'eu-west-3',
+      endpoint: process.env.DYNAMODB_ENDPOINT,
+      credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
+      table: { name: 'cache' },
+    },
+  })
 })
