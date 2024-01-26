@@ -17,9 +17,7 @@ const docs = new Collection()
   .db(new URL('../content/docs/db.json', import.meta.url))
   .useRenderer(renderer)
   .urlPrefix('/docs')
-  .tap((entry) => {
-    entry.setMarkdownOptions({ tocDepth: 3 })
-  })
+  .tap((entry) => entry.setMarkdownOptions({ tocDepth: 3 }))
 
 await docs.boot()
 
