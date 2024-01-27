@@ -256,6 +256,7 @@ test.group('Cache', () => {
   test('should throws if graced value is outdated', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .merge({ gracePeriod: { enabled: true, duration: '100ms' } })
+      .withL1L2Config()
       .create()
 
     // init factory

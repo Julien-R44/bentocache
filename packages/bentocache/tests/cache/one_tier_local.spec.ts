@@ -6,7 +6,7 @@ import { throwingFactory, slowFactory } from '../../test_helpers/index.js'
 
 test.group('One tier tests', () => {
   test('get() returns deserialized value', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     await cache.set('key', { foo: 'bar' })
     assert.deepEqual(await cache.get('key'), { foo: 'bar' })
@@ -22,14 +22,14 @@ test.group('One tier tests', () => {
   })
 
   test('get() returns null when null is stored', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     await cache.set('key', null)
     assert.isNull(await cache.get('key'))
   })
 
   test('get() with default value fallback', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     const r1 = await cache.get('key', 'default')
     const r2 = await cache.get('key', () => 'default')
@@ -39,7 +39,7 @@ test.group('One tier tests', () => {
   })
 
   test('get() with fallback but item found should return item', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     await cache.set('key', 'value')
     const r1 = await cache.get('key', 'default')
@@ -49,6 +49,7 @@ test.group('One tier tests', () => {
 
   test('get() with grace period', async ({ assert }) => {
     const { cache } = new CacheFactory()
+      .withMemoryL1()
       .merge({ gracePeriod: { enabled: true, duration: '4h' } })
       .create()
 
@@ -66,6 +67,7 @@ test.group('One tier tests', () => {
 
   test('get() should not use grace period when disabled', async ({ assert }) => {
     const { cache } = new CacheFactory()
+      .withMemoryL1()
       .merge({ gracePeriod: { enabled: false, duration: '500ms' } })
       .create()
 
@@ -96,12 +98,12 @@ test.group('One tier tests', () => {
   })
 
   test('missing() returns true when key does not exists', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
     assert.isTrue(await cache.missing('key1'))
   })
 
   test('missing() returns false when key exists', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     await cache.set('key1', 'value1')
     assert.isFalse(await cache.missing('key1'))
@@ -109,6 +111,7 @@ test.group('One tier tests', () => {
 
   test('missing() returns false even if logically expired', async ({ assert }) => {
     const { cache } = new CacheFactory()
+      .withMemoryL1()
       .merge({ gracePeriod: { enabled: true, duration: '500ms' } })
       .create()
 
@@ -125,12 +128,12 @@ test.group('One tier tests', () => {
   })
 
   test('has() returns false when key does not exists', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
     assert.isFalse(await cache.has('key1'))
   })
 
   test('has() returns true when key exists', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     await cache.set('key1', 'value1')
     assert.isTrue(await cache.has('key1'))
@@ -138,6 +141,7 @@ test.group('One tier tests', () => {
 
   test('has() returns true even if logically expired', async ({ assert }) => {
     const { cache } = new CacheFactory()
+      .withMemoryL1()
       .merge({ gracePeriod: { enabled: true, duration: '500ms' } })
       .create()
 
@@ -154,7 +158,7 @@ test.group('One tier tests', () => {
   })
 
   test('clear() remove all keys', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     await cache.set('key1', 'value1', { ttl: '100ms' })
     await cache.set('key2', 'bar')
@@ -169,6 +173,7 @@ test.group('One tier tests', () => {
 
   test('delete should delete key', async ({ assert }) => {
     const { cache } = new CacheFactory()
+      .withMemoryL1()
       .merge({ gracePeriod: { enabled: true, duration: '500ms' } })
       .create()
 
@@ -186,6 +191,7 @@ test.group('One tier tests', () => {
 
   test('deleteMany should delete multiple keys', async ({ assert }) => {
     const { cache } = new CacheFactory()
+      .withMemoryL1()
       .merge({ gracePeriod: { enabled: true, duration: '500ms' } })
       .create()
 
@@ -201,7 +207,7 @@ test.group('One tier tests', () => {
   })
 
   test('getOrSet() should returns null if null is stored', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     await cache.set('key', null)
 
@@ -210,7 +216,7 @@ test.group('One tier tests', () => {
   })
 
   test('getOrSetForever() should set value forever', async ({ assert }) => {
-    const { cache } = new CacheFactory().merge({ ttl: 100 }).create()
+    const { cache } = new CacheFactory().withMemoryL1().merge({ ttl: 100 }).create()
 
     await cache.getOrSetForever('key', () => 'value')
     assert.deepEqual(await cache.get('key'), 'value')
@@ -221,7 +227,7 @@ test.group('One tier tests', () => {
   })
 
   test('getOrSetForever() returns value when key exists', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     await cache.set('key1', { foo: 'bar' })
     const r1 = await cache.getOrSetForever('key1', throwingFactory('shouldnt be called'))
@@ -230,7 +236,7 @@ test.group('One tier tests', () => {
   })
 
   test('getOrSetForever() store values when key does not exists', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     const value = await cache.getOrSetForever('key1', () => ({ foo: 'bar' }))
     assert.deepEqual(value, { foo: 'bar' })
@@ -238,7 +244,7 @@ test.group('One tier tests', () => {
   })
 
   test('setForever() store a value forever', async ({ assert }) => {
-    const { cache } = new CacheFactory().merge({ ttl: 10 }).create()
+    const { cache } = new CacheFactory().withMemoryL1().merge({ ttl: 10 }).create()
 
     await cache.setForever('key', 'value')
     await setTimeout(30)
@@ -246,14 +252,14 @@ test.group('One tier tests', () => {
   })
 
   test('setForever() returns true when value is set', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     const result = await cache.setForever('key', 'value')
     assert.isTrue(result)
   })
 
   test('getOrSet() returns value when key exists', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     await cache.set('key1', { foo: 'bar' })
     const value = await cache.getOrSet('key1', () => ({ foo: 'baz' }))
@@ -262,7 +268,7 @@ test.group('One tier tests', () => {
   })
 
   test('getOrSet() returns value when key exists', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     await cache.set('key1', { foo: 'bar' })
     const value = await cache.getOrSet('key1', () => ({ foo: 'baz' }))
@@ -271,7 +277,7 @@ test.group('One tier tests', () => {
   })
 
   test('getOrSet() store values when key does not exists', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     const value = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
 
@@ -280,7 +286,7 @@ test.group('One tier tests', () => {
   })
 
   test('getOrSet() with specific ttl', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withMemoryL1().create()
 
     await cache.getOrSet('key1', () => ({ foo: 'bar' }), {
       ttl: '10ms',
@@ -294,6 +300,7 @@ test.group('One tier tests', () => {
     assert.plan(3)
 
     const { cache } = new CacheFactory()
+      .withMemoryL1()
       .merge({ ttl: 10, gracePeriod: { enabled: true, duration: '10m' } })
       .create()
 
@@ -312,6 +319,7 @@ test.group('One tier tests', () => {
 
   test('grace period should not returns old value if factory doesnt throws', async ({ assert }) => {
     const { cache } = new CacheFactory()
+      .withMemoryL1()
       .merge({ ttl: 10, gracePeriod: { enabled: true, duration: '10m' } })
       .create()
 
@@ -327,6 +335,7 @@ test.group('One tier tests', () => {
 
   test('should throws if graced value is now expired', async ({ assert }) => {
     const { cache } = new CacheFactory()
+      .withMemoryL1()
       .merge({ ttl: 10, gracePeriod: { enabled: true, duration: '100ms' } })
       .create()
 
@@ -353,6 +362,7 @@ test.group('One tier tests', () => {
     assert,
   }) => {
     const { cache } = new CacheFactory()
+      .withMemoryL1()
       .merge({
         ttl: 10,
         gracePeriod: { enabled: true, duration: '6h', fallbackDuration: '0.5s' },
@@ -388,6 +398,7 @@ test.group('One tier tests', () => {
 
   test('should not try to refresh graced value after extending ttl', async ({ assert }) => {
     const { cache } = new CacheFactory()
+      .withMemoryL1()
       .merge({
         ttl: 10,
         gracePeriod: { enabled: true, duration: '6h', fallbackDuration: '2s' },
@@ -418,7 +429,10 @@ test.group('One tier tests', () => {
   })
 
   test('early expiration', async ({ assert }) => {
-    const { cache } = new CacheFactory().merge({ earlyExpiration: 0.5, ttl: 100 }).create()
+    const { cache } = new CacheFactory()
+      .withMemoryL1()
+      .merge({ earlyExpiration: 0.5, ttl: 100 })
+      .create()
 
     assert.plan(5)
 
@@ -452,7 +466,10 @@ test.group('One tier tests', () => {
   })
 
   test('early refresh should be locked. only one factory call', async ({ assert }) => {
-    const { cache } = new CacheFactory().merge({ earlyExpiration: 0.5, ttl: 100 }).create()
+    const { cache } = new CacheFactory()
+      .withMemoryL1()
+      .merge({ earlyExpiration: 0.5, ttl: 100 })
+      .create()
 
     assert.plan(4)
 
@@ -482,7 +499,7 @@ test.group('One tier tests', () => {
   })
 
   test('early expiration of >= 0 or <= 1 should be ignored', async ({ assert }) => {
-    const { cache, local, stack } = new CacheFactory().merge({ ttl: 100 }).create()
+    const { cache, local, stack } = new CacheFactory().withMemoryL1().merge({ ttl: 100 }).create()
 
     await cache.getOrSet('key1', () => ({ foo: 'bar' }), { earlyExpiration: 1 })
     await cache.getOrSet('key2', () => ({ foo: 'bar' }), { earlyExpiration: 0 })
@@ -495,7 +512,10 @@ test.group('One tier tests', () => {
   })
 
   test('early refresh should re-increment physical/logical ttls', async ({ assert }) => {
-    const { cache } = new CacheFactory().merge({ earlyExpiration: 0.5, ttl: 100 }).create()
+    const { cache } = new CacheFactory()
+      .withMemoryL1()
+      .merge({ earlyExpiration: 0.5, ttl: 100 })
+      .create()
 
     // init cache
     const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
@@ -532,6 +552,7 @@ test.group('One tier tests', () => {
 
   test('soft timeout should returns old value if factory take too long', async ({ assert }) => {
     const { cache } = new CacheFactory()
+      .withMemoryL1()
       .merge({
         ttl: 100,
         timeouts: { soft: 500 },
@@ -559,7 +580,7 @@ test.group('One tier tests', () => {
   }).disableTimeout()
 
   test('should be able to specify a lock timeout', async ({ assert }) => {
-    const { cache } = new CacheFactory().merge({ lockTimeout: 100 }).create()
+    const { cache } = new CacheFactory().withMemoryL1().merge({ lockTimeout: 100 }).create()
 
     const r1 = cache.getOrSet('key1', slowFactory(500, 'value'), { ttl: '10ms' })
 

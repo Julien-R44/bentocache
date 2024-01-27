@@ -13,6 +13,7 @@ test.group('Soft Timeout', () => {
         gracePeriod: { enabled: true, duration: '6h' },
         timeouts: { soft: 200 },
       })
+      .withL1L2Config()
       .create()
 
     // we set a graced value in the cache
@@ -40,6 +41,7 @@ test.group('Soft Timeout', () => {
   test('returns graced value in remote store when soft timeout is reached', async ({ assert }) => {
     const { cache, remote, stack } = new CacheFactory()
       .merge({ ttl: 100, gracePeriod: { enabled: true, duration: '6h' }, timeouts: { soft: 200 } })
+      .withL1L2Config()
       .create()
 
     await remote.set(
@@ -66,6 +68,7 @@ test.group('Soft Timeout', () => {
         gracePeriod: { enabled: true, duration: '6h' },
         timeouts: { soft: 200 },
       })
+      .withL1L2Config()
       .create()
 
     const now = Date.now()
@@ -83,6 +86,7 @@ test.group('Soft Timeout', () => {
         gracePeriod: { enabled: true, duration: '6h', fallbackDuration: null },
         timeouts: { soft: 200 },
       })
+      .withL1L2Config()
       .create()
 
     await cache.set('key', 'graced value')
@@ -121,6 +125,7 @@ test.group('Soft Timeout', () => {
         gracePeriod: { enabled: true, duration: '6h' },
         timeouts: { soft: 200 },
       })
+      .withL1L2Config()
       .create()
 
     await cache.set('key', 'graced value')
@@ -147,6 +152,7 @@ test.group('Soft Timeout', () => {
         gracePeriod: { enabled: true, duration: '6h' },
         timeouts: { soft: 200 },
       })
+      .withL1L2Config()
       .create()
 
     process.on('unhandledRejection', () => assert.fail())
@@ -175,6 +181,7 @@ test.group('Soft Timeout', () => {
         gracePeriod: { enabled: true, duration: '6h' },
         timeouts: { soft: 200 },
       })
+      .withL1L2Config()
       .create()
 
     await cache.set('key', 'graced value')
@@ -201,6 +208,7 @@ test.group('Hard timeout', () => {
         gracePeriod: { enabled: true, duration: '6h' },
         timeouts: { hard: 200 },
       })
+      .withL1L2Config()
       .create()
 
     const now = Date.now()
@@ -218,6 +226,7 @@ test.group('Hard timeout', () => {
         gracePeriod: { enabled: true, duration: '6h' },
         timeouts: { hard: 200 },
       })
+      .withL1L2Config()
       .create()
 
     const r1 = cache.getOrSet('key', slowFactory(400, 'new factory value'))
@@ -236,6 +245,7 @@ test.group('Hard timeout', () => {
         gracePeriod: { enabled: true, duration: '6h' },
         timeouts: { hard: 200 },
       })
+      .withL1L2Config()
       .create()
 
     await cache.set('key', 'graced value')

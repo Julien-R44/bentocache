@@ -2,10 +2,13 @@ import lodash from '@poppinss/utils/lodash'
 import { getActiveTest } from '@japa/runner'
 
 import { Cache } from '../src/cache/cache.js'
-import { CacheStackFactory } from './cache_stack_factory.js'
+import { Redis } from '../src/drivers/redis.js'
+import { Memory } from '../src/drivers/memory.js'
+import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
 import type { CacheStackDrivers } from '../src/types/main.js'
+import { CacheStack } from '../src/cache/stack/cache_stack.js'
+import { BentoCacheOptions } from '../src/bento_cache_options.js'
 import { createIsomorphicDestructurable } from '../src/helpers.js'
-import type { CacheStack } from '../src/cache/stack/cache_stack.js'
 import type { RawBentoCacheOptions } from '../src/types/options/options.js'
 
 /**
@@ -13,7 +16,6 @@ import type { RawBentoCacheOptions } from '../src/types/options/options.js'
  * testing
  */
 export class CacheFactory {
-  #stack?: CacheStack
   #parameters: Partial<RawBentoCacheOptions & CacheStackDrivers> = {}
   enabledL1L2Config: boolean = false
 
@@ -24,33 +26,61 @@ export class CacheFactory {
     })
   }
 
+  /**
+   * Create the cache stack
+   */
   #createCacheStack() {
-    if (this.#stack) return this.#stack
+    const options = new BentoCacheOptions({
+      ttl: this.#parameters.ttl,
+      gracePeriod: this.#parameters.gracePeriod,
+      earlyExpiration: this.#parameters.earlyExpiration,
+      timeouts: this.#parameters.timeouts,
+      logger: this.#parameters.logger,
+      emitter: this.#parameters.emitter,
+      lockTimeout: this.#parameters.lockTimeout,
+    })
 
-    const factory = new CacheStackFactory()
+    const stack = new CacheStack('primary', options, {
+      l1Driver: this.#parameters.l1Driver,
+      l2Driver: this.#parameters.l2Driver,
+      busDriver: this.#parameters.busDriver,
+      busOptions: this.#parameters.busOptions,
+    })
 
-    if (this.#parameters) factory.merge(this.#parameters)
-    if (this.enabledL1L2Config) factory.withL1L2Config()
-
-    const { stack } = factory.create()
     return stack
   }
 
   /**
-   * Attach a specific cache stack
+   * Merge custom parameters with the default parameters
    */
-  withCacheStack(stack: CacheStack) {
-    this.#stack = stack
-    return this
-  }
-
   merge(parameters: Partial<RawBentoCacheOptions & CacheStackDrivers>) {
     this.#parameters = lodash.merge({}, this.#parameters, parameters)
     return this
   }
 
+  /**
+   * Adds a Memory L1 driver to the cache stack
+   */
+  withMemoryL1() {
+    this.#parameters.l1Driver = new Memory({ maxSize: 100, prefix: 'test' })
+    return this
+  }
+
+  /**
+   * Adds a Redis L2 driver to the cache stack
+   */
+  withRedisL2() {
+    this.#parameters.l2Driver = new Redis({ connection: { host: '127.0.0.1', port: 6379 } })
+  }
+
+  /**
+   * Adds a cache stack preset with Memory + Redis + Memory Bus
+   */
   withL1L2Config() {
-    this.enabledL1L2Config = true
+    this.#parameters.l1Driver ??= new Memory({ maxSize: 100, prefix: 'test' })
+    this.#parameters.l2Driver ??= new Redis({ connection: { host: '127.0.0.1', port: 6379 } })
+    this.#parameters.busDriver ??= new MemoryBus()
+
     return this
   }
 

@@ -1,9 +1,10 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
+import { Redis } from '../../src/drivers/redis.js'
 import { Memory } from '../../src/drivers/memory.js'
-import { throwingFactory } from '../../test_helpers/index.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
+import { REDIS_CREDENTIALS, throwingFactory } from '../../test_helpers/index.js'
 
 test.group('Cache | Stampede protection', () => {
   test('only one background factory should be executed if soft timeout is triggered', async ({
@@ -11,6 +12,7 @@ test.group('Cache | Stampede protection', () => {
   }) => {
     const { cache } = new CacheFactory()
       .merge({ gracePeriod: { enabled: true, duration: '6h' }, timeouts: { soft: '100ms' } })
+      .withL1L2Config()
       .create()
 
     await cache.set('key', 'value', { ttl: '100ms' })
@@ -65,7 +67,7 @@ test.group('Cache | Stampede protection', () => {
   })
 
   test('getOrSet() factory should be called only once', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withL1L2Config().create()
     let factoryCalls = 0
 
     const factory = async () => {
@@ -84,7 +86,7 @@ test.group('Cache | Stampede protection', () => {
   })
 
   test('getOrSetForever() factory should be called only once', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withL1L2Config().create()
     let factoryCalls = 0
 
     const factory = async () => {
@@ -103,7 +105,7 @@ test.group('Cache | Stampede protection', () => {
   })
 
   test('if factory throws an error it should release the lock', async ({ assert }) => {
-    const { cache } = new CacheFactory().create()
+    const { cache } = new CacheFactory().withL1L2Config().create()
 
     const results = await Promise.allSettled([
       cache.getOrSet('key', throwingFactory('foo')),
@@ -122,7 +124,54 @@ test.group('Cache | Stampede protection', () => {
   test('high concurrency but only one factory call')
     .with([100, 1000, 10_000])
     .run(async ({ assert }, concurrency) => {
-      const { cache } = new CacheFactory().create()
+      const { cache } = new CacheFactory().withL1L2Config().create()
+      let factoryCalls = 0
+
+      const factory = async () => {
+        await setTimeout(300)
+        factoryCalls++
+        return 'value'
+      }
+
+      const results = await Promise.all(
+        Array.from({ length: concurrency }).map(() => cache.getOrSet('key', factory)),
+      )
+
+      assert.deepEqual(results, Array.from({ length: concurrency }).fill('value'))
+      assert.equal(factoryCalls, 1)
+    })
+
+  test('high concurrency but only one factory call - one tier local')
+    .with([100, 1000, 10_000])
+    .run(async ({ assert }, concurrency) => {
+      const { cache } = new CacheFactory()
+        .merge({ l1Driver: new Memory({ maxSize: 100, prefix: 'test' }) })
+        .create()
+
+      let factoryCalls = 0
+
+      const factory = async () => {
+        await setTimeout(300)
+        factoryCalls++
+        return 'value'
+      }
+
+      const results = await Promise.all(
+        Array.from({ length: concurrency }).map(() => cache.getOrSet('key', factory)),
+      )
+
+      assert.deepEqual(results, Array.from({ length: concurrency }).fill('value'))
+      assert.equal(factoryCalls, 1)
+    })
+
+  test('high concurrency but only one factory call - one tier remote')
+    .with([100, 1000, 10_000])
+    .disableTimeout()
+    .run(async ({ assert }, concurrency) => {
+      const { cache } = new CacheFactory()
+        .merge({ l2Driver: new Redis({ connection: REDIS_CREDENTIALS }) })
+        .create()
+
       let factoryCalls = 0
 
       const factory = async () => {

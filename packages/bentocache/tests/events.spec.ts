@@ -12,7 +12,7 @@ import { ChaosBus } from '../test_helpers/chaos/chaos_bus.js'
 test.group('Cache events', () => {
   test('emit cache:miss event when get() inexistent key', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
     cache.get('key')
     const event = await pEvent(emitter, 'cache:miss')
@@ -22,7 +22,7 @@ test.group('Cache events', () => {
 
   test('emit cache:hit event when get() existing key', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
     const eventPromise = pEvent(emitter, 'cache:hit')
 
@@ -35,7 +35,7 @@ test.group('Cache events', () => {
 
   test('emit cache:written event when calling set()', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
     cache.set('key', 'value')
 
@@ -45,7 +45,7 @@ test.group('Cache events', () => {
 
   test('emit cache:deleted event when calling delete()', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
     await cache.set('key', 'value')
     cache.delete('key')
@@ -73,7 +73,7 @@ test.group('Cache events', () => {
 
   test('pull() emit cache:deleted and cache:hit events', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
     const promises = Promise.all([pEvent(emitter, 'cache:deleted'), pEvent(emitter, 'cache:hit')])
     await cache.set('key', 'value')
@@ -87,7 +87,7 @@ test.group('Cache events', () => {
 
   test('clear() emit cache:cleared event', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
     cache.clear()
 
@@ -97,7 +97,7 @@ test.group('Cache events', () => {
 
   test('deleteMany() emit cache:deleted events', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
     await cache.set('key1', 'value1')
     await cache.set('key2', 'value2')
@@ -113,7 +113,7 @@ test.group('Cache events', () => {
 
   test('setForever emit cache:written event', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
     cache.setForever('key', 'value')
 
@@ -123,7 +123,7 @@ test.group('Cache events', () => {
 
   test('getOrSet emit cache:hit when value is found', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
     const event = pEvent(emitter, 'cache:hit')
 
     await cache.set('foo', 'bar')
@@ -134,7 +134,7 @@ test.group('Cache events', () => {
 
   test('getOrSet emit cache:written and cache:miss when value is not found', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory().merge({ emitter }).create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
     cache.getOrSet('foo', () => 'baz')
 
@@ -178,6 +178,7 @@ test.group('Cache events', () => {
   test('a graced value should be marked as graced with get', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory()
+      .withL1L2Config()
       .merge({
         emitter,
         gracePeriod: { enabled: true, duration: '2h' },
@@ -197,6 +198,7 @@ test.group('Cache events', () => {
   test('a graced value should be marked as graced with getOrSet', async ({ assert }) => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory()
+      .withL1L2Config()
       .merge({
         emitter,
         gracePeriod: { enabled: true, duration: '2h' },
