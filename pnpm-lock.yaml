@@ -157,8 +157,8 @@ importers:
         specifier: ^2.2.2
         version: 2.2.2
       '@poppinss/utils':
-        specifier: 6.7.0
-        version: 6.7.0
+        specifier: ^6.7.1
+        version: 6.7.1
       '@sindresorhus/chunkify':
         specifier: ^1.0.0
         version: 1.0.0
@@ -267,7 +267,7 @@ packages:
       '@poppinss/hooks': 7.2.2
       '@poppinss/macroable': 1.0.1
       '@poppinss/prompts': 3.1.2
-      '@poppinss/utils': 6.7.0
+      '@poppinss/utils': 6.7.1
       fastest-levenshtein: 1.0.16
       jsonschema: 1.4.1
       string-width: 7.1.0
@@ -394,7 +394,7 @@ packages:
     resolution: {integrity: sha512-neLEWyi2NcMPIswqfyxB4cX0WOAHsFn/FqcQiHvBpdw7bCPSQGlo8v96xxcXvh8TVOw99rW4o9ZGnO5v09kIZg==}
     engines: {node: '>=18.16.0'}
     dependencies:
-      '@poppinss/utils': 6.7.0
+      '@poppinss/utils': 6.7.1
       '@poppinss/validator-lite': 1.0.3
       dotenv: 16.3.1
       split-lines: 3.0.0
@@ -2168,7 +2168,7 @@ packages:
     engines: {node: '>=18.16.0'}
     dependencies:
       '@poppinss/colors': 4.1.2
-      '@poppinss/utils': 6.7.0
+      '@poppinss/utils': 6.7.1
       enquirer: 2.4.1
 
   /@poppinss/utils@6.5.1:
