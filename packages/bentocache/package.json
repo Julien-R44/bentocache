@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",
-    "@poppinss/utils": "6.7.0",
+    "@poppinss/utils": "^6.7.1",
     "@sindresorhus/chunkify": "^1.0.0",
     "async-mutex": "^0.4.0",
     "hexoid": "^1.0.0",
