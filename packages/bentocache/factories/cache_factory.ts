@@ -71,6 +71,7 @@ export class CacheFactory {
    */
   withRedisL2() {
     this.#parameters.l2Driver = new Redis({ connection: { host: '127.0.0.1', port: 6379 } })
+    return this
   }
 
   /**
