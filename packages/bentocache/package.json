@@ -20,6 +20,13 @@
     "./plugins/*": "./build/plugins/*.js",
     "./test_suite": "./build/src/test_suite.js"
   },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./build/*.d.ts"
+      ]
+    }
+  },
   "main": "build/index.js",
   "files": [
     "build"
