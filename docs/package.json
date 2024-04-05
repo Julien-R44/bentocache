@@ -8,6 +8,7 @@
     "export": "vite build && node --loader=ts-node/esm bin/build.ts && pnpm copy:files",
     "copy:files": "copyfiles -u 1 public/* public/**/* dist",
     "start": "node bin/test.js",
+    "typecheck": "tsc --noEmit",
     "serve": "node --loader=ts-node/esm bin/serve.ts",
     "dev": "concurrently \"vite\" \"npm run serve\""
   },

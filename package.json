@@ -10,7 +10,7 @@
     "node": ">=18.16.0"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "pnpm run -r --parallel typecheck",
     "lint": "eslint .",
     "checks": "pnpm lint && pnpm typecheck"
   },
