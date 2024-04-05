@@ -44,14 +44,14 @@ export enum CacheBusMessageType {
   Set = 'set',
 
   /**
-   * An item was deleted from the cache
-   */
-  Delete = 'delete',
-
-  /**
    * Whole cache was cleared
    */
   Clear = 'clear',
+
+  /**
+   * An item was deleted from the cache
+   */
+  Delete = 'delete',
 }
 
 export type BusOptions = {

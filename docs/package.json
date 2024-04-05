@@ -15,31 +15,31 @@
     "#src/*": "./src/*.js"
   },
   "dependencies": {
-    "@adonisjs/core": "^6.2.2",
+    "@adonisjs/core": "^6.5.0",
     "@adonisjs/static": "^1.1.1",
     "@radix-ui/colors": "^3.0.0",
     "@ryangjchandler/alpine-tooltip": "^2.0.0",
-    "edge.js": "6.0.1",
+    "edge.js": "6.0.2",
     "tippy.js": "^6.3.7"
   },
   "devDependencies": {
-    "@adonisjs/assembler": "^7.1.0",
+    "@adonisjs/assembler": "^7.4.0",
     "@adonisjs/vite": "^2.0.2",
-    "@alpinejs/persist": "^3.13.5",
-    "@dimerapp/content": "^5.0.0",
+    "@alpinejs/persist": "^3.13.8",
+    "@dimerapp/content": "^5.2.1",
     "@dimerapp/docs-theme": "^4.0.2",
     "@dimerapp/edge": "^5.0.0",
     "@dimerapp/shiki": "^5.0.0",
-    "@docsearch/css": "^3.5.2",
-    "@docsearch/js": "^3.5.2",
-    "alpinejs": "^3.13.5",
+    "@docsearch/css": "^3.6.0",
+    "@docsearch/js": "^3.6.0",
+    "alpinejs": "^3.13.8",
     "collect.js": "^4.36.1",
     "concurrently": "^8.2.2",
     "edge-uikit": "^1.0.0-1",
     "medium-zoom": "^1.1.0",
-    "reflect-metadata": "^0.2.1",
-    "undici": "^6.5.0",
+    "reflect-metadata": "^0.2.2",
+    "undici": "^6.11.1",
     "unpoly": "^3.7.3",
-    "vite": "^5.0.12"
+    "vite": "^5.2.8"
   }
 }
