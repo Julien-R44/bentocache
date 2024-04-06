@@ -3,7 +3,7 @@ import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
 import { KnexAdapter } from '../../src/drivers/knex.js'
-import { DatabaseStore } from '../../src/drivers/database.js'
+import { DatabaseDriver } from '../../src/drivers/database.js'
 
 test.group('Database', () => {
   test('should prune expired items every x seconds', async ({ assert, cleanup }) => {
@@ -15,7 +15,7 @@ test.group('Database', () => {
       }),
     })
 
-    const driver = new DatabaseStore(adapter, {
+    const driver = new DatabaseDriver(adapter, {
       tableName: 'cache',
       autoCreateTable: true,
       pruneInterval: 500,

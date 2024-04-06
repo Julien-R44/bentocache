@@ -3,7 +3,7 @@ import { SqliteAdapter, type Kysely } from 'kysely'
 import type { DatabaseAdapter, KyselyConfig } from '../types/main.js'
 
 /**
- * Kysely adapter for the DatabaseStore
+ * Kysely adapter for the DatabaseDriver
  */
 export class KyselyAdapter implements DatabaseAdapter {
   #isSqlite: boolean

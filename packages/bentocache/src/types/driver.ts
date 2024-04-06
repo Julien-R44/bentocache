@@ -54,7 +54,7 @@ export interface CacheDriver<Async extends boolean = true> {
 }
 
 /**
- * Interface for a DatabaseAdapter that can be used with the DatabaseStore
+ * Interface for a DatabaseAdapter that can be used with the DatabaseDriver
  */
 export interface DatabaseAdapter {
   /**

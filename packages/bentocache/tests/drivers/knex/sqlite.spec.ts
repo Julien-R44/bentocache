@@ -14,6 +14,6 @@ test.group('Knex | Better-sqlite3 driver', (group) => {
   registerCacheDriverTestSuite({
     test,
     group,
-    createStore: (options) => createKnexStore({ connection: db, prefix: 'japa', ...options }),
+    createDriver: (options) => createKnexStore({ connection: db, prefix: 'japa', ...options }),
   })
 })

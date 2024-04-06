@@ -35,7 +35,7 @@ async function deleteTable() {
 }
 
 test.group('DynamoDB driver', (group) => {
-  group.each.setup(async () => {
+  group.setup(async () => {
     await createTable().catch((e) => console.error('Could not create table', e))
 
     return async () => {
@@ -47,7 +47,7 @@ test.group('DynamoDB driver', (group) => {
     test,
     group,
     supportsMilliseconds: false,
-    createStore: (options) =>
+    createDriver: (options) =>
       new DynamoDB({
         prefix: 'japa',
         region: 'eu-west-3',

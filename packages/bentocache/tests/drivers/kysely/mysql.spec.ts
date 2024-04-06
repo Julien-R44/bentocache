@@ -16,6 +16,6 @@ test.group('Kysely | Mysql driver', (group) => {
     test,
     group,
     supportsMilliseconds: false,
-    createStore: (options) => createKyselyStore({ connection: db, prefix: 'japa', ...options }),
+    createDriver: (options) => createKyselyStore({ connection: db, prefix: 'japa', ...options }),
   })
 })

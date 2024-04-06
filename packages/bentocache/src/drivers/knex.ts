@@ -3,7 +3,7 @@ import type { Knex } from 'knex'
 import type { DatabaseAdapter, KnexConfig } from '../types/main.js'
 
 /**
- * Knex adapter for the DatabaseStore
+ * Knex adapter for the DatabaseDriver
  */
 export class KnexAdapter implements DatabaseAdapter {
   #connection: Knex

@@ -9,7 +9,7 @@ test.group('File driver', (group) => {
   registerCacheDriverTestSuite({
     test,
     group,
-    createStore: (options) => {
+    createDriver: (options) => {
       return new File({ prefix: 'japa', directory: fileURLToPath(BASE_URL), ...options })
     },
   })

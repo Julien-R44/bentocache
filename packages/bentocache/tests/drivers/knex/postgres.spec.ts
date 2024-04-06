@@ -14,6 +14,6 @@ test.group('Knex | MySQL driver', (group) => {
     test,
     group,
     supportsMilliseconds: false,
-    createStore: (options) => createKnexStore({ connection: db, prefix: 'japa', ...options }),
+    createDriver: (options) => createKnexStore({ connection: db, prefix: 'japa', ...options }),
   })
 })

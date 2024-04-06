@@ -9,7 +9,7 @@ test.group('Redis driver', (group) => {
   registerCacheDriverTestSuite({
     test,
     group,
-    createStore: (options) =>
+    createDriver: (options) =>
       new Redis({ prefix: 'japa', connection: REDIS_CREDENTIALS, ...options }),
   })
 

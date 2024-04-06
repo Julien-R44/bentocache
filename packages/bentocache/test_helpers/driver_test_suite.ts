@@ -9,7 +9,7 @@ import type { CacheDriver, CacheDriverOptions } from '../src/types/main.js'
 export function registerCacheDriverTestSuite(options: {
   test: typeof JapaTest
   group: Group
-  createStore: (options?: CacheDriverOptions) => CacheDriver<any>
+  createDriver: (options?: CacheDriverOptions) => CacheDriver<any>
   configureGroup?: (group: Group) => any
 
   /**
@@ -20,12 +20,14 @@ export function registerCacheDriverTestSuite(options: {
   const { test, group } = options
   const sleepTime = options.supportsMilliseconds ? 20 : 1000
 
-  const cache = options.createStore()
+  const cache = options.createDriver()
 
   group.tap((t) => t.disableTimeout())
   group.each.teardown(async () => {
     await cache.clear()
   })
+
+  options.configureGroup?.(group)
 
   group.teardown(async () => {
     await cache.disconnect()
@@ -71,7 +73,7 @@ export function registerCacheDriverTestSuite(options: {
   })
 
   test('clear() remove only keys with prefix', async ({ assert, cleanup }) => {
-    const cache2 = options.createStore({ prefix: 'prefix' })
+    const cache2 = options.createDriver({ prefix: 'prefix' })
     cleanup(async () => {
       await cache2.clear()
     })

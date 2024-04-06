@@ -6,7 +6,7 @@ import type { DatabaseConfig, CacheDriver, DatabaseAdapter } from '../types/main
  *
  * You should provide an adapter that will handle the database interactions
  */
-export class DatabaseStore extends BaseDriver implements CacheDriver<true> {
+export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
   type = 'l2' as const
 
   /**
