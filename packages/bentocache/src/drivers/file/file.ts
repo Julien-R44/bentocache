@@ -1,17 +1,16 @@
 import { dirname, join } from 'node:path'
+import { Worker } from 'node:worker_threads'
 import { access, mkdir, readFile, writeFile, rm } from 'node:fs/promises'
 
-import { BaseDriver } from './base_driver.js'
-import type { CacheDriver, CreateDriverResult, FileConfig } from '../types/main.js'
+import { resolveTtl } from '../../helpers.js'
+import { BaseDriver } from '../base_driver.js'
+import type { CacheDriver, CreateDriverResult, FileConfig } from '../../types/main.js'
 
 /**
  * Create a new file driver
  */
 export function fileDriver(options: FileConfig): CreateDriverResult<FileDriver> {
-  return {
-    options,
-    factory: (config: FileConfig) => new FileDriver(config),
-  }
+  return { options, factory: (config: FileConfig) => new FileDriver(config) }
 }
 
 /**
@@ -30,12 +29,28 @@ export class FileDriver extends BaseDriver implements CacheDriver {
    */
   #directory: string
 
+  /**
+   * Worker thread that will clean up the expired files
+   */
+  #cleanerWorker?: Worker
+
   declare config: FileConfig
 
-  constructor(config: FileConfig) {
+  constructor(config: FileConfig, isNamespace: boolean = false) {
     super(config)
 
     this.#directory = this.#sanitizePath(join(config.directory, config.prefix || ''))
+
+    /**
+     * If this is a namespaced class, then we should not start the cleaner
+     * worker multiple times. Only the parent class will take care of it.
+     */
+    if (isNamespace) return
+    if (config.pruneInterval === false) return
+
+    this.#cleanerWorker = new Worker(new URL('./cleaner_worker.js', import.meta.url), {
+      workerData: { directory: this.#directory, pruneInterval: resolveTtl(config.pruneInterval) },
+    })
   }
 
   /**
@@ -95,10 +110,7 @@ export class FileDriver extends BaseDriver implements CacheDriver {
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string) {
-    return new FileDriver({
-      ...this.config,
-      prefix: this.createNamespacePrefix(namespace),
-    })
+    return new FileDriver({ ...this.config, prefix: this.createNamespacePrefix(namespace) }, true)
   }
 
   /**
@@ -217,5 +229,7 @@ export class FileDriver extends BaseDriver implements CacheDriver {
     return true
   }
 
-  async disconnect() {}
+  async disconnect() {
+    await this.#cleanerWorker?.terminate()
+  }
 }

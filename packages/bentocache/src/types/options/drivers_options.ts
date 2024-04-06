@@ -3,6 +3,8 @@ import type { Kysely } from 'kysely'
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
 import type { Redis as IoRedis, RedisOptions as IoRedisOptions } from 'ioredis'
 
+import type { Duration } from '../helpers.js'
+
 /**
  * Options that are common to all drivers
  *
@@ -87,6 +89,14 @@ export type FileConfig = {
    * Directory where the cache files will be stored
    */
   directory: string
+
+  /**
+   * The interval between each expired entry pruning
+   * Can be set to `false` to disable pruning.
+   *
+   * @default false
+   */
+  pruneInterval?: Duration | false
 } & DriverCommonOptions
 
 /**
@@ -110,7 +120,7 @@ export interface DatabaseConfig extends DriverCommonOptions {
    *
    * @default false
    */
-  pruneInterval?: number | false
+  pruneInterval?: Duration | false
 }
 
 /**
