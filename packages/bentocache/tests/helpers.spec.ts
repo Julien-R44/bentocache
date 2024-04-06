@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
+import { MemoryTransport } from '@rlanz/bus/drivers/memory'
 
 import { resolveTtl } from '../src/helpers.js'
-import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
 
 test.group('Utils', () => {
   test('resolve TTL with undefined', ({ assert }) => {
@@ -21,7 +21,7 @@ test.group('Utils', () => {
   })
 
   test('MemoryBus should not receive message published by itself', ({ assert }) => {
-    const bus1 = new MemoryBus()
+    const bus1 = new MemoryTransport()
 
     bus1.subscribe('channel', () => assert.fail())
     bus1.publish('channel', { data: 'test' } as any)
@@ -32,8 +32,8 @@ test.group('Utils', () => {
   test('Two memory bus instances should be able to communicate', ({ assert }) => {
     assert.plan(1)
 
-    const bus1 = new MemoryBus().setId('bus1')
-    const bus2 = new MemoryBus().setId('bus2')
+    const bus1 = new MemoryTransport().setId('bus1')
+    const bus2 = new MemoryTransport().setId('bus2')
 
     bus1.subscribe('channel', (message: any) => assert.equal(message.data, 'test'))
     bus2.publish('channel', { data: 'test' } as any)

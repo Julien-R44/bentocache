@@ -1,12 +1,12 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
+import { MemoryTransport } from '@rlanz/bus/drivers/memory'
 
 import { TestLogger } from '../helpers/test_logger.js'
 import { RedisDriver } from '../../src/drivers/redis.js'
 import { NullDriver } from '../helpers/null/null_driver.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
-import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 import { throwingFactory, slowFactory, REDIS_CREDENTIALS } from '../helpers/index.js'
 
 test.group('Cache', () => {
@@ -706,7 +706,7 @@ test.group('Cache', () => {
   test('when a node receive a set/delete event from bus it shouldnt publish a set/delete in return', async ({
     assert,
   }) => {
-    class Bus extends MemoryBus {
+    class Bus extends MemoryTransport {
       published: any[] = []
       async publish(channel: string, message: any) {
         this.published.push({ message })

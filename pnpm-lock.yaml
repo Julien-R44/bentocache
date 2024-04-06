@@ -159,6 +159,9 @@ importers:
       '@poppinss/utils':
         specifier: ^6.7.3
         version: 6.7.3
+      '@rlanz/bus':
+        specifier: ^0.2.0
+        version: 0.2.0
       async-mutex:
         specifier: ^0.5.0
         version: 0.5.0
@@ -2413,6 +2416,15 @@ packages:
 
   /@radix-ui/colors@3.0.0:
     resolution: {integrity: sha512-FUOsGBkHrYJwCSEtWRCIfQbZG7q1e6DgxCIOe1SUQzDe/7rXXeA47s8yCn6fuTNQAj1Zq4oTFi9Yjp3wzElcxg==}
+
+  /@rlanz/bus@0.2.0:
+    resolution: {integrity: sha512-qDT4MHFsPpsMBOaLFuV69wjt1j+6ey2rfSJ2yuNTc2DDn2jAKfNP4UZASLnrQE3WzX33uxKTFH4h0q0uMROZqg==}
+    engines: {node: '>=20.11.1'}
+    dependencies:
+      '@paralleldrive/cuid2': 2.2.2
+      '@poppinss/utils': 6.7.3
+      object-hash: 3.0.0
+    dev: false
 
   /@rollup/rollup-android-arm-eabi@4.14.0:
     resolution: {integrity: sha512-jwXtxYbRt1V+CdQSy6Z+uZti7JF5irRKF8hlKfEnF/xJpcNGuuiZMBvuoYM+x9sr9iWGnzrlM0+9hvQ1kgkf1w==}
@@ -8752,6 +8764,11 @@ packages:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /object-hash@3.0.0:
+    resolution: {integrity: sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==}
+    engines: {node: '>= 6'}
+    dev: false
 
   /object-inspect@1.13.1:
     resolution: {integrity: sha512-5qoj1RUiKOMsCCNLV1CBiPYE10sziTsnmNxkAI/rZhiD63CF7IqdFGC/XzjWjpSgLf0LxXX3bDFIh0E18f6UhQ==}

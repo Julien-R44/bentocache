@@ -1,11 +1,11 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
+import { MemoryTransport } from '@rlanz/bus/drivers/memory'
 
 import { RedisDriver } from '../../src/drivers/redis.js'
 import { ChaosBus } from '../helpers/chaos/chaos_bus.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
-import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 import { REDIS_CREDENTIALS, throwingFactory } from '../helpers/index.js'
 
 test.group('Bus synchronization', () => {
@@ -33,9 +33,9 @@ test.group('Bus synchronization', () => {
   }).disableTimeout()
 
   test('retry queue processing', async ({ assert }) => {
-    const bus1 = new ChaosBus(new MemoryBus())
-    const bus2 = new ChaosBus(new MemoryBus())
-    const bus3 = new ChaosBus(new MemoryBus())
+    const bus1 = new ChaosBus(new MemoryTransport())
+    const bus2 = new ChaosBus(new MemoryTransport())
+    const bus3 = new ChaosBus(new MemoryTransport())
 
     const [cache1] = new CacheFactory().withL1L2Config().merge({ busDriver: bus1 }).create()
     const [cache2] = new CacheFactory().withL1L2Config().merge({ busDriver: bus2 }).create()
@@ -66,7 +66,7 @@ test.group('Bus synchronization', () => {
     bus3.neverThrow()
 
     // set random key so that retry queue is processed
-    cache1.set('random-key', 4)
+    await cache1.set('random-key', 4)
 
     await setTimeout(200)
 
@@ -76,8 +76,8 @@ test.group('Bus synchronization', () => {
   }).disableTimeout()
 
   test('should not process retry queue if disabled', async ({ assert }) => {
-    const bus1 = new ChaosBus(new MemoryBus())
-    const bus2 = new ChaosBus(new MemoryBus())
+    const bus1 = new ChaosBus(new MemoryTransport())
+    const bus2 = new ChaosBus(new MemoryTransport())
 
     const [cache] = new CacheFactory()
       .withL1L2Config()
@@ -109,8 +109,8 @@ test.group('Bus synchronization', () => {
   })
 
   test('should queue maximum X items when retryQueue.maxSize is enabled', async ({ assert }) => {
-    const bus1 = new ChaosBus(new MemoryBus())
-    const bus2 = new MemoryBus()
+    const bus1 = new ChaosBus(new MemoryTransport())
+    const bus2 = new MemoryTransport()
 
     const [cache1] = new CacheFactory()
       .withL1L2Config()

@@ -1,5 +1,7 @@
+import type { TransportEncoder } from '@rlanz/bus/types/main'
+
 import { CacheBusMessageType } from '../../types/bus.js'
-import type { BusEncoder, CacheBusMessage } from '../../types/bus.js'
+import type { CacheBusMessage } from '../../types/bus.js'
 
 /**
  * A Binary Encoder that encodes and decodes CacheBusMessage
@@ -17,7 +19,7 @@ import type { BusEncoder, CacheBusMessage } from '../../types/bus.js'
  * - These components are concatenated together in the order busId -> type -> keys
  *
  */
-export class BinaryEncoder implements BusEncoder {
+export class BinaryEncoder implements TransportEncoder {
   #busIdLength: number
 
   /**
@@ -31,11 +33,13 @@ export class BinaryEncoder implements BusEncoder {
   /**
    * Encode the given message into a Buffer
    */
-  encode(message: CacheBusMessage): Buffer {
+  encode(message: any): string | Buffer {
+    const payload = message.payload as Omit<CacheBusMessage, 'busId'>
+
     /**
      * Compute the total size needed for storing the keys
      */
-    const totalKeysLength = message.keys.reduce(
+    const totalKeysLength = payload.keys.reduce(
       (sum, key) => sum + 4 + Buffer.byteLength(key, 'utf8'),
       0,
     )
@@ -55,13 +59,13 @@ export class BinaryEncoder implements BusEncoder {
     /**
      * 2. write the message type. 0x01 for 'Set' message, and 0x02 for a 'Delete' message
      */
-    buffer.writeUInt8(message.type === CacheBusMessageType.Set ? 0x01 : 0x02, this.#busIdLength)
+    buffer.writeUInt8(payload.type === CacheBusMessageType.Set ? 0x01 : 0x02, this.#busIdLength)
 
     /**
      * 3. Write the keys
      */
     let offset = this.#busIdLength + 1
-    for (const key of message.keys) {
+    for (const key of payload.keys) {
       /**
        * Compute the length of the key in bytes and write it as a 4-byte big-endian integer
        */
@@ -82,7 +86,7 @@ export class BinaryEncoder implements BusEncoder {
   /**
    * Decode the given Buffer into a CacheBusMessage
    */
-  decode(data: string | Buffer): CacheBusMessage {
+  decode(data: string): any {
     let offset = 0
     const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'binary')
 
@@ -118,6 +122,6 @@ export class BinaryEncoder implements BusEncoder {
       keys.push(key)
     }
 
-    return { busId, keys, type }
+    return { busId, payload: { keys, type } }
   }
 }

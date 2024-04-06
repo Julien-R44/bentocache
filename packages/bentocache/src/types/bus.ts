@@ -1,21 +1,9 @@
-import type { Logger } from './main.js'
+import type { Transport } from '@rlanz/bus/types/main'
 
 /**
- * Interface for the a bus driver
+ * Interface for the bus driver
  */
-export interface BusDriver {
-  /**
-   * Publish a message to a channel
-   */
-  publish(channel: string, message: Omit<CacheBusMessage, 'busId'>): Promise<void>
-  subscribe(channel: string, handler: (message: CacheBusMessage) => void): Promise<void>
-  unsubscribe(channel: string): Promise<void>
-  disconnect(): Promise<void>
-
-  setId(id: string): BusDriver
-  setLogger(logger: Logger): BusDriver
-  onReconnect(callback: () => void): void
-}
+export type BusDriver = Transport
 
 /**
  * Interface for the bus encoder

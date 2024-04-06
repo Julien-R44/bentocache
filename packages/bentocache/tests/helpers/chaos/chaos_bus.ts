@@ -1,37 +1,31 @@
-import { ChaosInjector } from './chaos_injector.js'
-import type { BusDriver, CacheBusMessage } from '../../../src/types/bus.js'
+import type { Serializable, SubscribeHandler, Transport } from '@rlanz/bus/types/main'
 
-/**
- * ChaosBus is a BusDriver Wrapper that adds chaos to the bus
- * by randomly throwing errors or delaying execution
- *
- * This is handy for testing the resilience of the cache within
- * our test suite.
- */
-export class ChaosBus implements BusDriver {
+import { ChaosInjector } from './chaos_injector.js'
+
+export class ChaosBus implements Transport {
   /**
-   * The inner bus driver that is wrapped
+   * The inner transport driver that is wrapped
    */
-  #innerBus: BusDriver
+  readonly #innerTransport: Transport
 
   /**
    * Reference to the chaos injector
    */
   #chaosInjector: ChaosInjector
 
-  constructor(innerBus: BusDriver) {
-    this.#innerBus = innerBus
+  constructor(innerTransport: Transport) {
+    this.#innerTransport = innerTransport
     this.#chaosInjector = new ChaosInjector()
   }
 
   setId(id: string) {
-    this.#innerBus.setId(id)
-    return this.#innerBus
+    this.#innerTransport.setId(id)
+
+    return this.#innerTransport
   }
 
-  setLogger(logger: any) {
-    this.#innerBus.setLogger(logger)
-    return this.#innerBus
+  getInnerTransport<T extends Transport>(): T {
+    return this.#innerTransport as T
   }
 
   /**
@@ -50,25 +44,21 @@ export class ChaosBus implements BusDriver {
     return this
   }
 
-  /**
-   * Below is the list of methods that are proxied to the inner bus
-   * driver with the addition of chaos logic
-   */
-  async publish(channel: string, message: Omit<CacheBusMessage, 'busId'>): Promise<void> {
+  async publish(channel: string, message: Serializable) {
     await this.#chaosInjector.injectChaos()
-    return this.#innerBus.publish(channel, message)
+    return this.#innerTransport.publish(channel, message)
   }
 
-  async disconnect(): Promise<void> {
-    return this.#innerBus.disconnect()
+  async subscribe<T extends Serializable>(channel: string, handler: SubscribeHandler<T>) {
+    return this.#innerTransport.subscribe(channel, handler)
   }
 
-  async subscribe(channel: string, handler: (message: CacheBusMessage) => void): Promise<void> {
-    return this.#innerBus.subscribe(channel, handler)
+  unsubscribe(channel: string) {
+    return this.#innerTransport.unsubscribe(channel)
   }
 
-  async unsubscribe(channel: string): Promise<void> {
-    return this.#innerBus.unsubscribe(channel)
+  disconnect() {
+    return this.#innerTransport.disconnect()
   }
 
   onReconnect(_callback: () => void): void {}
