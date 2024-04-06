@@ -150,7 +150,13 @@ So using this function can be costly, both in terms of execution time and API re
 
 ## Databases
 
-We offer several drivers to use a database as a cache. Under the hood, we use [Knex](https://knexjs.org/). So all Knex options are available, feel free to check out the documentation.
+We offer several drivers to use a database as a cache. The database store should use an adapter for your database. Out of the box, we support [Knex](https://knexjs.org/) and [Kysely](https://kysely.dev/) to interact with the database. Knex and Kysely support many databases: SQLite, MySQL, PostgreSQL, MSSQL, Oracle, and more.
+
+:::note
+
+Note that you can easily create your own adapter by implementing the `DatabaseAdapter` interface if you are using another library not supported by Bentocache. See the [documentation](/docs/advanced/custom-adapters) for more details.
+
+:::
 
 All SQL drivers accept the following options:
 
@@ -158,86 +164,53 @@ All SQL drivers accept the following options:
 | --- | --- | --- |
 | `tableName` | The name of the table that will be used to store the cache. | `bentocache` |
 | `autoCreateTable` | If the cache table should be automatically created if it does not exist. | `true` |
-| `connection` | The connection options to use to connect to the database or an instance of `knex`. | N/A |
+| `connection` | An instance of `knex` or `Kysely` based on the driver. | N/A |
+| `pruneInterval` | The interval in milliseconds to prune expired entries. | `60000` |
 
-### PostgreSQL
+### Knex
 
-You will need to install `pg` to use this driver.
+You must provide a Knex instance to use the Knex driver. Feel free to check the [Knex documentation](https://knexjs.org/) for more details about the configuration. Knex support many databases : SQLite, MySQL, PostgreSQL, MSSQL, Oracle, and more.
 
 ```ts
+import knex from 'knex'
 import { BentoCache, bentostore } from 'bentocache'
-import { postgresDriver } from 'bentocache/drivers/sql'
+import { knexDriver } from 'bentocache/drivers/knex'
+
+const db = knex({
+  client: 'pg',
+  connection: { 
+    port: 5432 
+    user: 'root', 
+    password: 'root', 
+    database: 'postgres', 
+  }
+})
 
 const bento = new BentoCache({
   default: 'pg',
   stores: {
-    pg: bentostore().useL2Layer(postgresDriver({
-      connection: { 
-        user: 'root', 
-        password: 'root', 
-        database: 'postgres', 
-        port: 5432 
-      }
-    }))
+    pg: bentostore().useL2Layer(knexDriver({ connection: db }))
   }
 })
 ```
 
-### MySQL
+### Kysely
+
+You must provide a Kysely instance to use the Kysely driver. Feel free to check the [Kysely documentation](https://kysely.dev/) for more details about the configuration. Kysely support the following databases : SQLite, MySQL, PostgreSQL and MSSQL.
 
 You will need to install `mysql2` to use this driver.
 
 ```ts
+import { Kysely } from 'kysely'
 import { BentoCache, bentostore } from 'bentocache'
-import { mysqlDriver } from 'bentocache/drivers/sql'
+import { mysqlDriver } from 'bentocache/drivers/kysely'
+
+const db = new Kysely<Database>({ dialect })
 
 const bento = new BentoCache({
-  default: 'mysql',
+  default: 'pg',
   stores: {
-    mysql: bentostore().useL2Layer(mysqlDriver({
-      connection: { 
-        user: 'root', 
-        password: 'root', 
-        database: 'mysql', 
-        port: 3306
-      },
-    }))
-  }
-})
-```
-
-### SQLite ( better-sqlite3 )
-
-You will need to install `better-sqlite3` to use this driver.
-
-```ts
-import { BentoCache, bentostore } from 'bentocache'
-import { betterSqliteDriver } from 'bentocache/drivers/sql'
-
-const bento = new BentoCache({
-  default: 'sqlite',
-  stores: {
-    sqlite: bentostore().useL2Layer(betterSqliteDriver({
-      connection: { filename: 'cache.sqlite3' },
-    }))
-  }
-})
-```
-
-### SQLite ( sqlite3 )
-
-You will need to install `sqlite3` to use this driver.
-
-```ts
-import { BentoCache, bentostore } from 'bentocache'
-import { sqliteDriver } from 'bentocache/drivers/sql'
-
-const bento = new BentoCache({
-  default: 'sqlite',
-  stores: {
-    sqlite: bentostore().useL2Layer(sqliteDriver({
-      connection: { filename: 'cache.sqlite3' },
-    }))
+    pg: bentostore().useL2Layer(kyselyStore({ connection: db }))
   }
 })
 ```

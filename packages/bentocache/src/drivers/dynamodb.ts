@@ -11,7 +11,17 @@ import {
 } from '@aws-sdk/client-dynamodb'
 
 import { BaseDriver } from './base_driver.js'
-import type { CacheDriver, DynamoDBConfig } from '../types/main.js'
+import type { CacheDriver, CreateDriverResult, DynamoDBConfig } from '../types/main.js'
+
+/**
+ * Create a new DynamoDB driver
+ */
+export function dynamoDbDriver(options: DynamoDBConfig): CreateDriverResult<DynamoDB> {
+  return {
+    options,
+    factory: (config: DynamoDBConfig) => new DynamoDB(config),
+  }
+}
 
 /**
  * Caching driver for DynamoDB

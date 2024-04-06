@@ -5,9 +5,9 @@ import EventEmitter from 'node:events'
 
 import { bentostore } from '../src/bento_store.js'
 import { BentoCache } from '../src/bento_cache.js'
-import { memoryDriver } from '../drivers/memory.js'
+import { memoryDriver } from '../src/drivers/memory.js'
 import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
-import { redisBusDriver, redisDriver } from '../drivers/redis.js'
+import { redisBusDriver, redisDriver } from '../src/drivers/redis.js'
 import { BentoCacheFactory } from '../factories/bentocache_factory.js'
 
 test.group('Bento Cache', () => {

@@ -1,38 +1,36 @@
 /// <reference types="@japa/assert" />
 
-import { test } from '@japa/runner'
 import type { Group } from '@japa/runner/core'
 import { setTimeout } from 'node:timers/promises'
+import type { test as JapaTest } from '@japa/runner'
 
-import type { CacheDriver } from '../src/types/main.js'
+import type { CacheDriver, CacheDriverOptions } from '../src/types/main.js'
 
-export function registerCacheDriverTestSuite<T extends { new (options: any): CacheDriver<any> }>({
-  group,
-  driver,
-  config,
-  supportsMilliseconds = true,
-}: {
+export function registerCacheDriverTestSuite(options: {
+  test: typeof JapaTest
   group: Group
-  driver: T
-  config: ConstructorParameters<T>[0]
+  createDriver: (options?: CacheDriverOptions) => CacheDriver<any>
+  configureGroup?: (group: Group) => any
 
   /**
    * If the driver support milliseconds for TTLs
    */
   supportsMilliseconds?: boolean
-}): any {
-  const sleepTime = supportsMilliseconds ? 20 : 1000
+}) {
+  const { test, group } = options
+  const sleepTime = options.supportsMilliseconds ? 20 : 1000
 
-  let cache: CacheDriver
+  const cache = options.createDriver()
 
-  group.tap((t) => t.disableTimeout().retry(3))
-  group.each.setup(async () => {
-    cache = new driver(config)
+  group.tap((t) => t.disableTimeout())
+  group.each.teardown(async () => {
+    await cache.clear()
+  })
 
-    return async () => {
-      await cache.clear()
-      await cache.disconnect()
-    }
+  options.configureGroup?.(group)
+
+  group.teardown(async () => {
+    await cache.disconnect()
   })
 
   test('get() returns undefined when key does not exists', async ({ assert }) => {
@@ -75,7 +73,7 @@ export function registerCacheDriverTestSuite<T extends { new (options: any): Cac
   })
 
   test('clear() remove only keys with prefix', async ({ assert, cleanup }) => {
-    const cache2 = new driver({ ...config, prefix: 'prefix' })
+    const cache2 = options.createDriver({ prefix: 'prefix' })
     cleanup(async () => {
       await cache2.clear()
       await cache2.disconnect()
@@ -192,8 +190,8 @@ export function registerCacheDriverTestSuite<T extends { new (options: any): Cac
     const users = cache.namespace('users')
     const usersPosts = users.namespace('posts')
 
-    users.set('key1', 'value1')
-    usersPosts.set('key1', 'value2')
+    await users.set('key1', 'value1')
+    await usersPosts.set('key1', 'value2')
 
     const r1 = await cache.get('users:key1')
     const r2 = await usersPosts.get('key1')

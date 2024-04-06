@@ -2,7 +2,17 @@ import { dirname, join } from 'node:path'
 import { access, mkdir, readFile, writeFile, rm } from 'node:fs/promises'
 
 import { BaseDriver } from './base_driver.js'
-import type { CacheDriver, FileConfig } from '../types/main.js'
+import type { CacheDriver, CreateDriverResult, FileConfig } from '../types/main.js'
+
+/**
+ * Create a new file driver
+ */
+export function fileDriver(options: FileConfig): CreateDriverResult<File> {
+  return {
+    options,
+    factory: (config: FileConfig) => new File(config),
+  }
+}
 
 /**
  * Caching driver for the filesystem

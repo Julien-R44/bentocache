@@ -2,7 +2,7 @@ import { test } from '@japa/runner'
 
 import { bentostore } from '../src/bento_store.js'
 import { BentoCache } from '../src/bento_cache.js'
-import { memoryDriver } from '../drivers/memory.js'
+import { memoryDriver } from '../src/drivers/memory.js'
 import type { Duration } from '../src/types/helpers.js'
 import type { CacheEvents } from '../src/types/events.js'
 import { CacheFactory } from '../factories/cache_factory.js'

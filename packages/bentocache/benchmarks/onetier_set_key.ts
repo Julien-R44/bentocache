@@ -9,7 +9,7 @@ import { caching } from 'cache-manager'
 
 import { BentoCache } from '../index.js'
 import { bentostore } from '../src/bento_store.js'
-import { memoryDriver } from '../drivers/memory.js'
+import { memoryDriver } from '../src/drivers/memory.js'
 
 const bench = new Bench()
 

@@ -7,8 +7,10 @@ import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_sui
 
 test.group('File driver', (group) => {
   registerCacheDriverTestSuite({
+    test,
     group,
-    driver: File,
-    config: { prefix: 'japa', directory: fileURLToPath(BASE_URL) },
+    createDriver: (options) => {
+      return new File({ prefix: 'japa', directory: fileURLToPath(BASE_URL), ...options })
+    },
   })
 })

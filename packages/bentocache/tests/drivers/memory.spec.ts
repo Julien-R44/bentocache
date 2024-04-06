@@ -5,9 +5,9 @@ import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_sui
 
 test.group('Memory Driver', (group) => {
   registerCacheDriverTestSuite({
+    test,
     group,
-    driver: Memory,
-    config: { maxItems: 1000, prefix: 'japa' },
+    createDriver: (options) => new Memory({ maxItems: 1000, prefix: 'japa', ...options }),
   })
 
   test('should not store items exceeding maxEntrySize', async ({ assert }) => {

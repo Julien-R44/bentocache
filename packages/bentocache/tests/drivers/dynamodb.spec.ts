@@ -35,7 +35,7 @@ async function deleteTable() {
 }
 
 test.group('DynamoDB driver', (group) => {
-  group.each.setup(async () => {
+  group.setup(async () => {
     await createTable().catch((e) => console.error('Could not create table', e))
 
     return async () => {
@@ -44,15 +44,18 @@ test.group('DynamoDB driver', (group) => {
   })
 
   registerCacheDriverTestSuite({
+    test,
     group,
-    driver: DynamoDB,
     supportsMilliseconds: false,
-    config: {
-      prefix: 'japa',
-      region: 'eu-west-3',
-      endpoint: process.env.DYNAMODB_ENDPOINT,
-      credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
-      table: { name: 'cache' },
+    createDriver: (options) => {
+      return new DynamoDB({
+        prefix: 'japa',
+        region: 'eu-west-3',
+        endpoint: process.env.DYNAMODB_ENDPOINT,
+        credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
+        table: { name: 'cache' },
+        ...options,
+      })
     },
   })
 })
