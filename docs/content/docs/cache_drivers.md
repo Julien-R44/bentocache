@@ -65,8 +65,10 @@ import { fileDriver } from "bentocache/drivers/file";
 const bento = new BentoCache({
   default: 'file',
   stores: {
-    redis: bentostore().useL2Layer(fileDriver({
-      directory: './cache'
+    redis: bentostore().useL2Layer(
+      fileDriver({
+        directory: './cache',
+        pruneInterval: '1h'
     }))
   }
 })
@@ -75,6 +77,11 @@ const bento = new BentoCache({
 | Option | Description | Default |
 | --- | --- | --- |
 | `directory` | The directory where the cache files will be stored. | N/A |
+| `pruneInterval` | The interval in milliseconds to prune expired entries. false to disable. | false |
+
+### Prune Interval
+
+Since the filesystem driver does not have a way to automatically prune expired entries, you can set a `pruneInterval` to automatically prune expired entries. By setting this option, the driver will launch a [worker thread](https://nodejs.org/api/worker_threads.html) that will clean up the cache at the specified interval.
 
 ## Memory
 
@@ -165,7 +172,7 @@ All SQL drivers accept the following options:
 | `tableName` | The name of the table that will be used to store the cache. | `bentocache` |
 | `autoCreateTable` | If the cache table should be automatically created if it does not exist. | `true` |
 | `connection` | An instance of `knex` or `Kysely` based on the driver. | N/A |
-| `pruneInterval` | The interval in milliseconds to prune expired entries. | `60000` |
+| `pruneInterval` | The [Duration](./options.md#ttl-formats) in milliseconds to prune expired entries. | false |
 
 ### Knex
 
