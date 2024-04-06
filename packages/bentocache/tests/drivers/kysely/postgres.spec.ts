@@ -14,6 +14,14 @@ test.group('Kysely | Postgres driver', (group) => {
     test,
     group,
     supportsMilliseconds: false,
-    createDriver: (options) => createKyselyStore({ connection: db, prefix: 'japa', ...options }),
+    createDriver: (options) => {
+      const db = new Kysely<any>({
+        dialect: new PostgresDialect({
+          pool: new pg.Pool({ user: 'postgres', password: 'postgres' }),
+        }),
+      })
+
+      return createKyselyStore({ connection: db, prefix: 'japa', ...options })
+    },
   })
 })

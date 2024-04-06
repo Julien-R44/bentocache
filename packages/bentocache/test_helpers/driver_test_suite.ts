@@ -76,6 +76,7 @@ export function registerCacheDriverTestSuite(options: {
     const cache2 = options.createDriver({ prefix: 'prefix' })
     cleanup(async () => {
       await cache2.clear()
+      await cache2.disconnect()
     })
 
     await cache2.set('key1', 'value1')
