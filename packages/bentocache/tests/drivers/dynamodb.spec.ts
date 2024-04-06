@@ -47,14 +47,15 @@ test.group('DynamoDB driver', (group) => {
     test,
     group,
     supportsMilliseconds: false,
-    createDriver: (options) =>
-      new DynamoDB({
+    createDriver: (options) => {
+      return new DynamoDB({
         prefix: 'japa',
         region: 'eu-west-3',
         endpoint: process.env.DYNAMODB_ENDPOINT,
         credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
         table: { name: 'cache' },
         ...options,
-      }),
+      })
+    },
   })
 })

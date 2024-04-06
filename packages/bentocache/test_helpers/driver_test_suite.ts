@@ -190,8 +190,8 @@ export function registerCacheDriverTestSuite(options: {
     const users = cache.namespace('users')
     const usersPosts = users.namespace('posts')
 
-    users.set('key1', 'value1')
-    usersPosts.set('key1', 'value2')
+    await users.set('key1', 'value1')
+    await usersPosts.set('key1', 'value2')
 
     const r1 = await cache.get('users:key1')
     const r2 = await usersPosts.get('key1')
@@ -202,5 +202,5 @@ export function registerCacheDriverTestSuite(options: {
     assert.deepEqual(r2, 'value2')
     assert.deepEqual(r3, 'value2')
     assert.deepEqual(r4, 'value2')
-  }).skip()
+  })
 }
