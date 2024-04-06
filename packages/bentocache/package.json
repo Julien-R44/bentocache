@@ -42,7 +42,8 @@
   "peerDependencies": {
     "@aws-sdk/client-dynamodb": "^3.438.0",
     "ioredis": "^5.3.2",
-    "knex": "^3.0.1"
+    "knex": "^3.0.1",
+    "kysely": "^0.27.3"
   },
   "peerDependenciesMeta": {
     "@aws-sdk/client-dynamodb": {
@@ -52,6 +53,9 @@
       "optional": true
     },
     "knex": {
+      "optional": true
+    },
+    "kysely": {
       "optional": true
     }
   },
