@@ -1,6 +1,6 @@
 import { bentostore } from '../src/bento_store.js'
 import { BentoCache } from '../src/bento_cache.js'
-import { memoryDriver } from '../drivers/memory.js'
+import { memoryDriver } from '../src/drivers/memory.js'
 import type { RawBentoCacheOptions } from '../src/types/main.js'
 
 /**

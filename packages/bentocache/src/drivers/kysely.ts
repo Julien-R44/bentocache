@@ -1,6 +1,21 @@
 import { SqliteAdapter, type Kysely, MysqlAdapter } from 'kysely'
 
-import type { DatabaseAdapter, KyselyConfig } from '../types/main.js'
+import { DatabaseDriver } from './database.js'
+import type { CreateDriverResult, DatabaseAdapter, KyselyConfig } from '../types/main.js'
+
+/**
+ * Create a kysely driver
+ * You will need to install the underlying database package (mysql2, pg, sqlite3, etc)
+ */
+export function kyselyDriver(options: KyselyConfig): CreateDriverResult<DatabaseDriver> {
+  return {
+    options,
+    factory: (config: KyselyConfig) => {
+      const adapter = new KyselyAdapter(config)
+      return new DatabaseDriver(adapter, config)
+    },
+  }
+}
 
 /**
  * Kysely adapter for the DatabaseDriver

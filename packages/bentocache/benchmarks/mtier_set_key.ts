@@ -11,9 +11,9 @@ import { multiCaching, caching } from 'cache-manager'
 import { redisStore } from 'cache-manager-ioredis-yet'
 
 import { BentoCache } from '../index.js'
-import { redisDriver } from '../drivers/redis.js'
 import { bentostore } from '../src/bento_store.js'
-import { memoryDriver } from '../drivers/memory.js'
+import { redisDriver } from '../src/drivers/redis.js'
+import { memoryDriver } from '../src/drivers/memory.js'
 import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
 
 const bench = new Bench()

@@ -15,7 +15,7 @@
   ],
   "exports": {
     ".": "./build/index.js",
-    "./drivers/*": "./build/drivers/*.js",
+    "./drivers/*": "./build/src/drivers/*.js",
     "./types": "./build/src/types/main.js",
     "./plugins/*": "./build/plugins/*.js",
     "./test_suite": "./build/src/test_suite.js"
@@ -112,7 +112,7 @@
     "entry": [
       "./index.ts",
       "./src/types/main.ts",
-      "./drivers/*.ts",
+      "./src/drivers/*.ts",
       "./plugins/*.ts",
       "./src/test_suite.ts"
     ],

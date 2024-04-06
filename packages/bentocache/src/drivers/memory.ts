@@ -1,7 +1,21 @@
 import { LRUCache } from 'lru-cache'
 
 import { BaseDriver } from './base_driver.js'
-import type { L1CacheDriver, MemoryConfig as MemoryConfig } from '../types/main.js'
+import type {
+  CreateDriverResult,
+  L1CacheDriver,
+  MemoryConfig as MemoryConfig,
+} from '../types/main.js'
+
+/**
+ * Create a new memory driver
+ */
+export function memoryDriver(options: MemoryConfig = {}): CreateDriverResult<Memory> {
+  return {
+    options,
+    factory: (config: MemoryConfig) => new Memory(config),
+  }
+}
 
 /**
  * A memory caching driver
