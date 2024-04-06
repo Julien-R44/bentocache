@@ -4,8 +4,8 @@ import type { MutexInterface } from 'async-mutex'
 import type { Locks } from './locks.js'
 import * as exceptions from '../errors.js'
 import { events } from '../events/index.js'
-import type { Factory } from '../types/helpers.js'
 import type { CacheStack } from './stack/cache_stack.js'
+import type { GetSetFactory } from '../types/helpers.js'
 import type { CacheStackWriter } from './stack/cache_stack_writer.js'
 import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
 
@@ -48,7 +48,7 @@ export class FactoryRunner {
 
   async run(
     key: string,
-    factory: Factory,
+    factory: GetSetFactory,
     hasFallback: boolean,
     options: CacheEntryOptions,
     lockReleaser: MutexInterface.Releaser,
@@ -59,7 +59,9 @@ export class FactoryRunner {
         ? exceptions.E_FACTORY_HARD_TIMEOUT
         : exceptions.E_FACTORY_SOFT_TIMEOUT
 
-    const promisifiedFactory = async () => await factory()
+    const promisifiedFactory = async () => {
+      return await factory({ setTtl: (ttl) => options.setLogicalTtl(ttl) })
+    }
 
     const factoryPromise = promisifiedFactory()
 

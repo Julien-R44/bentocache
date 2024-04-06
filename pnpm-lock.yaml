@@ -202,6 +202,9 @@ importers:
       cache-manager-ioredis-yet:
         specifier: ^1.2.2
         version: 1.2.2
+      dayjs:
+        specifier: ^1.11.10
+        version: 1.11.10
       defu:
         specifier: ^6.1.4
         version: 6.1.4
@@ -4872,6 +4875,10 @@ packages:
 
   /dateformat@4.6.3:
     resolution: {integrity: sha512-2P0p0pFGzHS5EMnhdxQi7aJN+iMheud0UhG4dlE1DLAlvL8JHjJJTX/CSm4JXwV0Ka5nGk3zC5mcb5bUQUxxMA==}
+    dev: true
+
+  /dayjs@1.11.10:
+    resolution: {integrity: sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==}
     dev: true
 
   /debug@2.6.9:

@@ -1,4 +1,4 @@
-import type { Factory } from './helpers.js'
+import type { Factory, GetSetFactory } from './helpers.js'
 import type {
   ClearOptions,
   DeleteOptions,
@@ -44,12 +44,16 @@ export interface CacheProvider {
   /**
    * Get or set a value in the cache
    */
-  getOrSet<T>(key: string, factory: Factory<T>, options?: Factory<T> | GetOrSetOptions): Promise<T>
+  getOrSet<T>(
+    key: string,
+    factory: GetSetFactory<T>,
+    options?: GetSetFactory<T> | GetOrSetOptions,
+  ): Promise<T>
 
   /**
    * Get or set a value in the cache forever
    */
-  getOrSetForever<T>(key: string, cb: Factory<T>, opts?: GetOrSetOptions): Promise<T>
+  getOrSetForever<T>(key: string, cb: GetSetFactory<T>, opts?: GetOrSetOptions): Promise<T>
 
   /**
    * Returns a new instance of the driver namespaced

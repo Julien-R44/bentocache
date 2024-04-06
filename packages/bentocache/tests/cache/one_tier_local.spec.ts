@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
@@ -593,5 +594,24 @@ test.group('One tier tests', () => {
     // @ts-ignore
     assert.deepEqual(result1.value, 'value')
     assert.equal(result2.status, 'rejected')
+  })
+
+  test('adaptive caching', async ({ assert }) => {
+    const { cache, local, stack } = new CacheFactory().withMemoryL1().merge({ ttl: '10m' }).create()
+
+    await cache.getOrSet(
+      'key1',
+      (options) => {
+        options.setTtl('2d')
+        return { foo: 'bar' }
+      },
+      { ttl: '4m' },
+    )
+
+    const res = local.get('key1', stack.defaultOptions)!
+    const logicalExpiration = res.getLogicalExpiration()
+
+    const inTwoDays = dayjs().add(2, 'day')
+    assert.isTrue(dayjs(logicalExpiration).isSame(inTwoDays, 'day'))
   })
 })

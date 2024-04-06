@@ -1,7 +1,7 @@
 import hexoid from 'hexoid'
 
 import { resolveTtl } from '../../helpers.js'
-import type { RawCommonOptions } from '../../types/main.js'
+import type { Duration, RawCommonOptions } from '../../types/main.js'
 
 // @ts-expect-error wrongly typed
 const toId = hexoid(12)
@@ -163,6 +163,19 @@ export class CacheEntryOptions {
 
   get suppressL2Errors() {
     return this.#options.suppressL2Errors
+  }
+
+  /**
+   * Set a new logical TTL
+   */
+  setLogicalTtl(ttl: Duration) {
+    this.#options.ttl = ttl
+
+    this.logicalTtl = this.#resolveLogicalTtl()
+    this.physicalTtl = this.#resolvePhysicalTtl()
+    this.earlyExpireTtl = this.#resolveEarlyExpireTtl()
+
+    return this
   }
 
   /**

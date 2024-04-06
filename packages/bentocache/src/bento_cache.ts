@@ -14,6 +14,7 @@ import type {
   BentoCachePlugin,
   HasOptions,
   ClearOptions,
+  GetSetFactory,
 } from './types/main.js'
 
 export class BentoCache<KnownCaches extends Record<string, BentoStore>> implements CacheProvider {
@@ -156,7 +157,7 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory and return it
    */
-  async getOrSet<T>(key: string, factory: Factory<T>, options?: GetOrSetOptions): Promise<T> {
+  async getOrSet<T>(key: string, factory: GetSetFactory<T>, options?: GetOrSetOptions): Promise<T> {
     return this.use().getOrSet(key, factory, options)
   }
 
@@ -164,7 +165,7 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory forever and return it
    */
-  getOrSetForever<T>(key: string, cb: Factory<T>, opts?: GetOrSetOptions): Promise<T> {
+  getOrSetForever<T>(key: string, cb: GetSetFactory<T>, opts?: GetOrSetOptions): Promise<T> {
     return this.use().getOrSetForever(key, cb, opts)
   }
 

@@ -72,6 +72,12 @@
     "category": "Guides"
   },
   {
+    "permalink": "adaptive-caching",
+    "title": "Adaptive caching",
+    "contentPath": "./adaptive_caching.md",
+    "category": "Guides"
+  },
+  {
     "permalink": "events",
     "title": "Events",
     "contentPath": "./digging_deeper/events.md",

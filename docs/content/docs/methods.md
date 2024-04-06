@@ -89,6 +89,18 @@ const products = await bento.getOrSet('products', () => fetchProducts(), {
 })
 ```
 
+The `getOrSet` factory function accepts an `options` object as argument that can be used to dynamically set some cache options. This can be particulary useful when caching options depends on the value itself.
+
+```ts
+const products = await bento.getOrSet('token', (options) => {
+  const token = await fetchAccessToken()
+  options.setTtl(token.expiresIn)
+  return token
+})
+```
+
+Auth tokens are a perfect example of this use case. The cached token should expire when the token itself expires. And we know the expiration time only after fetching the token.
+
 ### getOrSetForever
 
 Same as `getOrSet`, but the value will never expire.

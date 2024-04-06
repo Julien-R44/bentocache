@@ -12,6 +12,7 @@ import type {
   SetOptions,
   HasOptions,
   ClearOptions,
+  GetSetFactory,
 } from '../types/main.js'
 
 export class Cache implements CacheProvider {
@@ -105,7 +106,7 @@ export class Cache implements CacheProvider {
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory and return it
    */
-  async getOrSet<T>(key: string, factory: Factory<T>, options?: GetOrSetOptions): Promise<T> {
+  async getOrSet<T>(key: string, factory: GetSetFactory<T>, options?: GetOrSetOptions): Promise<T> {
     const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
     return this.#getSetHandler.handle(key, factory, cacheOptions)
   }
@@ -116,7 +117,7 @@ export class Cache implements CacheProvider {
    */
   async getOrSetForever<T>(
     key: string,
-    factory: Factory<T>,
+    factory: GetSetFactory<T>,
     options?: GetOrSetOptions,
   ): Promise<T> {
     const cacheOptions = this.#stack.defaultOptions.cloneWith({ ttl: null, ...options })

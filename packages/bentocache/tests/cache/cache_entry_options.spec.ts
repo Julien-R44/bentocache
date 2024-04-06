@@ -149,4 +149,14 @@ test.group('Cache Entry Options', () => {
       hard: string.milliseconds.parse('4m'),
     })
   })
+
+  test('setTtl should re-compute physical ttl and early expiration', ({ assert }) => {
+    const options = new CacheEntryOptions({ ttl: '10m', earlyExpiration: 0.5 })
+
+    options.setLogicalTtl(string.milliseconds.parse('5m'))
+
+    assert.equal(options.logicalTtl, string.milliseconds.parse('5m'))
+    assert.equal(options.physicalTtl, string.milliseconds.parse('5m'))
+    assert.equal(options.earlyExpireTtl, string.milliseconds.parse('2.5m'))
+  })
 })

@@ -17,6 +17,19 @@ export type MaybePromise<T> = T | Promise<T>
  */
 export type Factory<T = any> = T | (() => T) | Promise<T> | (() => Promise<T>)
 
+export type GetSetFactoryOptions = {
+  /**
+   * Set dynamically the TTL
+   * See Adaptive caching documentation for more information
+   */
+  setTtl: (ttl: Duration) => void
+}
+
+/**
+ * GetOrSet Factory
+ */
+export type GetSetFactory<T = any> = (options: GetSetFactoryOptions) => T | Promise<T>
+
 /**
  * Logger interface
  */
