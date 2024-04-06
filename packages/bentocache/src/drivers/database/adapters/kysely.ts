@@ -1,7 +1,7 @@
 import { SqliteAdapter, type Kysely, MysqlAdapter } from 'kysely'
 
-import { DatabaseDriver } from './database.js'
-import type { CreateDriverResult, DatabaseAdapter, KyselyConfig } from '../types/main.js'
+import { DatabaseDriver } from '../database.js'
+import type { CreateDriverResult, DatabaseAdapter, KyselyConfig } from '../../../types/main.js'
 
 /**
  * Create a kysely driver

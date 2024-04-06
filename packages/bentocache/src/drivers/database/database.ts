@@ -1,5 +1,6 @@
-import { BaseDriver } from './base_driver.js'
-import type { DatabaseConfig, CacheDriver, DatabaseAdapter } from '../types/main.js'
+import { resolveTtl } from '../../helpers.js'
+import { BaseDriver } from '../base_driver.js'
+import type { DatabaseConfig, CacheDriver, DatabaseAdapter } from '../../types/main.js'
 
 /**
  * A store that use a database to store cache entries
@@ -41,9 +42,8 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
       this.#initialized = Promise.resolve()
     }
 
-    if (typeof config.pruneInterval === 'number') {
-      this.#startPruneInterval(config.pruneInterval)
-    }
+    if (config.pruneInterval === false) return
+    this.#startPruneInterval(resolveTtl(config.pruneInterval)!)
   }
 
   /**

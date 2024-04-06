@@ -20,7 +20,12 @@ export function registerCacheDriverTestSuite(options: {
   const { test, group } = options
   const sleepTime = options.supportsMilliseconds ? 20 : 1000
 
-  const cache = options.createDriver()
+  let cache: CacheDriver
+
+  group.setup(async () => {
+    cache = options.createDriver()
+    return () => cache.disconnect()
+  })
 
   group.tap((t) => t.disableTimeout())
   group.each.teardown(async () => {
@@ -28,10 +33,6 @@ export function registerCacheDriverTestSuite(options: {
   })
 
   options.configureGroup?.(group)
-
-  group.teardown(async () => {
-    await cache.disconnect()
-  })
 
   test('get() returns undefined when key does not exists', async ({ assert }) => {
     assert.deepEqual(await cache.get('key'), undefined)

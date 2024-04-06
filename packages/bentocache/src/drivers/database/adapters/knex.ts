@@ -1,7 +1,7 @@
 import type { Knex } from 'knex'
 
-import { DatabaseDriver } from './database.js'
-import type { CreateDriverResult, DatabaseAdapter, KnexConfig } from '../types/main.js'
+import { DatabaseDriver } from '../database.js'
+import type { CreateDriverResult, DatabaseAdapter, KnexConfig } from '../../../types/main.js'
 
 /**
  * Create a knex driver
