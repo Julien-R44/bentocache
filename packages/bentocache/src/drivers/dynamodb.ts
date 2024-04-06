@@ -1,4 +1,4 @@
-import chunkify from '@sindresorhus/chunkify'
+import chunkify from 'chunkify'
 import {
   DynamoDBClient,
   GetItemCommand,
