@@ -203,7 +203,7 @@ You will need to install `mysql2` to use this driver.
 ```ts
 import { Kysely } from 'kysely'
 import { BentoCache, bentostore } from 'bentocache'
-import { mysqlDriver } from 'bentocache/drivers/sql'
+import { mysqlDriver } from 'bentocache/drivers/kysely'
 
 const db = new Kysely<Database>({ dialect })
 
