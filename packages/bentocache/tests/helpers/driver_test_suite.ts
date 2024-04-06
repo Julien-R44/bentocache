@@ -4,7 +4,7 @@ import type { Group } from '@japa/runner/core'
 import { setTimeout } from 'node:timers/promises'
 import type { test as JapaTest } from '@japa/runner'
 
-import type { CacheDriver, CacheDriverOptions } from '../src/types/main.js'
+import type { CacheDriver, CacheDriverOptions } from '../../src/types/main.js'
 
 export function registerCacheDriverTestSuite(options: {
   test: typeof JapaTest

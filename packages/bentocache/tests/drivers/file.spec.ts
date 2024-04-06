@@ -2,9 +2,9 @@ import { test } from '@japa/runner'
 import { fileURLToPath } from 'node:url'
 import { setTimeout } from 'node:timers/promises'
 
-import { BASE_URL } from '../../test_helpers/index.js'
+import { BASE_URL } from '../helpers/index.js'
 import { FileDriver } from '../../src/drivers/file/file.js'
-import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_suite.js'
+import { registerCacheDriverTestSuite } from '../helpers/driver_test_suite.js'
 
 test.group('File driver', (group) => {
   registerCacheDriverTestSuite({

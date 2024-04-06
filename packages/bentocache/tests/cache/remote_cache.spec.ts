@@ -1,9 +1,9 @@
 import { test } from '@japa/runner'
 
+import { TestLogger } from '../helpers/test_logger.js'
+import { REDIS_CREDENTIALS } from '../helpers/index.js'
 import { RedisDriver } from '../../src/drivers/redis.js'
-import { TestLogger } from '../../test_helpers/test_logger.js'
-import { REDIS_CREDENTIALS } from '../../test_helpers/index.js'
-import { ChaosCache } from '../../test_helpers/chaos/chaos_cache.js'
+import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
 import { RemoteCache } from '../../src/cache/facades/remote_cache.js'
 import { CacheEntryOptions } from '../../src/cache/cache_entry/cache_entry_options.js'
 

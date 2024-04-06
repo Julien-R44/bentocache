@@ -1,6 +1,6 @@
 import { ChaosInjector } from './chaos_injector.js'
-import type { CacheDriver } from '../../src/types/driver.js'
-import type { L1CacheDriver, L2CacheDriver } from '../../src/types/main.js'
+import type { CacheDriver } from '../../../src/types/driver.js'
+import type { L1CacheDriver, L2CacheDriver } from '../../../src/types/main.js'
 
 /**
  * ChaosCache is a CacheDriver Wrapper that adds chaos to the cache

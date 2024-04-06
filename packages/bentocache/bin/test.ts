@@ -5,7 +5,7 @@ import { fileSystem } from '@japa/file-system'
 import { expectTypeOf } from '@japa/expect-type'
 import { processCLIArgs, configure, run } from '@japa/runner'
 
-import { BASE_URL } from '../test_helpers/index.js'
+import { BASE_URL } from '../tests/helpers/index.js'
 
 /*
 |--------------------------------------------------------------------------

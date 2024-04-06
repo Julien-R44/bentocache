@@ -1,13 +1,13 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
+import { TestLogger } from '../helpers/test_logger.js'
 import { RedisDriver } from '../../src/drivers/redis.js'
-import { TestLogger } from '../../test_helpers/test_logger.js'
+import { NullDriver } from '../helpers/null/null_driver.js'
+import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
-import { NullDriver } from '../../test_helpers/null/null_driver.js'
-import { ChaosCache } from '../../test_helpers/chaos/chaos_cache.js'
-import { throwingFactory, slowFactory, REDIS_CREDENTIALS } from '../../test_helpers/index.js'
+import { throwingFactory, slowFactory, REDIS_CREDENTIALS } from '../helpers/index.js'
 
 test.group('Cache', () => {
   test('get() returns null if null is stored', async ({ assert }) => {

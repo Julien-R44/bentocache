@@ -4,7 +4,7 @@ import { setTimeout } from 'node:timers/promises'
 import { RedisDriver } from '../../src/drivers/redis.js'
 import { MemoryDriver } from '../../src/drivers/memory.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
-import { REDIS_CREDENTIALS, throwingFactory } from '../../test_helpers/index.js'
+import { REDIS_CREDENTIALS, throwingFactory } from '../helpers/index.js'
 
 test.group('Cache | Stampede protection', () => {
   test('only one background factory should be executed if soft timeout is triggered', async ({

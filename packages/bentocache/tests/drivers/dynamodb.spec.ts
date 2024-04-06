@@ -2,7 +2,7 @@ import { test } from '@japa/runner'
 import { DeleteTableCommand, CreateTableCommand, DynamoDBClient } from '@aws-sdk/client-dynamodb'
 
 import { DynamoDbDriver } from '../../src/drivers/dynamodb.js'
-import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_suite.js'
+import { registerCacheDriverTestSuite } from '../helpers/driver_test_suite.js'
 
 const dynamoClient = new DynamoDBClient({
   region: 'eu-west-3',

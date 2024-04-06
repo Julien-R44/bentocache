@@ -4,10 +4,10 @@ import { createId } from '@paralleldrive/cuid2'
 import { setTimeout } from 'node:timers/promises'
 import { GenericContainer } from 'testcontainers'
 
+import { TestLogger } from '../helpers/test_logger.js'
+import { REDIS_CREDENTIALS } from '../helpers/index.js'
 import { CacheBusMessageType } from '../../src/types/bus.js'
 import { RedisBus } from '../../src/bus/drivers/redis_bus.js'
-import { TestLogger } from '../../test_helpers/test_logger.js'
-import { REDIS_CREDENTIALS } from '../../test_helpers/index.js'
 import { JsonEncoder } from '../../src/bus/encoders/json_encoder.js'
 import { BinaryEncoder } from '../../src/bus/encoders/binary_encoder.js'
 

@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 
+import { TestLogger } from '../helpers/test_logger.js'
 import { MemoryDriver } from '../../src/drivers/memory.js'
-import { TestLogger } from '../../test_helpers/test_logger.js'
 import { LocalCache } from '../../src/cache/facades/local_cache.js'
 import { CacheEntryOptions } from '../../src/cache/cache_entry/cache_entry_options.js'
 

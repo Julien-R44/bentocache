@@ -1,5 +1,5 @@
-import type { CacheDriver } from '../../src/types/driver.js'
-import { BaseDriver } from '../../src/drivers/base_driver.js'
+import type { CacheDriver } from '../../../src/types/driver.js'
+import { BaseDriver } from '../../../src/drivers/base_driver.js'
 
 /**
  * A dummy cache driver that does nothing

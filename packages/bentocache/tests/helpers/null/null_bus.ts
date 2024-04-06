@@ -1,4 +1,4 @@
-import type { BusDriver, CacheBusMessage, Logger } from '../../src/types/main.js'
+import type { BusDriver, CacheBusMessage, Logger } from '../../../src/types/main.js'
 
 /**
  * A dummy bus driver that does nothing

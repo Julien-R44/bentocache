@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 
 import { MemoryDriver } from '../../src/drivers/memory.js'
-import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_suite.js'
+import { registerCacheDriverTestSuite } from '../helpers/driver_test_suite.js'
 
 test.group('Memory Driver', (group) => {
   registerCacheDriverTestSuite({

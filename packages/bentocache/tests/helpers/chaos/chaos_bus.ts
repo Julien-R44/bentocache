@@ -1,5 +1,5 @@
 import { ChaosInjector } from './chaos_injector.js'
-import type { BusDriver, CacheBusMessage } from '../../src/types/bus.js'
+import type { BusDriver, CacheBusMessage } from '../../../src/types/bus.js'
 
 /**
  * ChaosBus is a BusDriver Wrapper that adds chaos to the bus

@@ -14,7 +14,7 @@ import { BentoCache } from '../index.js'
 import { bentostore } from '../src/bento_store.js'
 import { redisDriver } from '../src/drivers/redis.js'
 import { memoryDriver } from '../src/drivers/memory.js'
-import { REDIS_CREDENTIALS } from '../test_helpers/index.js'
+import { REDIS_CREDENTIALS } from '../tests/helpers/index.js'
 
 const bench = new Bench()
 

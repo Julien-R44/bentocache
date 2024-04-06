@@ -2,11 +2,11 @@ import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
 import { RedisDriver } from '../../src/drivers/redis.js'
+import { ChaosBus } from '../helpers/chaos/chaos_bus.js'
+import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
-import { ChaosBus } from '../../test_helpers/chaos/chaos_bus.js'
-import { ChaosCache } from '../../test_helpers/chaos/chaos_cache.js'
-import { REDIS_CREDENTIALS, throwingFactory } from '../../test_helpers/index.js'
+import { REDIS_CREDENTIALS, throwingFactory } from '../helpers/index.js'
 
 test.group('Bus synchronization', () => {
   test('synchronize multiple cache', async ({ assert }) => {

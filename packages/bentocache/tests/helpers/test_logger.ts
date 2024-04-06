@@ -1,4 +1,4 @@
-import type { Logger } from '../src/types/main.js'
+import type { Logger } from '../../src/types/main.js'
 
 /**
  * A logger that stores all logs in an array.

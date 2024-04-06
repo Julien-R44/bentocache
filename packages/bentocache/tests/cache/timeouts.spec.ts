@@ -3,7 +3,7 @@ import { setTimeout } from 'node:timers/promises'
 
 import { E_FACTORY_HARD_TIMEOUT } from '../../src/errors.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
-import { throwingFactory, slowFactory } from '../../test_helpers/index.js'
+import { throwingFactory, slowFactory } from '../helpers/index.js'
 
 test.group('Soft Timeout', () => {
   test('return the graced value when soft timeout is reached', async ({ assert }) => {

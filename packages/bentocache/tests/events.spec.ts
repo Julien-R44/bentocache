@@ -3,11 +3,11 @@ import EventEmitter from 'node:events'
 import { pEvent, pEventMultiple } from 'p-event'
 import { setTimeout } from 'node:timers/promises'
 
+import { throwingFactory } from './helpers/index.js'
+import { ChaosBus } from './helpers/chaos/chaos_bus.js'
 import { CacheBusMessageType } from '../src/types/bus.js'
-import { throwingFactory } from '../test_helpers/index.js'
 import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
 import { CacheFactory } from '../factories/cache_factory.js'
-import { ChaosBus } from '../test_helpers/chaos/chaos_bus.js'
 
 test.group('Cache events', () => {
   test('emit cache:miss event when get() inexistent key', async ({ assert }) => {
