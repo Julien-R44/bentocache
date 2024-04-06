@@ -1,17 +1,17 @@
 import { test } from '@japa/runner'
 
-import { Memory } from '../../src/drivers/memory.js'
+import { MemoryDriver } from '../../src/drivers/memory.js'
 import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_suite.js'
 
 test.group('Memory Driver', (group) => {
   registerCacheDriverTestSuite({
     test,
     group,
-    createDriver: (options) => new Memory({ maxItems: 1000, prefix: 'japa', ...options }),
+    createDriver: (options) => new MemoryDriver({ maxItems: 1000, prefix: 'japa', ...options }),
   })
 
   test('should not store items exceeding maxEntrySize', async ({ assert }) => {
-    const cache = new Memory({
+    const cache = new MemoryDriver({
       maxSize: 1024,
       maxEntrySize: 100,
     })
@@ -30,7 +30,7 @@ test.group('Memory Driver', (group) => {
   })
 
   test('should not exceed the store maxSize', async ({ assert }) => {
-    const cache = new Memory({
+    const cache = new MemoryDriver({
       maxSize: 200,
     })
 

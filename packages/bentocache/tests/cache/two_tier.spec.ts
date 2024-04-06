@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
-import { Redis } from '../../src/drivers/redis.js'
+import { RedisDriver } from '../../src/drivers/redis.js'
 import { TestLogger } from '../../test_helpers/test_logger.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
@@ -418,7 +418,7 @@ test.group('Cache', () => {
   })
 
   test('rethrows error when suppressL2Errors is false', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
+    const remoteDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
 
     const { cache } = new CacheFactory()
       .merge({ l2Driver: remoteDriver, gracePeriod: { enabled: true, duration: '2h' } })
@@ -537,7 +537,7 @@ test.group('Cache', () => {
   })
 
   test('deleteMany should throw if remote fail and suppressL2Errors is on', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
+    const remoteDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
     const { cache, local, stack } = new CacheFactory()
       .merge({ l2Driver: remoteDriver })
       .withL1L2Config()
@@ -580,7 +580,7 @@ test.group('Cache', () => {
   })
 
   test('a deleteMany should delete others local cache even if remote fail', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
+    const remoteDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
 
     const [cache1, local1, , stack] = new CacheFactory()
       .merge({ l2Driver: remoteDriver })
@@ -631,7 +631,7 @@ test.group('Cache', () => {
   })
 
   test('delete should throw if remote fail and suppressL2Errors is on', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
+    const remoteDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
 
     const { cache, local, stack } = new CacheFactory()
       .merge({ l2Driver: remoteDriver })
@@ -676,7 +676,7 @@ test.group('Cache', () => {
   })
 
   test('a delete should delete others local cache even if remote fail', async ({ assert }) => {
-    const remoteDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
+    const remoteDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
 
     const [cache1, local1, , stack] = new CacheFactory()
       .merge({ l2Driver: remoteDriver })

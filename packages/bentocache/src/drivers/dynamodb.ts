@@ -16,17 +16,17 @@ import type { CacheDriver, CreateDriverResult, DynamoDBConfig } from '../types/m
 /**
  * Create a new DynamoDB driver
  */
-export function dynamoDbDriver(options: DynamoDBConfig): CreateDriverResult<DynamoDB> {
+export function dynamoDbDriver(options: DynamoDBConfig): CreateDriverResult<DynamoDbDriver> {
   return {
     options,
-    factory: (config: DynamoDBConfig) => new DynamoDB(config),
+    factory: (config: DynamoDBConfig) => new DynamoDbDriver(config),
   }
 }
 
 /**
  * Caching driver for DynamoDB
  */
-export class DynamoDB extends BaseDriver implements CacheDriver {
+export class DynamoDbDriver extends BaseDriver implements CacheDriver {
   type = 'l2' as const
 
   /**
@@ -144,7 +144,7 @@ export class DynamoDB extends BaseDriver implements CacheDriver {
    * Returns a new instance of the driver with the given namespace.
    */
   namespace(namespace: string) {
-    return new DynamoDB({
+    return new DynamoDbDriver({
       ...this.config,
       client: this.#client,
       prefix: this.createNamespacePrefix(namespace),

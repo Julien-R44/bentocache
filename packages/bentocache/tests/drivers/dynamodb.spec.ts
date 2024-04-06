@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import { DeleteTableCommand, CreateTableCommand, DynamoDBClient } from '@aws-sdk/client-dynamodb'
 
-import { DynamoDB } from '../../src/drivers/dynamodb.js'
+import { DynamoDbDriver } from '../../src/drivers/dynamodb.js'
 import { registerCacheDriverTestSuite } from '../../test_helpers/driver_test_suite.js'
 
 const dynamoClient = new DynamoDBClient({
@@ -48,7 +48,7 @@ test.group('DynamoDB driver', (group) => {
     group,
     supportsMilliseconds: false,
     createDriver: (options) => {
-      return new DynamoDB({
+      return new DynamoDbDriver({
         prefix: 'japa',
         region: 'eu-west-3',
         endpoint: process.env.DYNAMODB_ENDPOINT,

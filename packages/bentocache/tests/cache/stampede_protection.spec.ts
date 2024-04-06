@@ -1,8 +1,8 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
-import { Redis } from '../../src/drivers/redis.js'
-import { Memory } from '../../src/drivers/memory.js'
+import { RedisDriver } from '../../src/drivers/redis.js'
+import { MemoryDriver } from '../../src/drivers/memory.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { REDIS_CREDENTIALS, throwingFactory } from '../../test_helpers/index.js'
 
@@ -39,7 +39,7 @@ test.group('Cache | Stampede protection', () => {
   })
 
   test('multiple concurrent calls should ask remote only once', async ({ assert }) => {
-    class RemoteDriver extends Memory {
+    class RemoteDriver extends MemoryDriver {
       askedKeys: string[] = []
 
       get(key: string) {
@@ -145,7 +145,7 @@ test.group('Cache | Stampede protection', () => {
     .with([100, 1000, 10_000])
     .run(async ({ assert }, concurrency) => {
       const { cache } = new CacheFactory()
-        .merge({ l1Driver: new Memory({ maxSize: 100, prefix: 'test' }) })
+        .merge({ l1Driver: new MemoryDriver({ maxSize: 100, prefix: 'test' }) })
         .create()
 
       let factoryCalls = 0
@@ -169,7 +169,7 @@ test.group('Cache | Stampede protection', () => {
     .disableTimeout()
     .run(async ({ assert }, concurrency) => {
       const { cache } = new CacheFactory()
-        .merge({ l2Driver: new Redis({ connection: REDIS_CREDENTIALS }) })
+        .merge({ l2Driver: new RedisDriver({ connection: REDIS_CREDENTIALS }) })
         .create()
 
       let factoryCalls = 0

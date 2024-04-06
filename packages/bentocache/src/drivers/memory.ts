@@ -10,17 +10,17 @@ import type {
 /**
  * Create a new memory driver
  */
-export function memoryDriver(options: MemoryConfig = {}): CreateDriverResult<Memory> {
+export function memoryDriver(options: MemoryConfig = {}): CreateDriverResult<MemoryDriver> {
   return {
     options,
-    factory: (config: MemoryConfig) => new Memory(config),
+    factory: (config: MemoryConfig) => new MemoryDriver(config),
   }
 }
 
 /**
  * A memory caching driver
  */
-export class Memory extends BaseDriver implements L1CacheDriver {
+export class MemoryDriver extends BaseDriver implements L1CacheDriver {
   type = 'l1' as const
   #cache: LRUCache<string, string>
   declare config: MemoryConfig
@@ -50,7 +50,7 @@ export class Memory extends BaseDriver implements L1CacheDriver {
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string) {
-    return new Memory({
+    return new MemoryDriver({
       ...this.config,
       cacheInstance: this.#cache,
       prefix: this.createNamespacePrefix(namespace),

@@ -14,8 +14,8 @@ import type {
 /**
  * Create a new cache redis driver
  */
-export function redisDriver(options: RedisConfig): CreateDriverResult<Redis> {
-  return { options, factory: (config: RedisConfig) => new Redis(config) }
+export function redisDriver(options: RedisConfig): CreateDriverResult<RedisDriver> {
+  return { options, factory: (config: RedisConfig) => new RedisDriver(config) }
 }
 
 /**
@@ -31,7 +31,7 @@ export function redisBusDriver(
 /**
  * Caching driver for Redis
  */
-export class Redis extends BaseDriver implements L2CacheDriver {
+export class RedisDriver extends BaseDriver implements L2CacheDriver {
   type = 'l2' as const
   #connection: IoRedis
   declare config: RedisConfig
@@ -55,7 +55,7 @@ export class Redis extends BaseDriver implements L2CacheDriver {
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string) {
-    return new Redis({
+    return new RedisDriver({
       ...this.config,
       connection: this.#connection,
       prefix: this.createNamespacePrefix(namespace),

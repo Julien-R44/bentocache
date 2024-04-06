@@ -7,10 +7,10 @@ import type { CacheDriver, CreateDriverResult, FileConfig } from '../types/main.
 /**
  * Create a new file driver
  */
-export function fileDriver(options: FileConfig): CreateDriverResult<File> {
+export function fileDriver(options: FileConfig): CreateDriverResult<FileDriver> {
   return {
     options,
-    factory: (config: FileConfig) => new File(config),
+    factory: (config: FileConfig) => new FileDriver(config),
   }
 }
 
@@ -22,7 +22,7 @@ export function fileDriver(options: FileConfig): CreateDriverResult<File> {
  * - Files are stored in the following format: [stringifiedValue, expireTimestamp]
  * - If the expireTimestamp is -1, the value should never expire
  */
-export class File extends BaseDriver implements CacheDriver {
+export class FileDriver extends BaseDriver implements CacheDriver {
   type = 'l2' as const
 
   /**
@@ -95,7 +95,7 @@ export class File extends BaseDriver implements CacheDriver {
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string) {
-    return new File({
+    return new FileDriver({
       ...this.config,
       prefix: this.createNamespacePrefix(namespace),
     })

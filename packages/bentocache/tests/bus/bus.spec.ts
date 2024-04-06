@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
-import { Redis } from '../../src/drivers/redis.js'
+import { RedisDriver } from '../../src/drivers/redis.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 import { ChaosBus } from '../../test_helpers/chaos/chaos_bus.js'
@@ -138,7 +138,7 @@ test.group('Bus synchronization', () => {
     assert,
     cleanup,
   }) => {
-    const remoteDriver = new ChaosCache(new Redis({ connection: REDIS_CREDENTIALS }))
+    const remoteDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
 
     cleanup(() => remoteDriver.disconnect().catch(() => {}))
 

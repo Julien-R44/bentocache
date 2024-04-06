@@ -2,8 +2,8 @@ import lodash from '@poppinss/utils/lodash'
 import { getActiveTest } from '@japa/runner'
 
 import { Cache } from '../src/cache/cache.js'
-import { Redis } from '../src/drivers/redis.js'
-import { Memory } from '../src/drivers/memory.js'
+import { RedisDriver } from '../src/drivers/redis.js'
+import { MemoryDriver } from '../src/drivers/memory.js'
 import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
 import type { CacheStackDrivers } from '../src/types/main.js'
 import { CacheStack } from '../src/cache/stack/cache_stack.js'
@@ -62,7 +62,7 @@ export class CacheFactory {
    * Adds a Memory L1 driver to the cache stack
    */
   withMemoryL1() {
-    this.#parameters.l1Driver = new Memory({ maxSize: 100, prefix: 'test' })
+    this.#parameters.l1Driver = new MemoryDriver({ maxSize: 100, prefix: 'test' })
     return this
   }
 
@@ -70,7 +70,7 @@ export class CacheFactory {
    * Adds a Redis L2 driver to the cache stack
    */
   withRedisL2() {
-    this.#parameters.l2Driver = new Redis({ connection: { host: '127.0.0.1', port: 6379 } })
+    this.#parameters.l2Driver = new RedisDriver({ connection: { host: '127.0.0.1', port: 6379 } })
     return this
   }
 
@@ -78,8 +78,8 @@ export class CacheFactory {
    * Adds a cache stack preset with Memory + Redis + Memory Bus
    */
   withL1L2Config() {
-    this.#parameters.l1Driver ??= new Memory({ maxSize: 100, prefix: 'test' })
-    this.#parameters.l2Driver ??= new Redis({ connection: { host: '127.0.0.1', port: 6379 } })
+    this.#parameters.l1Driver ??= new MemoryDriver({ maxSize: 100, prefix: 'test' })
+    this.#parameters.l2Driver ??= new RedisDriver({ connection: { host: '127.0.0.1', port: 6379 } })
     this.#parameters.busDriver ??= new MemoryBus()
 
     return this
