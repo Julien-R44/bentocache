@@ -230,8 +230,6 @@ export class FileDriver extends BaseDriver implements CacheDriver {
   }
 
   async disconnect() {
-    this.#cleanerWorker?.postMessage('stop')
-    this.#cleanerWorker?.unref()
     await this.#cleanerWorker?.terminate()
   }
 }
