@@ -44,15 +44,17 @@ test.group('DynamoDB driver', (group) => {
   })
 
   registerCacheDriverTestSuite({
+    test,
     group,
-    driver: DynamoDB,
     supportsMilliseconds: false,
-    config: {
-      prefix: 'japa',
-      region: 'eu-west-3',
-      endpoint: process.env.DYNAMODB_ENDPOINT,
-      credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
-      table: { name: 'cache' },
-    },
+    createStore: (options) =>
+      new DynamoDB({
+        prefix: 'japa',
+        region: 'eu-west-3',
+        endpoint: process.env.DYNAMODB_ENDPOINT,
+        credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
+        table: { name: 'cache' },
+        ...options,
+      }),
   })
 })

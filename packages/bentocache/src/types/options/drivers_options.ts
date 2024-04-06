@@ -1,4 +1,5 @@
 import type { Knex } from 'knex'
+import type { Kysely } from 'kysely'
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
 import type { Redis as IoRedis, RedisOptions as IoRedisOptions } from 'ioredis'
 
@@ -89,14 +90,9 @@ export type FileConfig = {
 } & DriverCommonOptions
 
 /**
- * Options for SQL drivers
+ * Common options for database drivers
  */
-export type SqlConfig = {
-  /**
-   * A Knex connection instance or connection options
-   */
-  connection: Knex | Knex.Config['connection']
-
+export interface DatabaseConfig extends DriverCommonOptions {
   /**
    * Table name to use
    */
@@ -115,4 +111,24 @@ export type SqlConfig = {
    * @default false
    */
   pruneInterval?: number | false
-} & DriverCommonOptions
+}
+
+/**
+ * Configuration accepted by the Knex adapter
+ */
+export interface KnexConfig extends DatabaseConfig {
+  /**
+   * The Knex instance
+   */
+  connection: Knex
+}
+
+/**
+ * Configuration accepted by the Kysely adapter
+ */
+export interface KyselyConfig extends DatabaseConfig {
+  /**
+   * The Kysely instance
+   */
+  connection: Kysely<any>
+}
