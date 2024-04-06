@@ -1,4 +1,4 @@
-import { SqliteAdapter, type Kysely } from 'kysely'
+import { SqliteAdapter, type Kysely, MysqlAdapter } from 'kysely'
 
 import type { DatabaseAdapter, KyselyConfig } from '../types/main.js'
 
@@ -6,13 +6,21 @@ import type { DatabaseAdapter, KyselyConfig } from '../types/main.js'
  * Kysely adapter for the DatabaseDriver
  */
 export class KyselyAdapter implements DatabaseAdapter {
-  #isSqlite: boolean
+  #dialect: 'mysql' | 'pg' | 'sqlite'
   #tableName!: string
   #connection: Kysely<any>
 
   constructor(config: KyselyConfig) {
     this.#connection = config.connection
-    this.#isSqlite = config.connection.getExecutor().adapter instanceof SqliteAdapter
+
+    const adapter = this.#connection.getExecutor().adapter
+    if (adapter instanceof SqliteAdapter) {
+      this.#dialect = 'sqlite'
+    } else if (adapter instanceof MysqlAdapter) {
+      this.#dialect = 'mysql'
+    } else {
+      this.#dialect = 'pg'
+    }
   }
 
   setTableName(tableName: string): void {
@@ -75,14 +83,19 @@ export class KyselyAdapter implements DatabaseAdapter {
   }
 
   async set(row: { value: any; key: string; expiresAt: Date | null }): Promise<void> {
-    const expiresAt = this.#isSqlite ? row.expiresAt?.getTime() : row.expiresAt
+    const expiresAt = this.#dialect === 'sqlite' ? row.expiresAt?.getTime() : row.expiresAt
 
     await this.#connection
       .insertInto(this.#tableName)
       .values({ key: row.key, value: row.value, expires_at: expiresAt ?? null })
-      // .onConflict((conflict) =>
-      //   conflict.columns(['key']).doUpdateSet({ value: row.value, expires_at: row.expiresAt }),
-      // )
+      .$if(this.#dialect === 'mysql', (query) =>
+        query.onDuplicateKeyUpdate({ value: row.value, expires_at: expiresAt }),
+      )
+      .$if(this.#dialect !== 'mysql', (query) => {
+        return query.onConflict((conflict) => {
+          return conflict.columns(['key']).doUpdateSet({ value: row.value, expires_at: expiresAt })
+        })
+      })
       .execute()
   }
 }
