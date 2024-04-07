@@ -1,6 +1,6 @@
 import { Redis as IoRedis } from 'ioredis'
-import { RedisTransport } from '@boringnode/bus/transports/redis'
 import type { RedisOptions as IoRedisOptions } from 'ioredis'
+import { RedisTransport } from '@boringnode/bus/transports/redis'
 
 import { BaseDriver } from './base_driver.js'
 import { BinaryEncoder } from '../bus/encoders/binary_encoder.js'
