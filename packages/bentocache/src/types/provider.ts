@@ -1,11 +1,17 @@
 import type { Factory, GetSetFactory } from './helpers.js'
 import type {
   ClearOptions,
+  DeleteManyPojoOptions,
   DeleteOptions,
+  DeletePojoOptions,
   GetOptions,
   GetOrSetOptions,
+  GetOrSetPojoOptions,
+  GetPojoOptions,
   HasOptions,
+  HasPojoOptions,
   SetOptions,
+  SetPojoOptions,
 } from './main.js'
 
 /**
@@ -17,33 +23,26 @@ export interface CacheProvider {
    * Set a value in the cache
    * Returns true if the value was set, false otherwise
    */
+  set(options: SetPojoOptions): Promise<boolean>
   set(key: string, value: any, options?: SetOptions): Promise<boolean>
 
   /**
    * Set a value in the cache forever
    */
+  setForever(options: SetPojoOptions): Promise<boolean>
   setForever(key: string, value: any, options?: SetOptions): Promise<boolean>
-
-  /**
-   * Get a value from the cache
-   *
-   * @param key Key to get
-   */
-  get<T>(key: string): Promise<T | undefined | null>
 
   /**
    * Get a value from the cache, fallback to a default value
    * and set options
-   *
-   * @param key  Key to get
-   * @param defaultValue Default value if the key is not found
-   * @param options Options to set
    */
+  get<T = any>(options: GetPojoOptions<T>): Promise<T>
   get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOptions): Promise<T>
 
   /**
    * Get or set a value in the cache
    */
+  getOrSet<T>(options: GetOrSetPojoOptions<T>): Promise<T>
   getOrSet<T>(
     key: string,
     factory: GetSetFactory<T>,
@@ -53,21 +52,19 @@ export interface CacheProvider {
   /**
    * Get or set a value in the cache forever
    */
+  getOrSetForever<T>(options: GetOrSetPojoOptions<T>): Promise<T>
   getOrSetForever<T>(key: string, cb: GetSetFactory<T>, opts?: GetOrSetOptions): Promise<T>
-
-  /**
-   * Returns a new instance of the driver namespaced
-   */
-  namespace(namespace: string): CacheProvider
 
   /**
    * Check if a key exists in the cache
    */
+  has(options: HasPojoOptions): Promise<boolean>
   has(key: string, options?: HasOptions): Promise<boolean>
 
   /**
    * Check if a key is missing from the cache
    */
+  missing(options: HasPojoOptions): Promise<boolean>
   missing(key: string, options?: HasOptions): Promise<boolean>
 
   /**
@@ -81,17 +78,24 @@ export interface CacheProvider {
    * Delete a key from the cache
    * Returns true if the key was deleted, false otherwise
    */
+  delete(options: DeletePojoOptions): Promise<boolean>
   delete(key: string, options?: DeleteOptions): Promise<boolean>
 
   /**
    * Delete multiple keys from the cache
    */
+  deleteMany(options: DeleteManyPojoOptions): Promise<boolean>
   deleteMany(keys: string[], options?: DeleteOptions): Promise<boolean>
 
   /**
    * Remove all items from the cache
    */
   clear(options?: ClearOptions): Promise<void>
+
+  /**
+   * Returns a new instance of the driver namespaced
+   */
+  namespace(namespace: string): CacheProvider
 
   /**
    * Closes the connection to the cache

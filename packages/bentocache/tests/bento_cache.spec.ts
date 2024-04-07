@@ -35,8 +35,8 @@ test.group('Bento Cache', () => {
       assert.equal(event.value, 'bar')
     })
 
-    await bento.set('foo', 'bar')
-    await bento.get('foo')
+    await bento.set({ key: 'foo', value: 'bar' })
+    await bento.get({ key: 'foo' })
   })
 
   test('Unsubscribe from an event', async ({ assert }) => {

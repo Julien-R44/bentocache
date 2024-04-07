@@ -72,9 +72,10 @@ test.group('One tier tests', () => {
       .merge({ gracePeriod: { enabled: false, duration: '500ms' } })
       .create()
 
-    // init key with grace period
-    await cache.getOrSet('key', () => 'value', {
+    await cache.getOrSet({
+      key: 'key',
       ttl: '10ms',
+      factory: () => 'value',
       gracePeriod: { enabled: true, duration: '500ms' },
     })
 
