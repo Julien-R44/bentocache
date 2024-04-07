@@ -1,4 +1,4 @@
-import type { Transport } from '@rlanz/bus/types/main'
+import type { Transport } from '@boringnode/bus/types/main'
 
 import type { Duration } from './helpers.js'
 

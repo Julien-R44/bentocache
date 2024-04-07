@@ -153,12 +153,12 @@ importers:
 
   packages/bentocache:
     dependencies:
+      '@boringnode/bus':
+        specifier: ^0.5.0
+        version: 0.5.0(ioredis@5.3.2)
       '@poppinss/utils':
         specifier: ^6.7.3
         version: 6.7.3
-      '@rlanz/bus':
-        specifier: ^0.4.0
-        version: 0.4.0(ioredis@5.3.2)
       async-mutex:
         specifier: ^0.5.0
         version: 0.5.0
@@ -1275,6 +1275,21 @@ packages:
   /@bcoe/v8-coverage@0.2.3:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
+
+  /@boringnode/bus@0.5.0(ioredis@5.3.2):
+    resolution: {integrity: sha512-b0jtcAv/IgDrFz10kNJJT5+pyNTdSNxsPCudbnDe4PQ6KzfMQRQQolqFe0uotlmsVmWCBxUN5MyV06vdQ4MeRQ==}
+    engines: {node: '>=20.11.1'}
+    peerDependencies:
+      ioredis: ^5.0.0
+    peerDependenciesMeta:
+      ioredis:
+        optional: true
+    dependencies:
+      '@paralleldrive/cuid2': 2.2.2
+      '@poppinss/utils': 6.7.3
+      ioredis: 5.3.2
+      object-hash: 3.0.0
+    dev: false
 
   /@colors/colors@1.5.0:
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -2412,21 +2427,6 @@ packages:
 
   /@radix-ui/colors@3.0.0:
     resolution: {integrity: sha512-FUOsGBkHrYJwCSEtWRCIfQbZG7q1e6DgxCIOe1SUQzDe/7rXXeA47s8yCn6fuTNQAj1Zq4oTFi9Yjp3wzElcxg==}
-
-  /@rlanz/bus@0.4.0(ioredis@5.3.2):
-    resolution: {integrity: sha512-JfdPboWGqa9RpIL/D0aPHMzxjekxjT7+8cICScRIRZhR3VS45tllF2FXKr+JX4/deW/XLhJz0jg1Oe2H/dH1og==}
-    engines: {node: '>=20.11.1'}
-    peerDependencies:
-      ioredis: ^5.0.0
-    peerDependenciesMeta:
-      ioredis:
-        optional: true
-    dependencies:
-      '@paralleldrive/cuid2': 2.2.2
-      '@poppinss/utils': 6.7.3
-      ioredis: 5.3.2
-      object-hash: 3.0.0
-    dev: false
 
   /@rollup/rollup-android-arm-eabi@4.14.0:
     resolution: {integrity: sha512-jwXtxYbRt1V+CdQSy6Z+uZti7JF5irRKF8hlKfEnF/xJpcNGuuiZMBvuoYM+x9sr9iWGnzrlM0+9hvQ1kgkf1w==}

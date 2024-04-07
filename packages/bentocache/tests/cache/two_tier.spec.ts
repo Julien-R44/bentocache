@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
-import { MemoryTransport } from '@rlanz/bus/transports/memory'
+import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
 import { TestLogger } from '../helpers/test_logger.js'
 import { RedisDriver } from '../../src/drivers/redis.js'

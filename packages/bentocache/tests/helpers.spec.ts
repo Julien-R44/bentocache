@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { MemoryTransport } from '@rlanz/bus/transports/memory'
+import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
 import { resolveTtl } from '../src/helpers.js'
 

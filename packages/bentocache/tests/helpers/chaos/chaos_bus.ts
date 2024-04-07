@@ -1,4 +1,4 @@
-import type { Serializable, SubscribeHandler, Transport } from '@rlanz/bus/types/main'
+import type { Serializable, SubscribeHandler, Transport } from '@boringnode/bus/types/main'
 
 import { ChaosInjector } from './chaos_injector.js'
 

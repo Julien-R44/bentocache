@@ -67,8 +67,8 @@
     }
   },
   "dependencies": {
+    "@boringnode/bus": "^0.5.0",
     "@poppinss/utils": "^6.7.3",
-    "@rlanz/bus": "^0.4.0",
     "async-mutex": "^0.5.0",
     "chunkify": "^5.0.0",
     "hexoid": "^1.0.0",

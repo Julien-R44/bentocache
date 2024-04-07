@@ -1,5 +1,5 @@
-import { Bus as RlanzBus } from '@rlanz/bus'
-import type { Transport } from '@rlanz/bus/types/main'
+import { Bus as RlanzBus } from '@boringnode/bus'
+import type { Transport } from '@boringnode/bus/types/main'
 
 import { CacheBusMessageType } from '../types/bus.js'
 import type { LocalCache } from '../cache/facades/local_cache.js'

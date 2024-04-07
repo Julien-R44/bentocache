@@ -1,5 +1,5 @@
 import { Redis as IoRedis } from 'ioredis'
-import { RedisTransport } from '@rlanz/bus/transports/redis'
+import { RedisTransport } from '@boringnode/bus/transports/redis'
 import type { RedisOptions as IoRedisOptions } from 'ioredis'
 
 import { BaseDriver } from './base_driver.js'
