@@ -161,7 +161,7 @@ export interface DatabaseAdapter {
 }
 ```
 
-You can take a look at the code of the [Kysely adapter](https://github.com/Julien-R44/bentocache/blob/main/packages/bentocache/src/drivers/kysely.ts#L22) or the [Knex adapter](https://github.com/Julien-R44/bentocache/blob/main/packages/bentocache/src/drivers/kysely.ts#L22) for inspiration.
+You can take a look at the code of the [Kysely adapter](https://github.com/Julien-R44/bentocache/blob/main/packages/bentocache/src/drivers/database/adapters/kysely.ts) or the [Knex adapter](https://github.com/Julien-R44/bentocache/blob/main/packages/bentocache/src/drivers/database/adapters/knex.ts) for inspiration.
 
 Once you defined your adapter, you can create your own store that use the DatabaseDriver and your adapter:
 
