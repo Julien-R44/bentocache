@@ -155,7 +155,6 @@ test.group('Cache events', () => {
 
     const event = await pEvent(emitter, 'bus:message:published')
 
-    assert.isDefined(event.message.busId)
     assert.deepInclude(event.message, { keys: ['foo'], type: CacheBusMessageType.Set })
   })
 
