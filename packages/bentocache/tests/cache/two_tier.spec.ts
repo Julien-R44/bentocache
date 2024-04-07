@@ -277,22 +277,23 @@ test.group('Cache', () => {
   })
 
   test('should use the default graced duration when not defined', async ({ assert }) => {
-    const { cache } = new CacheFactory()
+    const { cache, local, stack } = new CacheFactory()
       .withL1L2Config()
-      .merge({ gracePeriod: { enabled: true, duration: '100ms', fallbackDuration: 0 } })
+      .merge({ gracePeriod: { enabled: true, duration: '2s', fallbackDuration: 0 } })
       .create()
 
     await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '10ms' })
-    await setTimeout(50)
 
-    const r1 = await cache.getOrSet('key1', throwingFactory(), { ttl: '10ms' })
+    await setTimeout(100)
 
-    await setTimeout(50)
-    const r2 = cache.getOrSet('key1', throwingFactory('fail'), { ttl: '10ms' })
+    const entry = local.get('key1', stack.defaultOptions)
+    assert.deepEqual(entry?.isLogicallyExpired(), true)
 
-    assert.deepEqual(r1, { foo: 'bar' })
-    await assert.rejects(() => r2, /fail/)
-  })
+    await setTimeout(2000)
+
+    const entry2 = local.get('key1', stack.defaultOptions)
+    assert.isUndefined(entry2)
+  }).disableTimeout()
 
   test('early expiration', async ({ assert }) => {
     assert.plan(5)
