@@ -1,10 +1,10 @@
 import lodash from '@poppinss/utils/lodash'
 import { getActiveTest } from '@japa/runner'
+import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
 import { Cache } from '../src/cache/cache.js'
 import { RedisDriver } from '../src/drivers/redis.js'
 import { MemoryDriver } from '../src/drivers/memory.js'
-import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
 import type { CacheStackDrivers } from '../src/types/main.js'
 import { CacheStack } from '../src/cache/stack/cache_stack.js'
 import { BentoCacheOptions } from '../src/bento_cache_options.js'
@@ -80,7 +80,7 @@ export class CacheFactory {
   withL1L2Config() {
     this.#parameters.l1Driver ??= new MemoryDriver({ maxSize: 100, prefix: 'test' })
     this.#parameters.l2Driver ??= new RedisDriver({ connection: { host: '127.0.0.1', port: 6379 } })
-    this.#parameters.busDriver ??= new MemoryBus()
+    this.#parameters.busDriver ??= new MemoryTransport()
 
     return this
   }

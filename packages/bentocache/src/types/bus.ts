@@ -1,38 +1,16 @@
-import type { Logger } from './main.js'
+import type { Transport } from '@boringnode/bus/types/main'
+
+import type { Duration } from './helpers.js'
 
 /**
- * Interface for the a bus driver
+ * Interface for the bus driver
  */
-export interface BusDriver {
-  /**
-   * Publish a message to a channel
-   */
-  publish(channel: string, message: Omit<CacheBusMessage, 'busId'>): Promise<void>
-  subscribe(channel: string, handler: (message: CacheBusMessage) => void): Promise<void>
-  unsubscribe(channel: string): Promise<void>
-  disconnect(): Promise<void>
-
-  setId(id: string): BusDriver
-  setLogger(logger: Logger): BusDriver
-  onReconnect(callback: () => void): void
-}
-
-/**
- * Interface for the bus encoder
- *
- * Bus encoders are responsible for encoding and decoding messages
- * when they are sent and received from the bus.
- */
-export interface BusEncoder {
-  encode(message: CacheBusMessage): string | Buffer
-  decode(data: string): CacheBusMessage
-}
+export type BusDriver = Transport
 
 /**
  * Message sent over the cache bus
  */
-export interface CacheBusMessage {
-  busId: string
+export type CacheBusMessage = {
   keys: string[]
   type: CacheBusMessageType
 }
@@ -69,5 +47,10 @@ export type BusOptions = {
      * messages will be discarded when the queue is full.
      */
     maxSize?: number
+
+    /**
+     * The interval between each retry attempt
+     */
+    retryInterval?: Duration | false
   }
 }

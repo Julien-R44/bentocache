@@ -1,12 +1,15 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
+import { RedisTransport } from '@boringnode/bus/transports/redis'
+import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
 import { RedisDriver } from '../../src/drivers/redis.js'
 import { ChaosBus } from '../helpers/chaos/chaos_bus.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
+import { CacheBusMessageType } from '../../src/types/bus.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
-import { MemoryBus } from '../../src/bus/drivers/memory_bus.js'
 import { REDIS_CREDENTIALS, throwingFactory } from '../helpers/index.js'
+import { BinaryEncoder } from '../../src/bus/encoders/binary_encoder.js'
 
 test.group('Bus synchronization', () => {
   test('synchronize multiple cache', async ({ assert }) => {
@@ -33,13 +36,23 @@ test.group('Bus synchronization', () => {
   }).disableTimeout()
 
   test('retry queue processing', async ({ assert }) => {
-    const bus1 = new ChaosBus(new MemoryBus())
-    const bus2 = new ChaosBus(new MemoryBus())
-    const bus3 = new ChaosBus(new MemoryBus())
+    const bus1 = new ChaosBus(new MemoryTransport())
+    const bus2 = new ChaosBus(new MemoryTransport())
+    const bus3 = new ChaosBus(new MemoryTransport())
 
-    const [cache1] = new CacheFactory().withL1L2Config().merge({ busDriver: bus1 }).create()
-    const [cache2] = new CacheFactory().withL1L2Config().merge({ busDriver: bus2 }).create()
-    const [cache3] = new CacheFactory().withL1L2Config().merge({ busDriver: bus3 }).create()
+    const busOptions = { retryQueue: { enabled: true, retryInterval: 100 } }
+    const [cache1] = new CacheFactory()
+      .withL1L2Config()
+      .merge({ busDriver: bus1, busOptions })
+      .create()
+    const [cache2] = new CacheFactory()
+      .withL1L2Config()
+      .merge({ busDriver: bus2, busOptions })
+      .create()
+    const [cache3] = new CacheFactory()
+      .withL1L2Config()
+      .merge({ busDriver: bus3, busOptions })
+      .create()
 
     bus1.alwaysThrow()
     bus2.alwaysThrow()
@@ -65,9 +78,6 @@ test.group('Bus synchronization', () => {
     bus2.neverThrow()
     bus3.neverThrow()
 
-    // set random key so that retry queue is processed
-    cache1.set('random-key', 4)
-
     await setTimeout(200)
 
     assert.deepEqual(await cache1.get('foo'), 3)
@@ -76,8 +86,8 @@ test.group('Bus synchronization', () => {
   }).disableTimeout()
 
   test('should not process retry queue if disabled', async ({ assert }) => {
-    const bus1 = new ChaosBus(new MemoryBus())
-    const bus2 = new ChaosBus(new MemoryBus())
+    const bus1 = new ChaosBus(new MemoryTransport())
+    const bus2 = new ChaosBus(new MemoryTransport())
 
     const [cache] = new CacheFactory()
       .withL1L2Config()
@@ -109,15 +119,18 @@ test.group('Bus synchronization', () => {
   })
 
   test('should queue maximum X items when retryQueue.maxSize is enabled', async ({ assert }) => {
-    const bus1 = new ChaosBus(new MemoryBus())
-    const bus2 = new MemoryBus()
+    const bus1 = new ChaosBus(new MemoryTransport())
+    const bus2 = new MemoryTransport()
 
     const [cache1] = new CacheFactory()
       .withL1L2Config()
-      .merge({ busDriver: bus1, busOptions: { retryQueue: { enabled: true, maxSize: 20 } } })
+      .merge({
+        busDriver: bus1,
+        busOptions: { retryQueue: { enabled: true, maxSize: 20, retryInterval: 100 } },
+      })
       .create()
 
-    const [cache2] = new CacheFactory().withL1L2Config().merge({ busDriver: bus2 }).create()
+    const [] = new CacheFactory().withL1L2Config().merge({ busDriver: bus2 }).create()
 
     bus1.alwaysThrow()
 
@@ -128,7 +141,6 @@ test.group('Bus synchronization', () => {
     bus1.neverThrow()
     assert.deepEqual(bus2.receivedMessages.length, 0)
 
-    await cache2.set('foo', 1)
     await setTimeout(1000)
 
     assert.deepEqual(bus2.receivedMessages.length, 20)
@@ -172,4 +184,30 @@ test.group('Bus synchronization', () => {
      */
     assert.deepEqual(result, 'bar')
   })
+
+  test('binary encoding/decoding should works fine', async ({ assert, cleanup }, done) => {
+    const bus1 = new RedisTransport(REDIS_CREDENTIALS, new BinaryEncoder()).setId('foo')
+    const bus2 = new RedisTransport(REDIS_CREDENTIALS, new BinaryEncoder()).setId('bar')
+
+    cleanup(async () => {
+      await bus1.disconnect()
+      await bus2.disconnect()
+    })
+
+    const data = {
+      keys: ['foo', '1', '2', 'bar', 'key::test'],
+      type: CacheBusMessageType.Set,
+    }
+
+    bus1.subscribe('foo', (message: any) => {
+      assert.deepInclude(message, data)
+      done()
+    })
+
+    await setTimeout(200)
+
+    await bus2.publish('foo', data)
+  })
+    .waitForDone()
+    .disableTimeout()
 })

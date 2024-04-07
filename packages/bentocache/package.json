@@ -67,7 +67,7 @@
     }
   },
   "dependencies": {
-    "@paralleldrive/cuid2": "^2.2.2",
+    "@boringnode/bus": "^0.5.0",
     "@poppinss/utils": "^6.7.3",
     "async-mutex": "^0.5.0",
     "chunkify": "^5.0.0",

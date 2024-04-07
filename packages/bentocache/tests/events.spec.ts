@@ -2,11 +2,11 @@ import { test } from '@japa/runner'
 import EventEmitter from 'node:events'
 import { pEvent, pEventMultiple } from 'p-event'
 import { setTimeout } from 'node:timers/promises'
+import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
 import { throwingFactory } from './helpers/index.js'
 import { ChaosBus } from './helpers/chaos/chaos_bus.js'
 import { CacheBusMessageType } from '../src/types/bus.js'
-import { MemoryBus } from '../src/bus/drivers/memory_bus.js'
 import { CacheFactory } from '../factories/cache_factory.js'
 
 test.group('Cache events', () => {
@@ -58,7 +58,7 @@ test.group('Cache events', () => {
     assert.plan(1)
 
     const emitter = new EventEmitter()
-    const bus = new ChaosBus(new MemoryBus())
+    const bus = new ChaosBus(new MemoryTransport())
     const { cache } = new CacheFactory()
       .merge({ busDriver: bus, emitter })
       .withL1L2Config()
@@ -155,7 +155,6 @@ test.group('Cache events', () => {
 
     const event = await pEvent(emitter, 'bus:message:published')
 
-    assert.isDefined(event.message.busId)
     assert.deepInclude(event.message, { keys: ['foo'], type: CacheBusMessageType.Set })
   })
 
@@ -168,7 +167,6 @@ test.group('Cache events', () => {
 
     const event = await pEvent(emitter, 'bus:message:received')
 
-    assert.isDefined(event.message.busId)
     assert.deepInclude(event.message, {
       keys: ['foo'],
       type: CacheBusMessageType.Set,

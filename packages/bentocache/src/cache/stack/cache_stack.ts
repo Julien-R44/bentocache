@@ -49,7 +49,6 @@ export class CacheStack {
     const opts = lodash.merge({ retryQueue: { enabled: true, maxSize: undefined } }, busOptions)
     const newBus = new Bus(busDriver, this.l1, this.logger, this.emitter, opts)
 
-    newBus.subscribe()
     return newBus
   }
 
