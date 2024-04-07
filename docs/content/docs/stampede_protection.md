@@ -14,11 +14,12 @@ Imagine this simple route that allows retrieving a post by its ID.
 ```ts
 router.get('/posts/:id', async (request) => {
   const { id } = request.params
-  const post = await bento.getOrSet(
-    `post:${id}`, 
-    () => getPostFromDb(id), 
-    { ttl: '1h' }
-  )
+  
+  const post = await bento.getOrSet({
+    key: `post:${id}`, 
+    ttl: '1h',
+    factory: () => getPostFromDb(id), 
+  })
   
   return user
 })

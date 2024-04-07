@@ -600,14 +600,14 @@ test.group('One tier tests', () => {
   test('adaptive caching', async ({ assert }) => {
     const { cache, local, stack } = new CacheFactory().withMemoryL1().merge({ ttl: '10m' }).create()
 
-    await cache.getOrSet(
-      'key1',
-      (options) => {
+    await cache.getOrSet({
+      key: 'key1',
+      ttl: '4m',
+      factory: (options) => {
         options.setTtl('2d')
         return { foo: 'bar' }
       },
-      { ttl: '4m' },
-    )
+    })
 
     const res = local.get('key1', stack.defaultOptions)!
     const logicalExpiration = res.getLogicalExpiration()
