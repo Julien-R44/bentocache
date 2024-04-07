@@ -2,7 +2,7 @@ import { test } from '@japa/runner'
 import EventEmitter from 'node:events'
 import { pEvent, pEventMultiple } from 'p-event'
 import { setTimeout } from 'node:timers/promises'
-import { MemoryTransport } from '@rlanz/bus/drivers/memory'
+import { MemoryTransport } from '@rlanz/bus/transports/memory'
 
 import { throwingFactory } from './helpers/index.js'
 import { ChaosBus } from './helpers/chaos/chaos_bus.js'

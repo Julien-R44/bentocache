@@ -1,6 +1,6 @@
 import lodash from '@poppinss/utils/lodash'
 import { getActiveTest } from '@japa/runner'
-import { MemoryTransport } from '@rlanz/bus/drivers/memory'
+import { MemoryTransport } from '@rlanz/bus/transports/memory'
 
 import { Cache } from '../src/cache/cache.js'
 import { RedisDriver } from '../src/drivers/redis.js'

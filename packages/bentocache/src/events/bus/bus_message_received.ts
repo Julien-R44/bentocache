@@ -10,7 +10,6 @@ export class BusMessageReceived implements CacheEvent {
 
   toJSON() {
     return {
-      busId: this.message.busId,
       keys: this.message.keys,
       type: this.message.type,
     }

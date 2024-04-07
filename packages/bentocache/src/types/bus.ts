@@ -1,26 +1,16 @@
 import type { Transport } from '@rlanz/bus/types/main'
 
+import type { Duration } from './helpers.js'
+
 /**
  * Interface for the bus driver
  */
 export type BusDriver = Transport
 
 /**
- * Interface for the bus encoder
- *
- * Bus encoders are responsible for encoding and decoding messages
- * when they are sent and received from the bus.
- */
-export interface BusEncoder {
-  encode(message: CacheBusMessage): string | Buffer
-  decode(data: string): CacheBusMessage
-}
-
-/**
  * Message sent over the cache bus
  */
-export interface CacheBusMessage {
-  busId: string
+export type CacheBusMessage = {
   keys: string[]
   type: CacheBusMessageType
 }
@@ -57,5 +47,10 @@ export type BusOptions = {
      * messages will be discarded when the queue is full.
      */
     maxSize?: number
+
+    /**
+     * The interval between each retry attempt
+     */
+    retryInterval?: Duration | false
   }
 }

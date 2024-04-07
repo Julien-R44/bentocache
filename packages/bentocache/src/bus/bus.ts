@@ -1,5 +1,4 @@
 import { Bus as RlanzBus } from '@rlanz/bus'
-import { createId } from '@paralleldrive/cuid2'
 import type { Transport } from '@rlanz/bus/types/main'
 
 import { CacheBusMessageType } from '../types/bus.js'
@@ -18,20 +17,10 @@ import type { BusOptions, CacheBusMessage, Emitter, Logger } from '../types/main
  * local cache accordingly.
  */
 export class Bus {
-  /**
-   * The local cache that will be updated when a message is received
-   */
-  #cache?: LocalCache
-
-  /**
-   * A unique identifier for this bus instance
-   * that is used to prevent the bus from
-   * emitting events to itself
-   */
-  #busId = createId()
   #bus: RlanzBus
   #logger: Logger
   #emitter: Emitter
+  #cache?: LocalCache
   #channelName = 'bentocache.notifications'
 
   constructor(
@@ -46,13 +35,14 @@ export class Bus {
     this.#logger = logger.child({ context: 'bentocache.bus' })
 
     this.#bus = new RlanzBus(driver, {
-      retryQueue: { ...options.retryQueue, removeDuplicates: true, retryInterval: false },
+      retryQueue: {
+        ...options.retryQueue,
+        removeDuplicates: true,
+        retryInterval: options.retryQueue?.retryInterval || false,
+      },
     })
 
-    this.#bus.subscribe<CacheBusMessage & { [key: string]: any }>(
-      this.#channelName,
-      this.#onMessage.bind(this),
-    )
+    this.#bus.subscribe<CacheBusMessage>(this.#channelName, this.#onMessage.bind(this))
   }
 
   /**
@@ -81,11 +71,10 @@ export class Bus {
    *
    * @returns true if the message was published, false if not
    */
-  async publish(message: Omit<CacheBusMessage, 'busId'>): Promise<boolean> {
+  async publish(message: CacheBusMessage): Promise<boolean> {
     try {
-      const fullMessage = { ...message, busId: this.#busId }
       await this.#bus.publish(this.#channelName, message)
-      this.#emitter.emit('bus:message:published', new BusMessagePublished(fullMessage))
+      this.#emitter.emit('bus:message:published', new BusMessagePublished(message))
       return true
     } catch (error) {
       this.#logger.error({ error }, 'failed to publish message to bus')

@@ -1,12 +1,8 @@
-import { Redis } from 'ioredis'
 import { test } from '@japa/runner'
 import { createId } from '@paralleldrive/cuid2'
 import { setTimeout } from 'node:timers/promises'
-import { GenericContainer } from 'testcontainers'
-import { RedisTransport } from '@rlanz/bus/drivers/redis'
-import { JsonEncoder } from '@rlanz/bus/encoders/json_encoder'
+import { RedisTransport } from '@rlanz/bus/transports/redis'
 
-import { TestLogger } from '../helpers/test_logger.js'
 import { REDIS_CREDENTIALS } from '../helpers/index.js'
 import { CacheBusMessageType } from '../../src/types/bus.js'
 import { BinaryEncoder } from '../../src/bus/encoders/binary_encoder.js'
