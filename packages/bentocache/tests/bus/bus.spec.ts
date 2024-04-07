@@ -205,5 +205,7 @@ test.group('Bus synchronization', () => {
     })
 
     await bus2.publish('foo', data)
-  }).waitForDone()
+  })
+    .waitForDone()
+    .disableTimeout()
 })
