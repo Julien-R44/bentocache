@@ -72,14 +72,14 @@ export class Bus {
    * @returns true if the message was published, false if not
    */
   async publish(message: CacheBusMessage): Promise<boolean> {
-    try {
-      await this.#bus.publish(this.#channelName, message)
+    const wasPublished = await this.#bus.publish(this.#channelName, message)
+    if (wasPublished) {
       this.#emitter.emit('bus:message:published', new BusMessagePublished(message))
       return true
-    } catch (error) {
-      this.#logger.error({ error }, 'failed to publish message to bus')
-      return false
     }
+
+    this.#logger.error('failed to publish message to bus')
+    return false
   }
 
   /**

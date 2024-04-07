@@ -3,6 +3,7 @@ import { RedisTransport } from '@rlanz/bus/transports/redis'
 import type { RedisOptions as IoRedisOptions } from 'ioredis'
 
 import { BaseDriver } from './base_driver.js'
+import { BinaryEncoder } from '../bus/encoders/binary_encoder.js'
 import type {
   BusOptions,
   CreateBusDriverResult,
@@ -25,7 +26,10 @@ export function redisDriver(options: RedisConfig): CreateDriverResult<RedisDrive
 export function redisBusDriver(
   options: { connection: IoRedisOptions } & BusOptions,
 ): CreateBusDriverResult {
-  return { options, factory: (config: IoRedisOptions) => new RedisTransport(config) }
+  return {
+    options,
+    factory: (config: IoRedisOptions) => new RedisTransport(config, new BinaryEncoder()),
+  }
 }
 
 /**
