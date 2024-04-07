@@ -204,6 +204,8 @@ test.group('Bus synchronization', () => {
       done()
     })
 
+    await setTimeout(200)
+
     await bus2.publish('foo', data)
   })
     .waitForDone()
