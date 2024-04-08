@@ -50,6 +50,9 @@ export class Cache implements CacheProvider {
     return new Cache(this.name, this.#stack.namespace(namespace))
   }
 
+  get<T = any>(options: GetPojoOptions<T>): Promise<T>
+  get<T = any>(key: string): Promise<T | null | undefined>
+  get<T = any>(key: string, defaultValue: Factory<T>, options?: GetOptions): Promise<T>
   async get<T = any>(
     keyOrOptions: string | GetPojoOptions<T>,
     defaultValue?: Factory<T>,
@@ -100,6 +103,9 @@ export class Cache implements CacheProvider {
       this.#stack.emit(new events.CacheHit(key, localItem.serialize(), this.name, true))
       return localItem.getValue()
     }
+
+    this.#stack.emit(new events.CacheMiss(key, this.name))
+    return this.#resolveDefaultValue(defaultValueFn)
   }
 
   /**

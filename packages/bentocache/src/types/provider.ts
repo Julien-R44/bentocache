@@ -38,6 +38,7 @@ export interface CacheProvider {
    */
   get<T = any>(options: GetPojoOptions<T>): Promise<T>
   get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOptions): Promise<T>
+  get<T = any>(key: string): Promise<T | null | undefined>
 
   /**
    * Get or set a value in the cache

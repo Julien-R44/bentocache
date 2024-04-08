@@ -66,6 +66,20 @@ test.group('One tier tests', () => {
     assert.isUndefined(r2)
   })
 
+  test('get() with grace period and default value but no fallback value', async ({ assert }) => {
+    const { cache } = new CacheFactory()
+      .withMemoryL1()
+      .merge({ gracePeriod: { enabled: true, duration: '4h' } })
+      .create()
+
+    const result = await cache.get({
+      key: 'key',
+      defaultValue: 'default',
+    })
+
+    assert.equal(result, 'default')
+  })
+
   test('get() should not use grace period when disabled', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .withMemoryL1()

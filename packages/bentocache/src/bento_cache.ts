@@ -137,6 +137,9 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
   /**
    * Get a value from the cache
    */
+  get<T = any>(options: GetPojoOptions<T>): Promise<T>
+  get<T = any>(key: string): Promise<T | null | undefined>
+  get<T = any>(key: string, defaultValue: Factory<T>, options?: GetOptions): Promise<T>
   async get<T = any>(
     keyOrOptions: string | GetPojoOptions<T>,
     defaultValue?: Factory<T>,
