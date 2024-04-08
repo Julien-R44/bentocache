@@ -255,21 +255,32 @@ test.group('Cache', () => {
 
   test('should throws if graced value is outdated', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ gracePeriod: { enabled: true, duration: '100ms' } })
+      .merge({ gracePeriod: { enabled: true, duration: '400ms' } })
       .withL1L2Config()
       .create()
 
     // init factory
-    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '10ms' })
+    const r1 = await cache.getOrSet({
+      key: 'key1',
+      ttl: '10ms',
+      factory: () => ({ foo: 'bar' }),
+    })
 
     // re-get with throwing factory. still in grace period
-    const r2 = await cache.getOrSet('key1', throwingFactory('should not be called'), {
+    const r2 = await cache.getOrSet({
+      key: 'key1',
       ttl: '10ms',
+      factory: throwingFactory('error in factory'),
     })
-    await setTimeout(101)
+
+    await setTimeout(500)
 
     // re-get with throwing factory. out of grace period. should throws
-    const r3 = cache.getOrSet('key1', throwingFactory('error in factory'), { ttl: '10ms' })
+    const r3 = cache.getOrSet({
+      key: 'key1',
+      ttl: '10ms',
+      factory: throwingFactory('error in factory'),
+    })
 
     assert.deepEqual(r1, { foo: 'bar' })
     assert.deepEqual(r2, { foo: 'bar' })
@@ -381,7 +392,7 @@ test.group('Cache', () => {
 
   test('early refresh should re-increment physical/logical ttls', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ earlyExpiration: 0.5, ttl: 100 })
+      .merge({ earlyExpiration: 0.5, ttl: '500ms' })
       .withL1L2Config()
       .create()
 
@@ -389,16 +400,18 @@ test.group('Cache', () => {
     const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
 
     // wait for early refresh threshold
-    await setTimeout(60)
+    await setTimeout(350)
 
     // call factory. should returns the old value.
     // Disable early expiration to test physical ttl
-    const r2 = await cache.getOrSet('key1', slowFactory(50, { foo: 'baz' }), {
+    const r2 = await cache.getOrSet({
+      key: 'key1',
+      factory: slowFactory(50, { foo: 'baz' }),
       earlyExpiration: undefined,
     })
 
     // wait for early refresh to be done
-    await setTimeout(50)
+    await setTimeout(60)
 
     // get the value
     const r3 = await cache.get('key1')
@@ -408,7 +421,7 @@ test.group('Cache', () => {
     const r4 = await cache.get('key1')
 
     // wait for physical ttl to expire
-    await setTimeout(50)
+    await setTimeout(600)
     const r5 = await cache.get('key1')
 
     assert.deepEqual(r1, { foo: 'bar' })

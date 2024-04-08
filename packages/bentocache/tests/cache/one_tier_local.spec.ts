@@ -66,15 +66,30 @@ test.group('One tier tests', () => {
     assert.isUndefined(r2)
   })
 
+  test('get() with grace period and default value but no fallback value', async ({ assert }) => {
+    const { cache } = new CacheFactory()
+      .withMemoryL1()
+      .merge({ gracePeriod: { enabled: true, duration: '4h' } })
+      .create()
+
+    const result = await cache.get({
+      key: 'key',
+      defaultValue: 'default',
+    })
+
+    assert.equal(result, 'default')
+  })
+
   test('get() should not use grace period when disabled', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .withMemoryL1()
       .merge({ gracePeriod: { enabled: false, duration: '500ms' } })
       .create()
 
-    // init key with grace period
-    await cache.getOrSet('key', () => 'value', {
+    await cache.getOrSet({
+      key: 'key',
       ttl: '10ms',
+      factory: () => 'value',
       gracePeriod: { enabled: true, duration: '500ms' },
     })
 
@@ -515,23 +530,25 @@ test.group('One tier tests', () => {
   test('early refresh should re-increment physical/logical ttls', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .withMemoryL1()
-      .merge({ earlyExpiration: 0.5, ttl: 100 })
+      .merge({ earlyExpiration: 0.5, ttl: '500ms' })
       .create()
 
     // init cache
     const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
 
     // wait for early refresh threshold
-    await setTimeout(60)
+    await setTimeout(350)
 
     // call factory. should returns the old value.
     // Disable early expiration to test physical ttl
-    const r2 = await cache.getOrSet('key1', slowFactory(50, { foo: 'baz' }), {
+    const r2 = await cache.getOrSet({
+      key: 'key1',
+      factory: slowFactory(50, { foo: 'baz' }),
       earlyExpiration: undefined,
     })
 
     // wait for early refresh to be done
-    await setTimeout(50)
+    await setTimeout(60)
 
     // get the value
     const r3 = await cache.get('key1')
@@ -541,7 +558,7 @@ test.group('One tier tests', () => {
     const r4 = await cache.get('key1')
 
     // wait for physical ttl to expire
-    await setTimeout(50)
+    await setTimeout(600)
     const r5 = await cache.get('key1')
 
     assert.deepEqual(r1, { foo: 'bar' })
@@ -599,14 +616,14 @@ test.group('One tier tests', () => {
   test('adaptive caching', async ({ assert }) => {
     const { cache, local, stack } = new CacheFactory().withMemoryL1().merge({ ttl: '10m' }).create()
 
-    await cache.getOrSet(
-      'key1',
-      (options) => {
+    await cache.getOrSet({
+      key: 'key1',
+      ttl: '4m',
+      factory: (options) => {
         options.setTtl('2d')
         return { foo: 'bar' }
       },
-      { ttl: '4m' },
-    )
+    })
 
     const res = local.get('key1', stack.defaultOptions)!
     const logicalExpiration = res.getLogicalExpiration()

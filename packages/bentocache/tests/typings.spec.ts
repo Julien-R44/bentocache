@@ -90,10 +90,16 @@ test.group('Typings', () => {
     const r1 = await cache.getOrSet<string>('key', () => 'hey')
     const r2 = await cache.getOrSet('key', () => 32)
     const r3 = await cache.getOrSet('key', () => 50_000)
+    const r4 = await cache.getOrSet({
+      key: 'key',
+      ttl: 1000,
+      factory: () => 34,
+    })
 
     expectTypeOf(r1).toEqualTypeOf<string>()
     expectTypeOf(r2).toEqualTypeOf<number>()
     expectTypeOf(r3).toEqualTypeOf<number>()
+    expectTypeOf(r4).toEqualTypeOf<number>()
   })
 
   test('getOrSet() typings on bento', async ({ expectTypeOf }) => {
@@ -102,10 +108,16 @@ test.group('Typings', () => {
     const r1 = await bento.getOrSet<string>('key', () => 'hey')
     const r2 = await bento.getOrSet('key', () => 32)
     const r3 = await bento.getOrSet('key', () => 50_000)
+    const r4 = await bento.getOrSet({
+      key: 'key',
+      ttl: 1000,
+      factory: () => 34,
+    })
 
     expectTypeOf(r1).toEqualTypeOf<string>()
     expectTypeOf(r2).toEqualTypeOf<number>()
     expectTypeOf(r3).toEqualTypeOf<number>()
+    expectTypeOf(r4).toEqualTypeOf<number>()
   })
 
   test('on() events list', async ({ expectTypeOf }) => {

@@ -121,9 +121,10 @@ See the [events documentation](https://bentocache.dev/docs/events) for more info
 All TTLs can be passed in a human-readable string format. We use [lukeed/ms](https://github.com/lukeed/ms) under the hood. (this is optional, and you can pass a `number` in milliseconds if you prefer)
 
 ```ts
-bento.getOrSet('foo', () => getFromDb(), {
-  ttl: '2.5h'
-  gracePeriod: { enabled: true, duration: '6h' }
+bento.getOrSet({
+  key: 'foo',
+  ttl: '2.5h',
+  factory: () => getFromDb(),
 })
 ```
 
@@ -132,8 +133,10 @@ bento.getOrSet('foo', () => getFromDb(), {
 When you cached item will expire soon, you can refresh it in advance, in the background. This way, next time the entry is requested, it will already be computed and thus returned to the user super quickly.
 
 ```ts
-bento.getOrSet('foo', () => getFromDb(), {
+bento.getOrSet({
+  key: 'foo',
   earlyExpiration: 0.8
+  factory: () => getFromDb(),
 })
 ```
 

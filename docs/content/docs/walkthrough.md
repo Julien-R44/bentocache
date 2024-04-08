@@ -47,11 +47,11 @@ const bento = new BentoCache({
 
 router.get('/products/:id', async (req, res) => {
   const productId = req.params.id
-  const product = await bento.getOrSet(
-    `product:${productId}`, 
-    () => Product.find(productId), 
-    { ttl: '1m' }
-  )
+  const product = await bento.getOrSet({
+    key: `product:${productId}`,
+    ttl: '1m',
+    factory: () => Product.find(productId),
+  })
 
   res.json(product)
 })
@@ -135,11 +135,11 @@ const bento = new BentoCache({
 
 router.get('/products/:id', async (req, res) => {
   const productId = req.params.id
-  const product = await bento.getOrSet(
-    `product:${productId}`, 
-    () => Product.find(productId), 
-    { ttl: '1m' }
-  )
+  const product = await bento.getOrSet({
+    key: `product:${productId}`,
+    ttl: '1m',
+    factory: () => Product.find(productId),
+  })
 
   res.json(product)
 })
@@ -207,11 +207,11 @@ const bento = new BentoCache({
 
 router.get('/products/:id', async (req, res) => {
   const productId = req.params.id
-  const product = await bento.getOrSet(
-    `product:${productId}`, 
-    () => Product.find(productId), 
-    { ttl: '1m' }
-  )
+  const product = await bento.getOrSet({
+    key: `product:${productId}`,
+    ttl: '1m',
+    factory: () => Product.find(productId),
+  })
 
   res.json(product)
 })
@@ -258,11 +258,11 @@ const bento = new BentoCache({
 
 router.get('/products/:id', async (req, res) => {
   const productId = req.params.id
-  const product = await bento.getOrSet(
-    `product:${productId}`, 
-    () => Product.find(productId), 
-    { ttl: '1m' }
-  )
+  const product = await bento.getOrSet({
+    key: `product:${productId}`,
+    ttl: '1m',
+    factory: () => Product.find(productId),
+  })
 
   res.json(product)
 })
