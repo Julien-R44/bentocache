@@ -389,16 +389,18 @@ test.group('Cache', () => {
     const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
 
     // wait for early refresh threshold
-    await setTimeout(60)
+    await setTimeout(350)
 
     // call factory. should returns the old value.
     // Disable early expiration to test physical ttl
-    const r2 = await cache.getOrSet('key1', slowFactory(50, { foo: 'baz' }), {
+    const r2 = await cache.getOrSet({
+      key: 'key1',
+      factory: slowFactory(50, { foo: 'baz' }),
       earlyExpiration: undefined,
     })
 
     // wait for early refresh to be done
-    await setTimeout(50)
+    await setTimeout(60)
 
     // get the value
     const r3 = await cache.get('key1')
@@ -408,7 +410,7 @@ test.group('Cache', () => {
     const r4 = await cache.get('key1')
 
     // wait for physical ttl to expire
-    await setTimeout(50)
+    await setTimeout(600)
     const r5 = await cache.get('key1')
 
     assert.deepEqual(r1, { foo: 'bar' })

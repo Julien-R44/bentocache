@@ -527,44 +527,48 @@ test.group('One tier tests', () => {
     assert.isUndefined(r2?.getEarlyExpiration())
   })
 
-  test('early refresh should re-increment physical/logical ttls', async ({ assert }) => {
-    const { cache } = new CacheFactory()
-      .withMemoryL1()
-      .merge({ earlyExpiration: 0.5, ttl: 100 })
-      .create()
+  for (let i = 0; i < 300; i++) {
+    test('early refresh should re-increment physical/logical ttls', async ({ assert }) => {
+      const { cache } = new CacheFactory()
+        .withMemoryL1()
+        .merge({ earlyExpiration: 0.5, ttl: '500ms' })
+        .create()
 
-    // init cache
-    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
+      // init cache
+      const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
 
-    // wait for early refresh threshold
-    await setTimeout(60)
+      // wait for early refresh threshold
+      await setTimeout(350)
 
-    // call factory. should returns the old value.
-    // Disable early expiration to test physical ttl
-    const r2 = await cache.getOrSet('key1', slowFactory(50, { foo: 'baz' }), {
-      earlyExpiration: undefined,
+      // call factory. should returns the old value.
+      // Disable early expiration to test physical ttl
+      const r2 = await cache.getOrSet({
+        key: 'key1',
+        factory: slowFactory(50, { foo: 'baz' }),
+        earlyExpiration: undefined,
+      })
+
+      // wait for early refresh to be done
+      await setTimeout(60)
+
+      // get the value
+      const r3 = await cache.get('key1')
+
+      // wait a bit
+      await setTimeout(50)
+      const r4 = await cache.get('key1')
+
+      // wait for physical ttl to expire
+      await setTimeout(600)
+      const r5 = await cache.get('key1')
+
+      assert.deepEqual(r1, { foo: 'bar' })
+      assert.deepEqual(r2, { foo: 'bar' })
+      assert.deepEqual(r3, { foo: 'baz' })
+      assert.deepEqual(r4, { foo: 'baz' })
+      assert.isUndefined(r5)
     })
-
-    // wait for early refresh to be done
-    await setTimeout(50)
-
-    // get the value
-    const r3 = await cache.get('key1')
-
-    // wait a bit
-    await setTimeout(50)
-    const r4 = await cache.get('key1')
-
-    // wait for physical ttl to expire
-    await setTimeout(50)
-    const r5 = await cache.get('key1')
-
-    assert.deepEqual(r1, { foo: 'bar' })
-    assert.deepEqual(r2, { foo: 'bar' })
-    assert.deepEqual(r3, { foo: 'baz' })
-    assert.deepEqual(r4, { foo: 'baz' })
-    assert.isUndefined(r5)
-  })
+  }
 
   test('soft timeout should returns old value if factory take too long', async ({ assert }) => {
     const { cache } = new CacheFactory()
