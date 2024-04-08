@@ -255,21 +255,32 @@ test.group('Cache', () => {
 
   test('should throws if graced value is outdated', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ gracePeriod: { enabled: true, duration: '100ms' } })
+      .merge({ gracePeriod: { enabled: true, duration: '400ms' } })
       .withL1L2Config()
       .create()
 
     // init factory
-    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '10ms' })
+    const r1 = await cache.getOrSet({
+      key: 'key1',
+      ttl: '10ms',
+      factory: () => ({ foo: 'bar' }),
+    })
 
     // re-get with throwing factory. still in grace period
-    const r2 = await cache.getOrSet('key1', throwingFactory('should not be called'), {
+    const r2 = await cache.getOrSet({
+      key: 'key1',
       ttl: '10ms',
+      factory: throwingFactory('error in factory'),
     })
-    await setTimeout(101)
+
+    await setTimeout(500)
 
     // re-get with throwing factory. out of grace period. should throws
-    const r3 = cache.getOrSet('key1', throwingFactory('error in factory'), { ttl: '10ms' })
+    const r3 = cache.getOrSet({
+      key: 'key1',
+      ttl: '10ms',
+      factory: throwingFactory('error in factory'),
+    })
 
     assert.deepEqual(r1, { foo: 'bar' })
     assert.deepEqual(r2, { foo: 'bar' })
@@ -381,7 +392,7 @@ test.group('Cache', () => {
 
   test('early refresh should re-increment physical/logical ttls', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({ earlyExpiration: 0.5, ttl: 100 })
+      .merge({ earlyExpiration: 0.5, ttl: '500ms' })
       .withL1L2Config()
       .create()
 
