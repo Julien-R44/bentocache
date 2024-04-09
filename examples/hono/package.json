@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "dev": "tsx watch src/index.tsx"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.9.0",
+    "bentocache": "workspace:*",
+    "hono": "^4.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "tsx": "^4.7.1"
+  }
+}
