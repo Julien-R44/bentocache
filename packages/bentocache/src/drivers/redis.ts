@@ -28,7 +28,7 @@ export function redisBusDriver(
 ): CreateBusDriverResult {
   return {
     options,
-    factory: (config: IoRedisOptions) => new RedisTransport(config, new BinaryEncoder()),
+    factory: () => new RedisTransport(options.connection, new BinaryEncoder()),
   }
 }
 
