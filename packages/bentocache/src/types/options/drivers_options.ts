@@ -1,8 +1,8 @@
 import type { Knex } from 'knex'
 import type { Kysely } from 'kysely'
-import type { DbResult, DefaultColumnTypes, DefaultSchemaConfig } from 'orchid-orm'
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
 import type { Redis as IoRedis, RedisOptions as IoRedisOptions } from 'ioredis'
+import type { DbResult, DefaultColumnTypes, DefaultSchemaConfig } from 'orchid-orm'
 
 import type { Duration } from '../helpers.js'
 
