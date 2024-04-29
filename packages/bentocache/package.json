@@ -23,6 +23,7 @@
     "./drivers/database": "./build/src/drivers/database/database.js",
     "./drivers/knex": "./build/src/drivers/database/adapters/knex.js",
     "./drivers/kysely": "./build/src/drivers/database/adapters/kysely.js",
+    "./drivers/orchid": "./build/src/drivers/database/adapters/orchid.js",
     "./types": "./build/src/types/main.js",
     "./plugins/*": "./build/plugins/*.js",
     "./test_suite": "./build/src/test_suite.js"
@@ -64,6 +65,9 @@
     },
     "kysely": {
       "optional": true
+    },
+    "orchid-orm": {
+      "optional": true
     }
   },
   "dependencies": {
@@ -93,6 +97,7 @@
     "knex": "^3.1.0",
     "kysely": "^0.27.3",
     "mysql2": "^3.9.3",
+    "orchid-orm": "^1.24.0",
     "p-event": "^6.0.1",
     "pg": "^8.11.5",
     "pino": "^8.19.0",

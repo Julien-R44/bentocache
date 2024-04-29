@@ -1,5 +1,6 @@
 import type { Knex } from 'knex'
 import type { Kysely } from 'kysely'
+import type { DbResult, DefaultColumnTypes, DefaultSchemaConfig } from 'orchid-orm'
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
 import type { Redis as IoRedis, RedisOptions as IoRedisOptions } from 'ioredis'
 
@@ -141,4 +142,14 @@ export interface KyselyConfig extends DatabaseConfig {
    * The Kysely instance
    */
   connection: Kysely<any>
+}
+
+/**
+ * Configuration accepted by the Orchid ORM adapter
+ */
+export interface OrchidConfig extends DatabaseConfig {
+  /**
+   * The Orchid ORM instance
+   */
+  connection: DbResult<DefaultColumnTypes<DefaultSchemaConfig>>
 }
