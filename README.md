@@ -160,6 +160,8 @@ const bento = new BentoCache({
 
 See the [logging documentation](https://bentocache.dev/docs/logging) for more information.
 
-## Sponsor
+## Sponsors
 
 If you like this project, [please consider supporting it by sponsoring it](https://github.com/sponsors/Julien-R44/). It will help a lot to maintain and improve it. Thanks a lot !
+
+![](https://github.com/julien-r44/static/blob/main/sponsorkit/sponsors.png?raw=true)
