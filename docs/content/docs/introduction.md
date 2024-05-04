@@ -4,6 +4,8 @@ summary: Bentocache is a robust multi-tier caching library for Node.js applicati
 
 # Introduction
 
+![](https://static.julr.dev/bentocache.png)
+
 Bentocache is a robust multi-tier caching library for Node.js applications
 
 - 🗄️ Multi-tier caching

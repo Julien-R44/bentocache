@@ -1,6 +1,6 @@
 <figure x-data="zoom">
   @if(node.properties.src.startsWith('http://') || node.properties.src.startsWith('https://'))
-    <img src="node.properties.src" />
+    <img src="{{ node.properties.src }}" />
   @else
     <img src="{{ vite.assetPath(app.relativePath(node.properties.src)) }}" />
   @end
