@@ -186,7 +186,7 @@ import { knexDriver } from 'bentocache/drivers/knex'
 const db = knex({
   client: 'pg',
   connection: { 
-    port: 5432 
+    port: 5432,
     user: 'root', 
     password: 'root', 
     database: 'postgres', 
