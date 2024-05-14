@@ -80,7 +80,7 @@ export class BinaryEncoder implements TransportEncoder {
       offset += keyLength
     }
 
-    return buffer
+    return buffer.toString('base64')
   }
 
   /**
@@ -88,7 +88,7 @@ export class BinaryEncoder implements TransportEncoder {
    */
   decode(data: string): any {
     let offset = 0
-    const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'binary')
+    const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'base64')
 
     /**
      * First #busIdLength bytes are the bus ID
