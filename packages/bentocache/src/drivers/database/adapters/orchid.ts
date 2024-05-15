@@ -65,8 +65,14 @@ export class OrchidAdapter implements DatabaseAdapter {
   }
 
   async createTableIfNotExists(): Promise<void> {
-    // TODO
-    // throw new Error('Do not support create table')
+    await this.#connection.adapter.pool.query(`
+      CREATE TABLE IF NOT EXISTS "public"."${this.#tableName}" (
+        "key" varchar NOT NULL,
+        "value" text NOT NULL,
+        "expires_at" timestamp,
+        PRIMARY KEY ("key")
+      );
+    `)
   }
 
   async pruneExpiredEntries(): Promise<void> {
