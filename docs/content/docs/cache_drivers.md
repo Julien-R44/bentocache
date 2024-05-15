@@ -161,7 +161,7 @@ We offer several drivers to use a database as a cache. The database store should
 
 :::note
 
-Note that you can easily create your own adapter by implementing the `DatabaseAdapter` interface if you are using another library not supported by Bentocache. See the [documentation](/docs/advanced/custom-adapters) for more details.
+Note that you can easily create your own adapter by implementing the `DatabaseAdapter` interface if you are using another library not supported by Bentocache. See the [documentation](/docs/custom-cache-driver) for more details.
 
 :::
 
@@ -218,6 +218,27 @@ const bento = new BentoCache({
   default: 'pg',
   stores: {
     pg: bentostore().useL2Layer(kyselyStore({ connection: db }))
+  }
+})
+```
+
+### Orchid ORM
+
+You must provide a Orchid ORM instance to use the Orchid driver. Feel free to check the [Orchid ORM documentation](https://orchid-orm.netlify.app/) for more details about the configuration. Orchid support the following databases : PostgreSQL.
+
+You will need to install `orchid-orm` to use this driver.
+
+```ts
+import { createDb } from 'orchid-orm'
+import { BentoCache, bentostore } from 'bentocache'
+import { orchidDriver } from 'bentocache/drivers/orchid'
+
+export const db = createDb({ databaseURL: `postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}` })
+
+export const bento = new BentoCache({
+  default: 'cache',
+  stores: {
+    cache: bentostore().useL2Layer(orchidDriver({ connection: db }))
   }
 })
 ```

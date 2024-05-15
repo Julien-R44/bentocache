@@ -245,6 +245,9 @@ importers:
       mysql2:
         specifier: ^3.9.3
         version: 3.9.3
+      orchid-orm:
+        specifier: ^1.24.0
+        version: 1.24.2(typescript@5.4.4)
       p-event:
         specifier: ^6.0.1
         version: 6.0.1
@@ -7121,6 +7124,11 @@ packages:
     resolution: {integrity: sha512-t54PPJHG1Pp7VQvxyVCJ9mBbjG3Hqryges9bXoOO6GExCPa+//i/d5GSuFtpx3ALLd7lgIAur6zrIlBQyJuMlQ==}
     engines: {node: '>= 0.8.0'}
 
+  /inflection@3.0.0:
+    resolution: {integrity: sha512-1zEJU1l19SgJlmwqsEyFTbScw/tkMHFenUo//Y0i+XEP83gDFdMvPizAD/WGcE+l1ku12PcTVHQhO6g5E0UCMw==}
+    engines: {node: '>=18.0.0'}
+    dev: true
+
   /inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
     dependencies:
@@ -7790,6 +7798,11 @@ packages:
   /kind-of@6.0.3:
     resolution: {integrity: sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /kleur@3.0.3:
+    resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
+    engines: {node: '>=6'}
     dev: true
 
   /kleur@4.1.5:
@@ -9164,6 +9177,24 @@ packages:
       strip-ansi: 7.1.0
     dev: true
 
+  /orchid-core@0.13.0:
+    resolution: {integrity: sha512-+OzJxJrUnXpW80kbk+FQyayr8UgeBZfb68PSXiPgX8J3640pNA2rx+vEQjyhq6PPbf9u0YrRP7ExCGv6NMBhQQ==}
+    dev: true
+
+  /orchid-orm@1.24.2(typescript@5.4.4):
+    resolution: {integrity: sha512-CZdharR5VpmveElLxmzcyz1NeiASD2XY0qRQObOqhK2Rb7X0msoEQOnHmeNmvAoamg9YwSuLKu5RzPK66UD1mA==}
+    peerDependencies:
+      typescript: '*'
+    dependencies:
+      inflection: 3.0.0
+      orchid-core: 0.13.0
+      pqb: 0.27.1
+      prompts: 2.4.2
+      typescript: 5.4.4
+    transitivePeerDependencies:
+      - pg-native
+    dev: true
+
   /os-name@5.1.0:
     resolution: {integrity: sha512-YEIoAnM6zFmzw3PQ201gCVCIWbXNyKObGlVvpAVvraAeOHnlYVKFssbA/riRX5R40WA6kKrZ7Dr7dWzO3nKSeQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -9675,6 +9706,16 @@ packages:
     resolution: {integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==}
     dev: true
 
+  /pqb@0.27.1:
+    resolution: {integrity: sha512-Aaa46+qy0hCdJcE+zGCtNZ3RcFGcM6SQj26O7W631bHWtaSWO6PqKryov9teVzVJzSyLVQdWf/vzPLmvt1M4Gw==}
+    dependencies:
+      '@types/pg': 8.11.4
+      orchid-core: 0.13.0
+      pg: 8.11.5
+    transitivePeerDependencies:
+      - pg-native
+    dev: true
+
   /preact@10.19.3:
     resolution: {integrity: sha512-nHHTeFVBTHRGxJXKkKu5hT8C/YWBkPso4/Gad6xuj5dbptt9iF9NZr9pHbPhBrnT2klheu7mHTxTZ/LjwJiEiQ==}
     dev: true
@@ -9805,6 +9846,14 @@ packages:
       es-abstract: 1.22.3
       get-intrinsic: 1.2.2
       iterate-value: 1.0.2
+    dev: true
+
+  /prompts@2.4.2:
+    resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}
+    engines: {node: '>= 6'}
+    dependencies:
+      kleur: 3.0.3
+      sisteransi: 1.0.5
     dev: true
 
   /proper-lockfile@4.1.2:
@@ -10621,6 +10670,10 @@ packages:
       decompress-response: 6.0.0
       once: 1.4.0
       simple-concat: 1.0.1
+    dev: true
+
+  /sisteransi@1.0.5:
+    resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
     dev: true
 
   /slash@3.0.0:

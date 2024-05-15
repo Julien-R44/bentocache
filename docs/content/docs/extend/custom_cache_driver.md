@@ -63,7 +63,7 @@ interface L2CacheDriver {
 
 Similarly, the `L1CacheDriver` interface is the same, except that it is not async. 
 
-So this should be quite easy to implement. Feel free to take a lot at [the existings drivers](https://github.com/Julien-R44/bentocache/tree/develop/drivers) implementations for inspiration. 
+So this should be quite easy to implement. Feel free to take a lot at [the existing drivers](https://github.com/Julien-R44/bentocache/tree/main/packages/bentocache/src/drivers) implementations for inspiration. 
 
 Also note that your driver will receive two additional parameters in the constructor : `ttl` and `prefix`. These parameters are common to every drivers and their purpose is explained in the [options](../options.md) page.
 
