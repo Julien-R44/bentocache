@@ -22,7 +22,7 @@
     "@japa/runner": "3.1.2",
     "@julr/tooling-configs": "2.2.0",
     "@swc/core": "1.4.12",
-    "@types/node": "^20.12.4",
+    "@types/node": "^20.12.12",
     "c8": "^9.1.0",
     "copyfiles": "^2.4.1",
     "cross-env": "^7.0.3",
@@ -31,12 +31,12 @@
     "eslint": "^8.57.0",
     "pino-pretty": "^11.0.0",
     "prettier": "^3.2.5",
-    "release-it": "^17.1.1",
-    "testcontainers": "^10.8.1",
-    "tinybench": "^2.6.0",
+    "release-it": "^17.2.1",
+    "testcontainers": "^10.9.0",
+    "tinybench": "^2.8.0",
     "ts-node": "^10.9.2",
     "tsup": "^8.0.2",
-    "typescript": "~5.4.4"
+    "typescript": "~5.4.5"
   },
   "prettier": "@julr/tooling-configs/prettier"
 }

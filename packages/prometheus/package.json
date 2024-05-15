@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "bentocache": "workspace:*",
-    "prom-client": "^15.1.1"
+    "prom-client": "^15.1.2"
   },
   "tsup": {
     "entry": [

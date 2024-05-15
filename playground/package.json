@@ -10,6 +10,6 @@
     "bentocache": "workspace:*"
   },
   "devDependencies": {
-    "prom-client": "^15.1.0"
+    "prom-client": "^15.1.2"
   }
 }
