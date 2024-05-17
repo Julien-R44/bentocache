@@ -1,15 +1,13 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
-import { RedisTransport } from '@boringnode/bus/transports/redis'
 import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
-import { RedisDriver } from '../../src/drivers/redis.js'
 import { ChaosBus } from '../helpers/chaos/chaos_bus.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
 import { CacheBusMessageType } from '../../src/types/bus.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
+import { RedisDriver, redisBusDriver } from '../../src/drivers/redis.js'
 import { REDIS_CREDENTIALS, throwingFactory } from '../helpers/index.js'
-import { BinaryEncoder } from '../../src/bus/encoders/binary_encoder.js'
 
 test.group('Bus synchronization', () => {
   test('synchronize multiple cache', async ({ assert }) => {
@@ -186,8 +184,13 @@ test.group('Bus synchronization', () => {
   })
 
   test('binary encoding/decoding should works fine', async ({ assert, cleanup }, done) => {
-    const bus1 = new RedisTransport(REDIS_CREDENTIALS, new BinaryEncoder()).setId('foo')
-    const bus2 = new RedisTransport(REDIS_CREDENTIALS, new BinaryEncoder()).setId('bar')
+    const bus1 = redisBusDriver({ connection: REDIS_CREDENTIALS })
+      .factory(null as any)
+      .setId('foo')
+
+    const bus2 = redisBusDriver({ connection: REDIS_CREDENTIALS })
+      .factory(null as any)
+      .setId('bar')
 
     cleanup(async () => {
       await bus1.disconnect()
@@ -210,4 +213,34 @@ test.group('Bus synchronization', () => {
   })
     .waitForDone()
     .disableTimeout()
+
+  test('works with utf8 characters', async ({ assert }, done) => {
+    const bus1 = redisBusDriver({ connection: REDIS_CREDENTIALS })
+      .factory(null as any)
+      .setId('foo')
+
+    const bus2 = redisBusDriver({ connection: REDIS_CREDENTIALS })
+      .factory(null as any)
+      .setId('bar')
+
+    const data = {
+      keys: ['foo', '1', '2', 'bar', 'key::test', '🚀'],
+      type: CacheBusMessageType.Set,
+    }
+
+    bus1.subscribe('foo', (message: any) => {
+      assert.deepInclude(message, data)
+      done()
+    })
+
+    await setTimeout(200)
+
+    await bus2.publish('foo', data)
+
+    await bus1.disconnect()
+
+    await bus2.disconnect()
+
+    await setTimeout(200)
+  }).waitForDone()
 })

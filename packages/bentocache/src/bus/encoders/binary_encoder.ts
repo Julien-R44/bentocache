@@ -86,7 +86,7 @@ export class BinaryEncoder implements TransportEncoder {
   /**
    * Decode the given Buffer into a CacheBusMessage
    */
-  decode(data: string): any {
+  decode(data: string | Buffer): any {
     let offset = 0
     const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data, 'binary')
 

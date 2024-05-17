@@ -28,7 +28,12 @@ export function redisBusDriver(
 ): CreateBusDriverResult {
   return {
     options,
-    factory: () => new RedisTransport(options.connection, new BinaryEncoder()),
+    factory: () => {
+      return new RedisTransport(
+        { ...options.connection, useMessageBuffer: true },
+        new BinaryEncoder(),
+      )
+    },
   }
 }
 

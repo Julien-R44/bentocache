@@ -173,8 +173,8 @@ importers:
   packages/bentocache:
     dependencies:
       '@boringnode/bus':
-        specifier: ^0.5.0
-        version: 0.5.0(ioredis@5.4.1)
+        specifier: ^0.6.0
+        version: 0.6.0(ioredis@5.4.1)
       '@poppinss/utils':
         specifier: ^6.7.3
         version: 6.7.3
@@ -666,8 +666,8 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
-  '@boringnode/bus@0.5.0':
-    resolution: {integrity: sha512-b0jtcAv/IgDrFz10kNJJT5+pyNTdSNxsPCudbnDe4PQ6KzfMQRQQolqFe0uotlmsVmWCBxUN5MyV06vdQ4MeRQ==}
+  '@boringnode/bus@0.6.0':
+    resolution: {integrity: sha512-i6AKHvFqRUC5KZTX7WXYcWIV8Wfnem6t5Li1Bn5oU+YXAq0zw1y09bZk9HxB2smugfcFlDgzRwpXuwC9fLTE9g==}
     engines: {node: '>=20.11.1'}
     peerDependencies:
       ioredis: ^5.0.0
@@ -7157,7 +7157,7 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@boringnode/bus@0.5.0(ioredis@5.4.1)':
+  '@boringnode/bus@0.6.0(ioredis@5.4.1)':
     dependencies:
       '@paralleldrive/cuid2': 2.2.2
       '@poppinss/utils': 6.7.3
