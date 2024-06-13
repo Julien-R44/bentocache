@@ -99,7 +99,7 @@ The number of messages received from the bus.
 
 ![Grafana dashboard](content/docs/plugins/dashboard.png)
 
-We have a pretty basic but ready-to-use Grafana dashboard for Bentocache. You can find it [here](https://github.com/Julien-R44/bentocache/blob/develop/packages/prometheus/dashboards/basic.json).
+We have a pretty basic but ready-to-use Grafana dashboard for Bentocache. You can find it [here](https://github.com/Julien-R44/bentocache/blob/main/packages/prometheus/dashboards/basic.json).
 
 
 Happy to accept any PRs that improve it!
