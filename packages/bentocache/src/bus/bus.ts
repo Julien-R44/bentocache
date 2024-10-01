@@ -2,7 +2,6 @@ import { Bus as RlanzBus } from '@boringnode/bus'
 import type { Transport } from '@boringnode/bus/types/main'
 
 import { CacheBusMessageType } from '../types/bus.js'
-import { BaseDriver } from '../drivers/base_driver.js'
 import type { LocalCache } from '../cache/facades/local_cache.js'
 import { BusMessageReceived } from '../events/bus/bus_message_received.js'
 import { BusMessagePublished } from '../events/bus/bus_message_published.js'
@@ -17,7 +16,7 @@ import type { BusOptions, CacheBusMessage, Emitter, Logger } from '../types/main
  * the same channel and will receive the message and update their
  * local cache accordingly.
  */
-export class Bus extends BaseDriver {
+export class Bus {
   #bus: RlanzBus
   #logger: Logger
   #emitter: Emitter
@@ -31,7 +30,6 @@ export class Bus extends BaseDriver {
     emitter: Emitter,
     options: BusOptions = {},
   ) {
-    super(options)
     this.#cache = cache
     this.#emitter = emitter
     this.#logger = logger.child({ context: 'bentocache.bus' })
@@ -74,8 +72,6 @@ export class Bus extends BaseDriver {
    * @returns true if the message was published, false if not
    */
   async publish(message: CacheBusMessage): Promise<boolean> {
-    // Namespace all the keys before publishing
-    message.keys = message.keys.map((key) => this.getItemKey(key))
     const wasPublished = await this.#bus.publish(this.#channelName, message)
     if (wasPublished) {
       this.#emitter.emit('bus:message:published', new BusMessagePublished(message))

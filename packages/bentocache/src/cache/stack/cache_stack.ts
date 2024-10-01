@@ -63,10 +63,7 @@ export class CacheStack {
       l1Driver: this.l1?.namespace(namespace),
       l2Driver: this.l2?.namespace(namespace),
       busDriver: this.#busDriver,
-      busOptions: {
-        ...this.#busOptions,
-        prefix: namespace,
-      },
+      busOptions: this.#busOptions,
     })
   }
 
