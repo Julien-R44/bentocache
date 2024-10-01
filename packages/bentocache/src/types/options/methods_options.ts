@@ -14,6 +14,22 @@ export type GetOrSetOptions = Pick<
 export type GetOrSetPojoOptions<T> = { key: string; factory: GetSetFactory<T> } & GetOrSetOptions
 
 /**
+ * Options accepted by the `getOrSetForever` method
+ */
+export type GetOrSetForeverOptions = Pick<
+  RawCommonOptions,
+  'earlyExpiration' | 'gracePeriod' | 'suppressL2Errors' | 'lockTimeout' | 'timeouts'
+>
+
+/**
+ * Options accepted by the `getOrSetForever` method when passing an object
+ */
+export type GetOrSetForeverPojoOptions<T> = {
+  key: string
+  factory: GetSetFactory<T>
+} & GetOrSetForeverOptions
+
+/**
  * Options accepted by the `set` method
  */
 export type SetOptions = GetOrSetOptions

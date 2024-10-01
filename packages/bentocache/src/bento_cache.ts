@@ -15,12 +15,14 @@ import type {
   HasOptions,
   ClearOptions,
   GetSetFactory,
+  GetOrSetForeverPojoOptions,
   GetOrSetPojoOptions,
   GetPojoOptions,
   SetPojoOptions,
   HasPojoOptions,
   DeletePojoOptions,
   DeleteManyPojoOptions,
+  GetOrSetForeverOptions,
 } from './types/main.js'
 
 export class BentoCache<KnownCaches extends Record<string, BentoStore>> implements CacheProvider {
@@ -197,9 +199,9 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    * provided by the factory forever and return it
    */
   getOrSetForever<T>(
-    key: string | GetOrSetPojoOptions<T>,
+    key: string | GetOrSetForeverPojoOptions<T>,
     cb?: GetSetFactory<T>,
-    opts?: GetOrSetOptions,
+    opts?: GetOrSetForeverOptions,
   ): Promise<T> {
     if (typeof key === 'string') {
       return this.use().getOrSetForever(key, cb!, opts)

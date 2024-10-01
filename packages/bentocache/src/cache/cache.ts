@@ -19,6 +19,8 @@ import type {
   HasPojoOptions,
   DeletePojoOptions,
   DeleteManyPojoOptions,
+  GetOrSetForeverPojoOptions,
+  GetOrSetForeverOptions,
 } from '../types/main.js'
 
 export class Cache implements CacheProvider {
@@ -153,9 +155,9 @@ export class Cache implements CacheProvider {
    * provided by the factory forever and return it
    */
   async getOrSetForever<T>(
-    keyOrOptions: string | GetOrSetPojoOptions<T>,
+    keyOrOptions: string | GetOrSetForeverPojoOptions<T>,
     factory?: GetSetFactory<T>,
-    options?: GetOrSetOptions,
+    options?: GetOrSetForeverOptions,
   ): Promise<T> {
     if (typeof keyOrOptions === 'string') {
       const cacheOptions = this.#stack.defaultOptions.cloneWith({ ttl: null, ...options })

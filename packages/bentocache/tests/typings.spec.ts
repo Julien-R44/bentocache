@@ -198,4 +198,18 @@ test.group('Typings', () => {
   test('stores entries should accept raw options', async ({ expectTypeOf }) => {
     expectTypeOf(bentostore).toBeCallableWith({ gracePeriod: { enabled: true } })
   })
+
+  test('cant pass ttl when using getOrSetForever', async () => {
+    const { bento } = new BentoCacheFactory().create()
+
+    bento.getOrSetForever({
+      key: 'foo',
+      factory: () => 'bar',
+      // @ts-expect-error - should not accept ttl
+      ttl: 100,
+    })
+
+    // @ts-expect-error - should not accept ttl
+    bento.getOrSetForever('foo', () => 'bar', { ttl: 100 })
+  })
 })
