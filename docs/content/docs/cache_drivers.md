@@ -139,7 +139,9 @@ const bento = new BentoCache({
 })
 ```
 
-You will also need to create a DynamoDB table with a string partition key named `key`. You must create this table before starting to use the driver.
+You will also need to create a DynamoDB table with a string partition key named `key`. You must create this table before starting to use the driver. 
+
+**Make sure to also enable [Time To Live (TTL)](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html) on the table, on the `ttl` attribute. This will allow DynamoDB to automatically delete expired items.**
 
 | Option | Description | Default |
 | --- | --- | --- |
