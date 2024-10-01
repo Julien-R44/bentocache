@@ -42,22 +42,23 @@ test.group('Bus synchronization', () => {
 
     const cache1 = f1.namespace('users')
     const cache2 = f2.namespace('users')
-    const cache3 = f3.namespace('users')
+    const cache3 = f3.namespace('admin')
 
     await cache1.set(key, 24)
+    await cache3.set(key, 42)
     await setTimeout(100)
 
     assert.equal(await cache1.get(key), 24)
     assert.equal(await cache2.get(key), 24)
-    assert.equal(await cache3.get(key), 24)
+    assert.equal(await cache3.get(key), 42)
 
-    await cache1.delete(key)
+    await cache1.clear()
 
     await setTimeout(100)
 
     assert.isUndefined(await cache1.get(key))
     assert.isUndefined(await cache2.get(key))
-    assert.isUndefined(await cache3.get(key))
+    assert.equal(await cache3.get(key), 42)
   }).disableTimeout()
 
   test('retry queue processing', async ({ assert }) => {
