@@ -33,6 +33,62 @@ test.group('Bus synchronization', () => {
     assert.isUndefined(await cache3.get(key))
   }).disableTimeout()
 
+  test('synchronize multiple cache with a namespace', async ({ assert }) => {
+    const key = 'foo'
+
+    const [cache1] = new CacheFactory().withL1L2Config().create()
+    const [cache2] = new CacheFactory().withL1L2Config().create()
+    const [cache3] = new CacheFactory().withL1L2Config().create()
+
+    await cache1.namespace('users').set(key, 24)
+    await setTimeout(100)
+
+    assert.equal(await cache1.namespace('users').get(key), 24)
+    assert.equal(await cache2.namespace('users').get(key), 24)
+    assert.equal(await cache3.namespace('users').get(key), 24)
+
+    await cache1.namespace('users').delete(key)
+
+    await setTimeout(100)
+
+    assert.isUndefined(await cache1.namespace('users').get(key))
+    assert.isUndefined(await cache2.namespace('users').get(key))
+    assert.isUndefined(await cache3.namespace('users').get(key))
+  }).disableTimeout()
+
+  test('synchronize multiple cache with multiple namespaces', async ({ assert }) => {
+    const key = 'bar'
+
+    const [cache1] = new CacheFactory().withL1L2Config().create()
+    const [cache2] = new CacheFactory().withL1L2Config().create()
+    const [cache3] = new CacheFactory().withL1L2Config().create()
+
+    const cache1NSUsersMe = cache1.namespace('users').namespace('me')
+    const cache2NSUsersMe = cache2.namespace('users').namespace('me')
+    const cache3NSAdmin = cache3.namespace('admin')
+
+    await cache1NSUsersMe.set(key, 24)
+    await cache3NSAdmin.set(key, 42)
+    await setTimeout(100)
+
+    assert.equal(await cache1NSUsersMe.get(key), 24)
+    assert.equal(await cache2NSUsersMe.get(key), 24)
+    assert.equal(await cache3NSAdmin.get(key), 42)
+
+    await cache1NSUsersMe.clear()
+
+    await setTimeout(100)
+
+    assert.isUndefined(await cache1NSUsersMe.get(key))
+    assert.isUndefined(await cache2.namespace('users').namespace('me').get(key))
+    assert.equal(await cache3NSAdmin.get(key), 42)
+
+    await cache2.namespace('admin').clear()
+    await setTimeout(100)
+
+    assert.isUndefined(await cache3NSAdmin.get(key))
+  }).disableTimeout()
+
   test('retry queue processing', async ({ assert }) => {
     const bus1 = new ChaosBus(new MemoryTransport())
     const bus2 = new ChaosBus(new MemoryTransport())
