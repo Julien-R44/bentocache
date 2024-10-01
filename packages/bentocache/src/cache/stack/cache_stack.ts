@@ -20,6 +20,8 @@ export class CacheStack {
   l1?: LocalCache
   l2?: RemoteCache
   bus?: Bus
+  #busDriver?: BusDriver
+  #busOptions?: BusOptions
   defaultOptions: CacheEntryOptions
   logger: Logger
 
@@ -46,22 +48,26 @@ export class CacheStack {
     if (bus) return bus
     if (!busDriver || !this.l1) return
 
-    const opts = lodash.merge({ retryQueue: { enabled: true, maxSize: undefined } }, busOptions)
-    const newBus = new Bus(busDriver, this.l1, this.logger, this.emitter, opts)
+    this.#busDriver = busDriver
+    this.#busOptions = lodash.merge(
+      { retryQueue: { enabled: true, maxSize: undefined } },
+      busOptions,
+    )
+    const newBus = new Bus(this.#busDriver, this.l1, this.logger, this.emitter, this.#busOptions)
 
     return newBus
   }
 
   namespace(namespace: string) {
-    return new CacheStack(
-      this.name,
-      this.options,
-      {
-        l1Driver: this.l1?.namespace(namespace),
-        l2Driver: this.l2?.namespace(namespace),
+    return new CacheStack(this.name, this.options, {
+      l1Driver: this.l1?.namespace(namespace),
+      l2Driver: this.l2?.namespace(namespace),
+      busDriver: this.#busDriver,
+      busOptions: {
+        ...this.#busOptions,
+        prefix: namespace,
       },
-      this.bus,
-    )
+    })
   }
 
   emit(event: CacheEvent) {
