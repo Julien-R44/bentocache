@@ -3,7 +3,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "cross-env NODE_NO_WARNINGS=1 node --loader ts-node/esm src/index.ts"
+    "start": "cross-env NODE_NO_WARNINGS=1 node --loader ts-node/esm src/index.ts",
+    "start-server": "cross-env NODE_NO_WARNINGS=1 node --loader ts-node/esm src/server.ts"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.658.1",
