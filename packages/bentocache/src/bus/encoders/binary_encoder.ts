@@ -30,6 +30,18 @@ export class BinaryEncoder implements TransportEncoder {
     this.#busIdLength = busIdLength
   }
 
+  protected busMessageTypeToNum(type: CacheBusMessageType): number {
+    if (type === CacheBusMessageType.Set) return 0x01
+    if (type === CacheBusMessageType.Clear) return 0x02
+    return 0x03
+  }
+
+  protected numToBusMessageType(num: number): CacheBusMessageType {
+    if (num === 0x01) return CacheBusMessageType.Set
+    if (num === 0x02) return CacheBusMessageType.Clear
+    return CacheBusMessageType.Delete
+  }
+
   /**
    * Encode the given message into a Buffer
    */
@@ -59,7 +71,7 @@ export class BinaryEncoder implements TransportEncoder {
     /**
      * 2. write the message type. 0x01 for 'Set' message, and 0x02 for a 'Delete' message
      */
-    buffer.writeUInt8(payload.type === CacheBusMessageType.Set ? 0x01 : 0x02, this.#busIdLength)
+    buffer.writeUInt8(this.busMessageTypeToNum(payload.type), this.#busIdLength)
 
     /**
      * 3. Write the keys
@@ -100,7 +112,7 @@ export class BinaryEncoder implements TransportEncoder {
      * Then comes the message type as a single byte
      */
     const typeValue = buffer.readUInt8(offset++)
-    const type = typeValue === 0x01 ? CacheBusMessageType.Set : CacheBusMessageType.Delete
+    const type = this.numToBusMessageType(typeValue)
 
     /**
      * Finally, the keys
