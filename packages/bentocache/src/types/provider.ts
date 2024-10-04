@@ -5,6 +5,8 @@ import type {
   DeleteOptions,
   DeletePojoOptions,
   GetOptions,
+  GetOrSetForeverOptions,
+  GetOrSetForeverPojoOptions,
   GetOrSetOptions,
   GetOrSetPojoOptions,
   GetPojoOptions,
@@ -53,8 +55,8 @@ export interface CacheProvider {
   /**
    * Get or set a value in the cache forever
    */
-  getOrSetForever<T>(options: GetOrSetPojoOptions<T>): Promise<T>
-  getOrSetForever<T>(key: string, cb: GetSetFactory<T>, opts?: GetOrSetOptions): Promise<T>
+  getOrSetForever<T>(options: GetOrSetForeverPojoOptions<T>): Promise<T>
+  getOrSetForever<T>(key: string, cb: GetSetFactory<T>, opts?: GetOrSetForeverOptions): Promise<T>
 
   /**
    * Check if a key exists in the cache

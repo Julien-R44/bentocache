@@ -1,4 +1,4 @@
-import { createError } from '@poppinss/utils'
+import { createError } from '@poppinss/utils/exception'
 
 export const E_FACTORY_SOFT_TIMEOUT = createError(
   'Factory has timed out after waiting for soft timeout',
