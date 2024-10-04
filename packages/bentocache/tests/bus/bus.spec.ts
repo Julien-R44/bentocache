@@ -269,6 +269,37 @@ test.group('Bus synchronization', () => {
   })
     .waitForDone()
     .disableTimeout()
+  
+  test('binary encoding/decoding using Clear should be fine', async ({ assert, cleanup }, done) => {
+    const bus1 = redisBusDriver({ connection: REDIS_CREDENTIALS })
+      .factory(null as any)
+      .setId('foo')
+
+    const bus2 = redisBusDriver({ connection: REDIS_CREDENTIALS })
+      .factory(null as any)
+      .setId('bar')
+
+    cleanup(async () => {
+      await bus1.disconnect()
+      await bus2.disconnect()
+    })
+
+    const data = {
+      keys: [],
+      type: CacheBusMessageType.Clear,
+    }
+
+    bus1.subscribe('foo', (message: any) => {
+      assert.deepInclude(message, data)
+      done()
+    })
+
+    await setTimeout(200)
+
+    await bus2.publish('foo', data)
+  })
+    .waitForDone()
+    .disableTimeout()
 
   test('works with utf8 characters', async ({ assert }, done) => {
     const bus1 = redisBusDriver({ connection: REDIS_CREDENTIALS })
