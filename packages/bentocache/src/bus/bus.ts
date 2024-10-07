@@ -2,6 +2,7 @@ import { Bus as RlanzBus } from '@boringnode/bus'
 import type { Transport } from '@boringnode/bus/types/main'
 
 import { CacheBusMessageType } from '../types/bus.js'
+import { BaseDriver } from '../drivers/base_driver.js'
 import type { LocalCache } from '../cache/facades/local_cache.js'
 import { BusMessageReceived } from '../events/bus/bus_message_received.js'
 import { BusMessagePublished } from '../events/bus/bus_message_published.js'
@@ -16,7 +17,7 @@ import type { BusOptions, CacheBusMessage, Emitter, Logger } from '../types/main
  * the same channel and will receive the message and update their
  * local cache accordingly.
  */
-export class Bus {
+export class Bus extends BaseDriver {
   #bus: RlanzBus
   #logger: Logger
   #emitter: Emitter
@@ -30,6 +31,7 @@ export class Bus {
     emitter: Emitter,
     options: BusOptions = {},
   ) {
+    super(options)
     this.#cache = cache
     this.#emitter = emitter
     this.#logger = logger.child({ context: 'bentocache.bus' })
@@ -42,7 +44,14 @@ export class Bus {
       },
     })
 
+    if (this.prefix) this.#channelName += `:${this.prefix}`
+
     this.#bus.subscribe<CacheBusMessage>(this.#channelName, this.#onMessage.bind(this))
+    this.#logger.trace({ channel: this.#channelName }, 'bus subscribed to channel')
+  }
+
+  namespace(namespace: string): string {
+    return this.createNamespacePrefix(namespace)
   }
 
   /**
@@ -50,7 +59,10 @@ export class Bus {
    * This is where we update the local cache.
    */
   async #onMessage(message: CacheBusMessage) {
-    this.#logger.trace({ keys: message.keys, type: message.type }, 'received message from bus')
+    this.#logger.trace(
+      { keys: message.keys, type: message.type, channel: this.#channelName },
+      'received message from bus',
+    )
     this.#emitter.emit('bus:message:received', new BusMessageReceived(message))
 
     if (message.type === CacheBusMessageType.Delete) {

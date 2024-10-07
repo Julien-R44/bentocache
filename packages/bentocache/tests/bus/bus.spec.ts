@@ -89,6 +89,31 @@ test.group('Bus synchronization', () => {
     assert.isUndefined(await cache3NSAdmin.get(key))
   }).disableTimeout()
 
+  test('synchronize clear across namespaces', async ({ assert }) => {
+    const key = 'ok'
+
+    const [cache1] = new CacheFactory().withL1L2Config().create()
+    const [cache2] = new CacheFactory().withL1L2Config().create()
+
+    const cache1NSUsers = cache1.namespace('users')
+    const cache2NSAdmins = cache2.namespace('admins')
+    await cache1NSUsers.set(key, 24)
+    await cache2NSAdmins.set(key, 42)
+    await setTimeout(100)
+
+    await cache1NSUsers.clear()
+
+    await setTimeout(100)
+
+    assert.isUndefined(await cache1NSUsers.get(key))
+    assert.equal(await cache2NSAdmins.get(key), 42)
+
+    await cache2NSAdmins.clear()
+    await setTimeout(100)
+
+    assert.isUndefined(await cache1.namespace('admins').get(key))
+  }).disableTimeout()
+
   test('retry queue processing', async ({ assert }) => {
     const bus1 = new ChaosBus(new MemoryTransport())
     const bus2 = new ChaosBus(new MemoryTransport())
