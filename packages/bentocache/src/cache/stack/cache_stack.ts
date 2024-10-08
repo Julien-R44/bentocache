@@ -20,10 +20,11 @@ export class CacheStack {
   l1?: LocalCache
   l2?: RemoteCache
   bus?: Bus
-  #busDriver?: BusDriver
-  #busOptions?: BusOptions
   defaultOptions: CacheEntryOptions
   logger: Logger
+  #busDriver?: BusDriver
+  #busOptions?: BusOptions
+  #namespaceCache: Map<string, CacheStack> = new Map()
 
   constructor(
     public name: string,
@@ -59,12 +60,19 @@ export class CacheStack {
   }
 
   namespace(namespace: string) {
-    return new CacheStack(this.name, this.options, {
-      l1Driver: this.l1?.namespace(namespace),
-      l2Driver: this.l2?.namespace(namespace),
-      busDriver: this.#busDriver,
-      busOptions: { ...this.#busOptions, prefix: this.bus?.namespace(namespace) },
-    })
+    if (!this.#namespaceCache.has(namespace)) {
+      this.#namespaceCache.set(
+        namespace,
+        new CacheStack(this.name, this.options, {
+          l1Driver: this.l1?.namespace(namespace),
+          l2Driver: this.l2?.namespace(namespace),
+          busDriver: this.#busDriver,
+          busOptions: { ...this.#busOptions, prefix: this.bus?.namespace(namespace) },
+        }),
+      )
+    }
+
+    return this.#namespaceCache.get(namespace)
   }
 
   emit(event: CacheEvent) {
