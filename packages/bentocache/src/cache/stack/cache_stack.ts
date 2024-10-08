@@ -59,7 +59,7 @@ export class CacheStack {
     return newBus
   }
 
-  namespace(namespace: string) {
+  namespace(namespace: string): CacheStack {
     if (!this.#namespaceCache.has(namespace)) {
       this.#namespaceCache.set(
         namespace,
@@ -72,7 +72,7 @@ export class CacheStack {
       )
     }
 
-    return this.#namespaceCache.get(namespace)
+    return <CacheStack>this.#namespaceCache.get(namespace)
   }
 
   emit(event: CacheEvent) {
