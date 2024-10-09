@@ -2,7 +2,6 @@ import { Bus as RlanzBus } from '@boringnode/bus'
 import type { Transport } from '@boringnode/bus/types/main'
 
 import { CacheBusMessageType } from '../types/bus.js'
-import { BaseDriver } from '../drivers/base_driver.js'
 import type { LocalCache } from '../cache/facades/local_cache.js'
 import { BusMessageReceived } from '../events/bus/bus_message_received.js'
 import { BusMessagePublished } from '../events/bus/bus_message_published.js'
@@ -17,22 +16,20 @@ import type { BusOptions, CacheBusMessage, Emitter, Logger } from '../types/main
  * the same channel and will receive the message and update their
  * local cache accordingly.
  */
-export class Bus extends BaseDriver {
+export class Bus {
   #bus: RlanzBus
   #logger: Logger
   #emitter: Emitter
-  #cache?: LocalCache
+  #localCaches: Map<string, LocalCache> = new Map()
   #channelName = 'bentocache.notifications'
 
   constructor(
+    name: string,
     driver: Transport,
-    cache: LocalCache,
     logger: Logger,
     emitter: Emitter,
     options: BusOptions = {},
   ) {
-    super(options)
-    this.#cache = cache
     this.#emitter = emitter
     this.#logger = logger.child({ context: 'bentocache.bus' })
 
@@ -44,14 +41,20 @@ export class Bus extends BaseDriver {
       },
     })
 
-    if (this.prefix) this.#channelName += `:${this.prefix}`
+    if (name) this.#channelName += `:${name}`
 
     this.#bus.subscribe<CacheBusMessage>(this.#channelName, this.#onMessage.bind(this))
     this.#logger.trace({ channel: this.#channelName }, 'bus subscribed to channel')
   }
 
-  namespace(namespace: string): string {
-    return this.createNamespacePrefix(namespace)
+  /**
+   * Add a LocalCache for this bus to manage
+   * @param namespace The namespace
+   * @param cache The LocalCache instance
+   */
+  manageCache(namespace: string, cache: LocalCache) {
+    this.#logger.trace({ namespace, channel: this.#channelName }, 'added namespaced cache')
+    this.#localCaches?.set(namespace, cache)
   }
 
   /**
@@ -59,22 +62,23 @@ export class Bus extends BaseDriver {
    * This is where we update the local cache.
    */
   async #onMessage(message: CacheBusMessage) {
-    this.#logger.trace(
-      { keys: message.keys, type: message.type, channel: this.#channelName },
-      'received message from bus',
-    )
+    if (!message.namespace || !this.#localCaches.has(message.namespace)) return
+
+    this.#logger.trace({ ...message, channel: this.#channelName }, 'received message from bus')
     this.#emitter.emit('bus:message:received', new BusMessageReceived(message))
 
+    const cache = this.#localCaches.get(message.namespace)
+
     if (message.type === CacheBusMessageType.Delete) {
-      for (const key of message.keys) this.#cache?.delete(key)
+      for (const key of message.keys) cache?.delete(key)
     }
 
     if (message.type === CacheBusMessageType.Set) {
-      for (const key of message.keys) this.#cache?.logicallyExpire(key)
+      for (const key of message.keys) cache?.logicallyExpire(key)
     }
 
     if (message.type === CacheBusMessageType.Clear) {
-      this.#cache?.clear()
+      cache?.clear()
     }
   }
 

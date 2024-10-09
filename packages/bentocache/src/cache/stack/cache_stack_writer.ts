@@ -22,7 +22,7 @@ export class CacheStackWriter {
 
     this.cacheStack.l1?.set(key, item, options)
     await this.cacheStack.l2?.set(key, item, options)
-    await this.cacheStack.bus?.publish({ type: CacheBusMessageType.Set, keys: [key] })
+    await this.cacheStack.publish({ type: CacheBusMessageType.Set, keys: [key] })
 
     this.cacheStack.emit(new CacheWritten(key, value, this.cacheStack.name))
     return true

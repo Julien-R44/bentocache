@@ -56,7 +56,9 @@ export class BinaryEncoder implements TransportEncoder {
       0,
     )
 
-    const totalLength = this.#busIdLength + 1 + totalKeysLength
+    const namespaceKeyLength = payload.namespace ? Buffer.byteLength(payload.namespace, 'utf8') : 0
+
+    const totalLength = this.#busIdLength + 1 + 4 + namespaceKeyLength + totalKeysLength
 
     /**
      * Allocate a single buffer for the entire message
@@ -74,9 +76,26 @@ export class BinaryEncoder implements TransportEncoder {
     buffer.writeUInt8(this.busMessageTypeToNum(payload.type), this.#busIdLength)
 
     /**
-     * 3. Write the keys
+     * 3. Write the namespace
      */
     let offset = this.#busIdLength + 1
+    /**
+     * Write the length of the namespace key
+     */
+    buffer.writeUInt32BE(namespaceKeyLength, offset)
+    offset += 4
+
+    /**
+     * Write the namespace itself, if not empty
+     */
+    if (payload.namespace) {
+      buffer.write(payload.namespace, offset, namespaceKeyLength, 'utf8')
+      offset += namespaceKeyLength
+    }
+
+    /**
+     * 4. Write the keys
+     */
     for (const key of payload.keys) {
       /**
        * Compute the length of the key in bytes and write it as a 4-byte big-endian integer
@@ -115,6 +134,17 @@ export class BinaryEncoder implements TransportEncoder {
     const type = this.numToBusMessageType(typeValue)
 
     /**
+     * Then the namespace
+     */
+    const namespaceKeyLength = buffer.readUInt32BE(offset)
+    offset += 4
+
+    const namespace = namespaceKeyLength
+      ? buffer.toString('utf8', offset, offset + namespaceKeyLength)
+      : ''
+    offset += namespaceKeyLength
+
+    /**
      * Finally, the keys
      */
     const keys = []
@@ -134,6 +164,6 @@ export class BinaryEncoder implements TransportEncoder {
       keys.push(key)
     }
 
-    return { busId, payload: { keys, type } }
+    return { busId, payload: { keys, type, namespace } }
   }
 }

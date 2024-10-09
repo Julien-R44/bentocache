@@ -1,7 +1,6 @@
 import type { Transport } from '@boringnode/bus/types/main'
 
 import type { Duration } from './helpers.js'
-import type { DriverCommonOptions } from './main.js'
 
 /**
  * Interface for the bus driver
@@ -14,6 +13,7 @@ export type BusDriver = Transport
 export type CacheBusMessage = {
   keys: string[]
   type: CacheBusMessageType
+  namespace?: string
 }
 
 export enum CacheBusMessageType {
@@ -54,4 +54,4 @@ export type BusOptions = {
      */
     retryInterval?: Duration | false
   }
-} & DriverCommonOptions
+}
