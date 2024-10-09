@@ -1,7 +1,7 @@
 {
   "name": "bentocache",
   "type": "module",
-  "version": "1.0.0-beta.11",
+  "version": "1.0.0-beta.12",
   "description": "Multi-tier cache module for Node.js. Redis, Upstash, CloudfareKV, File, in-memory and others drivers",
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",
