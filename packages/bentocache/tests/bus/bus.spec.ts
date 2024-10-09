@@ -69,6 +69,7 @@ test.group('Bus synchronization', () => {
 
     await cache1NSUsersMe.set(key, 24)
     await cache3NSAdmin.set(key, 42)
+    await cache1.set(key, 33)
     await setTimeout(100)
 
     assert.equal(await cache1NSUsersMe.get(key), 24)
@@ -87,6 +88,11 @@ test.group('Bus synchronization', () => {
     await setTimeout(100)
 
     assert.isUndefined(await cache3NSAdmin.get(key))
+    assert.equal(await cache2.get(key), 33)
+    await cache2.delete(key)
+    await setTimeout(100)
+
+    assert.isUndefined(await cache1.get(key))
   }).disableTimeout()
 
   test('synchronize clear across namespaces', async ({ assert }) => {
@@ -312,6 +318,7 @@ test.group('Bus synchronization', () => {
     const data = {
       keys: [],
       type: CacheBusMessageType.Clear,
+      namespace: 'users',
     }
 
     bus1.subscribe('foo', (message: any) => {

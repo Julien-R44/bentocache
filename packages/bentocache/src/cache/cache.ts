@@ -217,7 +217,7 @@ export class Cache implements CacheProvider {
 
     this.#stack.emit(new events.CacheDeleted(key, this.name))
 
-    await this.#stack.bus?.publish({ type: CacheBusMessageType.Delete, keys: [key] })
+    await this.#stack.publish({ type: CacheBusMessageType.Delete, keys: [key] })
 
     return true
   }
@@ -240,7 +240,7 @@ export class Cache implements CacheProvider {
 
     keys.forEach((key) => this.#stack.emit(new events.CacheDeleted(key, this.name)))
 
-    await this.#stack.bus?.publish({ type: CacheBusMessageType.Delete, keys })
+    await this.#stack.publish({ type: CacheBusMessageType.Delete, keys })
 
     return true
   }
@@ -254,7 +254,7 @@ export class Cache implements CacheProvider {
     await Promise.all([
       this.#stack.l1?.clear(),
       this.#stack.l2?.clear(cacheOptions),
-      this.#stack.bus?.publish({ type: CacheBusMessageType.Clear, keys: [] }),
+      this.#stack.publish({ type: CacheBusMessageType.Clear, keys: [] }),
     ])
 
     this.#stack.emit(new events.CacheCleared(this.name))
