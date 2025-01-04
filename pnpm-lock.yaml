@@ -185,8 +185,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
       hexoid:
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^2.0.0
+        version: 2.0.0
       lru-cache:
         specifier: ^11.0.2
         version: 11.0.2
@@ -3704,8 +3704,8 @@ packages:
   help-me@5.0.0:
     resolution: {integrity: sha512-7xgomUX6ADmcYzFik0HzAxh/73YlKR9bmFzf51CZwR+b6YtzU2m0u49hQCqV6SvlqIqsaxovfwdvbnsw3b/zpg==}
 
-  hexoid@1.0.0:
-    resolution: {integrity: sha512-QFLV0taWQOZtvIRIAdBChesmogZrtuXvVWsFHZTk2SU+anspqZ2vMnoLg7IE1+Uk16N19APic1BuF8bC8c2m5g==}
+  hexoid@2.0.0:
+    resolution: {integrity: sha512-qlspKUK7IlSQv2o+5I7yhUd7TxlOG2Vr5LTa3ve2XSNVKAL/n/u/7KLvKmFNimomDIKvZFXWHv0T12mv7rT8Aw==}
     engines: {node: '>=8'}
 
   hono@4.6.15:
@@ -10318,7 +10318,7 @@ snapshots:
 
   help-me@5.0.0: {}
 
-  hexoid@1.0.0: {}
+  hexoid@2.0.0: {}
 
   hono@4.6.15: {}
 

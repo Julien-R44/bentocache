@@ -1,9 +1,8 @@
-import hexoid from 'hexoid'
+import { hexoid } from 'hexoid'
 
 import { resolveTtl } from '../../helpers.js'
 import type { Duration, RawCommonOptions } from '../../types/main.js'
 
-// @ts-expect-error wrongly typed
 const toId = hexoid(12)
 
 export class CacheEntryOptions {
