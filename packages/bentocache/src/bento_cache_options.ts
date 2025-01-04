@@ -3,7 +3,9 @@ import lodash from '@poppinss/utils/lodash'
 import string from '@poppinss/utils/string'
 import { noopLogger } from 'typescript-log'
 
+import { JsonSerializer } from './serializers/json.js'
 import type {
+  CacheSerializer,
   Duration,
   Emitter,
   FactoryTimeoutOptions,
@@ -11,6 +13,8 @@ import type {
   Logger,
   RawBentoCacheOptions,
 } from './types/main.js'
+
+const defaultSerializer = new JsonSerializer()
 
 /**
  * The default options to use throughout the library
@@ -71,6 +75,11 @@ export class BentoCacheOptions {
   emitter: Emitter = new EventEmitter()
 
   /**
+   * Serializer to use for the cache
+   */
+  serializer: CacheSerializer
+
+  /**
    * Max time to wait for the lock to be acquired
    */
   lockTimeout?: Duration = null
@@ -87,6 +96,7 @@ export class BentoCacheOptions {
     this.gracePeriod = this.#options.gracePeriod!
 
     this.emitter = this.#options.emitter!
+    this.serializer = this.#options.serializer ?? defaultSerializer
     this.logger = this.#options.logger!.child({ pkg: 'bentocache' })
   }
 

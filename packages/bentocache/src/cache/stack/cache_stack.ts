@@ -4,7 +4,6 @@ import { Bus } from '../../bus/bus.js'
 import { LocalCache } from '../facades/local_cache.js'
 import { RemoteCache } from '../facades/remote_cache.js'
 import { BaseDriver } from '../../drivers/base_driver.js'
-import { JsonSerializer } from '../../serializers/json.js'
 import type { BentoCacheOptions } from '../../bento_cache_options.js'
 import { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 import type {
@@ -17,8 +16,6 @@ import type {
 } from '../../types/main.js'
 
 export class CacheStack extends BaseDriver {
-  #serializer = new JsonSerializer()
-
   l1?: LocalCache
   l2?: RemoteCache
   bus?: Bus
@@ -37,8 +34,10 @@ export class CacheStack extends BaseDriver {
     super(options)
     this.logger = options.logger.child({ cache: this.name })
 
-    if (drivers.l1Driver) this.l1 = new LocalCache(drivers.l1Driver, this.logger)
-    if (drivers.l2Driver) this.l2 = new RemoteCache(drivers.l2Driver, this.logger)
+    if (drivers.l1Driver)
+      this.l1 = new LocalCache(drivers.l1Driver, this.logger, this.options.serializer)
+    if (drivers.l2Driver)
+      this.l2 = new RemoteCache(drivers.l2Driver, this.logger, this.options.serializer)
 
     this.bus = bus ? bus : this.#createBus(drivers.busDriver, drivers.busOptions)
     if (this.l1) this.bus?.manageCache(this.prefix, this.l1)
@@ -97,10 +96,10 @@ export class CacheStack extends BaseDriver {
   }
 
   serialize(value: any) {
-    return this.#serializer.serialize(value)
+    return this.options.serializer.serialize(value)
   }
 
   deserialize(value: string) {
-    return this.#serializer.deserialize(value)
+    return this.options.serializer.deserialize(value)
   }
 }

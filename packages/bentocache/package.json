@@ -103,7 +103,8 @@
     "pg": "^8.13.1",
     "pino": "^9.6.0",
     "pino-loki": "^2.4.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "superjson": "^2.2.2"
   },
   "prettier": "@julr/tooling-configs/prettier",
   "publishConfig": {

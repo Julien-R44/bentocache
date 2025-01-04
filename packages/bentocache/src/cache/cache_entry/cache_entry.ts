@@ -1,4 +1,4 @@
-import { JsonSerializer } from '../../serializers/json.js'
+import type { CacheSerializer } from '../../types/main.js'
 
 /**
  * Represents a cache entry stored inside a cache driver.
@@ -22,14 +22,14 @@ export class CacheEntry {
   #logicalExpiration: number
 
   #earlyExpiration: number
+  #serializer: CacheSerializer
 
-  static #serializer = new JsonSerializer()
-
-  constructor(key: string, item: Record<string, any>) {
+  constructor(key: string, item: Record<string, any>, serializer: CacheSerializer) {
     this.#key = key
     this.#value = item.value
     this.#logicalExpiration = item.logicalExpiration
     this.#earlyExpiration = item.earlyExpiration
+    this.#serializer = serializer
   }
 
   getValue() {
@@ -64,8 +64,8 @@ export class CacheEntry {
     return Date.now() >= this.#earlyExpiration
   }
 
-  static fromDriver(key: string, item: string) {
-    return new CacheEntry(key, this.#serializer.deserialize(item))
+  static fromDriver(key: string, item: string, serializer: CacheSerializer) {
+    return new CacheEntry(key, serializer.deserialize(item), serializer)
   }
 
   applyFallbackDuration(duration: number) {
@@ -81,7 +81,7 @@ export class CacheEntry {
   }
 
   serialize() {
-    return CacheEntry.#serializer.serialize({
+    return this.#serializer.serialize({
       value: this.#value,
       logicalExpiration: this.#logicalExpiration,
       earlyExpiration: this.#earlyExpiration,

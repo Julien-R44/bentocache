@@ -125,6 +125,23 @@ The maximum amount of time (in milliseconds) that the in-memory lock for [stampe
 
 This is usually not needed, but can provide an extra layer of protection against theoretical deadlocks.
 
+### `serializer`
+
+Default: `JSON.stringify` and `JSON.parse`
+
+A custom serializer to use when storing and retrieving values from the cache. For example, you could use [`superjson`](https://github.com/flightcontrolhq/superjson) to serialize and deserialize your values instead of `JSON.stringify` and `JSON.parse`.
+
+```ts
+import superjson from 'superjson'
+
+const bento = new BentoCache({
+  serializer: {
+    serialize: superjson.stringify,
+    deserialize: superjson.parse
+  }
+})
+```
+
 ### `logger`
 
 Default: `undefined`.

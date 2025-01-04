@@ -1,6 +1,6 @@
 import { CacheEntry } from '../cache_entry/cache_entry.js'
-import type { Logger, L1CacheDriver } from '../../types/main.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
+import type { Logger, L1CacheDriver, CacheSerializer } from '../../types/main.js'
 
 /**
  * LocalCache is a wrapper around a CacheDriver that provides a
@@ -9,9 +9,11 @@ import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 export class LocalCache {
   #driver: L1CacheDriver
   #logger: Logger
+  #serializer: CacheSerializer
 
-  constructor(driver: L1CacheDriver, logger: Logger) {
+  constructor(driver: L1CacheDriver, logger: Logger, serializer: CacheSerializer) {
     this.#driver = driver
+    this.#serializer = serializer
     this.#logger = logger.child({ context: 'bentocache.localCache' })
   }
 
@@ -33,7 +35,7 @@ export class LocalCache {
       return
     }
 
-    return CacheEntry.fromDriver(key, value)
+    return CacheEntry.fromDriver(key, value, this.#serializer)
   }
 
   /**
@@ -75,7 +77,7 @@ export class LocalCache {
     const value = this.#driver.get(key)
     if (value === undefined) return
 
-    const newEntry = CacheEntry.fromDriver(key, value).expire().serialize()
+    const newEntry = CacheEntry.fromDriver(key, value, this.#serializer).expire().serialize()
     return this.#driver.set(key, newEntry, this.#driver.getRemainingTtl(key))
   }
 

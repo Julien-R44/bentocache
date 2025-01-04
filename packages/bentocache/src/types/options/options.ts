@@ -1,4 +1,4 @@
-import type { Duration, Emitter, Logger } from '../main.js'
+import type { CacheSerializer, Duration, Emitter, Logger } from '../main.js'
 
 /**
  * Options for factory timeouts
@@ -102,6 +102,11 @@ export type RawBentoCacheOptions = {
    * out of the box
    */
   emitter?: Emitter
+
+  /**
+   * Custom serialiser
+   */
+  serializer?: CacheSerializer
 } & RawCommonOptions
 
 /**

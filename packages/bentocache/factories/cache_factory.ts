@@ -38,6 +38,7 @@ export class CacheFactory {
       logger: this.#parameters.logger,
       emitter: this.#parameters.emitter,
       lockTimeout: this.#parameters.lockTimeout,
+      serializer: this.#parameters.serializer,
     })
 
     const stack = new CacheStack('primary', options, {
@@ -62,7 +63,7 @@ export class CacheFactory {
    * Adds a Memory L1 driver to the cache stack
    */
   withMemoryL1() {
-    this.#parameters.l1Driver = new MemoryDriver({ maxSize: 100, prefix: 'test' })
+    this.#parameters.l1Driver = new MemoryDriver({ maxSize: 100_000, prefix: 'test' })
     return this
   }
 

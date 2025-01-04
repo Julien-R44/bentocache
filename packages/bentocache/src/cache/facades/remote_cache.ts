@@ -1,6 +1,6 @@
 import { CacheEntry } from '../cache_entry/cache_entry.js'
-import type { L2CacheDriver, Logger } from '../../types/main.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
+import type { CacheSerializer, L2CacheDriver, Logger } from '../../types/main.js'
 
 /**
  * RemoteCache is a wrapper around a L2 Cache Driver that provides
@@ -9,9 +9,11 @@ import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 export class RemoteCache {
   #driver: L2CacheDriver
   #logger: Logger
+  #serializer: CacheSerializer
 
-  constructor(driver: L2CacheDriver, logger: Logger) {
+  constructor(driver: L2CacheDriver, logger: Logger, serializer: CacheSerializer) {
     this.#driver = driver
+    this.#serializer = serializer
     this.#logger = logger.child({ context: 'bentocache.remoteCache' })
   }
 
@@ -47,7 +49,7 @@ export class RemoteCache {
       const value = await this.#driver.get(key)
       if (value === undefined) return
 
-      return CacheEntry.fromDriver(key, value)
+      return CacheEntry.fromDriver(key, value, this.#serializer)
     })
   }
 
