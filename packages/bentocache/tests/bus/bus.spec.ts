@@ -300,7 +300,7 @@ test.group('Bus synchronization', () => {
   })
     .waitForDone()
     .disableTimeout()
-  
+
   test('binary encoding/decoding using Clear should be fine', async ({ assert, cleanup }, done) => {
     const bus1 = redisBusDriver({ connection: REDIS_CREDENTIALS })
       .factory(null as any)

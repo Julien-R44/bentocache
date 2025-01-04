@@ -42,7 +42,7 @@ export class Cache implements CacheProvider {
   }
 
   #resolveDefaultValue(defaultValue?: Factory) {
-    return typeof defaultValue === 'function' ? defaultValue() : defaultValue ?? undefined
+    return typeof defaultValue === 'function' ? defaultValue() : (defaultValue ?? undefined)
   }
 
   /**
