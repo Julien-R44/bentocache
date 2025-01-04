@@ -1,25 +1,21 @@
 services:
   redis:
     image: redis:6.2-alpine
-    restart: always
     ports:
       - '6379:6379'
 
   redis-insight:
     image: redislabs/redisinsight:latest
-    restart: always
     ports:
       - '8001:8001'
 
   dynamodb:
     image: amazon/dynamodb-local
-    restart: always
     ports:
       - '8000:8000'
 
   postgres:
     image: postgres:15-alpine
-    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -29,7 +25,6 @@ services:
 
   mysql:
     image: mysql:8.0
-    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: mysql
