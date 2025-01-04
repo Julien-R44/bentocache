@@ -3,12 +3,12 @@
     "dev": "tsx watch src/index.tsx"
   },
   "dependencies": {
-    "@hono/node-server": "^1.11.1",
+    "@hono/node-server": "^1.13.7",
     "bentocache": "workspace:*",
-    "hono": "^4.3.7"
+    "hono": "^4.6.15"
   },
   "devDependencies": {
-    "@types/node": "^20.12.12",
-    "tsx": "^4.10.2"
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2"
   }
 }
