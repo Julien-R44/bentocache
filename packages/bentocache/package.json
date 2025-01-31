@@ -87,7 +87,7 @@
     "@keyv/tiered": "^2.0.2",
     "@types/better-sqlite3": "^7.6.12",
     "@types/pg": "^8.11.10",
-    "better-sqlite3": "^11.7.0",
+    "better-sqlite3": "^11.7.2",
     "cache-manager": "^5.7.6",
     "cache-manager-ioredis-yet": "^1.2.2",
     "dayjs": "^1.11.13",

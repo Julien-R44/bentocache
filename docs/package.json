@@ -10,7 +10,7 @@
     "start": "node bin/test.js",
     "typecheck": "tsc --noEmit",
     "serve": "node --loader=ts-node/esm bin/serve.ts",
-    "dev": "concurrently \"vite\" \"npm run serve\""
+    "dev": "vite build && npm run serve"
   },
   "imports": {
     "#src/*": "./src/*.js"
@@ -25,10 +25,10 @@
   },
   "devDependencies": {
     "@adonisjs/assembler": "^7.8.2",
-    "@adonisjs/vite": "^2.0.2",
+    "@adonisjs/vite": "^4.0.0",
     "@alpinejs/persist": "^3.14.8",
     "@dimerapp/content": "^5.2.1",
-    "@dimerapp/docs-theme": "^4.0.4",
+    "@dimerapp/docs-theme": "^6.1.3",
     "@dimerapp/edge": "^5.0.0",
     "@dimerapp/shiki": "^5.0.0",
     "@docsearch/css": "^3.8.2",
@@ -41,6 +41,6 @@
     "reflect-metadata": "^0.2.2",
     "undici": "^7.2.0",
     "unpoly": "^3.9.5",
-    "vite": "^5.4.11"
+    "vite": "^6.0.7"
   }
 }
