@@ -7,7 +7,7 @@
     "start-server": "cross-env NODE_NO_WARNINGS=1 node --loader ts-node/esm src/server.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.721.0",
+    "@aws-sdk/client-dynamodb": "^3.738.0",
     "@bentocache/plugin-prometheus": "workspace:*",
     "bentocache": "workspace:*"
   },
