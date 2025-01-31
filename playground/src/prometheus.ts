@@ -33,7 +33,6 @@ server.listen(8080, () => {
   console.log('server listening on port 8080')
 })
 
-// eslint-disable-next-line no-constant-condition
 while (true) {
   const key = (Math.random() > 0.5 ? 'users' : 'posts') + ':' + Math.floor(Math.random() * 5)
   if (Math.random() > 0.8) {

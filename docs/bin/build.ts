@@ -37,17 +37,11 @@ const IMPORTER = (filePath: string) => {
  */
 async function exportHTML() {
   const { collections } = await import('#src/collections')
-  // const { default: ace } = await import('@adonisjs/core/services/ace')
   const { default: app } = await import('@adonisjs/core/services/app')
 
   for (const collection of collections) {
     for (const entry of collection.all()) {
-      try {
-        await entry.writeToDisk(app.makePath('dist'), { collection, entry })
-        // ace.ui.logger.action(`create ${output.filePath}`).succeeded()
-      } catch (error) {
-        // ace.ui.logger.action(`create ${entry.permalink}`).failed(error)
-      }
+      await entry.writeToDisk(app.makePath('dist'), { collection, entry })
     }
   }
 }
