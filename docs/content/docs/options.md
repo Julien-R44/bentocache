@@ -73,14 +73,6 @@ If `false`, then errors thrown by your L2 cache will be rethrown, and you will h
 
 Note that in some cases, like when you use [Grace Periods](./grace_periods.md), errors will not be thrown, even if this option is set to `false`. Since this is the whole point of grace periods.
 
-### `earlyExpiration`
-
-Default: `undefined`
-
-Levels: `global`, `store`, `operation`
-
-Percentage of the TTL (between 0 and 1) that corresponds to the moment from which bentocache should launch a background refresh of your key. For example, if your TTL is `10m`, and your `earlyExpiration` is `0.8`, then a background refresh will be launched when the key is requested and there is less than 2 minutes of TTL remaining.
-
 ### `gracePeriod`
 
 Default `undefined`

@@ -14,21 +14,6 @@ test.group('Cache Entry Options', () => {
     assert.equal(options.physicalTtl, string.milliseconds.parse('30m'))
   })
 
-  test('early expiration percentage', ({ assert }) => {
-    const options = new CacheEntryOptions({ ttl: '10m', earlyExpiration: 0.1 })
-    assert.equal(options.earlyExpireTtl, string.milliseconds.parse('1m'))
-  })
-
-  test('early expiration percentage with grace period', ({ assert }) => {
-    const options = new CacheEntryOptions({
-      ttl: '10m',
-      earlyExpiration: 0.1,
-      gracePeriod: { enabled: true, duration: '30m' },
-    })
-
-    assert.equal(options.earlyExpireTtl, string.milliseconds.parse('1m'))
-  })
-
   test('physical ttl should be logical ttl when grace period is disabled', ({ assert }) => {
     const options = new CacheEntryOptions({ ttl: '10m' })
 
@@ -150,13 +135,12 @@ test.group('Cache Entry Options', () => {
     })
   })
 
-  test('setTtl should re-compute physical ttl and early expiration', ({ assert }) => {
-    const options = new CacheEntryOptions({ ttl: '10m', earlyExpiration: 0.5 })
+  test('setTtl should re-compute physical ttl', ({ assert }) => {
+    const options = new CacheEntryOptions({ ttl: '10m' })
 
     options.setLogicalTtl(string.milliseconds.parse('5m'))
 
     assert.equal(options.logicalTtl, string.milliseconds.parse('5m'))
     assert.equal(options.physicalTtl, string.milliseconds.parse('5m'))
-    assert.equal(options.earlyExpireTtl, string.milliseconds.parse('2.5m'))
   })
 })

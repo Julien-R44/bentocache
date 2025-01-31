@@ -12,7 +12,6 @@
 - 🔄 Synchronization of local cache via Bus
 - 🚀 Many drivers (Redis, Upstash, In-memory, Postgres, Sqlite and others)
 - 🛡️ Grace period and timeouts. Serve stale data when the store is dead or slow
-- 🔄 Early refresh. Refresh cached value before needing to serve it
 - 🗂️ Namespaces. Group your keys by categories.
 - 🛑 Cache stamped protection.
 - 🏷️ Named caches
@@ -126,22 +125,6 @@ bento.getOrSet('foo', () => getFromDb(), {
   gracePeriod: { enabled: true, duration: '6h' }
 })
 ```
-
-### Early refresh
-
-When you cached item will expire soon, you can refresh it in advance, in the background. This way, next time the entry is requested, it will already be computed and thus returned to the user super quickly.
-
-```ts
-bento.getOrSet('foo', () => getFromDb(), {
-  earlyExpiration: 0.8
-})
-```
-
-In this case, when only 20% or less of the TTL remains and the entry is requested : 
-
-- It will returns the cached value to the user.
-- Start a background refresh by calling the factory.
-- Next time the entry is requested, it will be already computed, and can be returned immediately.
 
 ### Logging
 

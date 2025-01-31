@@ -47,11 +47,6 @@ export class BentoCacheOptions {
   }
 
   /**
-   * Default early expiration percentage
-   */
-  earlyExpiration: number = 0
-
-  /**
    * Whether to suppress L2 cache errors
    */
   suppressL2Errors: boolean = true
@@ -90,7 +85,6 @@ export class BentoCacheOptions {
     this.prefix = this.#options.prefix!
     this.ttl = this.#options.ttl!
     this.timeouts = this.#options.timeouts
-    this.earlyExpiration = this.#options.earlyExpiration!
     this.suppressL2Errors = this.#options.suppressL2Errors!
     this.lockTimeout = this.#options.lockTimeout
     this.gracePeriod = this.#options.gracePeriod!

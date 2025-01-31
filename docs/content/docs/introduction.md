@@ -12,7 +12,6 @@ Bentocache is a robust multi-tier caching library for Node.js applications
 - 🔄 Synchronization of local cache via Bus
 - 🚀 Many drivers (Redis, Upstash, In-memory, Postgres, Sqlite and others)
 - 🛡️ Grace period and timeouts. Serve stale data when the store is dead or slow
-- 🔄 Early refresh. Refresh cached value before needing to serve it
 - 🗂️ Namespaces. Group your keys by categories.
 - 🛑 Cache stamped protection.
 - 🏷️ Named caches
@@ -137,18 +136,6 @@ All TTLs can be passed in a human-readable string format. We use [lukeed/ms](htt
 bento.getOrSet({
   key: 'foo',
   ttl: '2.5h',
-  factory: () => getFromDb(),
-})
-```
-
-### Early refresh
-
-When you cached item will expire soon, you can refresh it in advance, in the background. This way, next time the entry is requested, it will already be computed and thus returned to the user super quickly.
-
-```ts
-bento.getOrSet({
-  key: 'foo',
-  earlyExpiration: 0.8,
   factory: () => getFromDb(),
 })
 ```

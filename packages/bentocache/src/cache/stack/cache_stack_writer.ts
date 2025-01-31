@@ -17,7 +17,6 @@ export class CacheStackWriter {
     const item = this.cacheStack.serialize({
       value,
       logicalExpiration: options.logicalTtlFromNow(),
-      earlyExpiration: options.earlyExpireTtlFromNow(),
     })
 
     this.cacheStack.l1?.set(key, item, options)

@@ -31,12 +31,6 @@ export class CacheEntryOptions {
   physicalTtl?: number
 
   /**
-   * Early expiration TTL is when the value should be
-   * refreshed in the background.
-   */
-  earlyExpireTtl?: number
-
-  /**
    * Timeouts for the cache operations
    */
   timeouts?: {
@@ -67,7 +61,6 @@ export class CacheEntryOptions {
 
     this.logicalTtl = this.#resolveLogicalTtl()
     this.physicalTtl = this.#resolvePhysicalTtl()
-    this.earlyExpireTtl = this.#resolveEarlyExpireTtl()
     this.timeouts = this.#resolveTimeouts()
     this.gracePeriod = this.#resolveGracePeriod()
     this.lockTimeout = resolveTtl(this.#options.lockTimeout, null)
@@ -99,30 +92,6 @@ export class CacheEntryOptions {
       soft: resolveTtl(timeouts.soft, null),
       hard: resolveTtl(timeouts.hard, null),
     }
-  }
-
-  /**
-   * Early expiration is received as a percentage of the
-   * logical TTL. We need to convert it to a duration
-   * in milliseconds.
-   */
-  #resolveEarlyExpireTtl() {
-    const percentage = this.#options.earlyExpiration
-
-    /**
-     * Ignore invalid values
-     */
-    if (!percentage || percentage <= 0 || percentage >= 1) {
-      return undefined
-    }
-
-    /**
-     * If no logical ttl, that means value will never expire
-     * So no early expiration
-     */
-    if (!this.logicalTtl) return undefined
-
-    return this.logicalTtl * percentage
   }
 
   /**
@@ -172,7 +141,6 @@ export class CacheEntryOptions {
 
     this.logicalTtl = this.#resolveLogicalTtl()
     this.physicalTtl = this.#resolvePhysicalTtl()
-    this.earlyExpireTtl = this.#resolveEarlyExpireTtl()
 
     return this
   }
@@ -191,14 +159,6 @@ export class CacheEntryOptions {
   physicalTtlFromNow() {
     if (!this.physicalTtl) return undefined
     return Date.now() + this.physicalTtl
-  }
-
-  /**
-   * Compute the early expiration TTL timestamp from now
-   */
-  earlyExpireTtlFromNow() {
-    if (!this.earlyExpireTtl) return undefined
-    return Date.now() + this.earlyExpireTtl!
   }
 
   /**

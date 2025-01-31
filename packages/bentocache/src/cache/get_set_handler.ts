@@ -41,38 +41,6 @@ export class GetSetHandler {
   }
 
   /**
-   * Refresh a cache item before it expires
-   */
-  async #earlyExpirationRefresh(key: string, factory: Factory, options: CacheEntryOptions) {
-    this.logger.debug({ key, name: this.stack.name, opId: options.id }, 'try to early refresh')
-    const lock = this.#locks.getOrCreateForKey(key)
-
-    /**
-     * If lock is already acquired, then just exit. We only want to run
-     * the factory once, in background.
-     */
-    if (lock.isLocked()) {
-      return
-    }
-
-    await lock
-      .runExclusive(async () => {
-        this.logger.trace(
-          { key, cache: this.stack.name, opId: options.id },
-          'acquired lock for refresh',
-        )
-
-        await this.stackWriter.set(key, await factory(), options)
-      })
-      .catch((error) => {
-        const msg = 'factory error in early refresh'
-        this.logger.error({ key, cache: this.stack.name, opId: options.id, error }, msg)
-
-        throw error
-      })
-  }
-
-  /**
    * Returns a value from the local cache and emit a CacheHit event
    */
   #returnLocalCacheValue(
@@ -165,7 +133,6 @@ export class GetSetHandler {
      */
     localItem = this.stack.l1?.get(key, options)
     if (this.#isItemValid(localItem)) {
-      if (localItem?.isEarlyExpired()) this.#earlyExpirationRefresh(key, factory, options)
       return this.#returnLocalCacheValue(key, localItem, options)
     }
 

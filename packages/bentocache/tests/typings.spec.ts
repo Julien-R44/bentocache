@@ -138,7 +138,6 @@ test.group('Typings', () => {
       ttl?: Duration
       timeouts?: FactoryTimeoutOptions
       gracePeriod?: GracePeriodOptions
-      earlyexpiration?: number
       suppressL2Errors?: boolean
       lockTimeout?: Duration
     }>()
@@ -177,7 +176,6 @@ test.group('Typings', () => {
       ttl?: Duration
       timeouts?: FactoryTimeoutOptions
       gracePeriod?: GracePeriodOptions
-      earlyexpiration?: number
       suppressL2Errors?: boolean
       lockTimeout?: Duration
     }>()
@@ -190,7 +188,6 @@ test.group('Typings', () => {
       ttl?: Duration
       timeouts?: FactoryTimeoutOptions
       gracePeriod?: GracePeriodOptions
-      earlyexpiration?: number
       suppressL2Errors?: boolean
       lockTimeout?: Duration
     }>()

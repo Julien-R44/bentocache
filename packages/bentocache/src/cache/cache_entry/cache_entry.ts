@@ -21,14 +21,12 @@ export class CacheEntry {
    */
   #logicalExpiration: number
 
-  #earlyExpiration: number
   #serializer: CacheSerializer
 
   constructor(key: string, item: Record<string, any>, serializer: CacheSerializer) {
     this.#key = key
     this.#value = item.value
     this.#logicalExpiration = item.logicalExpiration
-    this.#earlyExpiration = item.earlyExpiration
     this.#serializer = serializer
   }
 
@@ -44,24 +42,8 @@ export class CacheEntry {
     return this.#logicalExpiration
   }
 
-  getEarlyExpiration() {
-    return this.#earlyExpiration
-  }
-
   isLogicallyExpired() {
     return Date.now() >= this.#logicalExpiration
-  }
-
-  isEarlyExpired() {
-    if (!this.#earlyExpiration) {
-      return false
-    }
-
-    if (this.isLogicallyExpired()) {
-      return false
-    }
-
-    return Date.now() >= this.#earlyExpiration
   }
 
   static fromDriver(key: string, item: string, serializer: CacheSerializer) {
@@ -70,13 +52,11 @@ export class CacheEntry {
 
   applyFallbackDuration(duration: number) {
     this.#logicalExpiration += duration
-    this.#earlyExpiration = 0
     return this
   }
 
   expire() {
     this.#logicalExpiration = Date.now() - 100
-    this.#earlyExpiration = 0
     return this
   }
 
@@ -84,7 +64,6 @@ export class CacheEntry {
     return this.#serializer.serialize({
       value: this.#value,
       logicalExpiration: this.#logicalExpiration,
-      earlyExpiration: this.#earlyExpiration,
     })
   }
 }

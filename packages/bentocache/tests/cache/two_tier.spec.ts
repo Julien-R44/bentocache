@@ -2,7 +2,6 @@ import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
-import { TestLogger } from '../helpers/test_logger.js'
 import { RedisDriver } from '../../src/drivers/redis.js'
 import { NullDriver } from '../helpers/null/null_driver.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
@@ -306,131 +305,6 @@ test.group('Cache', () => {
     assert.isUndefined(entry2)
   }).disableTimeout()
 
-  test('early expiration', async ({ assert }) => {
-    assert.plan(5)
-
-    const { cache } = new CacheFactory()
-      .withL1L2Config()
-      .merge({ earlyExpiration: 0.5, ttl: 100 })
-      .create()
-
-    // Call factory
-    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
-
-    // wait until early refresh should be done
-    await setTimeout(51)
-
-    // Call factory again. Should call factory for early refresh since we waited
-    // 51ms and early expiration is 50% of ttl ( so 50ms )
-    const r2 = await cache.getOrSet('key1', async () => {
-      await setTimeout(50)
-      assert.isTrue(true)
-      return { foo: 'baz' }
-    })
-
-    // This factory should return the first cached value since early refresh is
-    // still running
-    const r3 = await cache.getOrSet('key1', () => ({ foo: 'bazzz' }))
-
-    await setTimeout(50)
-
-    // This factory should return the second cached value since early refresh is
-    // now done
-    const r4 = await cache.getOrSet('key1', () => ({ foo: 'bazzzz' }))
-
-    assert.deepEqual(r1, { foo: 'bar' })
-    assert.deepEqual(r2, { foo: 'bar' })
-    assert.deepEqual(r3, { foo: 'bar' })
-    assert.deepEqual(r4, { foo: 'baz' })
-  })
-
-  test('early refresh should be locked. only one factory call', async ({ assert }) => {
-    assert.plan(4)
-
-    const { cache } = new CacheFactory()
-      .merge({ earlyExpiration: 0.5, ttl: 100 })
-      .withL1L2Config()
-      .create()
-
-    // Init cache with a value
-    await cache.getOrSet('key1', () => ({ foo: 'bar' }))
-    await setTimeout(51)
-
-    // Two concurrent calls. Only one factory call should be invoked
-    const factory = async () => {
-      assert.isTrue(true)
-      await setTimeout(50)
-      return { foo: 'baz' }
-    }
-
-    const [r1, r2] = await Promise.all([
-      cache.getOrSet('key1', factory),
-      cache.getOrSet('key1', factory),
-    ])
-
-    // Refresh is done. should have the new value
-    await setTimeout(51)
-    const r3 = await cache.getOrSet('key1', () => ({ foo: 'bazzz' }))
-
-    assert.deepEqual(r1, { foo: 'bar' })
-    assert.deepEqual(r2, { foo: 'bar' })
-    assert.deepEqual(r3, { foo: 'baz' })
-  })
-
-  test('earlyexpiration of >= 0 or <= 1 should be ignored', async ({ assert }) => {
-    const { cache, local, stack } = new CacheFactory().withL1L2Config().merge({ ttl: 100 }).create()
-
-    await cache.getOrSet('key1', () => ({ foo: 'bar' }), { earlyExpiration: 1 })
-    await cache.getOrSet('key2', () => ({ foo: 'bar' }), { earlyExpiration: 0 })
-
-    const r1 = local.get('key1', stack.defaultOptions)
-    const r2 = local.get('key2', stack.defaultOptions)
-
-    assert.isUndefined(r1?.getEarlyExpiration())
-    assert.isUndefined(r2?.getEarlyExpiration())
-  })
-
-  test('early refresh should re-increment physical/logical ttls', async ({ assert }) => {
-    const { cache } = new CacheFactory()
-      .merge({ earlyExpiration: 0.5, ttl: '500ms' })
-      .withL1L2Config()
-      .create()
-
-    // init cache
-    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
-
-    // wait for early refresh threshold
-    await setTimeout(350)
-
-    // call factory. should returns the old value.
-    // Disable early expiration to test physical ttl
-    const r2 = await cache.getOrSet({
-      key: 'key1',
-      factory: slowFactory(50, { foo: 'baz' }),
-      earlyExpiration: undefined,
-    })
-
-    // wait for early refresh to be done
-    await setTimeout(60)
-
-    // get the value
-    const r3 = await cache.get('key1')
-
-    // wait a bit
-    await setTimeout(50)
-    const r4 = await cache.get('key1')
-
-    // wait for physical ttl to expire
-    await setTimeout(600)
-    const r5 = await cache.get('key1')
-
-    assert.deepEqual(r1, { foo: 'bar' })
-    assert.deepEqual(r2, { foo: 'bar' })
-    assert.deepEqual(r3, { foo: 'baz' })
-    assert.deepEqual(r4, { foo: 'baz' })
-    assert.isUndefined(r5)
-  })
-
   test('rethrows error when suppressL2Errors is false', async ({ assert }) => {
     const remoteDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
 
@@ -466,40 +340,6 @@ test.group('Cache', () => {
 
     assert.deepEqual(r1!.getValue(), 'bar')
     assert.deepEqual(r2!.getValue(), 'bar')
-  })
-
-  test('set should use default CacheOptions', async ({ assert }) => {
-    const { cache, local, remote, stack } = new CacheFactory()
-      .withL1L2Config()
-      .merge({ earlyExpiration: 0.5, ttl: 60 * 1000 })
-      .create()
-
-    await cache.set('foo', 'bar')
-
-    const r1 = local.get('foo', stack.defaultOptions)
-    const r2 = await remote.get('foo', stack.defaultOptions)
-
-    const earlyExpiration = Date.now() + 30 * 1000
-
-    assert.closeTo(r1!.getEarlyExpiration(), earlyExpiration, 100)
-    assert.closeTo(r2!.getEarlyExpiration(), earlyExpiration, 100)
-  })
-
-  test('could override default CacheOptions', async ({ assert }) => {
-    const { cache, local, remote, stack } = new CacheFactory()
-      .withL1L2Config()
-      .merge({ earlyExpiration: 0.5, ttl: 60 * 1000 })
-      .create()
-
-    await cache.set('foo', 'bar', { earlyExpiration: 0.25 })
-
-    const r1 = local.get('foo', stack.defaultOptions)
-    const r2 = await remote.get('foo', stack.defaultOptions)
-
-    const earlyExpiration = Date.now() + 15 * 1000
-
-    assert.closeTo(r1!.getEarlyExpiration(), earlyExpiration, 100)
-    assert.closeTo(r2!.getEarlyExpiration(), earlyExpiration, 100)
   })
 
   test('set should expires others local cache', async ({ assert }) => {
@@ -808,38 +648,6 @@ test.group('Cache', () => {
 
     assert.deepEqual(r1, { foo: 'bar' })
     assert.deepEqual(r2?.getValue(), { foo: 'bar' })
-  })
-
-  test('error in factory while early refreshing should be logged', async ({ assert }) => {
-    const logger = new TestLogger()
-
-    process.on('unhandledRejection', () => {})
-
-    const { cache } = new CacheFactory()
-      .merge({ earlyExpiration: 0.5, logger })
-      .withL1L2Config()
-      .create()
-
-    await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '1s' })
-
-    await setTimeout(501)
-
-    await cache.getOrSet(
-      'key1',
-      async () => {
-        await setTimeout(100)
-        throw new Error('foo')
-      },
-      { ttl: '1s' },
-    )
-
-    await setTimeout(110)
-    const errorLog = logger.logs.find(
-      (log) => log.level === 'error' && log.msg === 'factory error in early refresh',
-    )
-    assert.isDefined(errorLog)
-
-    process.removeAllListeners('unhandledRejection')
   })
 
   test('when local and remote hitted items are logically it should prioritize remote', async ({

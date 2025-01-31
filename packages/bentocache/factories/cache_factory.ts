@@ -33,7 +33,6 @@ export class CacheFactory {
     const options = new BentoCacheOptions({
       ttl: this.#parameters.ttl,
       gracePeriod: this.#parameters.gracePeriod,
-      earlyExpiration: this.#parameters.earlyExpiration,
       timeouts: this.#parameters.timeouts,
       logger: this.#parameters.logger,
       emitter: this.#parameters.emitter,

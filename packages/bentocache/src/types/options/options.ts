@@ -62,12 +62,6 @@ export type RawCommonOptions = {
   gracePeriod?: GracePeriodOptions
 
   /**
-   * A percentage of the TTL that will be used
-   * as a threshold for an early refresh
-   */
-  earlyExpiration?: number
-
-  /**
    * Whether to suppress errors that occur when
    * trying to fetch from remote (l2) cache
    */
