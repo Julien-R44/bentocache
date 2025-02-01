@@ -12,6 +12,7 @@
 - 🔄 Synchronization of local cache via Bus
 - 🚀 Many drivers (Redis, Upstash, In-memory, Postgres, Sqlite and others)
 - 🛡️ Grace period and timeouts. Serve stale data when the store is dead or slow
+- 🤓 SWR-like caching strategy
 - 🗂️ Namespaces. Group your keys by categories.
 - 🛑 Cache stamped protection.
 - 🏷️ Named caches
@@ -29,8 +30,6 @@ There are already caching libraries for Node: [`keyv`](https://keyv.org/), [`cac
 Not to knock them, on the contrary, they have their use cases and cool. Some are even "marketed" as such and are still very handy for simple caching system.
 
 Bentocache, on the other hand, is a **full-featured caching solution**. We indeed have this notion of unified access to differents drivers, but in addition to that, we have a ton of features that will allow you to do robust caching.
-
-With that in mind, then I believe there is no serious alternative to Bentocache in the JavaScript ecosystem. Which is regrettable, because all other languages have powerful solutions. This is why Bentocache was created.
 
 ## Quick presentation
 
