@@ -64,4 +64,4 @@ bento.getOrSet({
 })
 ```
 
-In this example, if the factory fails, we will wait 5 minutes before trying again.
+In this example, if the factory fails, we will wait 5 minutes before trying again. In other words, we will extend the `ttl` of the cache entry by 5 minutes, so BentoCache will not try to call the factory again and again.

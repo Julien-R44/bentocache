@@ -63,13 +63,15 @@ The TTL of the item to cache. See [TTL formats](#ttl-formats).
 
 ### `suppressL2Errors`
 
-Default: `false`
+Default: `true` if L1 and L2 Caches are enabled. `false` if only L2 Cache is enabled.
 
 Levels: `global`, `store`, `operation`
 
 If `false`, then errors thrown by your L2 cache will be rethrown, and you will have to handle them yourself. Otherwise, they will just be ignored.
 
 Note that in some cases, like when you use [Grace Periods](./grace_periods.md), errors will not be thrown, even if this option is set to `false`. Since this is the whole point of grace periods.
+
+Note that event if errors are suppressed and not thrown, they will still be logged if you have a logger configured.
 
 ### `grace`
 
@@ -89,10 +91,10 @@ A duration to define the [grace backoff](./grace_periods.md).
 
 ### `timeout`
 
-Default: `undefined`
+Default: `0`
 Levels: `global`, `store`, `operation`
 
-A duration to define a soft [timeout](./timeouts.md#soft-timeouts).
+A duration to define a soft [timeout](./timeouts.md#soft-timeouts). By default, this is `0`, which means : if we have a stale value in cache, we will return it immediately, and start a background refresh.
 
 ### `hardTimeout`
 
@@ -110,6 +112,25 @@ Levels: `global`, `store`, `operation`
 The maximum amount of time (in milliseconds) that the in-memory lock for [stampeded protection](./stampede_protection.md) can be held. If the lock is not released before this timeout, it will be released automatically. 
 
 This is usually not needed, but can provide an extra layer of protection against theoretical deadlocks.
+
+### `onFactoryError`
+
+Default: `undefined`
+
+A function that will be called when a factory, running in background or not, throws an error. This can be useful for logging or monitoring purposes.
+
+```ts
+const bento = new BentoCache({
+  default: 'memory',
+  onFactoryError: (error) => {
+    console.error('Factory error', error, 'when trying to fetch for key', error.key)
+    console.log(error.isBackground)
+  }
+  stores: {
+    memory: bentostore().useL1Layer(memoryDriver({})),
+  },
+})
+```
 
 ### `serializer`
 
