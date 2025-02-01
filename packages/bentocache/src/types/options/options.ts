@@ -1,3 +1,4 @@
+import type { FactoryError } from '../../errors.js'
 import type { CacheSerializer, Duration, Emitter, Logger } from '../main.js'
 
 /**
@@ -49,6 +50,12 @@ export type RawCommonOptions = {
    * before running a factory
    */
   lockTimeout?: Duration
+
+  /**
+   * A handler that will be called when a factory
+   * throws an error
+   */
+  onFactoryError?: (error: FactoryError) => void
 }
 
 /**

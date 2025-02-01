@@ -1,3 +1,4 @@
+import type { FactoryError } from '../../errors.js'
 import type { Factory, GetSetFactory, RawCommonOptions } from '../main.js'
 
 /**
@@ -11,7 +12,11 @@ export type SetCommonOptions = Pick<
 /**
  * Options accepted by the `getOrSet` method when passing an object
  */
-export type GetOrSetOptions<T> = { key: string; factory: GetSetFactory<T> } & SetCommonOptions
+export type GetOrSetOptions<T> = {
+  key: string
+  factory: GetSetFactory<T>
+  onFactoryError?: (error: FactoryError) => void
+} & SetCommonOptions
 
 /**
  * Options accepted by the `getOrSetForever` method when passing an object

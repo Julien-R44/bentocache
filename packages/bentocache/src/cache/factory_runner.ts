@@ -36,7 +36,7 @@ export class FactoryRunner {
     } catch (error) {
       if (!isBackground) throw new errors.E_FACTORY_ERROR(key, error)
 
-      // TODO Global error handler
+      options.onFactoryError?.(new errors.E_FACTORY_ERROR(key, error, true))
     } finally {
       this.#locks.release(key, lockReleaser)
     }

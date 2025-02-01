@@ -3,6 +3,7 @@ import { is } from '@julr/utils/is'
 
 import { errors } from '../../errors.js'
 import { resolveTtl } from '../../helpers.js'
+import type { FactoryError } from '../../errors.js'
 import type { Duration, RawCommonOptions } from '../../types/main.js'
 
 const toId = hexoid(12)
@@ -48,6 +49,7 @@ export class CacheEntryOptions {
    * Max time to wait for the lock to be acquired
    */
   lockTimeout?: number
+  onFactoryError?: (error: FactoryError) => void
 
   constructor(options: RawCommonOptions = {}, defaults: Partial<RawCommonOptions> = {}) {
     this.id = toId()
@@ -61,6 +63,7 @@ export class CacheEntryOptions {
     this.timeout = resolveTtl(this.#options.timeout, null)
     this.hardTimeout = resolveTtl(this.#options.hardTimeout, null)
     this.lockTimeout = resolveTtl(this.#options.lockTimeout, null)
+    this.onFactoryError = this.#options.onFactoryError ?? defaults.onFactoryError
   }
 
   /**
