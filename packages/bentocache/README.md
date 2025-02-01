@@ -76,7 +76,7 @@ Multi-layer caching allows you to combine the speed of in-memory caching with th
 
 Many drivers available to suit all situations: Redis, Upstash, Database (MySQL, SQLite, PostgreSQL), DynamoDB, Filesystem, In-memory (LRU Cache), Vercel KV...
 
-See the [drivers documentation](https://bentocache.dev/docs/cache-drivers) for list of available drivers. Also very easy to extend the library and [add your own driver](https://bentocache.dev/docs/custom-cache-driver)
+See the [drivers documentation](https://bentocache.dev/docs/cache-drivers) for list of available drivers. Also, very easy to extend the library and [add your own driver](https://bentocache.dev/docs/custom-cache-driver)
 
 ### Resiliency
 
@@ -84,7 +84,7 @@ See the [drivers documentation](https://bentocache.dev/docs/cache-drivers) for l
 
 - [Cache stamped prevention](https://bentocache.dev/docs/stampede-protection): Ensuring that only one factory is executed at the same time.
 
-- [Retry queue](https://bentocache.dev/docs/multi-tier#retry-queue-strategy) : When a application fails to publish something to the bus, it is added to a queue and retried later.
+- [Retry queue](https://bentocache.dev/docs/multi-tier#retry-queue-strategy) : When an application fails to publish something to the bus, it is added to a queue and retried later.
 
 ### Timeouts 
 
@@ -97,8 +97,8 @@ The ability to create logical groups for cache keys together, so you can invalid
 ```ts
 const users = bento.namespace('users')
 
-users.set('32', { name: 'foo' })
-users.set('33', { name: 'bar' })
+users.set({ key: '32', value: { name: 'foo' } })
+users.set({ key: '33', value: { name: 'bar' } })
 
 users.clear() 
 ```
@@ -120,9 +120,11 @@ See the [events documentation](https://bentocache.dev/docs/events) for more info
 All TTLs can be passed in a human-readable string format. We use [lukeed/ms](https://github.com/lukeed/ms) under the hood. (this is optional, and you can pass a `number` in milliseconds if you prefer)
 
 ```ts
-bento.getOrSet('foo', () => getFromDb(), {
-  ttl: '2.5h'
-  gracePeriod: { enabled: true, duration: '6h' }
+bento.getOrSet({
+  key: 'foo',
+  factory: () => getFromDb(),
+  ttl: '2.5h',
+  grace: '6h',
 })
 ```
 
