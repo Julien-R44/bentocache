@@ -1,4 +1,5 @@
 import { LRUCache } from 'lru-cache'
+import { bytes } from '@julr/utils/string/bytes'
 
 import { BaseDriver } from './base_driver.js'
 import type {
@@ -35,11 +36,11 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
 
     this.#cache = new LRUCache({
       max: config.maxItems ?? 1000,
-      maxEntrySize: config.maxEntrySize,
+      maxEntrySize: config.maxEntrySize ? bytes.parse(config.maxEntrySize) : undefined,
       ttlAutopurge: true,
       ...(config.maxSize
         ? {
-            maxSize: config.maxSize,
+            maxSize: config.maxSize ? bytes.parse(config.maxSize) : undefined,
             sizeCalculation: (value) => Buffer.byteLength(value, 'utf-8'),
           }
         : {}),

@@ -178,6 +178,9 @@ importers:
       '@boringnode/bus':
         specifier: ^0.7.0
         version: 0.7.0(ioredis@5.4.2)
+      '@julr/utils':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@poppinss/utils':
         specifier: ^6.9.2
         version: 6.9.2
@@ -1309,6 +1312,9 @@ packages:
   '@julr/tooling-configs@3.1.0':
     resolution: {integrity: sha512-jLEF3t1N7M+/7BpuZVrvIndIYIA8Eayo44r0EnSsrH1saTPS7umFvtdVkKChDCc0ndEG/TXRIgBgD6N5jw3FAg==}
 
+  '@julr/utils@1.0.0':
+    resolution: {integrity: sha512-DLL0C/dhPb7HNomh2ZdxgA9K7kMyLE+UKmrP0q2EYoESkQoAzqgV/eEPek//SRlEjMUNd0iyWu1Y3OIgRrrEyw==}
+
   '@keyv/redis@3.0.1':
     resolution: {integrity: sha512-eyqzomQC76LjUOEkPP8rdR2Fk4eZBSS0Ma47i7CNiQuv8NCw3trZvghx8L5Xruk7XPEj/eRAMrAxP//xQFOPdQ==}
     engines: {node: '>= 18'}
@@ -1924,9 +1930,6 @@ packages:
 
   '@types/better-sqlite3@7.6.12':
     resolution: {integrity: sha512-fnQmj8lELIj7BSrZQAdBMHEHX8OZLYIHXqAKT1O7tDfLxaINzf00PMjw22r3N/xXh0w/sGHlO6SVaCQ2mj78lg==}
-
-  '@types/bytes@3.1.4':
-    resolution: {integrity: sha512-A0uYgOj3zNc4hNjHc5lYUfJQ/HVyBXiUMKdXd7ysclaE6k9oJdavQzODHuwjpUu2/boCP8afjQYi8z/GtvNCWA==}
 
   '@types/bytes@3.1.5':
     resolution: {integrity: sha512-VgZkrJckypj85YxEsEavcMmmSOIzkUHqWmM4CCyia5dc54YwsXzJ5uT4fYxBQNEXx+oF1krlhgCbvfubXqZYsQ==}
@@ -7593,6 +7596,10 @@ snapshots:
       - supports-color
       - typescript
 
+  '@julr/utils@1.0.0':
+    dependencies:
+      bytes: 3.1.2
+
   '@keyv/redis@3.0.1':
     dependencies:
       ioredis: 5.4.2
@@ -7817,7 +7824,7 @@ snapshots:
   '@poppinss/utils@6.5.1':
     dependencies:
       '@lukeed/ms': 2.0.1
-      '@types/bytes': 3.1.4
+      '@types/bytes': 3.1.5
       '@types/pluralize': 0.0.32
       bytes: 3.1.2
       case-anything: 2.1.13
@@ -8283,8 +8290,6 @@ snapshots:
   '@types/better-sqlite3@7.6.12':
     dependencies:
       '@types/node': 22.12.0
-
-  '@types/bytes@3.1.4': {}
 
   '@types/bytes@3.1.5': {}
 

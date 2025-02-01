@@ -50,4 +50,26 @@ test.group('Memory Driver', (group) => {
     assert.equal(r2, q2)
     assert.equal(r3, q3)
   })
+
+  test('should be able to parse maxSize', async ({ assert }) => {
+    const cache = new MemoryDriver({
+      maxSize: '200b',
+    })
+
+    const q1 = 'a'.repeat(100)
+    const q2 = 'b'.repeat(100)
+    const q3 = 'c'.repeat(100)
+
+    cache.set('q1', q1)
+    cache.set('q2', q2)
+    cache.set('q3', q3)
+
+    const r1 = cache.get('q1')
+    const r2 = cache.get('q2')
+    const r3 = cache.get('q3')
+
+    assert.equal(r1, undefined)
+    assert.equal(r2, q2)
+    assert.equal(r3, q3)
+  })
 })

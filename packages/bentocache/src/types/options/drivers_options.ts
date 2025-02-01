@@ -45,6 +45,14 @@ export type DynamoDBConfig = {
 } & DriverCommonOptions
 
 /**
+ * A number of bytes
+ * Can be represented as a number or a string
+ * e.g. '1kb', '1mb', '1gb'
+ * We use https://www.npmjs.com/package/bytes under the hood
+ */
+export type Bytes = number | string
+
+/**
  * Options for Memory driver
  */
 export type MemoryConfig = {
@@ -61,7 +69,7 @@ export type MemoryConfig = {
   /**
    * Maximum size of the cache in bytes.
    */
-  maxSize?: number
+  maxSize?: Bytes
 
   /**
    * Maximum size of one entry in bytes.
@@ -69,7 +77,7 @@ export type MemoryConfig = {
    * If an entry is larger than this value,
    * it will NOT be stored
    */
-  maxEntrySize?: number
+  maxEntrySize?: Bytes
 } & DriverCommonOptions
 
 /**

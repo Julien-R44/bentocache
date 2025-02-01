@@ -73,6 +73,7 @@
   },
   "dependencies": {
     "@boringnode/bus": "^0.7.0",
+    "@julr/utils": "^1.0.0",
     "@poppinss/utils": "^6.9.2",
     "async-mutex": "^0.5.0",
     "chunkify": "^5.0.0",
