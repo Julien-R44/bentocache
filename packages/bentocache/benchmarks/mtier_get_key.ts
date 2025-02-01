@@ -37,7 +37,7 @@ const cacheManagerRedis = await caching(await redisStore({ host: 'localhost', po
 const multiCache = multiCaching([cacheManagerMemory, cacheManagerRedis])
 
 await keyv.set('key', 'value')
-await bentocacheTiered.set('key', 'value')
+await bentocacheTiered.set({ key: 'key', value: 'value' })
 await multiCache.set('key', 'value')
 
 const ioredis = new Redis()
@@ -47,7 +47,7 @@ const ioredis = new Redis()
  */
 bench
   .add('BentoCache', async () => {
-    await bentocacheTiered.get('key')
+    await bentocacheTiered.get({ key: 'key' })
   })
   .add('Keyv', async () => {
     await keyv.get('key')

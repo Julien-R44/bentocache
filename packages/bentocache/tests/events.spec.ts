@@ -14,7 +14,7 @@ test.group('Cache events', () => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
-    cache.get('key')
+    cache.get({ key: 'key' })
     const event = await pEvent(emitter, 'cache:miss')
 
     assert.deepEqual(event, { key: 'key', store: 'primary' })
@@ -26,8 +26,8 @@ test.group('Cache events', () => {
 
     const eventPromise = pEvent(emitter, 'cache:hit')
 
-    await cache.set('key', 'value')
-    cache.get('key')
+    await cache.set({ key: 'key', value: 'value' })
+    cache.get({ key: 'key' })
 
     const event = await eventPromise
     assert.deepEqual(event, { key: 'key', value: 'value', store: 'primary', graced: false })
@@ -37,7 +37,7 @@ test.group('Cache events', () => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
-    cache.set('key', 'value')
+    cache.set({ key: 'key', value: 'value' })
 
     const event = await pEvent(emitter, 'cache:written')
     assert.deepEqual(event, { key: 'key', value: 'value', store: 'primary' })
@@ -47,8 +47,8 @@ test.group('Cache events', () => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
-    await cache.set('key', 'value')
-    cache.delete('key')
+    await cache.set({ key: 'key', value: 'value' })
+    cache.delete({ key: 'key' })
 
     const event = await pEvent(emitter, 'cache:deleted')
     assert.deepEqual(event, { key: 'key', store: 'primary' })
@@ -65,7 +65,7 @@ test.group('Cache events', () => {
       .create()
 
     bus.alwaysThrow()
-    cache.delete('key')
+    cache.delete({ key: 'key' })
 
     const event = await pEvent(emitter, 'cache:deleted')
     assert.deepEqual(event, { key: 'key', store: 'primary' })
@@ -76,7 +76,7 @@ test.group('Cache events', () => {
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
     const promises = Promise.all([pEvent(emitter, 'cache:deleted'), pEvent(emitter, 'cache:hit')])
-    await cache.set('key', 'value')
+    await cache.set({ key: 'key', value: 'value' })
     cache.pull('key')
 
     const [deletedEvent, hitEvent] = await promises
@@ -99,10 +99,10 @@ test.group('Cache events', () => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
-    await cache.set('key1', 'value1')
-    await cache.set('key2', 'value2')
+    await cache.set({ key: 'key1', value: 'value1' })
+    await cache.set({ key: 'key2', value: 'value2' })
 
-    cache.deleteMany(['key1', 'key2'])
+    cache.deleteMany({ keys: ['key1', 'key2'] })
 
     const events = await pEventMultiple(emitter, 'cache:deleted', { count: 2 })
     assert.deepEqual(events, [
@@ -115,7 +115,7 @@ test.group('Cache events', () => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
-    cache.setForever('key', 'value')
+    cache.setForever({ key: 'key', value: 'value' })
 
     const event = await pEvent(emitter, 'cache:written')
     assert.deepEqual(event, { key: 'key', value: 'value', store: 'primary' })
@@ -126,8 +126,8 @@ test.group('Cache events', () => {
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
     const event = pEvent(emitter, 'cache:hit')
 
-    await cache.set('foo', 'bar')
-    cache.getOrSet('foo', () => 'baz')
+    await cache.set({ key: 'foo', value: 'bar' })
+    cache.getOrSet({ key: 'foo', factory: () => 'baz' })
 
     assert.deepEqual(await event, { key: 'foo', value: 'bar', store: 'primary', graced: false })
   })
@@ -136,7 +136,7 @@ test.group('Cache events', () => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
-    cache.getOrSet('foo', () => 'baz')
+    cache.getOrSet({ key: 'foo', factory: () => 'baz' })
 
     const [writtenEvents, missEvents] = await Promise.all([
       pEvent(emitter, 'cache:written'),
@@ -151,7 +151,7 @@ test.group('Cache events', () => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter }).create()
 
-    cache.getOrSet('foo', () => 'baz')
+    cache.getOrSet({ key: 'foo', factory: () => 'baz' })
 
     const event = await pEvent(emitter, 'bus:message:published')
 
@@ -163,7 +163,7 @@ test.group('Cache events', () => {
     new CacheFactory().withL1L2Config().merge({ emitter }).create()
     const [cache2] = new CacheFactory().withL1L2Config().create()
 
-    cache2.getOrSet('foo', () => 'baz')
+    cache2.getOrSet({ key: 'foo', factory: () => 'baz' })
 
     const event = await pEvent(emitter, 'bus:message:received')
 
@@ -177,10 +177,10 @@ test.group('Cache events', () => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter, grace: '2h' }).create()
 
-    await cache.set('foo', 'bar', { ttl: '10ms' })
+    await cache.set({ key: 'foo', value: 'bar', ttl: '10ms' })
     await setTimeout(50)
 
-    cache.get('foo')
+    cache.get({ key: 'foo' })
 
     const event = await pEvent(emitter, 'cache:hit')
 
@@ -191,10 +191,10 @@ test.group('Cache events', () => {
     const emitter = new EventEmitter()
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter, grace: '2h' }).create()
 
-    await cache.set('foo', 'bar', { ttl: '10ms' })
+    await cache.set({ key: 'foo', value: 'bar', ttl: '10ms' })
     await setTimeout(50)
 
-    cache.getOrSet('foo', throwingFactory('foo'))
+    cache.getOrSet({ key: 'foo', factory: throwingFactory('foo') })
 
     const event = await pEvent(emitter, 'cache:hit')
 

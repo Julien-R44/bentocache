@@ -12,8 +12,8 @@ test.group('Cache', () => {
   test('get() returns null if null is stored', async ({ assert }) => {
     const { cache } = new CacheFactory().withL1L2Config().create()
 
-    await cache.set('foo', null)
-    const value = await cache.get('foo')
+    await cache.set({ key: 'foo', value: null })
+    const value = await cache.get({ key: 'foo' })
 
     assert.isNull(value)
   })
@@ -21,8 +21,11 @@ test.group('Cache', () => {
   test('getOrSet returns null if null is stored', async ({ assert }) => {
     const { cache } = new CacheFactory().withL1L2Config().create()
 
-    await cache.set('foo', null)
-    const value = await cache.getOrSet('foo', throwingFactory('should not be called'))
+    await cache.set({ key: 'foo', value: null })
+    const value = await cache.getOrSet({
+      key: 'foo',
+      factory: throwingFactory('should not be called'),
+    })
 
     assert.isNull(value)
   })
@@ -32,13 +35,13 @@ test.group('Cache', () => {
 
     await remote.set('foo', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
 
-    const value = await cache.get('foo')
+    const value = await cache.get({ key: 'foo' })
     assert.deepEqual(value, 'bar')
   })
 
   test('value not in local and not in remote should returns undefined', async ({ assert }) => {
     const { cache } = new CacheFactory().withL1L2Config().create()
-    const value = await cache.get('foo')
+    const value = await cache.get({ key: 'foo' })
 
     assert.isUndefined(value)
   })
@@ -61,7 +64,7 @@ test.group('Cache', () => {
 
     local.set('foo', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
     local.set('foo', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
-    const r1 = await cache.get('foo')
+    const r1 = await cache.get({ key: 'foo' })
 
     assert.deepEqual(r1, 'bar')
   })
@@ -77,7 +80,7 @@ test.group('Cache', () => {
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
       stack.defaultOptions,
     )
-    const r1 = await cache.get('foo')
+    const r1 = await cache.get({ key: 'foo' })
 
     assert.deepEqual(r1, 'bar')
   })
@@ -95,7 +98,7 @@ test.group('Cache', () => {
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
       stack.defaultOptions,
     )
-    const value = await cache.get('foo')
+    const value = await cache.get({ key: 'foo' })
 
     assert.isUndefined(value)
   })
@@ -111,7 +114,7 @@ test.group('Cache', () => {
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
       stack.defaultOptions,
     )
-    const value = await cache.get('foo')
+    const value = await cache.get({ key: 'foo' })
 
     assert.deepEqual(value, 'bar')
   })
@@ -129,7 +132,7 @@ test.group('Cache', () => {
       JSON.stringify({ value: 'bar', logicalExpiration: Date.now() - 1000 }),
       stack.defaultOptions,
     )
-    const value = await cache.get('foo')
+    const value = await cache.get({ key: 'foo' })
 
     assert.isUndefined(value)
   })
@@ -138,7 +141,7 @@ test.group('Cache', () => {
     const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
 
     await remote.set('foo', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
-    await cache.get('foo')
+    await cache.get({ key: 'foo' })
 
     const value = local.get('foo', stack.defaultOptions)
     assert.deepEqual(value?.getValue(), 'bar')
@@ -147,7 +150,7 @@ test.group('Cache', () => {
   test('return default value if item not found in local and remote', async ({ assert }) => {
     const { cache } = new CacheFactory().withL1L2Config().create()
 
-    const value = await cache.get('foo', 'bar')
+    const value = await cache.get({ key: 'foo', defaultValue: 'bar' })
     assert.deepEqual(value, 'bar')
   })
 
@@ -155,7 +158,10 @@ test.group('Cache', () => {
     const { cache, local, stack } = new CacheFactory().withL1L2Config().create()
 
     local.set('key1', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
-    const value = await cache.getOrSet('key1', throwingFactory('should not be called'))
+    const value = await cache.getOrSet({
+      key: 'key1',
+      factory: throwingFactory('should not be called'),
+    })
 
     assert.deepEqual(value, 'bar')
   })
@@ -164,7 +170,10 @@ test.group('Cache', () => {
     const { cache, remote, stack } = new CacheFactory().withL1L2Config().create()
 
     await remote.set('key1', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
-    const value = await cache.getOrSet('key1', throwingFactory('should not be called'))
+    const value = await cache.getOrSet({
+      key: 'key1',
+      factory: throwingFactory('should not be called'),
+    })
 
     assert.deepEqual(value, 'bar')
   })
@@ -175,7 +184,10 @@ test.group('Cache', () => {
     const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
 
     await remote.set('key1', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
-    const value = await cache.getOrSet('key1', throwingFactory('should not be called'))
+    const value = await cache.getOrSet({
+      key: 'key1',
+      factory: throwingFactory('should not be called'),
+    })
     const localeValue = local.get('key1', stack.defaultOptions)
 
     assert.deepEqual(value, 'bar')
@@ -185,7 +197,7 @@ test.group('Cache', () => {
   test('store values in both when key does not exists in local and remote', async ({ assert }) => {
     const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
 
-    const value = await cache.getOrSet('key1', slowFactory(40, 'bar'))
+    const value = await cache.getOrSet({ key: 'key1', factory: slowFactory(40, 'bar') })
 
     const localeValue = local.get('key1', stack.defaultOptions)
     const remoteValue = await remote.get('key1', stack.defaultOptions)
@@ -198,13 +210,15 @@ test.group('Cache', () => {
   test('with specific ttl', async ({ assert }) => {
     const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
 
-    await cache.getOrSet('key1', () => ({ foo: 'bar' }), {
+    await cache.getOrSet({
+      key: 'key1',
+      factory: () => ({ foo: 'bar' }),
       ttl: '10ms',
     })
 
     await setTimeout(20)
 
-    assert.isUndefined(await cache.get('key1'))
+    assert.isUndefined(await cache.get({ key: 'key1' }))
     assert.isUndefined(local.get('key1', stack.defaultOptions))
     assert.isUndefined(await remote.get('key1', stack.defaultOptions))
   })
@@ -215,16 +229,19 @@ test.group('Cache', () => {
     const { cache } = new CacheFactory().withL1L2Config().merge({ ttl: 100, grace: '10m' }).create()
 
     // init first value
-    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
+    const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
 
     // wait for expiration
     await setTimeout(100)
 
     // get the value again
-    const r2 = await cache.getOrSet('key1', () => {
-      // Since key1 is logically expired, this factory should be called
-      assert.incrementAssertionsCount()
-      throw new Error('foo')
+    const r2 = await cache.getOrSet({
+      key: 'key1',
+      factory: () => {
+        // Since key1 is logically expired, this factory should be called
+        assert.incrementAssertionsCount()
+        throw new Error('foo')
+      },
     })
 
     assert.deepEqual(r1, { foo: 'bar' })
@@ -234,10 +251,10 @@ test.group('Cache', () => {
   test('grace period should not returns old value if cb doesnt throws', async ({ assert }) => {
     const { cache } = new CacheFactory().withL1L2Config().merge({ grace: '10m' }).create()
 
-    const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '10ms' })
+    const r1 = await cache.getOrSet({ key: 'key1', ttl: '10ms', factory: () => ({ foo: 'bar' }) })
     await setTimeout(100)
 
-    const r2 = await cache.getOrSet('key1', () => ({ foo: 'baz' }), { ttl: '10ms' })
+    const r2 = await cache.getOrSet({ key: 'key1', ttl: '10ms', factory: () => ({ foo: 'baz' }) })
 
     assert.deepEqual(r1, { foo: 'bar' })
     assert.deepEqual(r2, { foo: 'baz' })
@@ -280,7 +297,7 @@ test.group('Cache', () => {
       .merge({ grace: '2s' })
       .create()
 
-    await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '10ms' })
+    await cache.getOrSet({ key: 'key1', ttl: '10ms', factory: () => ({ foo: 'bar' }) })
 
     await setTimeout(100)
 
@@ -302,7 +319,7 @@ test.group('Cache', () => {
       .create()
 
     // init cache
-    await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '100ms' })
+    await cache.getOrSet({ key: 'key1', ttl: '100ms', factory: () => ({ foo: 'bar' }) })
 
     // make the remote cache fail
     remoteDriver.alwaysThrow()
@@ -311,7 +328,9 @@ test.group('Cache', () => {
     await setTimeout(100)
 
     // get the value again
-    const r2 = cache.getOrSet('key1', () => ({ foo: 'baz' }), {
+    const r2 = cache.getOrSet({
+      key: 'key1',
+      factory: () => ({ foo: 'baz' }),
       suppressL2Errors: false,
     })
 
@@ -321,7 +340,7 @@ test.group('Cache', () => {
   test('set() set item in local and remote store', async ({ assert }) => {
     const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
 
-    await cache.set('foo', 'bar')
+    await cache.set({ key: 'foo', value: 'bar' })
 
     const r1 = local.get('foo', stack.defaultOptions)
     const r2 = await remote.get('foo', stack.defaultOptions)
@@ -335,10 +354,10 @@ test.group('Cache', () => {
     const [cache2] = new CacheFactory().withL1L2Config().create()
 
     // first we initialize the cache with a value
-    await cache1.set('foo', 'bar')
+    await cache1.set({ key: 'foo', value: 'bar' })
 
     // then we update it from another cache
-    await cache2.set('foo', 'baz')
+    await cache2.set({ key: 'foo', value: 'baz' })
 
     await setTimeout(100)
 
@@ -346,7 +365,7 @@ test.group('Cache', () => {
     const r1 = local1.get('foo', stack.defaultOptions)
 
     // a get should return the new value
-    const r2 = await cache1.get('foo')
+    const r2 = await cache1.get({ key: 'foo' })
 
     await setTimeout(100)
 
@@ -358,11 +377,11 @@ test.group('Cache', () => {
   test('deleteMany should delete from local and remote', async ({ assert }) => {
     const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
 
-    await cache.set('foo', 'bar')
-    await cache.set('bar', 'baz')
+    await cache.set({ key: 'foo', value: 'bar' })
+    await cache.set({ key: 'bar', value: 'baz' })
 
     // then we delete it
-    await cache.deleteMany(['foo', 'bar'])
+    await cache.deleteMany({ keys: ['foo', 'bar'] })
 
     // so local cache should be deleted
     const r1 = local.get('foo', stack.defaultOptions)
@@ -385,11 +404,11 @@ test.group('Cache', () => {
       .withL1L2Config()
       .create()
 
-    await cache.set('foo', 'bar')
-    await cache.set('bar', 'baz')
+    await cache.set({ key: 'foo', value: 'bar' })
+    await cache.set({ key: 'bar', value: 'baz' })
 
     remoteDriver.alwaysThrow()
-    const r1 = cache.deleteMany(['foo', 'bar'], { suppressL2Errors: false })
+    const r1 = cache.deleteMany({ keys: ['foo', 'bar'], suppressL2Errors: false })
 
     await assert.rejects(() => r1, 'Chaos: Random error')
 
@@ -405,11 +424,11 @@ test.group('Cache', () => {
     const [cache2] = new CacheFactory().withL1L2Config().create()
 
     // first we initialize the cache1 with some keys
-    await cache1.set('foo', 'bar')
-    await cache1.set('bar', 'baz')
+    await cache1.set({ key: 'foo', value: 'bar' })
+    await cache1.set({ key: 'bar', value: 'baz' })
 
     // then we delete it from another cache
-    await cache2.deleteMany(['foo', 'bar'])
+    await cache2.deleteMany({ keys: ['foo', 'bar'] })
 
     await setTimeout(100)
 
@@ -431,13 +450,13 @@ test.group('Cache', () => {
     const [cache2] = new CacheFactory().merge({ l2Driver: remoteDriver }).withL1L2Config().create()
 
     // first we initialize the cache1 with some keys
-    await cache1.set('foo', 'bar')
-    await cache1.set('bar', 'baz')
-    await cache1.set('baz', 'foo')
+    await cache1.set({ key: 'foo', value: 'bar' })
+    await cache1.set({ key: 'bar', value: 'baz' })
+    await cache1.set({ key: 'baz', value: 'foo' })
 
     // then we delete it from another cache. remote will throw
     remoteDriver.alwaysThrow()
-    await cache2.deleteMany(['foo', 'bar'])
+    await cache2.deleteMany({ keys: ['foo', 'bar'] })
 
     await setTimeout(100)
 
@@ -457,10 +476,10 @@ test.group('Cache', () => {
     const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
 
     // first we initialize the cache with a value
-    await cache.set('foo', 'bar')
+    await cache.set({ key: 'foo', value: 'bar' })
 
     // then we delete it
-    await cache.delete('foo')
+    await cache.delete({ key: 'foo' })
 
     // so local cache should be deleted
     const r1 = local.get('foo', stack.defaultOptions)
@@ -481,11 +500,11 @@ test.group('Cache', () => {
       .create()
 
     // first we initialize the cache with a value
-    await cache.set('foo', 'bar')
+    await cache.set({ key: 'foo', value: 'bar' })
 
     // then we delete it and disable suppressL2Errors so this method will throw
     remoteDriver.alwaysThrow()
-    const r1 = cache.delete('foo', { suppressL2Errors: false })
+    const r1 = cache.delete({ key: 'foo', suppressL2Errors: false })
 
     await assert.rejects(() => r1, 'Chaos: Random error')
 
@@ -500,10 +519,10 @@ test.group('Cache', () => {
     const [cache2] = new CacheFactory().withL1L2Config().create()
 
     // first we initialize the cache1 with a value
-    await cache1.set('foo', 'bar')
+    await cache1.set({ key: 'foo', value: 'bar' })
 
     // then we delete it from another cache
-    await cache2.delete('foo')
+    await cache2.delete({ key: 'foo' })
 
     await setTimeout(100)
 
@@ -511,7 +530,7 @@ test.group('Cache', () => {
     const r1 = local1.get('foo', stack.defaultOptions)
 
     // a get should return the new value
-    const r2 = await cache1.get('foo')
+    const r2 = await cache1.get({ key: 'foo' })
 
     assert.isUndefined(r1)
     assert.isUndefined(r2)
@@ -527,18 +546,18 @@ test.group('Cache', () => {
     const [cache2] = new CacheFactory().merge({ l2Driver: remoteDriver }).withL1L2Config().create()
 
     // first we initialize the cache1 with a value
-    await cache1.set('foo', 'bar')
+    await cache1.set({ key: 'foo', value: 'bar' })
 
     // then we delete it from another cache. remote will throw
     remoteDriver.alwaysThrow()
-    await cache2.delete('foo')
+    await cache2.delete({ key: 'foo' })
 
     await setTimeout(100)
 
     // so local cache of cache1 should be invalidated
     const r1 = local1.get('foo', stack.defaultOptions)
 
-    const r2 = await cache1.get('foo')
+    const r2 = await cache1.get({ key: 'foo' })
     remoteDriver.neverThrow()
 
     assert.isUndefined(r1)
@@ -562,8 +581,8 @@ test.group('Cache', () => {
     const bus2 = new Bus()
     const [cache2] = new CacheFactory().merge({ busDriver: bus2 }).withL1L2Config().create()
 
-    await cache1.set('foo', 'bar')
-    const r1 = await cache2.get('foo')
+    await cache1.set({ key: 'foo', value: 'bar' })
+    const r1 = await cache2.get({ key: 'foo' })
 
     // cache2 should receive the set event but not broadcast a `delete` event
     assert.equal(r1, 'bar')
@@ -585,7 +604,7 @@ test.group('Cache', () => {
       stack.defaultOptions,
     )
 
-    const r1 = await cache.get('foo')
+    const r1 = await cache.get({ key: 'foo' })
     assert.deepEqual(r1, 'bar')
   })
 
@@ -603,7 +622,11 @@ test.group('Cache', () => {
       stack.defaultOptions,
     )
 
-    const r1 = await cache.getOrSet('foo', throwingFactory('error in factory'), { ttl: '10ms' })
+    const r1 = await cache.getOrSet({
+      key: 'foo',
+      ttl: '10ms',
+      factory: throwingFactory('error in factory'),
+    })
     assert.deepEqual(r1, 'bar')
   })
 
@@ -611,11 +634,11 @@ test.group('Cache', () => {
     const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
 
     const users = cache.namespace('users')
-    await users.set('foo', 'bar')
+    await users.set({ key: 'foo', value: 'bar' })
 
-    const r1 = await users.get('foo')
-    const r2 = await cache.get('users:foo')
-    const r3 = await cache.get('foo')
+    const r1 = await users.get({ key: 'foo' })
+    const r2 = await cache.get({ key: 'users:foo' })
+    const r3 = await cache.get({ key: 'foo' })
     const r4 = local.get('users:foo', stack.defaultOptions)
     const r5 = await remote.get('users:foo', stack.defaultOptions)
 
@@ -629,7 +652,7 @@ test.group('Cache', () => {
   test('Bus shouldnt receive messages emitted by itself', async ({ assert }) => {
     const { cache, local, stack } = new CacheFactory().withL1L2Config().create()
 
-    const r1 = await cache.getOrSet('foo', () => ({ foo: 'bar' }))
+    const r1 = await cache.getOrSet({ key: 'foo', factory: () => ({ foo: 'bar' }) })
 
     // Should still be in local cache and not invalidated by the bus
     const r2 = local.get('foo', stack.defaultOptions)
@@ -657,7 +680,7 @@ test.group('Cache', () => {
       stack.defaultOptions,
     )
 
-    const r1 = await cache.getOrSet('foo', throwingFactory('fail'))
+    const r1 = await cache.getOrSet({ key: 'foo', factory: throwingFactory('fail') })
 
     assert.deepEqual(r1, 'baz')
   })
@@ -667,10 +690,10 @@ test.group('Cache', () => {
     const [cache2, local2] = new CacheFactory().withL1L2Config().create()
 
     // init cache1 with a value
-    await cache1.set('foo', 'bar')
+    await cache1.set({ key: 'foo', value: 'bar' })
 
     // init cache2 l1 with the same value
-    await cache2.get('foo')
+    await cache2.get({ key: 'foo' })
 
     // clear cache1
     await cache1.clear()

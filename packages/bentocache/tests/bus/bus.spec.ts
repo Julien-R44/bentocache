@@ -17,20 +17,20 @@ test.group('Bus synchronization', () => {
     const [cache2] = new CacheFactory().withL1L2Config().create()
     const [cache3] = new CacheFactory().withL1L2Config().create()
 
-    await cache1.set(key, 24)
+    await cache1.set({ key, value: 24 })
     await setTimeout(100)
 
-    assert.equal(await cache1.get(key), 24)
-    assert.equal(await cache2.get(key), 24)
-    assert.equal(await cache3.get(key), 24)
+    assert.equal(await cache1.get({ key }), 24)
+    assert.equal(await cache2.get({ key }), 24)
+    assert.equal(await cache3.get({ key }), 24)
 
-    await cache1.delete(key)
+    await cache1.delete({ key })
 
     await setTimeout(100)
 
-    assert.isUndefined(await cache1.get(key))
-    assert.isUndefined(await cache2.get(key))
-    assert.isUndefined(await cache3.get(key))
+    assert.isUndefined(await cache1.get({ key }))
+    assert.isUndefined(await cache2.get({ key }))
+    assert.isUndefined(await cache3.get({ key }))
   }).disableTimeout()
 
   test('synchronize multiple cache with a namespace', async ({ assert }) => {
@@ -40,20 +40,20 @@ test.group('Bus synchronization', () => {
     const [cache2] = new CacheFactory().withL1L2Config().create()
     const [cache3] = new CacheFactory().withL1L2Config().create()
 
-    await cache1.namespace('users').set(key, 24)
+    await cache1.namespace('users').set({ key, value: 24 })
     await setTimeout(100)
 
-    assert.equal(await cache1.namespace('users').get(key), 24)
-    assert.equal(await cache2.namespace('users').get(key), 24)
-    assert.equal(await cache3.namespace('users').get(key), 24)
+    assert.equal(await cache1.namespace('users').get({ key }), 24)
+    assert.equal(await cache2.namespace('users').get({ key }), 24)
+    assert.equal(await cache3.namespace('users').get({ key }), 24)
 
-    await cache1.namespace('users').delete(key)
+    await cache1.namespace('users').delete({ key })
 
     await setTimeout(100)
 
-    assert.isUndefined(await cache1.namespace('users').get(key))
-    assert.isUndefined(await cache2.namespace('users').get(key))
-    assert.isUndefined(await cache3.namespace('users').get(key))
+    assert.isUndefined(await cache1.namespace('users').get({ key }))
+    assert.isUndefined(await cache2.namespace('users').get({ key }))
+    assert.isUndefined(await cache3.namespace('users').get({ key }))
   }).disableTimeout()
 
   test('synchronize multiple cache with multiple namespaces', async ({ assert }) => {
@@ -67,32 +67,32 @@ test.group('Bus synchronization', () => {
     const cache2NSUsersMe = cache2.namespace('users').namespace('me')
     const cache3NSAdmin = cache3.namespace('admin')
 
-    await cache1NSUsersMe.set(key, 24)
-    await cache3NSAdmin.set(key, 42)
-    await cache1.set(key, 33)
+    await cache1NSUsersMe.set({ key, value: 24 })
+    await cache3NSAdmin.set({ key, value: 42 })
+    await cache1.set({ key, value: 33 })
     await setTimeout(100)
 
-    assert.equal(await cache1NSUsersMe.get(key), 24)
-    assert.equal(await cache2NSUsersMe.get(key), 24)
-    assert.equal(await cache3NSAdmin.get(key), 42)
+    assert.equal(await cache1NSUsersMe.get({ key }), 24)
+    assert.equal(await cache2NSUsersMe.get({ key }), 24)
+    assert.equal(await cache3NSAdmin.get({ key }), 42)
 
     await cache1NSUsersMe.clear()
 
     await setTimeout(100)
 
-    assert.isUndefined(await cache1NSUsersMe.get(key))
-    assert.isUndefined(await cache2.namespace('users').namespace('me').get(key))
-    assert.equal(await cache3NSAdmin.get(key), 42)
+    assert.isUndefined(await cache1NSUsersMe.get({ key }))
+    assert.isUndefined(await cache2.namespace('users').namespace('me').get({ key }))
+    assert.equal(await cache3NSAdmin.get({ key }), 42)
 
     await cache2.namespace('admin').clear()
     await setTimeout(100)
 
-    assert.isUndefined(await cache3NSAdmin.get(key))
-    assert.equal(await cache2.get(key), 33)
-    await cache2.delete(key)
+    assert.isUndefined(await cache3NSAdmin.get({ key }))
+    assert.equal(await cache2.get({ key }), 33)
+    await cache2.delete({ key })
     await setTimeout(100)
 
-    assert.isUndefined(await cache1.get(key))
+    assert.isUndefined(await cache1.get({ key }))
   }).disableTimeout()
 
   test('synchronize clear across namespaces', async ({ assert }) => {
@@ -103,21 +103,21 @@ test.group('Bus synchronization', () => {
 
     const cache1NSUsers = cache1.namespace('users')
     const cache2NSAdmins = cache2.namespace('admins')
-    await cache1NSUsers.set(key, 24)
-    await cache2NSAdmins.set(key, 42)
+    await cache1NSUsers.set({ key, value: 24 })
+    await cache2NSAdmins.set({ key, value: 42 })
     await setTimeout(100)
 
     await cache1NSUsers.clear()
 
     await setTimeout(100)
 
-    assert.isUndefined(await cache1NSUsers.get(key))
-    assert.equal(await cache2NSAdmins.get(key), 42)
+    assert.isUndefined(await cache1NSUsers.get({ key }))
+    assert.equal(await cache2NSAdmins.get({ key }), 42)
 
     await cache2NSAdmins.clear()
     await setTimeout(100)
 
-    assert.isUndefined(await cache1.namespace('admins').get(key))
+    assert.isUndefined(await cache1.namespace('admins').get({ key }))
   }).disableTimeout()
 
   test('retry queue processing', async ({ assert }) => {
@@ -145,18 +145,18 @@ test.group('Bus synchronization', () => {
 
     await setTimeout(100)
 
-    await cache1.set('foo', 1)
+    await cache1.set({ key: 'foo', value: 1 })
     await setTimeout(200)
 
-    await cache2.set('foo', 2)
+    await cache2.set({ key: 'foo', value: 2 })
     await setTimeout(200)
 
-    await cache3.set('foo', 3)
+    await cache3.set({ key: 'foo', value: 3 })
     await setTimeout(200)
 
-    assert.deepEqual(await cache1.get('foo'), 1)
-    assert.deepEqual(await cache2.get('foo'), 2)
-    assert.deepEqual(await cache3.get('foo'), 3)
+    assert.deepEqual(await cache1.get({ key: 'foo' }), 1)
+    assert.deepEqual(await cache2.get({ key: 'foo' }), 2)
+    assert.deepEqual(await cache3.get({ key: 'foo' }), 3)
 
     // Enable the bus
     bus1.neverThrow()
@@ -165,9 +165,9 @@ test.group('Bus synchronization', () => {
 
     await setTimeout(200)
 
-    assert.deepEqual(await cache1.get('foo'), 3)
-    assert.deepEqual(await cache2.get('foo'), 3)
-    assert.deepEqual(await cache3.get('foo'), 3)
+    assert.deepEqual(await cache1.get({ key: 'foo' }), 3)
+    assert.deepEqual(await cache2.get({ key: 'foo' }), 3)
+    assert.deepEqual(await cache3.get({ key: 'foo' }), 3)
   }).disableTimeout()
 
   test('should not process retry queue if disabled', async ({ assert }) => {
@@ -187,20 +187,20 @@ test.group('Bus synchronization', () => {
     bus1.alwaysThrow()
     bus2.alwaysThrow()
 
-    await cache.set('foo', 1)
-    await cache2.set('foo', 2)
+    await cache.set({ key: 'foo', value: 1 })
+    await cache2.set({ key: 'foo', value: 2 })
 
     await setTimeout(200)
 
     bus1.neverThrow()
     bus2.neverThrow()
 
-    await cache.set('foo2', 1)
+    await cache.set({ key: 'foo2', value: 1 })
 
     await setTimeout(200)
 
-    assert.deepEqual(await cache.get('foo'), 1)
-    assert.deepEqual(await cache2.get('foo'), 2)
+    assert.deepEqual(await cache.get({ key: 'foo' }), 1)
+    assert.deepEqual(await cache2.get({ key: 'foo' }), 2)
   })
 
   test('should queue maximum X items when retryQueue.maxSize is enabled', async ({ assert }) => {
@@ -220,7 +220,7 @@ test.group('Bus synchronization', () => {
     bus1.alwaysThrow()
 
     for (let i = 0; i < 30; i++) {
-      await cache1.set(`foo-${i}`, i)
+      await cache1.set({ key: `foo-${i}`, value: i })
     }
 
     bus1.neverThrow()
@@ -251,13 +251,13 @@ test.group('Bus synchronization', () => {
 
     remoteDriver.alwaysThrow()
 
-    await cache1.set('foo', 'bar')
-    await cache2.set('foo', 'baz')
+    await cache1.set({ key: 'foo', value: 'bar' })
+    await cache2.set({ key: 'foo', value: 'baz' })
 
     await setTimeout(110)
 
     remoteDriver.neverThrow()
-    const result = await cache1.getOrSet('foo', throwingFactory('fail'))
+    const result = await cache1.getOrSet({ key: 'foo', factory: throwingFactory('fail') })
 
     /**
      * Summary :

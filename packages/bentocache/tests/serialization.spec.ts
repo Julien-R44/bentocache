@@ -25,7 +25,7 @@ test.group('serialization', () => {
       ttl: '10m',
     })
 
-    const result = await cache.get('key')
+    const result = await cache.get({ key: 'key' })
     assert.instanceOf(result.date, Date)
   })
 })

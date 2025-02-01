@@ -28,7 +28,7 @@ const keyv = new Keyv('redis://localhost:6379')
 const cacheManager = await caching(await redisStore({ host: 'localhost', port: 6379 }))
 
 await keyv.set('key', 'value')
-await bentocache.set('key', 'value')
+await bentocache.set({ key: 'key', value: 'value' })
 await cacheManager.set('key', 'value')
 
 const ioredis = new Redis()
@@ -38,7 +38,7 @@ bench
     await ioredis.get('key')
   })
   .add('BentoCache', async () => {
-    await bentocache.get('key')
+    await bentocache.get({ key: 'key' })
   })
   .add('Keyv', async () => {
     await keyv.get('key')

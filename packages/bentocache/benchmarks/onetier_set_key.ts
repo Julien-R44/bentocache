@@ -22,12 +22,12 @@ const keyv = new Keyv()
 const cacheManager = await caching('memory')
 
 await keyv.set('key', 'value')
-await bentocache.set('key', 'value')
+await bentocache.set({ key: 'key', value: 'value' })
 await cacheManager.set('key', 'value')
 
 bench
   .add('BentoCache', async () => {
-    await bentocache.get('key')
+    await bentocache.get({ key: 'key' })
   })
   .add('Keyv', async () => {
     await keyv.get('key')

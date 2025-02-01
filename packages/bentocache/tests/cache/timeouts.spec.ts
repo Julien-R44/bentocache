@@ -17,21 +17,27 @@ test.group('Soft Timeout', () => {
       .create()
 
     // we set a graced value in the cache
-    await cache.getOrSet('key', () => 'graced value')
+    await cache.getOrSet({ key: 'key', factory: () => 'graced value' })
     await setTimeout(200)
 
     // when we call getOrSet, it will invoke a factory that takes 400ms to complete
     // so it should return the graced value at 200ms
     const now = Date.now()
-    const r1 = await cache.getOrSet('key', slowFactory(400, 'new factory value'), {
+    const r1 = await cache.getOrSet({
+      key: 'key',
+      factory: slowFactory(400, 'new factory value'),
       ttl: '2s',
     })
+
     const elapsed = Date.now() - now
 
     // now if we wait for the factory to complete ( another 200ms )
     await setTimeout(210)
     // we should have the updated value
-    const r2 = await cache.getOrSet('key', throwingFactory('should not be called'))
+    const r2 = await cache.getOrSet({
+      key: 'key',
+      factory: throwingFactory('should not be called'),
+    })
 
     assert.equal(r1, 'graced value')
     assert.equal(r2, 'new factory value')
@@ -53,9 +59,9 @@ test.group('Soft Timeout', () => {
       stack.defaultOptions,
     )
 
-    const r1 = await cache.getOrSet('key', slowFactory(400, 'new factory value'))
+    const r1 = await cache.getOrSet({ key: 'key', factory: slowFactory(400, 'new factory value') })
     await setTimeout(210)
-    const r2 = await cache.getOrSet('key', slowFactory(400, 'new factory value2'))
+    const r2 = await cache.getOrSet({ key: 'key', factory: slowFactory(400, 'new factory value2') })
 
     assert.deepEqual(r1, 'graced value')
     assert.deepEqual(r2, 'new factory value')
@@ -72,7 +78,7 @@ test.group('Soft Timeout', () => {
       .create()
 
     const now = Date.now()
-    const r1 = await cache.getOrSet('key', slowFactory(400, 'new factory value'))
+    const r1 = await cache.getOrSet({ key: 'key', factory: slowFactory(400, 'new factory value') })
     const elapsed = Date.now() - now
 
     assert.equal(r1, 'new factory value')
@@ -89,7 +95,7 @@ test.group('Soft Timeout', () => {
       .withL1L2Config()
       .create()
 
-    await cache.set('key', 'graced value')
+    await cache.set({ key: 'key', value: 'graced value' })
     await setTimeout(150)
 
     let factoryCall = 0
@@ -100,19 +106,25 @@ test.group('Soft Timeout', () => {
     }
 
     // Two concurrents requests
-    const r1 = Promise.all([cache.getOrSet('key', factory), cache.getOrSet('key', factory)])
+    const r1 = Promise.all([
+      cache.getOrSet({ key: 'key', factory }),
+      cache.getOrSet({ key: 'key', factory }),
+    ])
 
     // wait for the first soft timeout window to pass
     await setTimeout(210)
 
-    const r2 = Promise.all([cache.getOrSet('key', factory), cache.getOrSet('key', factory)])
+    const r2 = Promise.all([
+      cache.getOrSet({ key: 'key', factory }),
+      cache.getOrSet({ key: 'key', factory }),
+    ])
 
     await setTimeout(3000)
 
     assert.deepEqual(await r1, ['graced value', 'graced value'])
     assert.deepEqual(await r2, ['graced value', 'graced value'])
 
-    const r3 = await cache.get('key')
+    const r3 = await cache.get({ key: 'key' })
     assert.equal(r3, 'new factory value')
 
     assert.equal(factoryCall, 1)
@@ -124,10 +136,10 @@ test.group('Soft Timeout', () => {
       .withL1L2Config()
       .create()
 
-    await cache.set('key', 'graced value')
+    await cache.set({ key: 'key', value: 'graced value' })
     await setTimeout(150)
 
-    const r1 = await cache.getOrSet('key', slowFactory(400, 'new factory value'))
+    const r1 = await cache.getOrSet({ key: 'key', factory: slowFactory(400, 'new factory value') })
 
     await setTimeout(210)
 
@@ -153,17 +165,20 @@ test.group('Soft Timeout', () => {
 
     process.on('unhandledRejection', () => assert.fail())
 
-    await cache.set('key', 'graced value')
+    await cache.set({ key: 'key', value: 'graced value' })
     await setTimeout(150)
 
-    const r1 = await cache.getOrSet('key', async () => {
-      await setTimeout(300)
-      throw new Error('factory error')
+    const r1 = await cache.getOrSet({
+      key: 'key',
+      factory: async () => {
+        await setTimeout(300)
+        throw new Error('factory error')
+      },
     })
 
     await setTimeout(210)
 
-    const r2 = await cache.get('key')
+    const r2 = await cache.get({ key: 'key' })
     assert.equal(r2, 'graced value')
     assert.equal(r1, 'graced value')
 
@@ -180,16 +195,19 @@ test.group('Soft Timeout', () => {
       .withL1L2Config()
       .create()
 
-    await cache.set('key', 'graced value')
+    await cache.set({ key: 'key', value: 'graced value' })
     await setTimeout(150)
 
-    const r1 = await cache.getOrSet('key', async () => {
-      await setTimeout(300)
-      throw new Error('factory error')
+    const r1 = await cache.getOrSet({
+      key: 'key',
+      factory: async () => {
+        await setTimeout(300)
+        throw new Error('factory error')
+      },
     })
 
     await setTimeout(400)
-    const r2 = await cache.getOrSet('key', () => 'new factory value')
+    const r2 = await cache.getOrSet({ key: 'key', factory: () => 'new factory value' })
 
     assert.equal(r1, 'graced value')
     assert.equal(r2, 'new factory value')
@@ -208,7 +226,7 @@ test.group('Hard timeout', () => {
       .create()
 
     const now = Date.now()
-    const r1 = cache.getOrSet('key', slowFactory(400, 'new factory value'))
+    const r1 = cache.getOrSet({ key: 'key', factory: slowFactory(400, 'new factory value') })
     await assert.rejects(async () => r1, new E_FACTORY_HARD_TIMEOUT().message)
 
     const elapsed = Date.now() - now
@@ -225,12 +243,12 @@ test.group('Hard timeout', () => {
       .withL1L2Config()
       .create()
 
-    const r1 = cache.getOrSet('key', slowFactory(400, 'new factory value'))
+    const r1 = cache.getOrSet({ key: 'key', factory: slowFactory(400, 'new factory value') })
     await assert.rejects(async () => r1, new E_FACTORY_HARD_TIMEOUT().message)
 
     await setTimeout(410)
 
-    const r2 = await cache.get('key')
+    const r2 = await cache.get({ key: 'key' })
     assert.equal(r2, 'new factory value')
   })
 
@@ -244,10 +262,10 @@ test.group('Hard timeout', () => {
       .withL1L2Config()
       .create()
 
-    await cache.set('key', 'graced value')
+    await cache.set({ key: 'key', value: 'graced value' })
     await setTimeout(150)
 
-    const r1 = await cache.getOrSet('key', slowFactory(400, 'new factory value'))
+    const r1 = await cache.getOrSet({ key: 'key', factory: slowFactory(400, 'new factory value') })
 
     await setTimeout(210)
 

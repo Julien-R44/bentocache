@@ -25,15 +25,15 @@ test.group('Typings', () => {
   test('get() typings on cache', async ({ expectTypeOf }) => {
     const { cache } = new CacheFactory().create()
 
-    const r1 = await cache.get<string>('key')
-    const r2 = await cache.get('key', 'hey')
-    const r3 = await cache.get('key', () => 'hey')
-    const r4 = await cache.get('key', () => 10)
-    const r5 = await cache.get('key', () => ({ foo: 'bar' }))
-    const r6 = await cache.get('key', { bar: 'foo' })
-    const r7 = await cache.get('key')
+    const r1 = await cache.get<string>({ key: 'key' })
+    const r2 = await cache.get({ key: 'key', defaultValue: 'hey' })
+    const r3 = await cache.get({ key: 'key', defaultValue: () => 'hey' })
+    const r4 = await cache.get({ key: 'key', defaultValue: () => 10 })
+    const r5 = await cache.get({ key: 'key', defaultValue: () => ({ foo: 'bar' }) })
+    const r6 = await cache.get({ key: 'key', defaultValue: { bar: 'foo' } })
+    const r7 = await cache.get({ key: 'key' })
 
-    expectTypeOf(r1).toEqualTypeOf<string | null | undefined>()
+    expectTypeOf(r1).toEqualTypeOf<string>()
     expectTypeOf(r2).toEqualTypeOf<string>()
     expectTypeOf(r3).toEqualTypeOf<string>()
     expectTypeOf(r4).toEqualTypeOf<number>()
@@ -45,16 +45,16 @@ test.group('Typings', () => {
   test('get() typings on bento', async ({ expectTypeOf }) => {
     const { bento } = new BentoCacheFactory().create()
 
-    const r1 = await bento.get<string>('key')
-    const r2 = await bento.get('key', 'hey')
-    const r3 = await bento.get('key', () => 'hey')
-    const r4 = await bento.get('key', () => 10)
-    const r5 = await bento.get('key', () => ({ foo: 'bar' }))
-    const r6 = await bento.get('key', { bar: 'foo' })
-    const r7 = await bento.use('secondary').get('key', { bar: 'foo' })
-    const r8 = await bento.get('key')
+    const r1 = await bento.get<string>({ key: 'key' })
+    const r2 = await bento.get({ key: 'key', defaultValue: 'hey' })
+    const r3 = await bento.get({ key: 'key', defaultValue: () => 'hey' })
+    const r4 = await bento.get({ key: 'key', defaultValue: () => 10 })
+    const r5 = await bento.get({ key: 'key', defaultValue: () => ({ foo: 'bar' }) })
+    const r6 = await bento.get({ key: 'key', defaultValue: { bar: 'foo' } })
+    const r7 = await bento.use('secondary').get({ key: 'key', defaultValue: { bar: 'foo' } })
+    const r8 = await bento.get({ key: 'key' })
 
-    expectTypeOf(r1).toEqualTypeOf<string | null | undefined>()
+    expectTypeOf(r1).toEqualTypeOf<string>()
     expectTypeOf(r2).toEqualTypeOf<string>()
     expectTypeOf(r3).toEqualTypeOf<string>()
     expectTypeOf(r4).toEqualTypeOf<number>()
@@ -87,9 +87,9 @@ test.group('Typings', () => {
   test('getOrSet() typings on cache', async ({ expectTypeOf }) => {
     const { cache } = new CacheFactory().create()
 
-    const r1 = await cache.getOrSet<string>('key', () => 'hey')
-    const r2 = await cache.getOrSet('key', () => 32)
-    const r3 = await cache.getOrSet('key', () => 50_000)
+    const r1 = await cache.getOrSet<string>({ key: 'key', factory: () => 'hey' })
+    const r2 = await cache.getOrSet({ key: 'key', factory: () => 32 })
+    const r3 = await cache.getOrSet({ key: 'key', factory: () => 50_000 })
     const r4 = await cache.getOrSet({
       key: 'key',
       ttl: 1000,
@@ -105,9 +105,9 @@ test.group('Typings', () => {
   test('getOrSet() typings on bento', async ({ expectTypeOf }) => {
     const { bento } = new BentoCacheFactory().create()
 
-    const r1 = await bento.getOrSet<string>('key', () => 'hey')
-    const r2 = await bento.getOrSet('key', () => 32)
-    const r3 = await bento.getOrSet('key', () => 50_000)
+    const r1 = await bento.getOrSet<string>({ key: 'key', factory: () => 'hey' })
+    const r2 = await bento.getOrSet({ key: 'key', factory: () => 32 })
+    const r3 = await bento.getOrSet({ key: 'key', factory: () => 50_000 })
     const r4 = await bento.getOrSet({
       key: 'key',
       ttl: 1000,
@@ -134,7 +134,7 @@ test.group('Typings', () => {
   test('getOrSet() options parameters typings', async ({ expectTypeOf }) => {
     const { bento } = new BentoCacheFactory().create()
 
-    expectTypeOf(bento.getOrSet).parameter(2).exclude(undefined).toMatchTypeOf<{
+    expectTypeOf(bento.getOrSet).parameter(0).exclude(undefined).toMatchTypeOf<{
       ttl?: Duration
       timeouts?: FactoryTimeoutOptions
       grace?: false | Duration
@@ -146,25 +146,25 @@ test.group('Typings', () => {
   test('get() options parameters typings', async ({ expectTypeOf }) => {
     const { bento } = new BentoCacheFactory().create()
 
-    expectTypeOf(bento.get).parameter(2).exclude(undefined).not.toHaveProperty('lockTimeout')
-    expectTypeOf(bento.get).parameter(2).exclude(undefined).not.toHaveProperty('timeouts')
+    expectTypeOf(bento.get).parameter(0).exclude(undefined).not.toHaveProperty('lockTimeout')
+    expectTypeOf(bento.get).parameter(0).exclude(undefined).not.toHaveProperty('timeouts')
   })
 
   test('delete() options parameters typings', async ({ expectTypeOf }) => {
     const { bento } = new BentoCacheFactory().create()
 
-    expectTypeOf(bento.delete).parameter(1).exclude(undefined).not.toHaveProperty('lockTimeout')
-    expectTypeOf(bento.delete).parameter(1).exclude(undefined).not.toHaveProperty('timeouts')
-    expectTypeOf(bento.delete).parameter(2).exclude(undefined).toHaveProperty('suppressL2Errors')
+    expectTypeOf(bento.delete).parameter(0).exclude(undefined).not.toHaveProperty('lockTimeout')
+    expectTypeOf(bento.delete).parameter(0).exclude(undefined).not.toHaveProperty('timeouts')
+    expectTypeOf(bento.delete).parameter(0).exclude(undefined).toHaveProperty('suppressL2Errors')
   })
 
   test('deleteMany() options parameters typings', async ({ expectTypeOf }) => {
     const { bento } = new BentoCacheFactory().create()
 
-    expectTypeOf(bento.deleteMany).parameter(1).exclude(undefined).not.toHaveProperty('lockTimeout')
-    expectTypeOf(bento.deleteMany).parameter(1).exclude(undefined).not.toHaveProperty('timeouts')
+    expectTypeOf(bento.deleteMany).parameter(0).exclude(undefined).not.toHaveProperty('lockTimeout')
+    expectTypeOf(bento.deleteMany).parameter(0).exclude(undefined).not.toHaveProperty('timeouts')
     expectTypeOf(bento.deleteMany)
-      .parameter(2)
+      .parameter(0)
       .exclude(undefined)
       .toHaveProperty('suppressL2Errors')
   })
@@ -172,7 +172,7 @@ test.group('Typings', () => {
   test('set() options parameters typings', async ({ expectTypeOf }) => {
     const { bento } = new BentoCacheFactory().create()
 
-    expectTypeOf(bento.set).parameter(2).exclude(undefined).toMatchTypeOf<{
+    expectTypeOf(bento.set).parameter(0).exclude(undefined).toMatchTypeOf<{
       ttl?: Duration
       timeouts?: FactoryTimeoutOptions
       grace?: false | Duration
@@ -184,7 +184,7 @@ test.group('Typings', () => {
   test('setForever() options parameters typings', async ({ expectTypeOf }) => {
     const { bento } = new BentoCacheFactory().create()
 
-    expectTypeOf(bento.setForever).parameter(2).exclude(undefined).toMatchTypeOf<{
+    expectTypeOf(bento.setForever).parameter(0).exclude(undefined).toMatchTypeOf<{
       ttl?: Duration
       timeouts?: FactoryTimeoutOptions
       grace?: false | Duration
@@ -208,6 +208,6 @@ test.group('Typings', () => {
     })
 
     // @ts-expect-error - should not accept ttl
-    bento.getOrSetForever('foo', () => 'bar', { ttl: 100 })
+    bento.getOrSetForever({ key: 'foo', factory: () => 'bar', ttl: '50ms' })
   })
 })

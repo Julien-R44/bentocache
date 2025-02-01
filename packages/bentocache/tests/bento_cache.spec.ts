@@ -47,8 +47,8 @@ test.group('Bento Cache', () => {
     bento.on('cache:hit', listener)
     bento.off('cache:hit', listener)
 
-    await bento.set('foo', 'bar')
-    await bento.get('foo')
+    await bento.set({ key: 'foo', value: 'bar' })
+    await bento.get({ key: 'foo' })
   })
 
   test('instances of cache should be cached and re-used', async ({ assert }) => {
@@ -85,9 +85,9 @@ test.group('Bento Cache', () => {
 
     cleanup(() => bento.disconnectAll())
 
-    await bento.use('multi').set('foo', 'bar')
+    await bento.use('multi').set({ key: 'foo', value: 'bar' })
 
-    assert.equal(await bento.use('multi').get('foo'), 'bar')
+    assert.equal(await bento.use('multi').get({ key: 'foo' }), 'bar')
   })
 
   test('use custom logger', async ({ assert, cleanup }) => {
@@ -121,8 +121,8 @@ test.group('Bento Cache', () => {
       await bento.disconnectAll()
     })
 
-    await bento.use('a1').set('foo', 'bar')
-    await bento.use('a2').set('foo', 'baz')
+    await bento.use('a1').set({ key: 'foo', value: 'bar' })
+    await bento.use('a2').set({ key: 'foo', value: 'baz' })
 
     assert.include(await redis.get('one:foo'), '"bar"')
     assert.include(await redis.get('two:foo'), '"baz"')
@@ -149,8 +149,8 @@ test.group('Bento Cache', () => {
       await bento.disconnectAll()
     })
 
-    await bento.use('a1').set('foo', 'bar')
-    await bento.use('a2').set('foo', 'baz')
+    await bento.use('a1').set({ key: 'foo', value: 'bar' })
+    await bento.use('a2').set({ key: 'foo', value: 'baz' })
 
     const a1Ttl = await redis.ttl('one:foo')
     const a2Ttl = await redis.ttl('two:foo')
@@ -182,8 +182,8 @@ test.group('Bento Cache', () => {
       await bento.disconnectAll()
     })
 
-    await bento.use('a1').set('foo', 'bar')
-    await bento.use('a2').set('foo', 'baz')
+    await bento.use('a1').set({ key: 'foo', value: 'bar' })
+    await bento.use('a2').set({ key: 'foo', value: 'baz' })
 
     const a1Ttl = await redis.ttl('one:foo')
     const a2Ttl = await redis.ttl('two:foo')

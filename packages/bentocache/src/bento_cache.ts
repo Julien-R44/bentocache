@@ -5,24 +5,16 @@ import { CacheStack } from './cache/stack/cache_stack.js'
 import { BentoCacheOptions } from './bento_cache_options.js'
 import type {
   CacheEvents,
-  Factory,
-  GetOrSetOptions,
   RawBentoCacheOptions,
-  GetOptions,
-  DeleteOptions,
-  SetOptions,
   BentoCachePlugin,
-  HasOptions,
   ClearOptions,
-  GetSetFactory,
-  GetOrSetForeverPojoOptions,
-  GetOrSetPojoOptions,
-  GetPojoOptions,
-  SetPojoOptions,
-  HasPojoOptions,
-  DeletePojoOptions,
-  DeleteManyPojoOptions,
   GetOrSetForeverOptions,
+  GetOrSetOptions,
+  GetOptions,
+  SetOptions,
+  HasOptions,
+  DeleteOptions,
+  DeleteManyOptions,
 } from './types/main.js'
 
 export class BentoCache<KnownCaches extends Record<string, BentoStore>> implements CacheProvider {
@@ -139,97 +131,54 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
   /**
    * Get a value from the cache
    */
-  get<T = any>(options: GetPojoOptions<T>): Promise<T>
-  get<T = any>(key: string): Promise<T | null | undefined>
-  get<T = any>(key: string, defaultValue: Factory<T>, options?: GetOptions): Promise<T>
-  async get<T = any>(
-    keyOrOptions: string | GetPojoOptions<T>,
-    defaultValue?: Factory<T>,
-    rawOptions?: GetOptions,
-  ): Promise<T> {
-    if (typeof keyOrOptions === 'string') {
-      return this.use().get<T>(keyOrOptions, defaultValue, rawOptions)
-    }
-
-    return this.use().get<T>(keyOrOptions)
+  async get<T = any>(options: GetOptions<T>): Promise<T> {
+    return this.use().get<T>(options)
   }
 
   /**
    * Put a value in the cache
    * Returns true if the value was set, false otherwise
    */
-  async set(keyOrOptions: string | SetPojoOptions, value?: any, options?: SetOptions) {
-    if (typeof keyOrOptions === 'string') {
-      return this.use().set(keyOrOptions, value, options)
-    }
-
-    return this.use().set(keyOrOptions)
+  async set(options: SetOptions) {
+    return this.use().set(options)
   }
 
   /**
    * Put a value in the cache forever
    * Returns true if the value was set, false otherwise
    */
-  async setForever(keyOrOptions: string | SetPojoOptions, value?: any, options?: SetOptions) {
-    if (typeof keyOrOptions === 'string') {
-      return this.use().setForever(keyOrOptions, value, options)
-    }
-
-    return this.use().setForever(keyOrOptions)
+  async setForever(options: SetOptions) {
+    return this.use().setForever(options)
   }
 
   /**
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory and return it
    */
-  async getOrSet<T>(
-    keyOrOptions: string | GetOrSetPojoOptions<T>,
-    factory?: GetSetFactory<T>,
-    options?: GetOrSetOptions,
-  ): Promise<T> {
-    if (typeof keyOrOptions === 'string') {
-      return this.use().getOrSet(keyOrOptions, factory!, options)
-    }
-
-    return this.use().getOrSet(keyOrOptions)
+  async getOrSet<T>(options: GetOrSetOptions<T>): Promise<T> {
+    return this.use().getOrSet(options)
   }
 
   /**
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory forever and return it
    */
-  getOrSetForever<T>(
-    key: string | GetOrSetForeverPojoOptions<T>,
-    cb?: GetSetFactory<T>,
-    opts?: GetOrSetForeverOptions,
-  ): Promise<T> {
-    if (typeof key === 'string') {
-      return this.use().getOrSetForever(key, cb!, opts)
-    }
-
-    return this.use().getOrSetForever(key)
+  getOrSetForever<T>(options: GetOrSetForeverOptions<T>): Promise<T> {
+    return this.use().getOrSetForever(options)
   }
 
   /**
    * Check if a key exists in the cache
    */
-  async has(keyOrOptions: string | HasPojoOptions, options?: HasOptions) {
-    if (typeof keyOrOptions === 'string') {
-      return this.use().has(keyOrOptions, options)
-    }
-
-    return this.use().has(keyOrOptions)
+  async has(options: HasOptions) {
+    return this.use().has(options)
   }
 
   /**
    * Check if key is missing in the cache
    */
-  async missing(keyOrOptions: string | HasPojoOptions, options?: HasOptions) {
-    if (typeof keyOrOptions === 'string') {
-      return this.use().missing(keyOrOptions, options)
-    }
-
-    return this.use().missing(keyOrOptions)
+  async missing(options: HasOptions) {
+    return this.use().missing(options)
   }
 
   /**
@@ -245,26 +194,15 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    * Delete a key from the cache
    * Returns true if the key was deleted, false otherwise
    */
-  async delete(keyOrOptions: string | DeletePojoOptions, options?: DeleteOptions) {
-    if (typeof keyOrOptions === 'string') {
-      return this.use().delete(keyOrOptions, options)
-    }
-
+  async delete(keyOrOptions: DeleteOptions) {
     return this.use().delete(keyOrOptions)
   }
 
   /**
    * Delete multiple keys from the cache
    */
-  async deleteMany(
-    keysOrOptions: string[] | DeleteManyPojoOptions,
-    options?: DeleteOptions,
-  ): Promise<boolean> {
-    if (Array.isArray(keysOrOptions)) {
-      return this.use().deleteMany(keysOrOptions, options)
-    }
-
-    return this.use().deleteMany(keysOrOptions)
+  async deleteMany(options: DeleteManyOptions): Promise<boolean> {
+    return this.use().deleteMany(options)
   }
 
   /**

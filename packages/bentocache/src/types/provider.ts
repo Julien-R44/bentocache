@@ -1,19 +1,12 @@
-import type { Factory, GetSetFactory } from './helpers.js'
 import type {
   ClearOptions,
-  DeleteManyPojoOptions,
+  DeleteManyOptions,
   DeleteOptions,
-  DeletePojoOptions,
-  GetOptions,
   GetOrSetForeverOptions,
-  GetOrSetForeverPojoOptions,
   GetOrSetOptions,
-  GetOrSetPojoOptions,
-  GetPojoOptions,
+  GetOptions,
   HasOptions,
-  HasPojoOptions,
   SetOptions,
-  SetPojoOptions,
 } from './main.js'
 
 /**
@@ -25,50 +18,38 @@ export interface CacheProvider {
    * Set a value in the cache
    * Returns true if the value was set, false otherwise
    */
-  set(options: SetPojoOptions): Promise<boolean>
-  set(key: string, value: any, options?: SetOptions): Promise<boolean>
+  set(options: SetOptions): Promise<boolean>
 
   /**
    * Set a value in the cache forever
    */
-  setForever(options: SetPojoOptions): Promise<boolean>
-  setForever(key: string, value: any, options?: SetOptions): Promise<boolean>
+  setForever(options: SetOptions): Promise<boolean>
 
   /**
    * Get a value from the cache, fallback to a default value
    * and set options
    */
-  get<T = any>(options: GetPojoOptions<T>): Promise<T>
-  get<T = any>(key: string, defaultValue?: Factory<T>, options?: GetOptions): Promise<T>
-  get<T = any>(key: string): Promise<T | null | undefined>
+  get<T = any>(options: GetOptions<T>): Promise<T>
 
   /**
    * Get or set a value in the cache
    */
-  getOrSet<T>(options: GetOrSetPojoOptions<T>): Promise<T>
-  getOrSet<T>(
-    key: string,
-    factory: GetSetFactory<T>,
-    options?: GetSetFactory<T> | GetOrSetOptions,
-  ): Promise<T>
+  getOrSet<T>(options: GetOrSetOptions<T>): Promise<T>
 
   /**
    * Get or set a value in the cache forever
    */
-  getOrSetForever<T>(options: GetOrSetForeverPojoOptions<T>): Promise<T>
-  getOrSetForever<T>(key: string, cb: GetSetFactory<T>, opts?: GetOrSetForeverOptions): Promise<T>
+  getOrSetForever<T>(options: GetOrSetForeverOptions<T>): Promise<T>
 
   /**
    * Check if a key exists in the cache
    */
-  has(options: HasPojoOptions): Promise<boolean>
-  has(key: string, options?: HasOptions): Promise<boolean>
+  has(options: HasOptions): Promise<boolean>
 
   /**
    * Check if a key is missing from the cache
    */
-  missing(options: HasPojoOptions): Promise<boolean>
-  missing(key: string, options?: HasOptions): Promise<boolean>
+  missing(options: HasOptions): Promise<boolean>
 
   /**
    * Get the value of a key and delete it
@@ -81,14 +62,12 @@ export interface CacheProvider {
    * Delete a key from the cache
    * Returns true if the key was deleted, false otherwise
    */
-  delete(options: DeletePojoOptions): Promise<boolean>
-  delete(key: string, options?: DeleteOptions): Promise<boolean>
+  delete(options: DeleteOptions): Promise<boolean>
 
   /**
    * Delete multiple keys from the cache
    */
-  deleteMany(options: DeleteManyPojoOptions): Promise<boolean>
-  deleteMany(keys: string[], options?: DeleteOptions): Promise<boolean>
+  deleteMany(options: DeleteManyOptions): Promise<boolean>
 
   /**
    * Remove all items from the cache

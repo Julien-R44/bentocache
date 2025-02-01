@@ -5,21 +5,14 @@ import type { CacheProvider } from '../types/provider.js'
 import { GetSetHandler } from './get_set/get_set_handler.js'
 import { CacheStackWriter } from './stack/cache_stack_writer.js'
 import type {
-  GetOrSetOptions,
   Factory,
+  ClearOptions,
+  GetOrSetOptions,
   GetOptions,
-  DeleteOptions,
   SetOptions,
   HasOptions,
-  ClearOptions,
-  GetSetFactory,
-  GetOrSetPojoOptions,
-  GetPojoOptions,
-  SetPojoOptions,
-  HasPojoOptions,
-  DeletePojoOptions,
-  DeleteManyPojoOptions,
-  GetOrSetForeverPojoOptions,
+  DeleteOptions,
+  DeleteManyOptions,
   GetOrSetForeverOptions,
 } from '../types/main.js'
 
@@ -52,27 +45,11 @@ export class Cache implements CacheProvider {
     return new Cache(this.name, this.#stack.namespace(namespace))
   }
 
-  get<T = any>(options: GetPojoOptions<T>): Promise<T>
-  get<T = any>(key: string): Promise<T | null | undefined>
-  get<T = any>(key: string, defaultValue: Factory<T>, options?: GetOptions): Promise<T>
-  async get<T = any>(
-    keyOrOptions: string | GetPojoOptions<T>,
-    defaultValue?: Factory<T>,
-    rawOptions?: GetOptions,
-  ): Promise<T | undefined | null> {
-    let key: string
-    let providedOptions: GetOptions
-    let defaultValueFn: Factory<T>
-
-    if (typeof keyOrOptions === 'string') {
-      key = keyOrOptions
-      providedOptions = rawOptions ?? {}
-      defaultValueFn = this.#resolveDefaultValue(defaultValue)
-    } else {
-      key = keyOrOptions.key
-      providedOptions = keyOrOptions
-      defaultValueFn = this.#resolveDefaultValue(keyOrOptions.defaultValue)
-    }
+  get<T = any>(options: GetOptions<T>): Promise<T>
+  async get<T = any>(keyOrOptions: GetOptions<T>): Promise<T | undefined | null> {
+    const key = keyOrOptions.key
+    const providedOptions = keyOrOptions
+    const defaultValueFn = this.#resolveDefaultValue(keyOrOptions.defaultValue)
 
     const options = this.#stack.defaultOptions.cloneWith(providedOptions)
     const localItem = this.#stack.l1?.get(key, options)
@@ -114,68 +91,43 @@ export class Cache implements CacheProvider {
    * Set a value in the cache
    * Returns true if the value was set, false otherwise
    */
-  async set(keyOrOptions: string | SetPojoOptions, value?: any, rawOptions?: SetOptions) {
-    if (typeof keyOrOptions === 'string') {
-      const options = this.#stack.defaultOptions.cloneWith(rawOptions)
-      return this.#cacheWriter.set(keyOrOptions, value, options)
-    }
-
-    const options = this.#stack.defaultOptions.cloneWith(keyOrOptions)
-    return this.#cacheWriter.set(keyOrOptions.key, keyOrOptions.value, options)
+  async set(options: SetOptions) {
+    const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
+    return this.#cacheWriter.set(options.key, options.value, cacheOptions)
   }
 
   /**
    * Set a value in the cache forever
    * Returns true if the value was set, false otherwise
    */
-  async setForever<T>(keyOrOptions: string | SetPojoOptions, value?: T, rawOptions?: SetOptions) {
-    return this.set(keyOrOptions, value, { ttl: null, ...rawOptions })
+  async setForever(options: SetOptions) {
+    return this.set({ ttl: null, ...options })
   }
 
   /**
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory and return it
    */
-  async getOrSet<T>(
-    keyOrOptions: string | GetOrSetPojoOptions<T>,
-    factory?: GetSetFactory<T>,
-    options?: GetOrSetOptions,
-  ): Promise<T> {
-    if (typeof keyOrOptions === 'string') {
-      const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
-      return this.#getSetHandler.handle(keyOrOptions, factory, cacheOptions)
-    }
-
-    const cacheOptions = this.#stack.defaultOptions.cloneWith(keyOrOptions)
-    return this.#getSetHandler.handle(keyOrOptions.key, keyOrOptions.factory, cacheOptions)
+  async getOrSet<T>(options: GetOrSetOptions<T>): Promise<T> {
+    const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
+    return this.#getSetHandler.handle(options.key, options.factory, cacheOptions)
   }
 
   /**
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory forever and return it
    */
-  async getOrSetForever<T>(
-    keyOrOptions: string | GetOrSetForeverPojoOptions<T>,
-    factory?: GetSetFactory<T>,
-    options?: GetOrSetForeverOptions,
-  ): Promise<T> {
-    if (typeof keyOrOptions === 'string') {
-      const cacheOptions = this.#stack.defaultOptions.cloneWith({ ttl: null, ...options })
-      return this.#getSetHandler.handle(keyOrOptions, factory, cacheOptions)
-    }
-
-    const cacheOptions = this.#stack.defaultOptions.cloneWith({ ttl: null, ...keyOrOptions })
-    return this.#getSetHandler.handle(keyOrOptions.key, keyOrOptions.factory, cacheOptions)
+  async getOrSetForever<T>(options: GetOrSetForeverOptions<T>): Promise<T> {
+    const cacheOptions = this.#stack.defaultOptions.cloneWith({ ttl: null, ...options })
+    return this.#getSetHandler.handle(options.key, options.factory, cacheOptions)
   }
 
   /**
    * Check if a key exists in the cache
    */
-  async has(keyOrOptions: string | HasPojoOptions, options?: HasOptions) {
-    const key = typeof keyOrOptions === 'string' ? keyOrOptions : keyOrOptions.key
-    const providedOptions = typeof keyOrOptions === 'string' ? options : keyOrOptions
-
-    const cacheOptions = this.#stack.defaultOptions.cloneWith(providedOptions)
+  async has(options: HasOptions) {
+    const key = options.key
+    const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
 
     const inRemote = await this.#stack.l2?.has(key, cacheOptions)
     const inLocal = this.#stack.l1?.has(key)
@@ -186,8 +138,8 @@ export class Cache implements CacheProvider {
   /**
    * Check if key is missing in the cache
    */
-  async missing(keyOrOptions: string | HasPojoOptions, options?: HasOptions) {
-    return !(await this.has(keyOrOptions, options))
+  async missing(options: HasOptions) {
+    return !(await this.has(options))
   }
 
   /**
@@ -195,8 +147,8 @@ export class Cache implements CacheProvider {
    * Returns the value if the key exists, undefined otherwise
    */
   async pull<T = any>(key: string): Promise<T | undefined | null> {
-    const value = await this.get<T>(key)
-    await this.delete(key)
+    const value = await this.get<T>({ key })
+    await this.delete({ key })
     return value
   }
 
@@ -204,19 +156,14 @@ export class Cache implements CacheProvider {
    * Delete a key from the cache, emit cache:deleted event and
    * publish invalidation through the bus
    */
-  async delete(
-    keyOrOptions: string | DeletePojoOptions,
-    rawOptions?: DeleteOptions,
-  ): Promise<boolean> {
-    const isPojo = typeof keyOrOptions !== 'string'
-    const key = isPojo ? keyOrOptions.key : keyOrOptions
-    const options = this.#stack.defaultOptions.cloneWith(isPojo ? keyOrOptions : rawOptions)
+  async delete(options: DeleteOptions): Promise<boolean> {
+    const key = options.key
+    const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
 
-    this.#stack.l1?.delete(key, options)
-    await this.#stack.l2?.delete(key, options)
+    this.#stack.l1?.delete(key, cacheOptions)
+    await this.#stack.l2?.delete(key, cacheOptions)
 
     this.#stack.emit(new events.CacheDeleted(key, this.name))
-
     await this.#stack.publish({ type: CacheBusMessageType.Delete, keys: [key] })
 
     return true
@@ -227,19 +174,14 @@ export class Cache implements CacheProvider {
    * Then emit cache:deleted events for each key
    * And finally publish invalidation through the bus
    */
-  async deleteMany(
-    keysOrOptions: string[] | DeleteManyPojoOptions,
-    rawOptions?: DeleteOptions,
-  ): Promise<boolean> {
-    const isPojo = !Array.isArray(keysOrOptions)
-    const options = this.#stack.defaultOptions.cloneWith(isPojo ? keysOrOptions : rawOptions)
-    const keys = isPojo ? keysOrOptions.keys : keysOrOptions
+  async deleteMany(options: DeleteManyOptions): Promise<boolean> {
+    const keys = options.keys
+    const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
 
-    this.#stack.l1?.deleteMany(keys, options)
-    await this.#stack.l2?.deleteMany(keys, options)
+    this.#stack.l1?.deleteMany(keys, cacheOptions)
+    await this.#stack.l2?.deleteMany(keys, cacheOptions)
 
     keys.forEach((key) => this.#stack.emit(new events.CacheDeleted(key, this.name)))
-
     await this.#stack.publish({ type: CacheBusMessageType.Delete, keys })
 
     return true

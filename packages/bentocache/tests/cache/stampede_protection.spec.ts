@@ -15,7 +15,7 @@ test.group('Cache | Stampede protection', () => {
       .withL1L2Config()
       .create()
 
-    await cache.set('key', 'value', { ttl: '100ms' })
+    await cache.set({ key: 'key', value: 'value', ttl: '100ms' })
     await setTimeout(110)
 
     let factoryCalls = 0
@@ -28,7 +28,7 @@ test.group('Cache | Stampede protection', () => {
     const promises = []
 
     for (let i = 0; i < 100; i++) {
-      promises.push(cache.getOrSet('key', factory))
+      promises.push(cache.getOrSet({ key: 'key', factory }))
       await setTimeout(1)
     }
 
@@ -55,11 +55,11 @@ test.group('Cache | Stampede protection', () => {
       .create()
 
     const results = await Promise.all([
-      cache.getOrSet('key', async () => 42),
-      cache.getOrSet('key', async () => 42),
-      cache.getOrSet('key', async () => 42),
-      cache.getOrSet('key', async () => 42),
-      cache.getOrSet('key', async () => 42),
+      cache.getOrSet({ key: 'key', factory: async () => 42 }),
+      cache.getOrSet({ key: 'key', factory: async () => 42 }),
+      cache.getOrSet({ key: 'key', factory: async () => 42 }),
+      cache.getOrSet({ key: 'key', factory: async () => 42 }),
+      cache.getOrSet({ key: 'key', factory: async () => 42 }),
     ])
 
     assert.deepEqual(results, [42, 42, 42, 42, 42])
@@ -77,8 +77,8 @@ test.group('Cache | Stampede protection', () => {
     }
 
     const results = await Promise.all([
-      cache.getOrSet('key', factory),
-      cache.getOrSet('key', factory),
+      cache.getOrSet({ key: 'key', factory }),
+      cache.getOrSet({ key: 'key', factory }),
     ])
 
     assert.deepEqual(results, ['value', 'value'])
@@ -96,8 +96,8 @@ test.group('Cache | Stampede protection', () => {
     }
 
     const results = await Promise.all([
-      cache.getOrSetForever('key', factory),
-      cache.getOrSetForever('key', factory),
+      cache.getOrSetForever({ key: 'key', factory }),
+      cache.getOrSetForever({ key: 'key', factory }),
     ])
 
     assert.deepEqual(results, ['value', 'value'])
@@ -108,10 +108,13 @@ test.group('Cache | Stampede protection', () => {
     const { cache } = new CacheFactory().withL1L2Config().create()
 
     const results = await Promise.allSettled([
-      cache.getOrSet('key', throwingFactory('foo')),
-      cache.getOrSet('key', async () => {
-        await setTimeout(100)
-        return 'value'
+      cache.getOrSet({ key: 'key', factory: throwingFactory('foo') }),
+      cache.getOrSet({
+        key: 'key',
+        factory: async () => {
+          await setTimeout(100)
+          return 'value'
+        },
       }),
     ])
 
@@ -134,7 +137,7 @@ test.group('Cache | Stampede protection', () => {
       }
 
       const results = await Promise.all(
-        Array.from({ length: concurrency }).map(() => cache.getOrSet('key', factory)),
+        Array.from({ length: concurrency }).map(() => cache.getOrSet({ key: 'key', factory })),
       )
 
       assert.deepEqual(results, Array.from({ length: concurrency }).fill('value'))
@@ -157,7 +160,7 @@ test.group('Cache | Stampede protection', () => {
       }
 
       const results = await Promise.all(
-        Array.from({ length: concurrency }).map(() => cache.getOrSet('key', factory)),
+        Array.from({ length: concurrency }).map(() => cache.getOrSet({ key: 'key', factory })),
       )
 
       assert.deepEqual(results, Array.from({ length: concurrency }).fill('value'))
@@ -181,7 +184,7 @@ test.group('Cache | Stampede protection', () => {
       }
 
       const results = await Promise.all(
-        Array.from({ length: concurrency }).map(() => cache.getOrSet('key', factory)),
+        Array.from({ length: concurrency }).map(() => cache.getOrSet({ key: 'key', factory })),
       )
 
       assert.deepEqual(results, Array.from({ length: concurrency }).fill('value'))
