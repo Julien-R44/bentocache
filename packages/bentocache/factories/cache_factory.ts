@@ -1,5 +1,6 @@
 import lodash from '@poppinss/utils/lodash'
 import { getActiveTest } from '@japa/runner'
+import { hybridReturn } from '@julr/utils/misc'
 import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
 import { Cache } from '../src/cache/cache.js'
@@ -8,7 +9,6 @@ import { MemoryDriver } from '../src/drivers/memory.js'
 import type { CacheStackDrivers } from '../src/types/main.js'
 import { CacheStack } from '../src/cache/stack/cache_stack.js'
 import { BentoCacheOptions } from '../src/bento_cache_options.js'
-import { createIsomorphicDestructurable } from '../src/helpers.js'
 import type { RawBentoCacheOptions } from '../src/types/options/options.js'
 
 /**
@@ -101,7 +101,7 @@ export class CacheFactory {
 
     if (autoCleanup) this.#cleanupCache(cache)
 
-    return createIsomorphicDestructurable(
+    return hybridReturn(
       { cache, local, remote, stack } as const,
       [cache, local, remote, stack] as const,
     )
