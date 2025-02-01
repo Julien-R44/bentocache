@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { setTimeout } from 'node:timers/promises'
+import { sleep } from '@julr/utils/misc'
 import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
 import { RedisDriver } from '../../src/drivers/redis.js'
@@ -217,7 +217,7 @@ test.group('Cache', () => {
       ttl: '10ms',
     })
 
-    await setTimeout(20)
+    await sleep(20)
 
     assert.isUndefined(await cache.get({ key: 'key1' }))
     assert.isUndefined(local.get('key1', stack.defaultOptions))
@@ -236,7 +236,7 @@ test.group('Cache', () => {
     const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
 
     // wait for expiration
-    await setTimeout(100)
+    await sleep(100)
 
     // get the value again
     const r2 = await cache.getOrSet({
@@ -261,7 +261,7 @@ test.group('Cache', () => {
       .create()
 
     const r1 = await cache.getOrSet({ key: 'key1', ttl: '10ms', factory: () => ({ foo: 'bar' }) })
-    await setTimeout(100)
+    await sleep(100)
 
     const r2 = await cache.getOrSet({ key: 'key1', ttl: '10ms', factory: () => ({ foo: 'baz' }) })
 
@@ -286,7 +286,7 @@ test.group('Cache', () => {
       factory: throwingFactory('error in factory'),
     })
 
-    await setTimeout(500)
+    await sleep(500)
 
     // re-get with throwing factory. out of grace period. should throws
     const r3 = cache.getOrSet({
@@ -308,12 +308,12 @@ test.group('Cache', () => {
 
     await cache.getOrSet({ key: 'key1', ttl: '10ms', factory: () => ({ foo: 'bar' }) })
 
-    await setTimeout(100)
+    await sleep(100)
 
     const entry = local.get('key1', stack.defaultOptions)
     assert.deepEqual(entry?.isLogicallyExpired(), true)
 
-    await setTimeout(2000)
+    await sleep(2000)
 
     const entry2 = local.get('key1', stack.defaultOptions)
     assert.isUndefined(entry2)
@@ -334,7 +334,7 @@ test.group('Cache', () => {
     remoteDriver.alwaysThrow()
 
     // wait till we enter the grace period
-    await setTimeout(100)
+    await sleep(100)
 
     // get the value again
     const r2 = cache.getOrSet({
@@ -368,7 +368,7 @@ test.group('Cache', () => {
     // then we update it from another cache
     await cache2.set({ key: 'foo', value: 'baz' })
 
-    await setTimeout(100)
+    await sleep(100)
 
     // so local cache of cache1 should be invalidated
     const r1 = local1.get('foo', stack.defaultOptions)
@@ -376,7 +376,7 @@ test.group('Cache', () => {
     // a get should return the new value
     const r2 = await cache1.get({ key: 'foo' })
 
-    await setTimeout(100)
+    await sleep(100)
 
     assert.isDefined(r1)
     assert.isBelow(r1!.getLogicalExpiration(), Date.now())
@@ -439,7 +439,7 @@ test.group('Cache', () => {
     // then we delete it from another cache
     await cache2.deleteMany({ keys: ['foo', 'bar'] })
 
-    await setTimeout(100)
+    await sleep(100)
 
     // so local cache of cache1 should be invalidated
     const r1 = local1.get('foo', stack.defaultOptions)
@@ -467,7 +467,7 @@ test.group('Cache', () => {
     remoteDriver.alwaysThrow()
     await cache2.deleteMany({ keys: ['foo', 'bar'] })
 
-    await setTimeout(100)
+    await sleep(100)
 
     // so local cache of cache1 should be invalidated
     const r1 = local1.get('foo', stack.defaultOptions)
@@ -533,7 +533,7 @@ test.group('Cache', () => {
     // then we delete it from another cache
     await cache2.delete({ key: 'foo' })
 
-    await setTimeout(100)
+    await sleep(100)
 
     // so local cache of cache1 should be invalidated
     const r1 = local1.get('foo', stack.defaultOptions)
@@ -561,7 +561,7 @@ test.group('Cache', () => {
     remoteDriver.alwaysThrow()
     await cache2.delete({ key: 'foo' })
 
-    await setTimeout(100)
+    await sleep(100)
 
     // so local cache of cache1 should be invalidated
     const r1 = local1.get('foo', stack.defaultOptions)

@@ -1,4 +1,4 @@
-import { setTimeout } from 'node:timers/promises'
+import { sleep } from '@julr/utils/misc'
 
 /**
  * Some utilities to simulate chaos in tests.
@@ -33,7 +33,7 @@ export class ChaosInjector {
    */
   async injectDelay() {
     const delay = this.#minDelay + Math.random() * (this.#maxDelay - this.#minDelay)
-    await setTimeout(delay)
+    await sleep(delay)
   }
 
   /**

@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { test } from '@japa/runner'
-import { setTimeout } from 'node:timers/promises'
+import { sleep } from '@julr/utils/misc'
 
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { throwingFactory, slowFactory } from '../helpers/index.js'
@@ -52,7 +52,7 @@ test.group('One tier tests', () => {
     const { cache } = new CacheFactory().withMemoryL1().merge({ grace: '4h' }).create()
 
     await cache.set({ key: 'key', value: 'value', ttl: '100ms' })
-    await setTimeout(100)
+    await sleep(100)
 
     const r1 = await cache.get({ key: 'key' })
     const r2 = await cache.get({ key: 'key', defaultValue: undefined, grace: false })
@@ -86,7 +86,7 @@ test.group('One tier tests', () => {
     const r1 = await cache.get({ key: 'key' })
 
     // wait til key expires
-    await setTimeout(100)
+    await sleep(100)
 
     // we should not get value since grace period is disabled globally
     const r2 = await cache.get({ key: 'key' })
@@ -121,10 +121,10 @@ test.group('One tier tests', () => {
 
     await cache.set({ key: 'key1', value: 'value1', ttl: '100ms' })
 
-    await setTimeout(100)
+    await sleep(100)
     const r1 = await cache.missing({ key: 'key1' })
 
-    await setTimeout(500)
+    await sleep(500)
     const r2 = await cache.missing({ key: 'key1' })
 
     assert.isFalse(r1)
@@ -147,11 +147,11 @@ test.group('One tier tests', () => {
     const { cache } = new CacheFactory().withMemoryL1().merge({ grace: '500ms' }).create()
 
     await cache.set({ key: 'key1', value: 'value1', ttl: '100ms' })
-    await setTimeout(100)
+    await sleep(100)
 
     const r1 = await cache.has({ key: 'key1' })
 
-    await setTimeout(500)
+    await sleep(500)
     const r2 = await cache.has({ key: 'key1' })
 
     assert.isTrue(r1)
@@ -178,7 +178,7 @@ test.group('One tier tests', () => {
     await cache.set({ key: 'key1', value: 'value1', ttl: '100ms' })
     await cache.set({ key: 'key2', value: 'bar' })
 
-    await setTimeout(100)
+    await sleep(100)
 
     await cache.delete({ key: 'key1' })
     await cache.delete({ key: 'key2' })
@@ -193,7 +193,7 @@ test.group('One tier tests', () => {
     await cache.set({ key: 'key1', value: 'value1', ttl: '100ms' })
     await cache.set({ key: 'key2', value: 'bar' })
 
-    await setTimeout(100)
+    await sleep(100)
 
     await cache.deleteMany({ keys: ['key1', 'key2'] })
 
@@ -219,7 +219,7 @@ test.group('One tier tests', () => {
     await cache.getOrSetForever({ key: 'key', factory: () => 'value' })
     assert.deepEqual(await cache.get({ key: 'key' }), 'value')
 
-    await setTimeout(100)
+    await sleep(100)
 
     assert.deepEqual(await cache.get({ key: 'key' }), 'value')
   })
@@ -248,7 +248,7 @@ test.group('One tier tests', () => {
     const { cache } = new CacheFactory().withMemoryL1().merge({ ttl: 10 }).create()
 
     await cache.setForever({ key: 'key', value: 'value' })
-    await setTimeout(30)
+    await sleep(30)
     assert.deepEqual(await cache.get({ key: 'key' }), 'value')
   })
 
@@ -290,7 +290,7 @@ test.group('One tier tests', () => {
     const { cache } = new CacheFactory().withMemoryL1().create()
 
     await cache.getOrSet({ key: 'key1', ttl: '10ms', factory: () => ({ foo: 'bar' }) })
-    await setTimeout(20)
+    await sleep(20)
 
     assert.isUndefined(await cache.get({ key: 'key1' }))
   })
@@ -302,7 +302,7 @@ test.group('One tier tests', () => {
 
     const result = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
 
-    await setTimeout(100)
+    await sleep(100)
     const result2 = await cache.getOrSet({
       key: 'key1',
       factory: () => {
@@ -326,7 +326,7 @@ test.group('One tier tests', () => {
 
     const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
 
-    await setTimeout(100)
+    await sleep(100)
 
     const r2 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'baz' }) })
 
@@ -344,12 +344,12 @@ test.group('One tier tests', () => {
     const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
 
     // wait til key is expired
-    await setTimeout(50)
+    await sleep(50)
 
     // should returns graced value
     const r2 = await cache.getOrSet({ key: 'key1', factory: throwingFactory() })
 
-    await setTimeout(300)
+    await sleep(300)
 
     // Graced value is now expired. Factory should be called
     const r3 = cache.getOrSet({ key: 'key1', factory: throwingFactory('Error in cb') })
@@ -370,7 +370,7 @@ test.group('One tier tests', () => {
     const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
 
     // wait til key is expired
-    await setTimeout(50)
+    await sleep(50)
 
     // should returns graced value
     const r2 = await cache.getOrSet({ key: 'key1', factory: throwingFactory('Error in cb') })
@@ -385,7 +385,7 @@ test.group('One tier tests', () => {
       },
     })
 
-    await setTimeout(800)
+    await sleep(800)
 
     // wait til graceBackoff is expired. Factory should be called
     const r4 = await cache.getOrSet({ key: 'key1', factory: async () => ({ foo: 'baz' }) })
@@ -407,13 +407,13 @@ test.group('One tier tests', () => {
     const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
 
     // wait for expiration
-    await setTimeout(100)
+    await sleep(100)
 
     // factory that will exceed soft timeout
     const r2 = await cache.getOrSet({ key: 'key1', factory: slowFactory(550, { foo: 'baz' }) })
 
     // wait til factory is done
-    await setTimeout(50)
+    await sleep(50)
 
     // get the value
     const r3 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bazzz' }) })

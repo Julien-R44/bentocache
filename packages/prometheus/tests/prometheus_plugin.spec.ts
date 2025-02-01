@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
+import { sleep } from '@julr/utils/misc'
 import { Registry, register } from 'prom-client'
-import { setTimeout } from 'node:timers/promises'
 import { BentoCache, bentostore } from 'bentocache'
 import { memoryDriver } from 'bentocache/drivers/memory'
 
@@ -54,7 +54,7 @@ test.group('Prometheus Plugin', () => {
 
     await bento.set('foo', 'bar', { ttl: 1, grace: '2' })
 
-    await setTimeout(400)
+    await sleep(400)
 
     await bento.getOrSet(
       'foo',

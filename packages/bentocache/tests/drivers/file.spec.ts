@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
 import { fileURLToPath } from 'node:url'
-import { setTimeout } from 'node:timers/promises'
+import { sleep } from '@julr/utils/misc'
 
 import { BASE_URL } from '../helpers/index.js'
 import { FileDriver } from '../../src/drivers/file/file.js'
@@ -32,7 +32,7 @@ test.group('File Driver | Prune', () => {
       driver.set('foo4', 'bar', undefined),
     ])
 
-    await setTimeout(1000)
+    await sleep(1000)
 
     assert.isFalse(await fs.exists('foo'))
     assert.isFalse(await fs.exists('foo2'))
@@ -56,7 +56,7 @@ test.group('File Driver | Prune', () => {
 
     await Promise.all([driver.set('foo2', 'bar', 300), driver.set('foo3:1', 'bar', 300)])
 
-    await setTimeout(1000)
+    await sleep(1000)
 
     assert.isTrue(await fs.exists('foo'))
     assert.isFalse(await fs.exists('foo2'))

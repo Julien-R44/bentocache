@@ -1,7 +1,7 @@
 import { test } from '@japa/runner'
 import EventEmitter from 'node:events'
+import { sleep } from '@julr/utils/misc'
 import { pEvent, pEventMultiple } from 'p-event'
-import { setTimeout } from 'node:timers/promises'
 import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
 import { throwingFactory } from './helpers/index.js'
@@ -178,7 +178,7 @@ test.group('Cache events', () => {
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter, grace: '2h' }).create()
 
     await cache.set({ key: 'foo', value: 'bar', ttl: '10ms' })
-    await setTimeout(50)
+    await sleep(50)
 
     cache.get({ key: 'foo' })
 
@@ -192,7 +192,7 @@ test.group('Cache events', () => {
     const { cache } = new CacheFactory().withL1L2Config().merge({ emitter, grace: '2h' }).create()
 
     await cache.set({ key: 'foo', value: 'bar', ttl: '10ms' })
-    await setTimeout(50)
+    await sleep(50)
 
     cache.getOrSet({ key: 'foo', factory: throwingFactory('foo') })
 

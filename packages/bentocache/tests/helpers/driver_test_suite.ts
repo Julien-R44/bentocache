@@ -1,7 +1,7 @@
 /// <reference types="@japa/assert" />
 
+import { sleep } from '@julr/utils/misc'
 import type { Group } from '@japa/runner/core'
-import { setTimeout } from 'node:timers/promises'
 import type { test as JapaTest } from '@japa/runner'
 
 import type { CacheDriver, CacheDriverOptions } from '../../src/types/main.js'
@@ -54,7 +54,7 @@ export function registerCacheDriverTestSuite(options: {
     await cache.set('key', 'value', 1500)
     assert.deepEqual(await cache.get('key'), 'value')
 
-    await setTimeout(2500)
+    await sleep(2500)
     assert.deepEqual(await cache.get('key'), undefined)
   })
 
@@ -126,7 +126,7 @@ export function registerCacheDriverTestSuite(options: {
   test('has() should not returns true for expired key', async ({ assert }) => {
     await cache.set('key1', 'value1', 10)
 
-    await setTimeout(sleepTime)
+    await sleep(sleepTime)
     assert.isFalse(await cache.has('key1'))
   })
 

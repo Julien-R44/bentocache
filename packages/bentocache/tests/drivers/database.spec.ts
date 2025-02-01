@@ -1,6 +1,6 @@
 import knex from 'knex'
 import { test } from '@japa/runner'
-import { setTimeout } from 'node:timers/promises'
+import { sleep } from '@julr/utils/misc'
 
 import { DatabaseDriver } from '../../src/drivers/database/database.js'
 import { KnexAdapter } from '../../src/drivers/database/adapters/knex.js'
@@ -26,7 +26,7 @@ test.group('Database', () => {
 
     assert.equal(await driver.get('foo'), 'bar')
 
-    await setTimeout(1000)
+    await sleep(1000)
 
     const hasFoo = await db('cache').where('key', 'foo').first()
     const hasFoo2 = await db('cache').where('key', 'foo2').first()

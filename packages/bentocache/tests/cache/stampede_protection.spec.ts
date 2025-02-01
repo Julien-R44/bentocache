@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { setTimeout } from 'node:timers/promises'
+import { sleep } from '@julr/utils/misc'
 
 import { errors } from '../../src/errors.js'
 import { RedisDriver } from '../../src/drivers/redis.js'
@@ -17,12 +17,12 @@ test.group('Cache | Stampede protection', () => {
       .create()
 
     await cache.set({ key: 'key', value: 'value', ttl: '100ms' })
-    await setTimeout(110)
+    await sleep(110)
 
     let factoryCalls = 0
     const factory = async () => {
       factoryCalls++
-      await setTimeout(300)
+      await sleep(300)
       return 'value'
     }
 
@@ -30,7 +30,7 @@ test.group('Cache | Stampede protection', () => {
 
     for (let i = 0; i < 100; i++) {
       promises.push(cache.getOrSet({ key: 'key', factory }))
-      await setTimeout(1)
+      await sleep(1)
     }
 
     const results = await Promise.all(promises)
@@ -72,7 +72,7 @@ test.group('Cache | Stampede protection', () => {
     let factoryCalls = 0
 
     const factory = async () => {
-      await setTimeout(100)
+      await sleep(100)
       factoryCalls++
       return 'value'
     }
@@ -91,7 +91,7 @@ test.group('Cache | Stampede protection', () => {
     let factoryCalls = 0
 
     const factory = async () => {
-      await setTimeout(100)
+      await sleep(100)
       factoryCalls++
       return 'value'
     }
@@ -113,7 +113,7 @@ test.group('Cache | Stampede protection', () => {
       cache.getOrSet({
         key: 'key',
         factory: async () => {
-          await setTimeout(100)
+          await sleep(100)
           return 'value'
         },
       }),
@@ -135,7 +135,7 @@ test.group('Cache | Stampede protection', () => {
       let factoryCalls = 0
 
       const factory = async () => {
-        await setTimeout(300)
+        await sleep(300)
         factoryCalls++
         return 'value'
       }
@@ -158,7 +158,7 @@ test.group('Cache | Stampede protection', () => {
       let factoryCalls = 0
 
       const factory = async () => {
-        await setTimeout(300)
+        await sleep(300)
         factoryCalls++
         return 'value'
       }
@@ -182,7 +182,7 @@ test.group('Cache | Stampede protection', () => {
       let factoryCalls = 0
 
       const factory = async () => {
-        await setTimeout(300)
+        await sleep(300)
         factoryCalls++
         return 'value'
       }

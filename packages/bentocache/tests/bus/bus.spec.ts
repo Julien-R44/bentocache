@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { setTimeout } from 'node:timers/promises'
+import { sleep } from '@julr/utils/misc'
 import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
 import { ChaosBus } from '../helpers/chaos/chaos_bus.js'
@@ -18,7 +18,7 @@ test.group('Bus synchronization', () => {
     const [cache3] = new CacheFactory().withL1L2Config().create()
 
     await cache1.set({ key, value: 24 })
-    await setTimeout(100)
+    await sleep(100)
 
     assert.equal(await cache1.get({ key }), 24)
     assert.equal(await cache2.get({ key }), 24)
@@ -26,7 +26,7 @@ test.group('Bus synchronization', () => {
 
     await cache1.delete({ key })
 
-    await setTimeout(100)
+    await sleep(100)
 
     assert.isUndefined(await cache1.get({ key }))
     assert.isUndefined(await cache2.get({ key }))
@@ -41,7 +41,7 @@ test.group('Bus synchronization', () => {
     const [cache3] = new CacheFactory().withL1L2Config().create()
 
     await cache1.namespace('users').set({ key, value: 24 })
-    await setTimeout(100)
+    await sleep(100)
 
     assert.equal(await cache1.namespace('users').get({ key }), 24)
     assert.equal(await cache2.namespace('users').get({ key }), 24)
@@ -49,7 +49,7 @@ test.group('Bus synchronization', () => {
 
     await cache1.namespace('users').delete({ key })
 
-    await setTimeout(100)
+    await sleep(100)
 
     assert.isUndefined(await cache1.namespace('users').get({ key }))
     assert.isUndefined(await cache2.namespace('users').get({ key }))
@@ -70,7 +70,7 @@ test.group('Bus synchronization', () => {
     await cache1NSUsersMe.set({ key, value: 24 })
     await cache3NSAdmin.set({ key, value: 42 })
     await cache1.set({ key, value: 33 })
-    await setTimeout(100)
+    await sleep(100)
 
     assert.equal(await cache1NSUsersMe.get({ key }), 24)
     assert.equal(await cache2NSUsersMe.get({ key }), 24)
@@ -78,19 +78,19 @@ test.group('Bus synchronization', () => {
 
     await cache1NSUsersMe.clear()
 
-    await setTimeout(100)
+    await sleep(100)
 
     assert.isUndefined(await cache1NSUsersMe.get({ key }))
     assert.isUndefined(await cache2.namespace('users').namespace('me').get({ key }))
     assert.equal(await cache3NSAdmin.get({ key }), 42)
 
     await cache2.namespace('admin').clear()
-    await setTimeout(100)
+    await sleep(100)
 
     assert.isUndefined(await cache3NSAdmin.get({ key }))
     assert.equal(await cache2.get({ key }), 33)
     await cache2.delete({ key })
-    await setTimeout(100)
+    await sleep(100)
 
     assert.isUndefined(await cache1.get({ key }))
   }).disableTimeout()
@@ -105,17 +105,17 @@ test.group('Bus synchronization', () => {
     const cache2NSAdmins = cache2.namespace('admins')
     await cache1NSUsers.set({ key, value: 24 })
     await cache2NSAdmins.set({ key, value: 42 })
-    await setTimeout(100)
+    await sleep(100)
 
     await cache1NSUsers.clear()
 
-    await setTimeout(100)
+    await sleep(100)
 
     assert.isUndefined(await cache1NSUsers.get({ key }))
     assert.equal(await cache2NSAdmins.get({ key }), 42)
 
     await cache2NSAdmins.clear()
-    await setTimeout(100)
+    await sleep(100)
 
     assert.isUndefined(await cache1.namespace('admins').get({ key }))
   }).disableTimeout()
@@ -143,16 +143,16 @@ test.group('Bus synchronization', () => {
     bus2.alwaysThrow()
     bus3.alwaysThrow()
 
-    await setTimeout(100)
+    await sleep(100)
 
     await cache1.set({ key: 'foo', value: 1 })
-    await setTimeout(200)
+    await sleep(200)
 
     await cache2.set({ key: 'foo', value: 2 })
-    await setTimeout(200)
+    await sleep(200)
 
     await cache3.set({ key: 'foo', value: 3 })
-    await setTimeout(200)
+    await sleep(200)
 
     assert.deepEqual(await cache1.get({ key: 'foo' }), 1)
     assert.deepEqual(await cache2.get({ key: 'foo' }), 2)
@@ -163,7 +163,7 @@ test.group('Bus synchronization', () => {
     bus2.neverThrow()
     bus3.neverThrow()
 
-    await setTimeout(200)
+    await sleep(200)
 
     assert.deepEqual(await cache1.get({ key: 'foo' }), 3)
     assert.deepEqual(await cache2.get({ key: 'foo' }), 3)
@@ -190,14 +190,14 @@ test.group('Bus synchronization', () => {
     await cache.set({ key: 'foo', value: 1 })
     await cache2.set({ key: 'foo', value: 2 })
 
-    await setTimeout(200)
+    await sleep(200)
 
     bus1.neverThrow()
     bus2.neverThrow()
 
     await cache.set({ key: 'foo2', value: 1 })
 
-    await setTimeout(200)
+    await sleep(200)
 
     assert.deepEqual(await cache.get({ key: 'foo' }), 1)
     assert.deepEqual(await cache2.get({ key: 'foo' }), 2)
@@ -226,7 +226,7 @@ test.group('Bus synchronization', () => {
     bus1.neverThrow()
     assert.deepEqual(bus2.receivedMessages.length, 0)
 
-    await setTimeout(1000)
+    await sleep(1000)
 
     assert.deepEqual(bus2.receivedMessages.length, 20)
   }).disableTimeout()
@@ -254,7 +254,7 @@ test.group('Bus synchronization', () => {
     await cache1.set({ key: 'foo', value: 'bar' })
     await cache2.set({ key: 'foo', value: 'baz' })
 
-    await setTimeout(110)
+    await sleep(110)
 
     remoteDriver.neverThrow()
     const result = await cache1.getOrSet({ key: 'foo', factory: throwingFactory('fail') })
@@ -294,7 +294,7 @@ test.group('Bus synchronization', () => {
       done()
     })
 
-    await setTimeout(200)
+    await sleep(200)
 
     await bus2.publish('foo', data)
   })
@@ -326,7 +326,7 @@ test.group('Bus synchronization', () => {
       done()
     })
 
-    await setTimeout(200)
+    await sleep(200)
 
     await bus2.publish('foo', data)
   })
@@ -352,7 +352,7 @@ test.group('Bus synchronization', () => {
       done()
     })
 
-    await setTimeout(200)
+    await sleep(200)
 
     await bus2.publish('foo', data)
 
@@ -360,6 +360,6 @@ test.group('Bus synchronization', () => {
 
     await bus2.disconnect()
 
-    await setTimeout(200)
+    await sleep(200)
   }).waitForDone()
 })

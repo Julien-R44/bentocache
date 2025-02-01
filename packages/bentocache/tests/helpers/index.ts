@@ -1,6 +1,6 @@
 import { pino } from 'pino'
 import pinoLoki from 'pino-loki'
-import { setTimeout } from 'node:timers/promises'
+import { sleep } from '@julr/utils/misc'
 
 export const BASE_URL = new URL('./tmp/', import.meta.url)
 
@@ -23,7 +23,7 @@ export function throwingFactory(errorMsg = 'error') {
  */
 export function slowFactory(ms: number, value: any) {
   return async () => {
-    await setTimeout(ms)
+    await sleep(ms)
     return value
   }
 }
