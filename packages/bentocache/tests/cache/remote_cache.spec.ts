@@ -1,6 +1,6 @@
 import { test } from '@japa/runner'
+import { testLogger } from '@julr/utils/logger'
 
-import { TestLogger } from '../helpers/test_logger.js'
 import { REDIS_CREDENTIALS } from '../helpers/index.js'
 import { RedisDriver } from '../../src/drivers/redis.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
@@ -10,7 +10,7 @@ import { CacheEntryOptions } from '../../src/cache/cache_entry/cache_entry_optio
 
 test.group('Remote Cache', () => {
   test('should rethrows errors if suppressL2Errors is disabled', async ({ assert, cleanup }) => {
-    const logger = new TestLogger()
+    const logger = testLogger()
     const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
     const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer(), true)
 
@@ -30,7 +30,7 @@ test.group('Remote Cache', () => {
   })
 
   test('should ignore errors if suppressL2Errors is enabled', async ({ assert, cleanup }) => {
-    const logger = new TestLogger()
+    const logger = testLogger()
     const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
     const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer(), true)
 
@@ -53,7 +53,7 @@ test.group('Remote Cache', () => {
     assert,
     cleanup,
   }) => {
-    const logger = new TestLogger()
+    const logger = testLogger()
     const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
     const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer(), false)
 
@@ -76,7 +76,7 @@ test.group('Remote Cache', () => {
     assert,
     cleanup,
   }) => {
-    const logger = new TestLogger()
+    const logger = testLogger()
     const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
     const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer(), false)
 
