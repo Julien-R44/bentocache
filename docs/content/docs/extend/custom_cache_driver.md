@@ -65,9 +65,9 @@ Similarly, the `L1CacheDriver` interface is the same, except that it is not asyn
 
 So this should be quite easy to implement. Feel free to take a lot at [the existing drivers](https://github.com/Julien-R44/bentocache/tree/main/packages/bentocache/src/drivers) implementations for inspiration. 
 
-Also note that your driver will receive two additional parameters in the constructor : `ttl` and `prefix`. These parameters are common to every drivers and their purpose is explained in the [options](../options.md) page.
+Also note that your driver will receive two additional parameters in the constructor : `ttl` and `prefix`. These parameters are common to every driver and their purpose is explained in the [options](../options.md) page.
 
-Once you defined you driver, you can create a factory function that will be used by Bentocache to create instances of your driver at runtime. The factory function must be something like this:
+Once you defined your driver, you can create a factory function that will be used by Bentocache to create instances of your driver at runtime. The factory function must be something like this:
 
 ```ts
 import type { CreateDriverResult } from 'bentocache/types'

@@ -15,25 +15,23 @@ const bento = new BentoCache({
 
   // Global level 👇
   ttl: '1h',
-  gracePeriod: {
-    enabled: true,
-    duration: '6h',
-    fallbackDuration: '5m'
-  },
+  grace: '6h',
 
   stores: {
     memory: bentostore({
       // Store level 👇
       ttl: '30m',
-      gracePeriod: { enabled: false }
+      grace: false,
     })
   }
 })
 
-bento.getOrSet('key', () => fetchFromDb(), {
+bento.getOrSet({
+  key: 'key',
+  factory: () => fetchFromDb(),
   // Operation level 👇
   ttl: '1h',
-  gracePeriod: { enabled: true }
+  grace: '10h',
 })
 ```
 
@@ -73,39 +71,35 @@ If `false`, then errors thrown by your L2 cache will be rethrown, and you will h
 
 Note that in some cases, like when you use [Grace Periods](./grace_periods.md), errors will not be thrown, even if this option is set to `false`. Since this is the whole point of grace periods.
 
-### `gracePeriod`
+### `grace`
 
 Default `undefined`
 
 Levels: `global`, `store`, `operation`
 
-An object to configure the [grace period](./grace_periods.md):
-```ts
-{
-  enabled: true,
-  duration: '6h',
-  fallbackDuration: '5m'
-}
-```
+A duration to define the [grace period](./grace_periods.md).
 
-### `timeouts`
+### `graceBackoff`
+
+Default: `undefined`
+
+Levels: `global`, `store`, `operation`
+
+A duration to define the [grace backoff](./grace_periods.md).
+
+### `timeout`
 
 Default: `undefined`
 Levels: `global`, `store`, `operation`
 
-An object to configure the [timeouts](./timeouts.md)
+A duration to define a soft [timeout](./timeouts.md#soft-timeouts).
 
-```ts
-{
-  soft: '1s',
-  hard: '3s'
-}
-```
+### `hardTimeout`
 
-Basically, when invoking a factory : 
+Default: `undefined`
+Levels: `global`, `store`, `operation`
 
-- If the factory takes more than `soft` to resolve and a graced/stale value is still available, then it will be returned. Factory will continue to run in the background.
-- If the factory takes more than `hard` to resolve, then an exception will be thrown. You need to handle it yourself.
+A duration to define a hard [timeout](./timeouts.md#hard-timeouts).
 
 ### `lockTimeout`
 

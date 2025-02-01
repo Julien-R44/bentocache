@@ -33,7 +33,7 @@ const bento = new BentoCache({
     multitier: bentostore()
       // Your L1 Cache. Here, an in-memory cache with 
       // a maximum size of 10Mb
-      .useL1Layer(memoryDriver({ maxSize: 10 * 1024 * 1024 }))
+      .useL1Layer(memoryDriver({ maxSize: '10mb' }))
       // Your L2 Cache. Here, a Redis cache
       .useL2Layer(redisDriver({ connection: redisConnection }))
       // Finally, the bus to synchronize the L1 caches between
@@ -56,10 +56,10 @@ The bus play a crucial role in a multi-tier cache context. It is used to synchro
 
 Let's try to understand why we need it in the first place. We have an applications with 2 instances running in parallel with PM2.
 
-- `N1` is calling `bento.getOrSet('user:1', () => fetchUser(1))`
+- `N1` is calling `bento.getOrSet({ key: 'user:1', factory: () => fetchUser(1) })`
 - `N1` is saving the result in in-memory cache + distributed cache.
 
-- After some times, `N2` is also calling `bento.getOrSet('user:1', () => fetchUser(1))`
+- After some times, `N2` is also calling `bento.getOrSet({ key: 'user:1', factory: () => fetchUser(1) })`
 - `N2` check his memory cache, but found nothing. So it fetches data from distributed cache, and saves it in memory cache.
 
 - `N1` received an update for the user model. So we need to invalidate the cache for `user:1`.

@@ -9,10 +9,14 @@ Adaptive caching is a method to dynamically change the cache options based on th
 For example, authentication tokens are a perfect example of this use case. Consider the following scenario:
 
 ```ts
-const authToken = await bento.getOrSet('token', async () => {
-  const token = await fetchAccessToken()
-  return token
-}, { ttl: '10m' })
+const authToken = await bento.getOrSet({
+  key: 'token',
+  factory: async () => {
+    const token = await fetchAccessToken()
+    return token
+  },
+  ttl: '10m'
+})
 ```
 
 In this example, we are fetching an authentication token that will expire after some time. The problem is, we have no idea when the token will expire until we fetch it. So, we decide to cache the token for 10 minutes, but this approach has multiple issues:
@@ -23,10 +27,13 @@ In this example, we are fetching an authentication token that will expire after 
 This is where adaptive caching comes in. Instead of setting a fixed TTL, we can set it dynamically based on the token's expiration time:
 
 ```ts
-const authToken = await bento.getOrSet('token', async (options) => {
-  const token = await fetchAccessToken();
-  options.setTtl(token.expiresIn);
-  return token;
+const authToken = await bento.getOrSet({
+  key: 'token',
+  factory: async (options) => {
+    const token = await fetchAccessToken();
+    options.setTtl(token.expiresIn);
+    return token;
+  }
 });
 ```
 
@@ -40,15 +47,18 @@ Let's see how we can achieve this with BentoCache:
 
 ```ts
 const namespace = bento.namespace('news');
-const news = await namespace.getOrSet(newsId, async (options) => {
-  const newsItem = await fetchNews(newsId);
+const news = await namespace.getOrSet({
+  key: newsId,
+  factory: async (options) => {
+    const newsItem = await fetchNews(newsId);
 
-  if (newsItem.hasBeenUpdatedRecently) {
-    options.setTtl('5m');
-  } else {
-    options.setTtl('2d');
+    if (newsItem.hasBeenUpdatedRecently) {
+      options.setTtl('5m');
+    } else {
+      options.setTtl('2d');
+    }
+
+    return newsItem;
   }
-
-  return newsItem;
 });
 ```

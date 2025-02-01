@@ -26,7 +26,7 @@ There are already caching libraries for Node: [`keyv`](https://keyv.org/), [`cac
 
 Not to knock them, on the contrary, they have their use cases and cool. Some are even "marketed" as such and are still very handy for simple caching system.
 
-Bentocache, on the other hand, is a **full-featured caching library**. We indeed have this notion of unified access to differents drivers, but in addition to that, we have a ton of features that will allow you to do robust caching.
+Bentocache, on the other hand, is a **full-featured caching library**. We indeed have this notion of unified access to different drivers, but in addition to that, we have a ton of features that will allow you to do robust caching.
 
 With that in mind, then I believe there is no serious alternative to Bentocache in the JavaScript ecosystem. Which is regrettable, because all other languages have powerful solutions. This is why Bentocache was created.
 
@@ -84,7 +84,7 @@ Multi-layer caching allows you to combine the speed of in-memory caching with th
 
 Many drivers available to suit all situations: Redis, Upstash, Database (MySQL, SQLite, PostgreSQL), DynamoDB, Filesystem, In-memory (LRU Cache), Vercel KV...
 
-See the [drivers documentation](./cache_drivers.md) for list of available drivers. Also very easy to extend the library and [add your own driver](tbd)
+See the [drivers documentation](./cache_drivers.md) for list of available drivers. Also, very easy to extend the library and [add your own driver](./extend/custom_cache_driver.md)
 
 <!-- :::warning
 Only a Redis driver for the bus is currently available. We probably have drivers for other backends like Zookeeper, Kafka, RabbitMQ... Let us know with an issue if you are interested in this.
@@ -97,7 +97,7 @@ Only a Redis driver for the bus is currently available. We probably have drivers
 
 - [Cache stamped prevention](./stampede_protection.md): Ensuring that only one factory is executed at the same time.
 
-- [Retry queue](./multi_tier.md#retry-queue-strategy) : When a application fails to publish something to the bus, it is added to a queue and retried later.
+- [Retry queue](./multi_tier.md#retry-queue-strategy) : When an application fails to publish something to the bus, it is added to a queue and retried later.
 
 ### Timeouts 
 
@@ -110,8 +110,8 @@ The ability to create logical groups for cache keys together, so you can invalid
 ```ts
 const users = bento.namespace('users')
 
-users.set('32', { name: 'foo' })
-users.set('33', { name: 'bar' })
+users.set({ key: '32', value: { name: 'foo' } })
+users.set({ key: '33', value: { name: 'bar' } })
 
 users.clear() 
 ```
@@ -135,14 +135,14 @@ All TTLs can be passed in a human-readable string format. We use [lukeed/ms](htt
 ```ts
 bento.getOrSet({
   key: 'foo',
-  ttl: '2.5h',
   factory: () => getFromDb(),
+  ttl: '2.5h',
 })
 ```
 
 In this case, when only 20% or less of the TTL remains and the entry is requested : 
 
-- It will returns the cached value to the user.
+- It will return the cached value to the user.
 - Start a background refresh by calling the factory.
 - Next time the entry is requested, it will be already computed, and can be returned immediately.
 
@@ -163,9 +163,6 @@ See the [logging documentation](./digging_deeper/logging.md) for more informatio
 ## Sponsor
 
 If you like this project, [please consider supporting it by sponsoring it](https://github.com/sponsors/Julien-R44/). It will help a lot to maintain and improve it. Thanks a lot !
-
-
-
 
 ## Prior art and inspirations
 

@@ -44,12 +44,12 @@ const bento = new BentoCache({
     // A first cache store named "myCache" using 
     // only L1 in-memory cache
     myCache: bentostore()
-      .useL1Layer(memoryDriver({ maxSize: 10_000 })),
+      .useL1Layer(memoryDriver({ maxSize: '10mb' })),
 
     // A second cache store named "multitier" using
     // a in-memory cache as L1 and a Redis cache as L2
     multitier: bentostore()
-      .useL1Layer(memoryDriver({ maxSize: 10_000 }))
+      .useL1Layer(memoryDriver({ maxSize: '10mb' }))
       .useL2Layer(redisDriver({
         connection: { host: '127.0.0.1', port: 6379 }
       }))
@@ -58,7 +58,7 @@ const bento = new BentoCache({
 ```
 
 - Here we have defined two stores. One Redis store, and one memory-only store.
-- Bentocache supports named stores. This means that in a single application you can have multiple cache stores. You must define one by default. This is the one that will be used when you call methods directly from the bento object like `bento.get(...)`.
+- Bentocache supports named stores. This means that in a single application you can have multiple cache stores. You must define one by default. This is the one that will be used when you call methods directly from the bento object like `bento.get({ ... })`.
 - To use a store other than the default one, you will need to explicitly access it via `bento.use(cacheName)`.
 
 See [the documentation on named caches](./named_caches.md) for more information.
@@ -75,14 +75,17 @@ const bento = new BentoCache({
 
   stores: {
     cache: bentostore()
-      .useL1Layer(memoryDriver({ maxSize: 10_000 }))
+      .useL1Layer(memoryDriver({ maxSize: '10mb' }))
       .useL2Layer(redisDriver({ /* ... */ }))
       .useBus(redisBusDriver({ /* ... */ }))
   },
 })
 
-await bento.set('user:42', { name: 'jul' })
-console.log(await bento.get('user:42'))
+await bento.set({ key: 'user:42', value: { name: 'jul' } })
+
+console.log(
+  await bento.get({ key: 'user:42' })
+)
 ```
 
 With this setup, your in-memory cache will serve as the first level ( L1 ) cache. If an item is stored in the in-memory cache, Bentocache will not fetch it from Redis, allowing for huge speed gains.
@@ -106,9 +109,12 @@ export default class UsersController {
   async show(req) {
     const userId = req.params.id
 
-    const users = bento.namespace('users')
-    const user = users.getOrSet(`${userId}`, '5m', () => {
-      return User.find(userId)
+    const user = bento.namespace('users').getOrSet({
+      key: `${userId}`,
+      factory: () => {
+        return User.find(userId)
+      },
+      ttl: '5m',
     })
 
     return user
@@ -126,7 +132,7 @@ So first time this endpoint is called, it will fetch the user from the database,
 
 ### Invalidating the cache
 
-Now, let's say we have an endpoint to update a user. We will need to invalidate the cache for this user. Otherwise we will be serving stale data.
+Now, let's say we have an endpoint to update a user. We will need to invalidate the cache for this user. Otherwise, we will be serving stale data.
 
 ```ts
 import { bento } from './bentocache.js'
@@ -135,9 +141,12 @@ export default class UsersController {
   async show(req) {
     const userId = req.params.id
 
-    const users = bento.namespace('users')
-    const user = users.getOrSet(userId, '5m', () => {
-      return User.find(userId)
+    const user = bento.namespace('users').getOrSet({
+      key: userId,
+      factory: () => {
+        return User.find(userId)
+      },
+      ttl: '5m',
     })
 
     return user
@@ -148,11 +157,10 @@ export default class UsersController {
     const user = await User.find(userId)
 
     // Update the user in the database
-    await user.update(req.body)
+    await user.merge(req.body).save()
 
     // Invalidate the cache
-    const users = bento.namespace('users')
-    await users.delete(userId)
+    await bento.namespace('users').delete({ key: userId })
   }
 }
 ```

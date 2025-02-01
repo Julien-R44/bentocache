@@ -50,9 +50,9 @@ const bento = new BentoCache({
 })
 ```
 
-| Option | Description | Default |
-| --- | --- | --- |
-| `connection` | The connection options to use to connect to Redis or an instance of `ioredis` | N/A |
+| Option       | Description                                                                   | Default |
+|--------------|-------------------------------------------------------------------------------|---------|
+| `connection` | The connection options to use to connect to Redis or an instance of `ioredis` | N/A     |
 
 ## Filesystem
 
@@ -74,10 +74,10 @@ const bento = new BentoCache({
 })
 ```
 
-| Option | Description | Default |
-| --- | --- | --- |
-| `directory` | The directory where the cache files will be stored. | N/A |
-| `pruneInterval` | The interval in milliseconds to prune expired entries. false to disable. | false |
+| Option          | Description                                                              | Default |
+|-----------------|--------------------------------------------------------------------------|---------|
+| `directory`     | The directory where the cache files will be stored.                      | N/A     |
+| `pruneInterval` | The interval in milliseconds to prune expired entries. false to disable. | false   |
 
 ### Prune Interval
 
@@ -105,11 +105,11 @@ const bento = new BentoCache({
 })
 ```
 
-| Option | Description | Default |
-| --- | --- | --- |
-| `maxSize` | The maximum size of the cache **in bytes**. | N/A |
-| `maxItems` | The maximum number of entries that the cache can contain. Note that fewer items may be stored if you are also using `maxSize` and the cache is full. | N/A |
-| `maxEntrySize` | The maximum size of a single entry in bytes. | N/A |
+| Option         | Description                                                                                                                                          | Default |
+|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| `maxSize`      | The maximum size of the cache **in bytes**.                                                                                                          | N/A     |
+| `maxItems`     | The maximum number of entries that the cache can contain. Note that fewer items may be stored if you are also using `maxSize` and the cache is full. | N/A     |
+| `maxEntrySize` | The maximum size of a single entry in bytes.                                                                                                         | N/A     |
 
 ## DynamoDB
 
@@ -143,16 +143,16 @@ You will also need to create a DynamoDB table with a string partition key named 
 
 **Make sure to also enable [Time To Live (TTL)](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html) on the table, on the `ttl` attribute. This will allow DynamoDB to automatically delete expired items.**
 
-| Option | Description | Default |
-| --- | --- | --- |
-| `table.name` | The name of the table that will be used to store the cache. | `cache` |
-| `credentials` | The credentials to use to connect to DynamoDB. | N/A |
-| `endpoint` | The endpoint to use to connect to DynamoDB. | N/A |
-| `region` | The region to use to connect to DynamoDB. | N/A |
+| Option        | Description                                                 | Default |
+|---------------|-------------------------------------------------------------|---------|
+| `table.name`  | The name of the table that will be used to store the cache. | `cache` |
+| `credentials` | The credentials to use to connect to DynamoDB.              | N/A     |
+| `endpoint`    | The endpoint to use to connect to DynamoDB.                 | N/A     |
+| `region`      | The region to use to connect to DynamoDB.                   | N/A     |
 
 
 :::warning
-Be careful with the `.clear()` function of the DynamoDB driver. We do not recommend using it. Dynamo does not offer a "native" `clear`, so we are forced to make several API calls to: retrieve the keys and delete them, 25 by 25 (max per `BatchWriteItemCommand`).
+You should be careful with the `.clear()` function of the DynamoDB driver. We do not recommend using it. Dynamo does not offer a "native" `clear`, so we are forced to make several API calls to: retrieve the keys and delete them, 25 by 25 (max per `BatchWriteItemCommand`).
 
 So using this function can be costly, both in terms of execution time and API request cost. And also pose rate-limiting problems. Use at your own risk.
 :::
@@ -163,18 +163,18 @@ We offer several drivers to use a database as a cache. The database store should
 
 :::note
 
-Note that you can easily create your own adapter by implementing the `DatabaseAdapter` interface if you are using another library not supported by Bentocache. See the [documentation](/docs/custom-cache-driver) for more details.
+Note that you can easily create your own adapter by implementing the `DatabaseAdapter` interface if you are using another library not supported by Bentocache. See the [documentation](./extend/custom_cache_driver.md) for more details.
 
 :::
 
 All SQL drivers accept the following options:
 
-| Option | Description | Default |
-| --- | --- | --- |
-| `tableName` | The name of the table that will be used to store the cache. | `bentocache` |
-| `autoCreateTable` | If the cache table should be automatically created if it does not exist. | `true` |
-| `connection` | An instance of `knex` or `Kysely` based on the driver. | N/A |
-| `pruneInterval` | The [Duration](./options.md#ttl-formats) in milliseconds to prune expired entries. | false |
+| Option            | Description                                                                        | Default      |
+|-------------------|------------------------------------------------------------------------------------|--------------|
+| `tableName`       | The name of the table that will be used to store the cache.                        | `bentocache` |
+| `autoCreateTable` | If the cache table should be automatically created if it does not exist.           | `true`       |
+| `connection`      | An instance of `knex` or `Kysely` based on the driver.                             | N/A          |
+| `pruneInterval`   | The [Duration](./options.md#ttl-formats) in milliseconds to prune expired entries. | false        |
 
 ### Knex
 
@@ -226,7 +226,7 @@ const bento = new BentoCache({
 
 ### Orchid ORM
 
-You must provide a Orchid ORM instance to use the Orchid driver. Feel free to check the [Orchid ORM documentation](https://orchid-orm.netlify.app/) for more details about the configuration. Orchid support the following databases : PostgreSQL.
+You must provide an Orchid ORM instance to use the Orchid driver. Feel free to check the [Orchid ORM documentation](https://orchid-orm.netlify.app/) for more details about the configuration. Orchid support the following databases : PostgreSQL.
 
 You will need to install `orchid-orm` to use this driver.
 
