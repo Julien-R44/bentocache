@@ -1,4 +1,6 @@
 {
+  "name": "@bentocache/hono-example",
+  "private": true,
   "scripts": {
     "dev": "tsx watch src/index.tsx"
   },

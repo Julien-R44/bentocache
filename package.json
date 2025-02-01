@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@adonisjs/tsconfig": "^1.4.0",
+    "@changesets/cli": "^2.27.12",
     "@japa/assert": "^4.0.1",
     "@japa/expect-type": "^2.0.3",
     "@japa/file-system": "^2.3.2",
