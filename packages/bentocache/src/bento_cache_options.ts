@@ -1,7 +1,7 @@
 import EventEmitter from 'node:events'
 import lodash from '@poppinss/utils/lodash'
 import string from '@poppinss/utils/string'
-import { noopLogger } from 'typescript-log'
+import { noopLogger } from '@julr/utils/logger'
 
 import { JsonSerializer } from './serializers/json.js'
 import type {

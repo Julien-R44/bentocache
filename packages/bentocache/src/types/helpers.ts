@@ -33,4 +33,4 @@ export type GetSetFactory<T = any> = (options: GetSetFactoryOptions) => T | Prom
 /**
  * Logger interface
  */
-export type { Logger } from 'typescript-log'
+export type { Logger } from '@julr/utils/logger'
