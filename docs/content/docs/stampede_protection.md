@@ -17,8 +17,8 @@ router.get('/posts/:id', async (request) => {
   
   const post = await bento.getOrSet({
     key: `post:${id}`, 
+    factory: () => getPostFromDb(id),
     ttl: '1h',
-    factory: () => getPostFromDb(id), 
   })
   
   return user

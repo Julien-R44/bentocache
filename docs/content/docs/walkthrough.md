@@ -49,8 +49,8 @@ router.get('/products/:id', async (req, res) => {
   const productId = req.params.id
   const product = await bento.getOrSet({
     key: `product:${productId}`,
-    ttl: '1m',
     factory: () => Product.find(productId),
+    ttl: '1m',
   })
 
   res.json(product)
@@ -122,11 +122,8 @@ Grace periods extend the time that cached data can be served even after their ex
 const bento = new BentoCache({
   default: 'cache',
   // highlight-start
-  gracePeriod: {
-    enabled: true,
-    duration: '6h',
-    fallbackDuration: '30s'
-  },
+  grace: '6h',
+  graceBackoff: '30s',
   // highlight-end
   stores: {
     cache: bentostore().useL1Layer(memoryDriver()) 
@@ -137,8 +134,8 @@ router.get('/products/:id', async (req, res) => {
   const productId = req.params.id
   const product = await bento.getOrSet({
     key: `product:${productId}`,
-    ttl: '1m',
     factory: () => Product.find(productId),
+    ttl: '1m',
   })
 
   res.json(product)
@@ -147,9 +144,9 @@ router.get('/products/:id', async (req, res) => {
 
 By setting up grace period, **we won't have any downtime for our users**. This is the first great thing to have.
 
-Let's also see how it improved the round trips to our database. During the 3 minute downtime, Bentocache's grace period feature becomes crucial. Even though the cached value might be a little stale, it's still available to serve. This approach is far better than displaying an error page to users, and it ensures continued service availability.
+Let's also see how it improved the round trips to our database. During the 3-minute downtime, Bentocache's grace period feature becomes crucial. Even though the cached value might be a little stale, it's still available to serve. This approach is far better than displaying an error page to users, and it ensures continued service availability.
 
-A particular aspect to highlight is the `fallbackDuration` parameter, set here to 30 seconds. In our scenario, if the database call fails, Bentocache will serves the expired data for these 30 seconds without even trying to call the factory. After this period, it will try to call the factory again. And if it fails again, it will serve the expired data for another 30 seconds. This process will repeat until the database is back online.
+A particular aspect to highlight is the `graceBackoff` parameter, set here to 30 seconds. In our scenario, if the database call fails, Bentocache will serve the expired data for these 30 seconds without even trying to call the factory. After this period, it will try to call the factory again. And if it fails again, it will serve the expired data for another 30 seconds. This process will repeat until the database is back online.
 
 By avoiding repeated calls to the database when the factory fails, it prevents what could be **likened to a self-inflicted DDoS attack**. It not only maintains service but does so in a way that doesn't further strain the system.
 
@@ -158,7 +155,7 @@ In summary, that means, during this downtime of 3 minutes, we now only have 2 ca
 **Database calls in 10m before: 5,430,000**<br/>
 **Database calls in 10m: 39,000**
 
-This is a huge improvement. Sure, we are serving some stale data, but dependending on your use case, this is probably acceptable and better than showing an error page to your users.
+This is a huge improvement. Sure, we are serving some stale data, but depending on your use case, this is probably acceptable and better than showing an error page to your users.
 
 <details>
 <summary>Click to see the calculation</summary>
@@ -192,11 +189,7 @@ See the problem ? Let's introduce our Multi-Tier cache setup :
 const connection = process.env.REDIS_CREDENTIALS!
 const bento = new BentoCache({
   default: 'cache',
-  gracePeriod: { 
-    enabled: true, 
-    duration: '6h', 
-    fallbackDuration: '30s' 
-  },
+  grace: '6h', 
   stores: { 
     cache: bentostore()
       .useL1Layer(memoryDriver())
@@ -209,8 +202,8 @@ router.get('/products/:id', async (req, res) => {
   const productId = req.params.id
   const product = await bento.getOrSet({
     key: `product:${productId}`,
-    ttl: '1m',
     factory: () => Product.find(productId),
+    ttl: '1m',
   })
 
   res.json(product)
@@ -238,15 +231,9 @@ However, it sometimes happens that the database's response time is prolonged, so
 const connection = process.env.REDIS_CREDENTIALS!
 const bento = new BentoCache({
   default: 'cache',
-  gracePeriod: { 
-    enabled: true, 
-    duration: '6h', 
-    fallbackDuration: '30s' 
-  },
+  grace: '6h', 
   // highlight-start
-  timeouts: {
-    soft: '500ms',
-  },
+  timeout: '500ms',
   // highlight-end
   stores: { 
     cache: bentostore()
@@ -260,8 +247,8 @@ router.get('/products/:id', async (req, res) => {
   const productId = req.params.id
   const product = await bento.getOrSet({
     key: `product:${productId}`,
-    ttl: '1m',
     factory: () => Product.find(productId),
+    ttl: '1m',
   })
 
   res.json(product)

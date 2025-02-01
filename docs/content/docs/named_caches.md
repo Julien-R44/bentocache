@@ -12,11 +12,11 @@ const bento = new BentoCache({
   stores: {
     // One store named "memory". Only L1 in-memory cache
     memory: bentostore()
-      .useL1Layer(memoryDriver({ maxSize: 10 * 1024 * 1024 })),
+      .useL1Layer(memoryDriver({ maxSize: '10mb' })),
 
     // One store named "multitier" using full multi-tier cache
     multitier: bentostore()
-      .useL1Layer(memoryDriver({ maxSize: 10 * 1024 * 1024 }))
+      .useL1Layer(memoryDriver({ maxSize: '10mb' }))
       .useL2Layer(redisDriver({ connection: redisConnection }))
       .useBus(redisBusDriver({ connection: redisConnection })),
 
@@ -34,19 +34,19 @@ Also note the `default` property at the top level, which allows you to define th
 To access the default cache, just use the methods directly on the bento object :
 
 ```ts
-bento.getOrSet('foo', () => getFromDb(42))
-bento.set('foo', 'bar')
-bento.get('foo')
-bento.delete('foo')
+bento.getOrSet({ key: 'foo', factory: () => getFromDb(42) })
+bento.set({ key: 'foo', value: 'bar' })
+bento.get({ key: 'foo' })
+bento.delete({ key: 'foo' })
 ```
 
 And to access a specific store, use the `.use()` method with the name of the store :
 
 ```ts
-bento.use('multitier').getOrSet('foo', () => getFromDb(42))
-bento.use('multitier').set('foo', 'bar')
-bento.use('dynamo').get('foo')
-bento.use('dynamo').delete('foo')
+bento.use('multitier').getOrSet({ key: 'foo', factory: () => getFromDb(42) })
+bento.use('multitier').set({ key: 'foo', value: 'bar' })
+bento.use('dynamo').get({ key: 'foo' })
+bento.use('dynamo').delete({ key: 'foo' })
 ```
 
 ## Separation of Stores
@@ -69,14 +69,14 @@ const bento = new BentoCache({
 Now, it will work as expected. There will be no collisions between the different keys, and when you use the `.clear()` function that allows you to delete all cache keys, you will only delete the keys of that specific store.
 
 ```ts
-bento.use('users').set('foo', '2')
-bento.use('users').get('foo') // '2'
-bento.use('posts').get('foo') // undefined
+bento.use('users').set({ key: 'foo', value: '2' })
+bento.use('users').get({ key: 'foo' }) // '2'
+bento.use('posts').get({ key: 'foo' }) // undefined
 
-bento.use('posts').set('foo', '1')
-bento.use('posts').get('foo') // '1'
+bento.use('posts').set({ key: 'foo', value: '1' })
+bento.use('posts').get({ key: 'foo' }) // '1'
 
 bento.use('users').clear()
-bento.use('users').get('foo') // undefined
-bento.use('posts').get('foo') // '1'
+bento.use('users').get({ key: 'foo' }) // undefined
+bento.use('posts').get({ key: 'foo' }) // '1'
 ```
