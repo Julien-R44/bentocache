@@ -12,7 +12,7 @@ test.group('Remote Cache', () => {
   test('should rethrows errors if suppressL2Errors is disabled', async ({ assert, cleanup }) => {
     const logger = new TestLogger()
     const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
-    const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer())
+    const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer(), true)
 
     cleanup(() => chaosCacheDriver.disconnect())
 
@@ -32,7 +32,7 @@ test.group('Remote Cache', () => {
   test('should ignore errors if suppressL2Errors is enabled', async ({ assert, cleanup }) => {
     const logger = new TestLogger()
     const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
-    const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer())
+    const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer(), true)
 
     cleanup(() => chaosCacheDriver.disconnect())
 
@@ -40,11 +40,57 @@ test.group('Remote Cache', () => {
 
     const options = new CacheEntryOptions({ suppressL2Errors: true })
 
-    await assert.doesNotRejects(() => cache.get('foo', options))
-    await assert.doesNotRejects(() => cache.set('foo', 'bar', options))
-    await assert.doesNotRejects(() => cache.delete('foo', options))
-    await assert.doesNotRejects(() => cache.deleteMany(['foo'], options))
-    await assert.doesNotRejects(() => cache.has('foo', options))
+    await assert.doesNotReject(() => cache.get('foo', options))
+    await assert.doesNotReject(() => cache.set('foo', 'bar', options))
+    await assert.doesNotReject(() => cache.delete('foo', options))
+    await assert.doesNotReject(() => cache.deleteMany(['foo'], options))
+    await assert.doesNotReject(() => cache.has('foo', options))
+
+    assert.deepEqual(logger.logs.length, 5)
+  })
+
+  test('rethrow errors if suppressL2Errors is not explicity set and we have not l1', async ({
+    assert,
+    cleanup,
+  }) => {
+    const logger = new TestLogger()
+    const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
+    const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer(), false)
+
+    cleanup(() => chaosCacheDriver.disconnect())
+
+    chaosCacheDriver.alwaysThrow()
+
+    const options = new CacheEntryOptions({})
+
+    await assert.rejects(() => cache.get('foo', options))
+    await assert.rejects(() => cache.set('foo', 'bar', options))
+    await assert.rejects(() => cache.delete('foo', options))
+    await assert.rejects(() => cache.deleteMany(['foo'], options))
+    await assert.rejects(() => cache.has('foo', options))
+
+    assert.deepEqual(logger.logs.length, 5)
+  })
+
+  test('suppress errors if suppressL2Errors is explicitly set to true and we have not l1', async ({
+    assert,
+    cleanup,
+  }) => {
+    const logger = new TestLogger()
+    const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
+    const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer(), false)
+
+    cleanup(() => chaosCacheDriver.disconnect())
+
+    chaosCacheDriver.alwaysThrow()
+
+    const options = new CacheEntryOptions({ suppressL2Errors: true })
+
+    await assert.doesNotReject(() => cache.get('foo', options))
+    await assert.doesNotReject(() => cache.set('foo', 'bar', options))
+    await assert.doesNotReject(() => cache.delete('foo', options))
+    await assert.doesNotReject(() => cache.deleteMany(['foo'], options))
+    await assert.doesNotReject(() => cache.has('foo', options))
 
     assert.deepEqual(logger.logs.length, 5)
   })

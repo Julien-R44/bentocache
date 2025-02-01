@@ -1,3 +1,5 @@
+import { is } from '@julr/utils/is'
+
 import { CacheEntry } from '../cache_entry/cache_entry.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 import type { CacheSerializer, L2CacheDriver, Logger } from '../../types/main.js'
@@ -10,8 +12,15 @@ export class RemoteCache {
   #driver: L2CacheDriver
   #logger: Logger
   #serializer: CacheSerializer
+  #hasL1Backup: boolean
 
-  constructor(driver: L2CacheDriver, logger: Logger, serializer: CacheSerializer) {
+  constructor(
+    driver: L2CacheDriver,
+    logger: Logger,
+    serializer: CacheSerializer,
+    hasL1Backup: boolean,
+  ) {
+    this.#hasL1Backup = hasL1Backup
     this.#driver = driver
     this.#serializer = serializer
     this.#logger = logger.child({ context: 'bentocache.remoteCache' })
@@ -33,11 +42,17 @@ export class RemoteCache {
       this.#logger.error({ error, opId: options.id }, `(${operation}) failed on remote cache`)
 
       /**
-       * Rethrow the error if suppressL2Errors is disabled
+       * SuppressL2Errors is enabled automatically if undefined and we have a L1 backup
+       * Otherwise, we need to check what the user set
        */
-      if (options.suppressL2Errors === false) throw error
+      if (
+        (is.undefined(options.suppressL2Errors) && this.#hasL1Backup) ||
+        options.suppressL2Errors
+      ) {
+        return fallbackValue
+      }
 
-      return fallbackValue
+      throw error
     }
   }
 

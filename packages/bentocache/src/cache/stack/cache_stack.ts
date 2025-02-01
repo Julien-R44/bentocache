@@ -41,7 +41,7 @@ export class CacheStack extends BaseDriver {
     if (drivers.l1Driver)
       this.l1 = new LocalCache(drivers.l1Driver, this.logger, this.options.serializer)
     if (drivers.l2Driver)
-      this.l2 = new RemoteCache(drivers.l2Driver, this.logger, this.options.serializer)
+      this.l2 = new RemoteCache(drivers.l2Driver, this.logger, this.options.serializer, !!this.l1)
 
     this.bus = bus ? bus : this.#createBus(drivers.busDriver, drivers.busOptions)
     if (this.l1) this.bus?.manageCache(this.prefix, this.l1)

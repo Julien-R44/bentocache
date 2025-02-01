@@ -44,7 +44,7 @@ export class BentoCacheOptions {
   /**
    * Whether to suppress L2 cache errors
    */
-  suppressL2Errors: boolean = true
+  suppressL2Errors?: boolean
 
   /**
    * The soft and hard timeouts for the factories
@@ -79,7 +79,7 @@ export class BentoCacheOptions {
     this.ttl = this.#options.ttl!
     this.timeout = this.#options.timeout ?? 0
     this.hardTimeout = this.#options.hardTimeout
-    this.suppressL2Errors = this.#options.suppressL2Errors!
+    this.suppressL2Errors = this.#options.suppressL2Errors
     this.lockTimeout = this.#options.lockTimeout
     this.grace = this.#options.grace!
     this.graceBackoff = this.#options.graceBackoff!
