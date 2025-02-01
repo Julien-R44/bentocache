@@ -3,6 +3,7 @@ import { setTimeout } from 'node:timers/promises'
 import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
 import { RedisDriver } from '../../src/drivers/redis.js'
+import { UndefinedValueError } from '../../src/errors.js'
 import { NullDriver } from '../helpers/null/null_driver.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
@@ -714,5 +715,15 @@ test.group('Cache', () => {
 
     assert.isUndefined(r1)
     assert.isUndefined(r2)
+  })
+
+  test('should throw if undefined is about to bet set', async ({ assert }) => {
+    const { cache } = new CacheFactory().withL1L2Config().create()
+
+    try {
+      await cache.set({ key: 'foo', value: undefined })
+    } catch (error) {
+      assert.instanceOf(error, UndefinedValueError)
+    }
   })
 })

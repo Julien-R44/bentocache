@@ -26,7 +26,7 @@ export class FactoryHardTimeout extends Exception {
   key: string
 
   constructor(key: string) {
-    super(FactoryHardTimeout.message, { code: FactoryHardTimeout.code })
+    super()
 
     this.key = key
   }
@@ -51,10 +51,22 @@ export class FactoryError extends Exception {
   isBackgroundFactory: boolean
 
   constructor(key: string, cause: any, isBackground = false) {
-    super(FactoryError.message, { code: FactoryError.code, cause })
+    super(FactoryError.message, { cause })
 
     this.key = key
     this.isBackgroundFactory = isBackground
+  }
+}
+
+/**
+ * Thrown when a `undefined` value is about to be set
+ * in the cache. You can't set `undefined` values.
+ */
+export class UndefinedValueError extends Exception {
+  static code = 'E_UNDEFINED_VALUE'
+
+  constructor(key: string) {
+    super(`Cannot set undefined value in the cache, key: ${key}`)
   }
 }
 

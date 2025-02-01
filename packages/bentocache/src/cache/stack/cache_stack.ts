@@ -1,6 +1,8 @@
+import { is } from '@julr/utils/is'
 import lodash from '@poppinss/utils/lodash'
 
 import { Bus } from '../../bus/bus.js'
+import { UndefinedValueError } from '../../errors.js'
 import { LocalCache } from '../facades/local_cache.js'
 import { RemoteCache } from '../facades/remote_cache.js'
 import { BaseDriver } from '../../drivers/base_driver.js'
@@ -113,6 +115,8 @@ export class CacheStack extends BaseDriver {
    * - Emit a CacheWritten event
    */
   async set(key: string, value: any, options: CacheEntryOptions) {
+    if (is.undefined(value)) throw new UndefinedValueError(key)
+
     const item = this.serialize({
       value,
       logicalExpiration: options.logicalTtlFromNow(),
