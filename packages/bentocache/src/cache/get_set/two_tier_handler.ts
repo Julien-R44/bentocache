@@ -8,7 +8,6 @@ import type { Factory } from '../../types/helpers.js'
 import type { CacheEvent } from '../../types/events.js'
 import type { CacheStack } from '../stack/cache_stack.js'
 import type { CacheEntry } from '../cache_entry/cache_entry.js'
-import type { CacheStackWriter } from '../stack/cache_stack_writer.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 
 export class TwoTierHandler {
@@ -18,11 +17,8 @@ export class TwoTierHandler {
   #locks = new Locks()
   #factoryRunner: FactoryRunner
 
-  constructor(
-    protected stack: CacheStack,
-    protected stackWriter: CacheStackWriter,
-  ) {
-    this.#factoryRunner = new FactoryRunner(this.stackWriter, this.#locks)
+  constructor(protected stack: CacheStack) {
+    this.#factoryRunner = new FactoryRunner(this.stack, this.#locks)
   }
 
   get logger() {

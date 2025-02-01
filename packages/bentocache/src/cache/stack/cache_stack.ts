@@ -4,15 +4,17 @@ import { Bus } from '../../bus/bus.js'
 import { LocalCache } from '../facades/local_cache.js'
 import { RemoteCache } from '../facades/remote_cache.js'
 import { BaseDriver } from '../../drivers/base_driver.js'
+import { CacheWritten } from '../../events/cache/cache_written.js'
 import type { BentoCacheOptions } from '../../bento_cache_options.js'
 import { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
-import type {
-  BusDriver,
-  BusOptions,
-  CacheEvent,
-  CacheStackDrivers,
-  CacheBusMessage,
-  Logger,
+import {
+  type BusDriver,
+  type BusOptions,
+  type CacheEvent,
+  type CacheStackDrivers,
+  type CacheBusMessage,
+  type Logger,
+  CacheBusMessageType,
 } from '../../types/main.js'
 
 export class CacheStack extends BaseDriver {
@@ -101,5 +103,26 @@ export class CacheStack extends BaseDriver {
 
   deserialize(value: string) {
     return this.options.serializer.deserialize(value)
+  }
+
+  /**
+   * Write a value in the cache stack
+   * - Set value in local cache
+   * - Set value in remote cache
+   * - Publish a message to the bus
+   * - Emit a CacheWritten event
+   */
+  async set(key: string, value: any, options: CacheEntryOptions) {
+    const item = this.serialize({
+      value,
+      logicalExpiration: options.logicalTtlFromNow(),
+    })
+
+    this.l1?.set(key, item, options)
+    await this.l2?.set(key, item, options)
+    await this.publish({ type: CacheBusMessageType.Set, keys: [key] })
+
+    this.emit(new CacheWritten(key, value, this.name))
+    return true
   }
 }

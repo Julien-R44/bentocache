@@ -5,7 +5,6 @@ import { CacheBusMessageType } from '../types/main.js'
 import type { CacheStack } from './stack/cache_stack.js'
 import type { CacheProvider } from '../types/provider.js'
 import { GetSetHandler } from './get_set/get_set_handler.js'
-import { CacheStackWriter } from './stack/cache_stack_writer.js'
 import type {
   Factory,
   ClearOptions,
@@ -25,15 +24,13 @@ export class Cache implements CacheProvider {
   name: string
 
   #getSetHandler: GetSetHandler
-  #cacheWriter: CacheStackWriter
   #stack: CacheStack
 
   constructor(name: string, stack: CacheStack) {
     this.name = name
 
     this.#stack = stack
-    this.#cacheWriter = new CacheStackWriter(this.#stack)
-    this.#getSetHandler = new GetSetHandler(this.#stack, this.#cacheWriter)
+    this.#getSetHandler = new GetSetHandler(this.#stack)
   }
 
   #resolveDefaultValue(defaultValue?: Factory) {
@@ -95,7 +92,7 @@ export class Cache implements CacheProvider {
    */
   async set(options: SetOptions) {
     const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
-    return this.#cacheWriter.set(options.key, options.value, cacheOptions)
+    return this.#stack.set(options.key, options.value, cacheOptions)
   }
 
   /**

@@ -2,19 +2,15 @@ import type { Factory } from '../../types/helpers.js'
 import { TwoTierHandler } from './two_tier_handler.js'
 import type { CacheStack } from '../stack/cache_stack.js'
 import { SingleTierHandler } from './single_tier_handler.js'
-import type { CacheStackWriter } from '../stack/cache_stack_writer.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 
 export class GetSetHandler {
   #singleTierHandler: SingleTierHandler
   #twoTierHandler: TwoTierHandler
 
-  constructor(
-    private stack: CacheStack,
-    private stackWriter: CacheStackWriter,
-  ) {
-    this.#singleTierHandler = new SingleTierHandler(this.stack, this.stackWriter)
-    this.#twoTierHandler = new TwoTierHandler(this.stack, this.stackWriter)
+  constructor(private stack: CacheStack) {
+    this.#twoTierHandler = new TwoTierHandler(this.stack)
+    this.#singleTierHandler = new SingleTierHandler(this.stack)
   }
 
   /**

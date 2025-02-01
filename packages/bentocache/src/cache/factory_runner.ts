@@ -3,19 +3,19 @@ import type { MutexInterface } from 'async-mutex'
 
 import { errors } from '../errors.js'
 import type { Locks } from './locks.js'
+import type { CacheStack } from './stack/cache_stack.js'
 import type { GetSetFactory } from '../types/helpers.js'
-import type { CacheStackWriter } from './stack/cache_stack_writer.js'
 import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
 
 /**
  * Factory Runner is responsible for executing factories
  */
 export class FactoryRunner {
-  #stackWriter: CacheStackWriter
   #locks: Locks
+  #stack: CacheStack
 
-  constructor(stackWriter: CacheStackWriter, locks: Locks) {
-    this.#stackWriter = stackWriter
+  constructor(stack: CacheStack, locks: Locks) {
+    this.#stack = stack
     this.#locks = locks
   }
 
@@ -31,7 +31,7 @@ export class FactoryRunner {
         setTtl: (ttl) => options.setLogicalTtl(ttl),
       })
 
-      await this.#stackWriter.set(key, result, options)
+      await this.#stack.set(key, result, options)
       return result
     } catch (error) {
       if (!isBackground) throw new errors.E_FACTORY_ERROR(key, error)
