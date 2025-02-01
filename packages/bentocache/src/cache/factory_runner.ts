@@ -1,8 +1,8 @@
 import pTimeout from 'p-timeout'
 import type { MutexInterface } from 'async-mutex'
 
+import { errors } from '../errors.js'
 import type { Locks } from './locks.js'
-import * as exceptions from '../errors.js'
 import type { GetSetFactory } from '../types/helpers.js'
 import type { CacheStackWriter } from './stack/cache_stack_writer.js'
 import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
@@ -34,7 +34,7 @@ export class FactoryRunner {
       await this.#stackWriter.set(key, result, options)
       return result
     } catch (error) {
-      if (!isBackground) throw error
+      if (!isBackground) throw new errors.E_FACTORY_ERROR(key, error)
 
       // TODO Global error handler
     } finally {
@@ -57,14 +57,14 @@ export class FactoryRunner {
      */
     if (options.shouldSwr(hasFallback)) {
       this.#runFactory(key, factory, options, lockReleaser, true)
-      throw new exceptions.E_FACTORY_SOFT_TIMEOUT()
+      throw new errors.E_FACTORY_SOFT_TIMEOUT(key)
     }
 
     const runFactory = this.#runFactory(key, factory, options, lockReleaser)
     const result = await pTimeout(runFactory, {
       milliseconds: timeout?.duration ?? Number.POSITIVE_INFINITY,
       fallback: async () => {
-        throw new timeout!.exception()
+        throw new timeout!.exception(key)
       },
     })
 

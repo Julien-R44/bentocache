@@ -1,7 +1,7 @@
 import { hexoid } from 'hexoid'
 import { is } from '@julr/utils/is'
 
-import * as exceptions from '../../errors.js'
+import { errors } from '../../errors.js'
 import { resolveTtl } from '../../helpers.js'
 import type { Duration, RawCommonOptions } from '../../types/main.js'
 
@@ -145,7 +145,7 @@ export class CacheEntryOptions {
       return {
         type: 'soft',
         duration: this.timeout,
-        exception: exceptions.E_FACTORY_SOFT_TIMEOUT,
+        exception: errors.E_FACTORY_SOFT_TIMEOUT,
       }
     }
 
@@ -153,7 +153,7 @@ export class CacheEntryOptions {
       return {
         type: 'hard',
         duration: this.hardTimeout,
-        exception: exceptions.E_FACTORY_HARD_TIMEOUT,
+        exception: errors.E_FACTORY_HARD_TIMEOUT,
       }
     }
 

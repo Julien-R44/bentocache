@@ -1,11 +1,11 @@
 import type { MutexInterface } from 'async-mutex'
 
 import { Locks } from '../locks.js'
+import { errors } from '../../errors.js'
 import { events } from '../../events/index.js'
 import { FactoryRunner } from '../factory_runner.js'
 import type { Factory } from '../../types/helpers.js'
 import type { CacheEvent } from '../../types/events.js'
-import { E_FACTORY_SOFT_TIMEOUT } from '../../errors.js'
 import type { CacheStack } from '../stack/cache_stack.js'
 import type { CacheEntry } from '../cache_entry/cache_entry.js'
 import type { CacheStackWriter } from '../stack/cache_stack_writer.js'
@@ -178,7 +178,7 @@ export class TwoTierHandler {
        * If we hitted a soft timeout and we have a graced value, returns it
        */
       const staleItem = remoteItem ?? localItem
-      if (err instanceof E_FACTORY_SOFT_TIMEOUT && staleItem) {
+      if (err instanceof errors.E_FACTORY_SOFT_TIMEOUT && staleItem) {
         return this.#returnGracedValueOrThrow(key, staleItem, options, err)
       }
 
