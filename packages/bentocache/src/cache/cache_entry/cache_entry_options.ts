@@ -165,7 +165,7 @@ export class CacheEntryOptions {
      * Because if the soft timeout is reached, we will
      * return the stale value.
      */
-    if (hasFallbackValue && this.isGraceEnabled && this.timeouts.soft) {
+    if (hasFallbackValue && this.isGraceEnabled && typeof this.timeouts.soft === 'number') {
       return this.timeouts.soft
     }
 
