@@ -33,10 +33,10 @@ test.group('Prometheus Plugin', () => {
   test('register hit/miss/write/deletes events', async ({ assert }) => {
     const { bento, registry } = createCache()
 
-    await bento.get('foo')
-    await bento.set('foo', 'bar')
-    await bento.get('foo')
-    await bento.delete('foo')
+    await bento.get({ key: 'foo' })
+    await bento.set({ key: 'foo', value: 'bar' })
+    await bento.get({ key: 'foo' })
+    await bento.delete({ key: 'foo' })
 
     const hits = await registry.getSingleMetric('bentocache_hits')?.get()
     const misses = await registry.getSingleMetric('bentocache_misses')?.get()
@@ -52,17 +52,17 @@ test.group('Prometheus Plugin', () => {
   test('register graced hits', async ({ assert }) => {
     const { bento, registry } = createCache()
 
-    await bento.set('foo', 'bar', { ttl: 1, grace: '2' })
+    await bento.set({ key: 'foo', value: 'bar', ttl: 1, grace: '2h' })
 
     await sleep(400)
 
-    await bento.getOrSet(
-      'foo',
-      () => {
+    await bento.getOrSet({
+      key: 'foo',
+      factory: () => {
         throw new Error('Factory error')
       },
-      { grace: '2h' },
-    )
+      grace: '2h',
+    })
 
     const hits = await registry.getSingleMetric('bentocache_hits')?.get()
     const gracedHits = await registry.getSingleMetric('bentocache_graced_hits')?.get()
@@ -84,13 +84,13 @@ test.group('Prometheus Plugin', () => {
       ],
     })
 
-    await bento.set('posts:1', 'foo')
-    await bento.set('posts:2', 'bar')
+    await bento.set({ key: 'posts:1', value: 'foo' })
+    await bento.set({ key: 'posts:2', value: 'bar' })
 
-    await bento.get('users:1')
-    await bento.get('users:2')
-    await bento.get('posts:1')
-    await bento.get('posts:2')
+    await bento.get({ key: 'users:1' })
+    await bento.get({ key: 'users:2' })
+    await bento.get({ key: 'posts:1' })
+    await bento.get({ key: 'posts:2' })
 
     const hits = await registry.getSingleMetric('bentocache_hits')?.get()
     const misses = await registry.getSingleMetric('bentocache_misses')?.get()

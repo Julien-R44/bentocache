@@ -269,6 +269,9 @@ importers:
 
   packages/prometheus:
     devDependencies:
+      '@julr/utils':
+        specifier: ^1.4.0
+        version: 1.4.0
       bentocache:
         specifier: workspace:*
         version: link:../bentocache
@@ -284,18 +287,9 @@ importers:
       '@bentocache/plugin-prometheus':
         specifier: workspace:*
         version: link:../packages/prometheus
-      '@epic-web/cachified':
-        specifier: ^5.2.0
-        version: 5.2.0
       bentocache:
         specifier: workspace:*
         version: link:../packages/bentocache
-      dayjs:
-        specifier: ^1.11.13
-        version: 1.11.13
-      lru-cache:
-        specifier: ^11.0.2
-        version: 11.0.2
     devDependencies:
       cross-env:
         specifier: 7.0.3
@@ -787,9 +781,6 @@ packages:
         optional: true
       search-insights:
         optional: true
-
-  '@epic-web/cachified@5.2.0':
-    resolution: {integrity: sha512-E/2LdIhS/wcn3ykV+u5xbTFahKtzReO0k4/cVtE7KBYiLCgR6bPRmlDUuyfWhbZX3zOmK+6OL7qdHkvgCWwSiA==}
 
   '@es-joy/jsdoccomment@0.49.0':
     resolution: {integrity: sha512-xjZTSFgECpb9Ohuk5yMX5RhUEbfeQcuOp8IF60e+wyzWEF0M5xeSgqsfLtvPEX8BIyOX9saZqzuGPmZ8oWc+5Q==}
@@ -7139,8 +7130,6 @@ snapshots:
       search-insights: 2.13.0
     transitivePeerDependencies:
       - '@algolia/client-search'
-
-  '@epic-web/cachified@5.2.0': {}
 
   '@es-joy/jsdoccomment@0.49.0':
     dependencies:
