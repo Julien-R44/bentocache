@@ -11,7 +11,7 @@ test.group('Cache | Stampede protection', () => {
     assert,
   }) => {
     const { cache } = new CacheFactory()
-      .merge({ grace: '6h', timeouts: { soft: '100ms' } })
+      .merge({ grace: '6h', timeout: '100ms' })
       .withL1L2Config()
       .create()
 

@@ -8,7 +8,6 @@ import type {
   CacheSerializer,
   Duration,
   Emitter,
-  FactoryTimeoutOptions,
   Logger,
   RawBentoCacheOptions,
 } from './types/main.js'
@@ -50,10 +49,8 @@ export class BentoCacheOptions {
   /**
    * The soft and hard timeouts for the factories
    */
-  timeouts?: FactoryTimeoutOptions = {
-    soft: null,
-    hard: null,
-  }
+  timeout: Duration = 0
+  hardTimeout?: Duration = null
 
   /**
    * The logger used throughout the library
@@ -80,7 +77,8 @@ export class BentoCacheOptions {
 
     this.prefix = this.#options.prefix!
     this.ttl = this.#options.ttl!
-    this.timeouts = this.#options.timeouts
+    this.timeout = this.#options.timeout ?? 0
+    this.hardTimeout = this.#options.hardTimeout
     this.suppressL2Errors = this.#options.suppressL2Errors!
     this.lockTimeout = this.#options.lockTimeout
     this.grace = this.#options.grace!

@@ -6,7 +6,6 @@ import { memoryDriver } from '../src/drivers/memory.js'
 import type { Duration } from '../src/types/helpers.js'
 import type { CacheEvents } from '../src/types/events.js'
 import { CacheFactory } from '../factories/cache_factory.js'
-import type { FactoryTimeoutOptions } from '../src/types/main.js'
 import { BentoCacheFactory } from '../factories/bentocache_factory.js'
 
 test.group('Typings', () => {
@@ -136,7 +135,8 @@ test.group('Typings', () => {
 
     expectTypeOf(bento.getOrSet).parameter(0).exclude(undefined).toMatchTypeOf<{
       ttl?: Duration
-      timeouts?: FactoryTimeoutOptions
+      timeout?: Duration
+      hardTimeout?: Duration
       grace?: false | Duration
       suppressL2Errors?: boolean
       lockTimeout?: Duration
@@ -147,14 +147,14 @@ test.group('Typings', () => {
     const { bento } = new BentoCacheFactory().create()
 
     expectTypeOf(bento.get).parameter(0).exclude(undefined).not.toHaveProperty('lockTimeout')
-    expectTypeOf(bento.get).parameter(0).exclude(undefined).not.toHaveProperty('timeouts')
+    expectTypeOf(bento.get).parameter(0).exclude(undefined).not.toHaveProperty('timeout')
   })
 
   test('delete() options parameters typings', async ({ expectTypeOf }) => {
     const { bento } = new BentoCacheFactory().create()
 
     expectTypeOf(bento.delete).parameter(0).exclude(undefined).not.toHaveProperty('lockTimeout')
-    expectTypeOf(bento.delete).parameter(0).exclude(undefined).not.toHaveProperty('timeouts')
+    expectTypeOf(bento.delete).parameter(0).exclude(undefined).not.toHaveProperty('timeout')
     expectTypeOf(bento.delete).parameter(0).exclude(undefined).toHaveProperty('suppressL2Errors')
   })
 
@@ -162,7 +162,7 @@ test.group('Typings', () => {
     const { bento } = new BentoCacheFactory().create()
 
     expectTypeOf(bento.deleteMany).parameter(0).exclude(undefined).not.toHaveProperty('lockTimeout')
-    expectTypeOf(bento.deleteMany).parameter(0).exclude(undefined).not.toHaveProperty('timeouts')
+    expectTypeOf(bento.deleteMany).parameter(0).exclude(undefined).not.toHaveProperty('timeout')
     expectTypeOf(bento.deleteMany)
       .parameter(0)
       .exclude(undefined)
@@ -174,7 +174,8 @@ test.group('Typings', () => {
 
     expectTypeOf(bento.set).parameter(0).exclude(undefined).toMatchTypeOf<{
       ttl?: Duration
-      timeouts?: FactoryTimeoutOptions
+      timeout?: Duration
+      hardTimeout?: Duration
       grace?: false | Duration
       suppressL2Errors?: boolean
       lockTimeout?: Duration
@@ -186,7 +187,8 @@ test.group('Typings', () => {
 
     expectTypeOf(bento.setForever).parameter(0).exclude(undefined).toMatchTypeOf<{
       ttl?: Duration
-      timeouts?: FactoryTimeoutOptions
+      timeout?: Duration
+      hardTimeout?: Duration
       grace?: false | Duration
       suppressL2Errors?: boolean
       lockTimeout?: Duration

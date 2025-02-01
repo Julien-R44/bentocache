@@ -316,8 +316,13 @@ test.group('One tier tests', () => {
     assert.deepEqual(result2, { foo: 'bar' })
   })
 
-  test('grace period should not returns old value if factory doesnt throws', async ({ assert }) => {
-    const { cache } = new CacheFactory().withMemoryL1().merge({ ttl: 10, grace: '10m' }).create()
+  test('grace period should not returns old value if factory doesnt throws and soft timeout allows it', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory()
+      .withMemoryL1()
+      .merge({ ttl: 10, grace: '10m', timeout: '2s' })
+      .create()
 
     const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
 
@@ -330,7 +335,10 @@ test.group('One tier tests', () => {
   })
 
   test('should throws if graced value is now expired', async ({ assert }) => {
-    const { cache } = new CacheFactory().withMemoryL1().merge({ ttl: 10, grace: '100ms' }).create()
+    const { cache } = new CacheFactory()
+      .withMemoryL1()
+      .merge({ ttl: 10, grace: '100ms', timeout: '2s' })
+      .create()
 
     // init cache
     const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
@@ -356,7 +364,7 @@ test.group('One tier tests', () => {
   }) => {
     const { cache } = new CacheFactory()
       .withMemoryL1()
-      .merge({ ttl: 10, grace: '6h', graceBackoff: '0.5s' })
+      .merge({ ttl: 10, grace: '6h', graceBackoff: '0.5s', timeout: '2s' })
       .create()
 
     const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
@@ -392,7 +400,7 @@ test.group('One tier tests', () => {
   test('soft timeout should returns old value if factory take too long', async ({ assert }) => {
     const { cache } = new CacheFactory()
       .withMemoryL1()
-      .merge({ ttl: 100, timeouts: { soft: 500 }, grace: '10m' })
+      .merge({ ttl: 100, timeout: 500, grace: '10m' })
       .create()
 
     // init the cache

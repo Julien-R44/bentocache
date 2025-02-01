@@ -1,32 +1,30 @@
 import type { CacheSerializer, Duration, Emitter, Logger } from '../main.js'
 
 /**
- * Options for factory timeouts
- */
-export type FactoryTimeoutOptions = {
-  /**
-   * The soft timeout. Once this timeout is reached,
-   * the factory will try to return a graced value
-   * if available
-   */
-  soft?: Duration
-
-  /**
-   * The hard timeout. Once this timeout is reached,
-   * the factory will just throw an error that will
-   * bubble up. You will need to handle this error
-   */
-  hard?: Duration
-}
-
-/**
  * These options are common to :
  * - BentoCache global options
  * - Driver options
  * - Core methods
  */
 export type RawCommonOptions = {
-  timeouts?: FactoryTimeoutOptions
+  /**
+   * The soft timeout. Once this timeout is reached,
+   * the factory will try to return a graced value
+   * if available
+   *
+   * @default 0 Means, if a graced value is available, it will be returned
+   * immediately and the factory will be refreshed in the background
+   */
+  timeout?: Duration
+
+  /**
+   * The hard timeout. Once this timeout is reached,
+   * the factory will just throw an error that will
+   * bubble up. You will need to handle this error
+   *
+   * @default null Means, no hard timeout
+   */
+  hardTimeout?: Duration
 
   /**
    * The duration for which the entry will be

@@ -11,7 +11,7 @@ test.group('Soft Timeout', () => {
       .merge({
         ttl: 100,
         grace: '6h',
-        timeouts: { soft: 200 },
+        timeout: 200,
       })
       .withL1L2Config()
       .create()
@@ -46,7 +46,7 @@ test.group('Soft Timeout', () => {
 
   test('returns graced value in remote store when soft timeout is reached', async ({ assert }) => {
     const { cache, remote, stack } = new CacheFactory()
-      .merge({ ttl: 100, grace: '6h', timeouts: { soft: 200 } })
+      .merge({ ttl: 100, grace: '6h', timeout: 200 })
       .withL1L2Config()
       .create()
 
@@ -72,7 +72,7 @@ test.group('Soft Timeout', () => {
       .merge({
         ttl: 100,
         grace: '6h',
-        timeouts: { soft: 200 },
+        timeout: 200,
       })
       .withL1L2Config()
       .create()
@@ -90,7 +90,7 @@ test.group('Soft Timeout', () => {
       .merge({
         ttl: 100,
         grace: '6h',
-        timeouts: { soft: 200 },
+        timeout: 200,
       })
       .withL1L2Config()
       .create()
@@ -132,7 +132,7 @@ test.group('Soft Timeout', () => {
 
   test('background factory should save in local and remote', async ({ assert }) => {
     const { cache, local, remote, stack } = new CacheFactory()
-      .merge({ ttl: 100, grace: '6h', timeouts: { soft: 200 } })
+      .merge({ ttl: 100, grace: '6h', timeout: '200ms' })
       .withL1L2Config()
       .create()
 
@@ -158,7 +158,7 @@ test.group('Soft Timeout', () => {
       .merge({
         ttl: 100,
         grace: '6h',
-        timeouts: { soft: 200 },
+        timeout: 200,
       })
       .withL1L2Config()
       .create()
@@ -190,7 +190,7 @@ test.group('Soft Timeout', () => {
       .merge({
         ttl: 100,
         grace: '6h',
-        timeouts: { soft: 200 },
+        timeout: 200,
       })
       .withL1L2Config()
       .create()
@@ -220,7 +220,7 @@ test.group('Hard timeout', () => {
       .merge({
         ttl: 100,
         grace: '6h',
-        timeouts: { hard: 200 },
+        hardTimeout: 200,
       })
       .withL1L2Config()
       .create()
@@ -238,7 +238,7 @@ test.group('Hard timeout', () => {
       .merge({
         ttl: 100,
         grace: '6h',
-        timeouts: { hard: 200 },
+        hardTimeout: 200,
       })
       .withL1L2Config()
       .create()
@@ -257,22 +257,21 @@ test.group('Hard timeout', () => {
       .merge({
         ttl: 100,
         grace: '6h',
-        timeouts: { hard: 200 },
+        hardTimeout: 200,
       })
       .withL1L2Config()
       .create()
 
-    await cache.set({ key: 'key', value: 'graced value' })
-    await setTimeout(150)
-
-    const r1 = await cache.getOrSet({ key: 'key', factory: slowFactory(400, 'new factory value') })
+    const r1 = await cache
+      .getOrSet({ key: 'key', factory: slowFactory(400, 'new factory value') })
+      .catch(() => {})
 
     await setTimeout(210)
 
     const r2 = await local.get('key', stack.defaultOptions)
     const r3 = await remote.get('key', stack.defaultOptions)
 
-    assert.deepEqual(r1, 'graced value')
+    assert.deepEqual(r1, undefined)
     assert.deepEqual(r2?.getValue(), 'new factory value')
     assert.deepEqual(r3?.getValue(), 'new factory value')
   })

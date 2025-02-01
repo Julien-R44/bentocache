@@ -5,7 +5,7 @@ import type { Factory, GetSetFactory, RawCommonOptions } from '../main.js'
  */
 export type SetCommonOptions = Pick<
   RawCommonOptions,
-  'grace' | 'graceBackoff' | 'suppressL2Errors' | 'lockTimeout' | 'ttl' | 'timeouts'
+  'grace' | 'graceBackoff' | 'suppressL2Errors' | 'lockTimeout' | 'ttl' | 'timeout' | 'hardTimeout'
 >
 
 /**
@@ -21,7 +21,7 @@ export type GetOrSetForeverOptions<T> = {
   factory: GetSetFactory<T>
 } & Pick<
   RawCommonOptions,
-  'grace' | 'graceBackoff' | 'suppressL2Errors' | 'lockTimeout' | 'timeouts'
+  'grace' | 'graceBackoff' | 'suppressL2Errors' | 'lockTimeout' | 'timeout' | 'hardTimeout'
 >
 
 /**

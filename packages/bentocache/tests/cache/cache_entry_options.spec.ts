@@ -40,23 +40,25 @@ test.group('Cache Entry Options', () => {
   test('should assign timeouts', ({ assert }) => {
     const options = new CacheEntryOptions({
       ttl: '10m',
-      timeouts: { soft: '1m', hard: '2m' },
+      timeout: '1m',
+      hardTimeout: '2m',
     })
 
-    assert.deepEqual(options.timeouts?.soft, string.milliseconds.parse('1m'))
-    assert.deepEqual(options.timeouts?.hard, string.milliseconds.parse('2m'))
+    assert.deepEqual(options.timeout, string.milliseconds.parse('1m'))
+    assert.deepEqual(options.hardTimeout, string.milliseconds.parse('2m'))
   })
 
   test('should be able to override timeouts', ({ assert }) => {
     const options = new CacheEntryOptions({
       ttl: '10m',
-      timeouts: { soft: '1m', hard: '2m' },
+      timeout: '1m',
+      hardTimeout: '2m',
     })
 
-    const clone = options.cloneWith({ timeouts: { soft: '3m' } })
+    const clone = options.cloneWith({ timeout: '3m' })
 
-    assert.deepEqual(clone.timeouts?.soft, string.milliseconds.parse('3m'))
-    assert.deepEqual(clone.timeouts?.hard, string.milliseconds.parse('2m'))
+    assert.deepEqual(clone.timeout, string.milliseconds.parse('3m'))
+    assert.deepEqual(clone.hardTimeout, string.milliseconds.parse('2m'))
   })
 
   test('cloneWith should not mutate original', ({ assert }) => {
@@ -68,48 +70,41 @@ test.group('Cache Entry Options', () => {
   })
 
   test('timeout should be soft one if fallback value and grace period enabled', ({ assert }) => {
-    const options = new CacheEntryOptions({ grace: '30m', timeouts: { soft: '1m', hard: '2m' } })
+    const options = new CacheEntryOptions({ grace: '30m', timeout: '1m', hardTimeout: '2m' })
 
     assert.deepEqual(options.factoryTimeout(true), string.milliseconds.parse('1m'))
   })
 
   test('timeout should be hard one if fallback value but grace period disabled', ({ assert }) => {
-    const options = new CacheEntryOptions({ grace: false, timeouts: { soft: '1m', hard: '2m' } })
+    const options = new CacheEntryOptions({ grace: false, timeout: '1m', hardTimeout: '2m' })
     assert.deepEqual(options.factoryTimeout(true), string.milliseconds.parse('2m'))
   })
 
   test('timeout should be hard one if no fallback value and no grace period', ({ assert }) => {
-    const options = new CacheEntryOptions({ grace: false, timeouts: { soft: '1m', hard: '2m' } })
+    const options = new CacheEntryOptions({ grace: false, timeout: '1m', hardTimeout: '2m' })
     assert.deepEqual(options.factoryTimeout(false), string.milliseconds.parse('2m'))
   })
 
   test('no timeouts if not set', ({ assert }) => {
     const options = new CacheEntryOptions({})
 
-    assert.isUndefined(options.timeouts)
+    assert.isUndefined(options.timeout)
     assert.isUndefined(options.factoryTimeout(true))
     assert.isUndefined(options.factoryTimeout(false))
   })
 
   test('use default timeouts if not specified', ({ assert }) => {
-    const options = new CacheEntryOptions({}, { timeouts: { soft: '1m', hard: '2m' } })
+    const options = new CacheEntryOptions({}, { timeout: '1m', hardTimeout: '2m' })
 
-    assert.deepEqual(options.timeouts, {
-      soft: string.milliseconds.parse('1m'),
-      hard: string.milliseconds.parse('2m'),
-    })
+    assert.deepEqual(options.timeout, string.milliseconds.parse('1m'))
+    assert.deepEqual(options.hardTimeout, string.milliseconds.parse('2m'))
   })
 
   test('override default timeouts', ({ assert }) => {
-    const options = new CacheEntryOptions(
-      { timeouts: { soft: '1m' } },
-      { timeouts: { soft: '3m', hard: '4m' } },
-    )
+    const options = new CacheEntryOptions({ timeout: '1m' }, { timeout: '3m', hardTimeout: '4m' })
 
-    assert.deepEqual(options.timeouts, {
-      soft: string.milliseconds.parse('1m'),
-      hard: string.milliseconds.parse('4m'),
-    })
+    assert.deepEqual(options.timeout, string.milliseconds.parse('1m'))
+    assert.deepEqual(options.hardTimeout, string.milliseconds.parse('4m'))
   })
 
   test('setTtl should re-compute physical ttl', ({ assert }) => {

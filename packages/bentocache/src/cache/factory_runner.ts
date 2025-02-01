@@ -55,7 +55,7 @@ export class FactoryRunner {
   ) {
     const timeoutDuration = options.factoryTimeout(hasFallback)
     const timeoutException =
-      timeoutDuration === options.timeouts?.hard
+      timeoutDuration === options.hardTimeout
         ? exceptions.E_FACTORY_HARD_TIMEOUT
         : exceptions.E_FACTORY_SOFT_TIMEOUT
 
@@ -66,7 +66,7 @@ export class FactoryRunner {
     const factoryPromise = promisifiedFactory()
 
     const factoryResult = await pTimeout(factoryPromise, {
-      milliseconds: timeoutDuration ?? Number.POSITIVE_INFINITY,
+      milliseconds: !timeoutDuration ? Number.POSITIVE_INFINITY : timeoutDuration,
       fallback: async () => {
         factoryPromise
           .then((result) => this.saveBackgroundFactoryResult(key, result, options, lockReleaser))

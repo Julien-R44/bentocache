@@ -226,7 +226,10 @@ test.group('Cache', () => {
   test('should returns old value if factory throws and grace enabled', async ({ assert }) => {
     assert.plan(3)
 
-    const { cache } = new CacheFactory().withL1L2Config().merge({ ttl: 100, grace: '10m' }).create()
+    const { cache } = new CacheFactory()
+      .withL1L2Config()
+      .merge({ ttl: 100, grace: '10m', timeout: null })
+      .create()
 
     // init first value
     const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
@@ -248,8 +251,13 @@ test.group('Cache', () => {
     assert.deepEqual(r2, { foo: 'bar' })
   })
 
-  test('grace period should not returns old value if cb doesnt throws', async ({ assert }) => {
-    const { cache } = new CacheFactory().withL1L2Config().merge({ grace: '10m' }).create()
+  test('grace period should not returns old value if cb doesnt throws and soft timeout allows it', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory()
+      .withL1L2Config()
+      .merge({ grace: '10m', timeout: '2s' })
+      .create()
 
     const r1 = await cache.getOrSet({ key: 'key1', ttl: '10ms', factory: () => ({ foo: 'bar' }) })
     await setTimeout(100)

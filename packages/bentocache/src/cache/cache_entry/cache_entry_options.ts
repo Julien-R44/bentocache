@@ -33,10 +33,8 @@ export class CacheEntryOptions {
   /**
    * Timeouts for the cache operations
    */
-  timeouts?: {
-    soft?: number
-    hard?: number
-  }
+  timeout?: number
+  hardTimeout?: number
 
   /**
    * Resolved grace period options
@@ -52,18 +50,14 @@ export class CacheEntryOptions {
   constructor(options: RawCommonOptions = {}, defaults: Partial<RawCommonOptions> = {}) {
     this.id = toId()
 
-    const timeouts = { ...defaults.timeouts, ...options.timeouts }
-    this.#options = {
-      ...defaults,
-      ...options,
-      timeouts: Object.keys(timeouts).length ? timeouts : undefined,
-    }
+    this.#options = { ...defaults, ...options }
 
     this.grace = this.#resolveGrace()
     this.graceBackoff = resolveTtl(this.#options.graceBackoff, null) ?? 0
     this.logicalTtl = this.#resolveLogicalTtl()
     this.physicalTtl = this.#resolvePhysicalTtl()
-    this.timeouts = this.#resolveTimeouts()
+    this.timeout = resolveTtl(this.#options.timeout, null)
+    this.hardTimeout = resolveTtl(this.#options.hardTimeout, null)
     this.lockTimeout = resolveTtl(this.#options.lockTimeout, null)
   }
 
@@ -73,19 +67,6 @@ export class CacheEntryOptions {
   #resolveGrace() {
     if (this.#options.grace === false) return 0
     return resolveTtl(this.#options.grace, null) ?? 0
-  }
-
-  /**
-   * Resolve the timeouts to a duration in milliseconds
-   */
-  #resolveTimeouts() {
-    const timeouts = this.#options.timeouts
-    if (!timeouts) return undefined
-
-    return {
-      soft: resolveTtl(timeouts.soft, null),
-      hard: resolveTtl(timeouts.hard, null),
-    }
   }
 
   /**
@@ -158,18 +139,11 @@ export class CacheEntryOptions {
    * factory
    */
   factoryTimeout(hasFallbackValue: boolean) {
-    if (!this.timeouts) return undefined
-
-    /**
-     * If grace period is enabled, we should use the soft timeout.
-     * Because if the soft timeout is reached, we will
-     * return the stale value.
-     */
-    if (hasFallbackValue && this.isGraceEnabled && typeof this.timeouts.soft === 'number') {
-      return this.timeouts.soft
+    if (hasFallbackValue && this.isGraceEnabled && typeof this.timeout === 'number') {
+      return this.timeout
     }
 
-    return this.timeouts.hard
+    return this.hardTimeout
   }
 
   /**
@@ -186,8 +160,8 @@ export class CacheEntryOptions {
      * that means we should wait at most for the soft timeout
      * duration.
      */
-    if (hasFallbackValue && this.isGraceEnabled && this.timeouts?.soft) {
-      return this.timeouts.soft
+    if (hasFallbackValue && this.isGraceEnabled && this.timeout) {
+      return this.timeout
     }
   }
 }
