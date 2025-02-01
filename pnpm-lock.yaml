@@ -179,8 +179,8 @@ importers:
         specifier: ^0.7.0
         version: 0.7.0(ioredis@5.4.2)
       '@julr/utils':
-        specifier: ^1.3.0
-        version: 1.3.0
+        specifier: ^1.4.0
+        version: 1.4.0
       '@poppinss/utils':
         specifier: ^6.9.2
         version: 6.9.2
@@ -1318,8 +1318,8 @@ packages:
   '@julr/tooling-configs@3.1.0':
     resolution: {integrity: sha512-jLEF3t1N7M+/7BpuZVrvIndIYIA8Eayo44r0EnSsrH1saTPS7umFvtdVkKChDCc0ndEG/TXRIgBgD6N5jw3FAg==}
 
-  '@julr/utils@1.3.0':
-    resolution: {integrity: sha512-4cdsqYkrYVVW7bOccktndL8tDR/icaDwB69DtmS0Zj5SKcooABTXT+AHgd7Y0tPAcWutTRUx5vqI3uyk/RJlJQ==}
+  '@julr/utils@1.4.0':
+    resolution: {integrity: sha512-7jTNwDGAkzX8vqPEeVupjCcizig+TjRZHmXd9YdwfEYnDcx1p3Y7/ZQOfEpC+Y/VT7uTKOG3YpO/pJ3lVzYv5g==}
 
   '@keyv/redis@3.0.1':
     resolution: {integrity: sha512-eyqzomQC76LjUOEkPP8rdR2Fk4eZBSS0Ma47i7CNiQuv8NCw3trZvghx8L5Xruk7XPEj/eRAMrAxP//xQFOPdQ==}
@@ -7591,8 +7591,9 @@ snapshots:
       - supports-color
       - typescript
 
-  '@julr/utils@1.3.0':
+  '@julr/utils@1.4.0':
     dependencies:
+      '@lukeed/ms': 2.0.2
       bytes: 3.1.2
 
   '@keyv/redis@3.0.1':
