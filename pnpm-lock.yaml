@@ -179,8 +179,8 @@ importers:
         specifier: ^0.7.0
         version: 0.7.0(ioredis@5.4.2)
       '@julr/utils':
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.3.0
+        version: 1.3.0
       '@poppinss/utils':
         specifier: ^6.9.2
         version: 6.9.2
@@ -284,9 +284,18 @@ importers:
       '@bentocache/plugin-prometheus':
         specifier: workspace:*
         version: link:../packages/prometheus
+      '@epic-web/cachified':
+        specifier: ^5.2.0
+        version: 5.2.0
       bentocache:
         specifier: workspace:*
         version: link:../packages/bentocache
+      dayjs:
+        specifier: ^1.11.13
+        version: 1.11.13
+      lru-cache:
+        specifier: ^11.0.2
+        version: 11.0.2
     devDependencies:
       cross-env:
         specifier: 7.0.3
@@ -778,6 +787,9 @@ packages:
         optional: true
       search-insights:
         optional: true
+
+  '@epic-web/cachified@5.2.0':
+    resolution: {integrity: sha512-E/2LdIhS/wcn3ykV+u5xbTFahKtzReO0k4/cVtE7KBYiLCgR6bPRmlDUuyfWhbZX3zOmK+6OL7qdHkvgCWwSiA==}
 
   '@es-joy/jsdoccomment@0.49.0':
     resolution: {integrity: sha512-xjZTSFgECpb9Ohuk5yMX5RhUEbfeQcuOp8IF60e+wyzWEF0M5xeSgqsfLtvPEX8BIyOX9saZqzuGPmZ8oWc+5Q==}
@@ -1306,8 +1318,8 @@ packages:
   '@julr/tooling-configs@3.1.0':
     resolution: {integrity: sha512-jLEF3t1N7M+/7BpuZVrvIndIYIA8Eayo44r0EnSsrH1saTPS7umFvtdVkKChDCc0ndEG/TXRIgBgD6N5jw3FAg==}
 
-  '@julr/utils@1.2.0':
-    resolution: {integrity: sha512-KVkMMk4xuWvRbU7/w0dxicsWrDw0x3q0ydpLzP3Dhwqc5GZoL4/PzPWMYeuBs1BTnACYOYZ/eLHH5OYGShD+7g==}
+  '@julr/utils@1.3.0':
+    resolution: {integrity: sha512-4cdsqYkrYVVW7bOccktndL8tDR/icaDwB69DtmS0Zj5SKcooABTXT+AHgd7Y0tPAcWutTRUx5vqI3uyk/RJlJQ==}
 
   '@keyv/redis@3.0.1':
     resolution: {integrity: sha512-eyqzomQC76LjUOEkPP8rdR2Fk4eZBSS0Ma47i7CNiQuv8NCw3trZvghx8L5Xruk7XPEj/eRAMrAxP//xQFOPdQ==}
@@ -4096,10 +4108,6 @@ packages:
 
   loupe@3.1.3:
     resolution: {integrity: sha512-kkIp7XSkP78ZxJEsSxW3712C6teJVoeHHwgo9zJ380de7IYyJ2ISlxojcH2pC5OFLewESmnRi/+XCDIEEVyoug==}
-
-  lru-cache@10.2.2:
-    resolution: {integrity: sha512-9hp3Vp2/hFQUiIwKo8XCeFVnrg8Pk3TYNPIR7tJADKi5YfcF7vEaK7avFHTlSy3kOKYaJQaalfEo6YuXdceBOQ==}
-    engines: {node: 14 || >=16.14}
 
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
@@ -7132,6 +7140,8 @@ snapshots:
     transitivePeerDependencies:
       - '@algolia/client-search'
 
+  '@epic-web/cachified@5.2.0': {}
+
   '@es-joy/jsdoccomment@0.49.0':
     dependencies:
       comment-parser: 1.4.1
@@ -7581,7 +7591,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@julr/utils@1.2.0':
+  '@julr/utils@1.3.0':
     dependencies:
       bytes: 3.1.2
 
@@ -8863,7 +8873,7 @@ snapshots:
     dependencies:
       eventemitter3: 5.0.1
       lodash.clonedeep: 4.5.0
-      lru-cache: 10.2.2
+      lru-cache: 10.4.3
       promise-coalesce: 1.1.2
 
   call-bind@1.0.7:
@@ -10581,8 +10591,6 @@ snapshots:
   longest-streak@3.1.0: {}
 
   loupe@3.1.3: {}
-
-  lru-cache@10.2.2: {}
 
   lru-cache@10.4.3: {}
 

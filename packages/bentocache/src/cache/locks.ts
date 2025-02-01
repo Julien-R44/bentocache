@@ -1,3 +1,4 @@
+import { is } from '@julr/utils/is'
 import { Mutex, withTimeout, type MutexInterface } from 'async-mutex'
 
 export class Locks {
@@ -19,7 +20,7 @@ export class Locks {
       this.#locks.set(key, lock)
     }
 
-    return timeout ? withTimeout(lock, timeout) : lock
+    return is.number(timeout) ? withTimeout(lock, timeout) : lock
   }
 
   release(key: string, releaser: MutexInterface.Releaser) {

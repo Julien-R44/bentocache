@@ -15,4 +15,17 @@ test.group('Locks', () => {
       await lock2.acquire()
     }, 'timeout while waiting for mutex to become available')
   })
+
+  test('Lock with 0 as timeout should throw immediately', async ({ assert }) => {
+    const locks = new Locks()
+
+    const lock1 = locks.getOrCreateForKey('key1')
+    await lock1.acquire()
+
+    const lock2 = locks.getOrCreateForKey('key1', 0)
+
+    await assert.rejects(async () => {
+      await lock2.acquire()
+    }, 'timeout while waiting for mutex to become available')
+  })
 })
