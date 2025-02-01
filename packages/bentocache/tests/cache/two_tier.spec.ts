@@ -296,7 +296,7 @@ test.group('Cache', () => {
 
     assert.deepEqual(r1, { foo: 'bar' })
     assert.deepEqual(r2, { foo: 'bar' })
-    await assert.rejects(() => r3, /error in factory/)
+    await assert.rejects(() => r3, /Factory has thrown an error/)
   })
 
   test('should use the default graced duration when not defined', async ({ assert }) => {

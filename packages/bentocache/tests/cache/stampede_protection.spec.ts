@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
 
+import { errors } from '../../src/errors.js'
 import { RedisDriver } from '../../src/drivers/redis.js'
 import { MemoryDriver } from '../../src/drivers/memory.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
@@ -118,10 +119,13 @@ test.group('Cache | Stampede protection', () => {
       }),
     ])
 
-    assert.deepEqual(results, [
-      { status: 'rejected', reason: new Error('foo') },
-      { status: 'fulfilled', value: 'value' },
-    ])
+    assert.deepEqual(results[0].status, 'rejected')
+    // @ts-ignore
+    assert.instanceOf(results[0].reason, errors.E_FACTORY_ERROR)
+
+    assert.deepEqual(results[1].status, 'fulfilled')
+    // @ts-ignore
+    assert.deepEqual(results[1].value, 'value')
   })
 
   test('high concurrency but only one factory call')

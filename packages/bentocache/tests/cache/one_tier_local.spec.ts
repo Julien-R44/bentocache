@@ -356,7 +356,7 @@ test.group('One tier tests', () => {
 
     assert.deepEqual(r1, { foo: 'bar' })
     assert.deepEqual(r2, { foo: 'bar' })
-    await assert.rejects(async () => r3, 'Error in cb')
+    await assert.rejects(async () => r3, 'Factory has thrown an error')
   })
 
   test('if grace enabled with graceBackoff it should not try to call factory afterwards', async ({
