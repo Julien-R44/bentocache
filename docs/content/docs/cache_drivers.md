@@ -98,7 +98,8 @@ const bento = new BentoCache({
   default: 'memory',
   stores: {
     memory: bentostore().useL1Layer(memoryDriver({
-      maxSize: 10 * 1024 * 1024,
+      maxSize: '10mb',
+      maxEntrySize: '1mb',
       maxItems: 1000
     }))
   }
@@ -110,6 +111,8 @@ const bento = new BentoCache({
 | `maxSize`      | The maximum size of the cache **in bytes**.                                                                                                          | N/A     |
 | `maxItems`     | The maximum number of entries that the cache can contain. Note that fewer items may be stored if you are also using `maxSize` and the cache is full. | N/A     |
 | `maxEntrySize` | The maximum size of a single entry in bytes.                                                                                                         | N/A     |
+
+`maxSize` and `maxEntrySize` accept human-readable strings. We use [bytes](https://www.npmjs.com/package/bytes) under the hood so make sure to ensure the format is correct. A `number` can also be passed to these options.
 
 ## DynamoDB
 
