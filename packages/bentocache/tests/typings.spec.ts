@@ -6,8 +6,8 @@ import { memoryDriver } from '../src/drivers/memory.js'
 import type { Duration } from '../src/types/helpers.js'
 import type { CacheEvents } from '../src/types/events.js'
 import { CacheFactory } from '../factories/cache_factory.js'
+import type { FactoryTimeoutOptions } from '../src/types/main.js'
 import { BentoCacheFactory } from '../factories/bentocache_factory.js'
-import type { FactoryTimeoutOptions, GracePeriodOptions } from '../src/types/main.js'
 
 test.group('Typings', () => {
   test('named caches typings', async ({ expectTypeOf }) => {
@@ -137,7 +137,7 @@ test.group('Typings', () => {
     expectTypeOf(bento.getOrSet).parameter(2).exclude(undefined).toMatchTypeOf<{
       ttl?: Duration
       timeouts?: FactoryTimeoutOptions
-      gracePeriod?: GracePeriodOptions
+      grace?: false | Duration
       suppressL2Errors?: boolean
       lockTimeout?: Duration
     }>()
@@ -175,7 +175,7 @@ test.group('Typings', () => {
     expectTypeOf(bento.set).parameter(2).exclude(undefined).toMatchTypeOf<{
       ttl?: Duration
       timeouts?: FactoryTimeoutOptions
-      gracePeriod?: GracePeriodOptions
+      grace?: false | Duration
       suppressL2Errors?: boolean
       lockTimeout?: Duration
     }>()
@@ -187,14 +187,14 @@ test.group('Typings', () => {
     expectTypeOf(bento.setForever).parameter(2).exclude(undefined).toMatchTypeOf<{
       ttl?: Duration
       timeouts?: FactoryTimeoutOptions
-      gracePeriod?: GracePeriodOptions
+      grace?: false | Duration
       suppressL2Errors?: boolean
       lockTimeout?: Duration
     }>()
   })
 
   test('stores entries should accept raw options', async ({ expectTypeOf }) => {
-    expectTypeOf(bentostore).toBeCallableWith({ gracePeriod: { enabled: true } })
+    expectTypeOf(bentostore).toBeCallableWith({ grace: '4h' })
   })
 
   test('cant pass ttl when using getOrSetForever', async () => {

@@ -52,10 +52,7 @@ test.group('Prometheus Plugin', () => {
   test('register graced hits', async ({ assert }) => {
     const { bento, registry } = createCache()
 
-    await bento.set('foo', 'bar', {
-      ttl: 1,
-      gracePeriod: { enabled: true, duration: '2h' },
-    })
+    await bento.set('foo', 'bar', { ttl: 1, grace: '2' })
 
     await setTimeout(400)
 
@@ -64,7 +61,7 @@ test.group('Prometheus Plugin', () => {
       () => {
         throw new Error('Factory error')
       },
-      { gracePeriod: { enabled: true, duration: '2h' } },
+      { grace: '2h' },
     )
 
     const hits = await registry.getSingleMetric('bentocache_hits')?.get()

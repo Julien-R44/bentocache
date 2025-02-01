@@ -32,7 +32,8 @@ export class CacheFactory {
   #createCacheStack() {
     const options = new BentoCacheOptions({
       ttl: this.#parameters.ttl,
-      gracePeriod: this.#parameters.gracePeriod,
+      grace: this.#parameters.grace,
+      graceBackoff: this.#parameters.graceBackoff,
       timeouts: this.#parameters.timeouts,
       logger: this.#parameters.logger,
       emitter: this.#parameters.emitter,

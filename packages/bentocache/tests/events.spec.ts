@@ -175,13 +175,7 @@ test.group('Cache events', () => {
 
   test('a graced value should be marked as graced with get', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory()
-      .withL1L2Config()
-      .merge({
-        emitter,
-        gracePeriod: { enabled: true, duration: '2h' },
-      })
-      .create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter, grace: '2h' }).create()
 
     await cache.set('foo', 'bar', { ttl: '10ms' })
     await setTimeout(50)
@@ -195,13 +189,7 @@ test.group('Cache events', () => {
 
   test('a graced value should be marked as graced with getOrSet', async ({ assert }) => {
     const emitter = new EventEmitter()
-    const { cache } = new CacheFactory()
-      .withL1L2Config()
-      .merge({
-        emitter,
-        gracePeriod: { enabled: true, duration: '2h' },
-      })
-      .create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ emitter, grace: '2h' }).create()
 
     await cache.set('foo', 'bar', { ttl: '10ms' })
     await setTimeout(50)

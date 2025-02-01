@@ -5,7 +5,7 @@ import type { Factory, GetSetFactory, RawCommonOptions } from '../main.js'
  */
 export type GetOrSetOptions = Pick<
   RawCommonOptions,
-  'gracePeriod' | 'suppressL2Errors' | 'lockTimeout' | 'ttl' | 'timeouts'
+  'grace' | 'graceBackoff' | 'suppressL2Errors' | 'lockTimeout' | 'ttl' | 'timeouts'
 >
 
 /**
@@ -18,7 +18,7 @@ export type GetOrSetPojoOptions<T> = { key: string; factory: GetSetFactory<T> } 
  */
 export type GetOrSetForeverOptions = Pick<
   RawCommonOptions,
-  'gracePeriod' | 'suppressL2Errors' | 'lockTimeout' | 'timeouts'
+  'grace' | 'graceBackoff' | 'suppressL2Errors' | 'lockTimeout' | 'timeouts'
 >
 
 /**
@@ -42,7 +42,7 @@ export type SetPojoOptions = { key: string; value: any } & SetOptions
 /**
  * Options accepted by the `get` method
  */
-export type GetOptions = Pick<RawCommonOptions, 'gracePeriod' | 'suppressL2Errors'>
+export type GetOptions = Pick<RawCommonOptions, 'grace' | 'graceBackoff' | 'suppressL2Errors'>
 
 /**
  * Options accepted by the `get` method when passing an object

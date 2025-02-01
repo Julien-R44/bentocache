@@ -25,11 +25,7 @@ test.group('Bento Cache Options', () => {
 
     assert.deepEqual(options.ttl, '20m')
     assert.deepEqual(options.prefix, 'foo')
-    assert.deepEqual(options.gracePeriod, {
-      enabled: false,
-      duration: string.milliseconds.parse('6h'),
-      fallbackDuration: string.milliseconds.parse('10s'),
-    })
+    assert.deepEqual(options.grace, false)
     assert.deepEqual(options.suppressL2Errors, true)
   })
 })

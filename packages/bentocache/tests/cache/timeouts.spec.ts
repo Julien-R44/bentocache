@@ -10,7 +10,7 @@ test.group('Soft Timeout', () => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 100,
-        gracePeriod: { enabled: true, duration: '6h' },
+        grace: '6h',
         timeouts: { soft: 200 },
       })
       .withL1L2Config()
@@ -40,7 +40,7 @@ test.group('Soft Timeout', () => {
 
   test('returns graced value in remote store when soft timeout is reached', async ({ assert }) => {
     const { cache, remote, stack } = new CacheFactory()
-      .merge({ ttl: 100, gracePeriod: { enabled: true, duration: '6h' }, timeouts: { soft: 200 } })
+      .merge({ ttl: 100, grace: '6h', timeouts: { soft: 200 } })
       .withL1L2Config()
       .create()
 
@@ -65,7 +65,7 @@ test.group('Soft Timeout', () => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 100,
-        gracePeriod: { enabled: true, duration: '6h' },
+        grace: '6h',
         timeouts: { soft: 200 },
       })
       .withL1L2Config()
@@ -83,7 +83,7 @@ test.group('Soft Timeout', () => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 100,
-        gracePeriod: { enabled: true, duration: '6h', fallbackDuration: null },
+        grace: '6h',
         timeouts: { soft: 200 },
       })
       .withL1L2Config()
@@ -120,11 +120,7 @@ test.group('Soft Timeout', () => {
 
   test('background factory should save in local and remote', async ({ assert }) => {
     const { cache, local, remote, stack } = new CacheFactory()
-      .merge({
-        ttl: 100,
-        gracePeriod: { enabled: true, duration: '6h' },
-        timeouts: { soft: 200 },
-      })
+      .merge({ ttl: 100, grace: '6h', timeouts: { soft: 200 } })
       .withL1L2Config()
       .create()
 
@@ -149,7 +145,7 @@ test.group('Soft Timeout', () => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 100,
-        gracePeriod: { enabled: true, duration: '6h' },
+        grace: '6h',
         timeouts: { soft: 200 },
       })
       .withL1L2Config()
@@ -178,7 +174,7 @@ test.group('Soft Timeout', () => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 100,
-        gracePeriod: { enabled: true, duration: '6h' },
+        grace: '6h',
         timeouts: { soft: 200 },
       })
       .withL1L2Config()
@@ -205,7 +201,7 @@ test.group('Hard timeout', () => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 100,
-        gracePeriod: { enabled: true, duration: '6h' },
+        grace: '6h',
         timeouts: { hard: 200 },
       })
       .withL1L2Config()
@@ -223,7 +219,7 @@ test.group('Hard timeout', () => {
     const { cache } = new CacheFactory()
       .merge({
         ttl: 100,
-        gracePeriod: { enabled: true, duration: '6h' },
+        grace: '6h',
         timeouts: { hard: 200 },
       })
       .withL1L2Config()
@@ -242,7 +238,7 @@ test.group('Hard timeout', () => {
     const { cache, local, remote, stack } = new CacheFactory()
       .merge({
         ttl: 100,
-        gracePeriod: { enabled: true, duration: '6h' },
+        grace: '6h',
         timeouts: { hard: 200 },
       })
       .withL1L2Config()

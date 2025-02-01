@@ -45,7 +45,7 @@ export class LocalCache {
     /**
      * If grace period is disabled and Physical TTL is 0 or less, we can just delete the item.
      */
-    if (!options.isGracePeriodEnabled && options.physicalTtl && options.physicalTtl <= 0) {
+    if (!options.isGraceEnabled && options.physicalTtl && options.physicalTtl <= 0) {
       return this.delete(key, options)
     }
 

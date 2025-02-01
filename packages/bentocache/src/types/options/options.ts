@@ -20,28 +20,6 @@ export type FactoryTimeoutOptions = {
 }
 
 /**
- * Options for Grace periods
- */
-export type GracePeriodOptions = {
-  /**
-   * Whether to enable grace period
-   */
-  enabled: boolean
-
-  /**
-   * The duration for which entry could still be
-   * served after the TTL has expired
-   */
-  duration?: Duration
-
-  /**
-   * The duration for which the entry will be
-   * reconsidered valid after a failed refresh
-   */
-  fallbackDuration?: Duration
-}
-
-/**
  * These options are common to :
  * - BentoCache global options
  * - Driver options
@@ -59,7 +37,8 @@ export type RawCommonOptions = {
   /**
    * Grace period options
    */
-  gracePeriod?: GracePeriodOptions
+  grace?: false | Duration
+  graceBackoff?: Duration
 
   /**
    * Whether to suppress errors that occur when

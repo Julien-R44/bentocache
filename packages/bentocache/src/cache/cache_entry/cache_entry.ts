@@ -50,7 +50,7 @@ export class CacheEntry {
     return new CacheEntry(key, serializer.deserialize(item), serializer)
   }
 
-  applyFallbackDuration(duration: number) {
+  applyBackoff(duration: number) {
     this.#logicalExpiration += duration
     return this
   }

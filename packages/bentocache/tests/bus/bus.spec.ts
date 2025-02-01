@@ -240,12 +240,12 @@ test.group('Bus synchronization', () => {
     cleanup(() => remoteDriver.disconnect().catch(() => {}))
 
     const [cache1] = new CacheFactory()
-      .merge({ l2Driver: remoteDriver, gracePeriod: { enabled: true, duration: '12h' } })
+      .merge({ l2Driver: remoteDriver, grace: '12h' })
       .withL1L2Config()
       .create()
 
     const [cache2] = new CacheFactory()
-      .merge({ l2Driver: remoteDriver, ttl: 100, gracePeriod: { enabled: true, duration: '12h' } })
+      .merge({ l2Driver: remoteDriver, ttl: 100, grace: '12h' })
       .withL1L2Config()
       .create()
 

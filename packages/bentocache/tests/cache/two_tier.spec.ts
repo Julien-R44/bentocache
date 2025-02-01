@@ -69,7 +69,7 @@ test.group('Cache', () => {
   test('return remote item if logically expired and grace is enabled', async ({ assert }) => {
     const { cache, remote, stack } = new CacheFactory()
       .withL1L2Config()
-      .merge({ gracePeriod: { enabled: true } })
+      .merge({ grace: '10m' })
       .create()
 
     await remote.set(
@@ -87,7 +87,7 @@ test.group('Cache', () => {
   }) => {
     const { cache, remote, stack } = new CacheFactory()
       .withL1L2Config()
-      .merge({ gracePeriod: { enabled: false } })
+      .merge({ grace: false })
       .create()
 
     await remote.set(
@@ -103,7 +103,7 @@ test.group('Cache', () => {
   test('return local item if logically expired and grace is enabled', async ({ assert }) => {
     const { cache, local, stack } = new CacheFactory()
       .withL1L2Config()
-      .merge({ gracePeriod: { enabled: true } })
+      .merge({ grace: '10m' })
       .create()
 
     local.set(
@@ -121,7 +121,7 @@ test.group('Cache', () => {
   }) => {
     const { cache, local, stack } = new CacheFactory()
       .withL1L2Config()
-      .merge({ gracePeriod: { enabled: false } })
+      .merge({ grace: false })
       .create()
 
     local.set(
@@ -212,13 +212,7 @@ test.group('Cache', () => {
   test('should returns old value if factory throws and grace enabled', async ({ assert }) => {
     assert.plan(3)
 
-    const { cache } = new CacheFactory()
-      .withL1L2Config()
-      .merge({
-        ttl: 100,
-        gracePeriod: { enabled: true, duration: '10m' },
-      })
-      .create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ ttl: 100, grace: '10m' }).create()
 
     // init first value
     const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }))
@@ -238,10 +232,7 @@ test.group('Cache', () => {
   })
 
   test('grace period should not returns old value if cb doesnt throws', async ({ assert }) => {
-    const { cache } = new CacheFactory()
-      .withL1L2Config()
-      .merge({ gracePeriod: { enabled: true, duration: '10m' } })
-      .create()
+    const { cache } = new CacheFactory().withL1L2Config().merge({ grace: '10m' }).create()
 
     const r1 = await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '10ms' })
     await setTimeout(100)
@@ -253,10 +244,7 @@ test.group('Cache', () => {
   })
 
   test('should throws if graced value is outdated', async ({ assert }) => {
-    const { cache } = new CacheFactory()
-      .merge({ gracePeriod: { enabled: true, duration: '400ms' } })
-      .withL1L2Config()
-      .create()
+    const { cache } = new CacheFactory().merge({ grace: '400ms' }).withL1L2Config().create()
 
     // init factory
     const r1 = await cache.getOrSet({
@@ -289,7 +277,7 @@ test.group('Cache', () => {
   test('should use the default graced duration when not defined', async ({ assert }) => {
     const { cache, local, stack } = new CacheFactory()
       .withL1L2Config()
-      .merge({ gracePeriod: { enabled: true, duration: '2s', fallbackDuration: 0 } })
+      .merge({ grace: '2s' })
       .create()
 
     await cache.getOrSet('key1', () => ({ foo: 'bar' }), { ttl: '10ms' })
@@ -309,7 +297,7 @@ test.group('Cache', () => {
     const remoteDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
 
     const { cache } = new CacheFactory()
-      .merge({ l2Driver: remoteDriver, gracePeriod: { enabled: true, duration: '2h' } })
+      .merge({ l2Driver: remoteDriver, grace: '2h' })
       .withL1L2Config()
       .create()
 
@@ -587,7 +575,7 @@ test.group('Cache', () => {
     assert,
   }) => {
     const { cache, remote, stack } = new CacheFactory()
-      .merge({ gracePeriod: { enabled: true, duration: '10m' } })
+      .merge({ grace: '10m' })
       .withL1L2Config()
       .create()
 
@@ -605,7 +593,7 @@ test.group('Cache', () => {
     assert,
   }) => {
     const { cache, remote, stack } = new CacheFactory()
-      .merge({ gracePeriod: { enabled: true, duration: '10m' } })
+      .merge({ grace: '10m' })
       .withL1L2Config()
       .create()
 
@@ -654,7 +642,7 @@ test.group('Cache', () => {
     assert,
   }) => {
     const { cache, local, remote, stack } = new CacheFactory()
-      .merge({ gracePeriod: { enabled: true, duration: '6h' } })
+      .merge({ grace: '6h' })
       .withL1L2Config()
       .create()
 

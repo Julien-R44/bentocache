@@ -9,7 +9,6 @@ import type {
   Duration,
   Emitter,
   FactoryTimeoutOptions,
-  GracePeriodOptions as GracePeriodOptions,
   Logger,
   RawBentoCacheOptions,
 } from './types/main.js'
@@ -40,11 +39,8 @@ export class BentoCacheOptions {
   /**
    * The grace period options
    */
-  gracePeriod: GracePeriodOptions = {
-    enabled: false,
-    duration: string.milliseconds.parse('6h'),
-    fallbackDuration: string.milliseconds.parse('10s'),
-  }
+  grace: Duration | false = false
+  graceBackoff: Duration = string.milliseconds.parse('10s')
 
   /**
    * Whether to suppress L2 cache errors
@@ -87,7 +83,8 @@ export class BentoCacheOptions {
     this.timeouts = this.#options.timeouts
     this.suppressL2Errors = this.#options.suppressL2Errors!
     this.lockTimeout = this.#options.lockTimeout
-    this.gracePeriod = this.#options.gracePeriod!
+    this.grace = this.#options.grace!
+    this.graceBackoff = this.#options.graceBackoff!
 
     this.emitter = this.#options.emitter!
     this.serializer = this.#options.serializer ?? defaultSerializer

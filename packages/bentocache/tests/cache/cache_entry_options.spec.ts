@@ -5,8 +5,8 @@ import { CacheEntryOptions } from '../../src/cache/cache_entry/cache_entry_optio
 
 test.group('Cache Entry Options', () => {
   test('override defaults', ({ assert }) => {
-    const override = { ttl: '10m', gracePeriod: { enabled: true, duration: '30m' } }
-    const defaults = { ttl: '1h', gracePeriod: { enabled: false, duration: '1h' } }
+    const override = { ttl: '10m', grace: '30m' }
+    const defaults = { ttl: '1h', grace: '1h' }
 
     const options = new CacheEntryOptions(override, defaults)
 
@@ -21,29 +21,17 @@ test.group('Cache Entry Options', () => {
   })
 
   test('physical ttl should be grace period ttl when enabled', ({ assert }) => {
-    const options = new CacheEntryOptions({
-      ttl: '10m',
-      gracePeriod: { enabled: true, duration: '30m' },
-    })
-
+    const options = new CacheEntryOptions({ ttl: '10m', grace: '30m' })
     assert.equal(options.physicalTtl, string.milliseconds.parse('30m'))
   })
 
   test('null ttl should be kept and resolved to undefined', ({ assert }) => {
-    const options = new CacheEntryOptions({
-      ttl: null,
-      gracePeriod: { enabled: true, duration: '30m' },
-    })
-
+    const options = new CacheEntryOptions({ ttl: null, grace: '30m' })
     assert.deepEqual(options.logicalTtl, undefined)
   })
 
   test('clone with null ttl should be kept and resolved as undefined', ({ assert }) => {
-    const options = new CacheEntryOptions({
-      ttl: '10m',
-      gracePeriod: { enabled: true, duration: '30m' },
-    })
-
+    const options = new CacheEntryOptions({ ttl: '10m', grace: '30m' })
     const clone = options.cloneWith({ ttl: null })
 
     assert.deepEqual(clone.logicalTtl, undefined)
@@ -72,37 +60,26 @@ test.group('Cache Entry Options', () => {
   })
 
   test('cloneWith should not mutate original', ({ assert }) => {
-    const r1 = new CacheEntryOptions({ gracePeriod: { enabled: false, duration: '30m' } })
-    const r2 = r1.cloneWith({ gracePeriod: { enabled: true, duration: '60m' } })
+    const r1 = new CacheEntryOptions({ grace: false })
+    const r2 = r1.cloneWith({ grace: '60m' })
 
-    assert.isFalse(r1.isGracePeriodEnabled)
-    assert.isTrue(r2.isGracePeriodEnabled)
+    assert.isFalse(r1.isGraceEnabled)
+    assert.isTrue(r2.isGraceEnabled)
   })
 
   test('timeout should be soft one if fallback value and grace period enabled', ({ assert }) => {
-    const options = new CacheEntryOptions({
-      gracePeriod: { enabled: true, duration: '30m' },
-      timeouts: { soft: '1m', hard: '2m' },
-    })
+    const options = new CacheEntryOptions({ grace: '30m', timeouts: { soft: '1m', hard: '2m' } })
 
     assert.deepEqual(options.factoryTimeout(true), string.milliseconds.parse('1m'))
   })
 
   test('timeout should be hard one if fallback value but grace period disabled', ({ assert }) => {
-    const options = new CacheEntryOptions({
-      gracePeriod: { enabled: false, duration: '30m' },
-      timeouts: { soft: '1m', hard: '2m' },
-    })
-
+    const options = new CacheEntryOptions({ grace: false, timeouts: { soft: '1m', hard: '2m' } })
     assert.deepEqual(options.factoryTimeout(true), string.milliseconds.parse('2m'))
   })
 
   test('timeout should be hard one if no fallback value and no grace period', ({ assert }) => {
-    const options = new CacheEntryOptions({
-      gracePeriod: { enabled: false, duration: '30m' },
-      timeouts: { soft: '1m', hard: '2m' },
-    })
-
+    const options = new CacheEntryOptions({ grace: false, timeouts: { soft: '1m', hard: '2m' } })
     assert.deepEqual(options.factoryTimeout(false), string.milliseconds.parse('2m'))
   })
 

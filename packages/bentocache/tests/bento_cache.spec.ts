@@ -133,14 +133,11 @@ test.group('Bento Cache', () => {
     const bento = new BentoCache({
       default: 'a1',
       ttl: '12h',
-      gracePeriod: {
-        enabled: true,
-        duration: '24h',
-      },
+      grace: '24h',
       stores: {
-        a1: bentostore({
-          gracePeriod: { enabled: true, duration: '12h' },
-        }).useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'one' })),
+        a1: bentostore({ grace: '12h' }).useL2Layer(
+          redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'one' }),
+        ),
 
         a2: bentostore().useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'two' })),
       },
@@ -170,12 +167,12 @@ test.group('Bento Cache', () => {
     const bento = new BentoCache({
       default: 'a1',
       stores: {
-        a1: bentostore({
-          gracePeriod: { enabled: true, duration: '6h' },
-        }).useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'one' })),
-        a2: bentostore({
-          gracePeriod: { enabled: true, duration: '12h' },
-        }).useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'two' })),
+        a1: bentostore({ grace: '6h' }).useL2Layer(
+          redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'one' }),
+        ),
+        a2: bentostore({ grace: '12h' }).useL2Layer(
+          redisDriver({ connection: REDIS_CREDENTIALS, prefix: 'two' }),
+        ),
       },
     })
 

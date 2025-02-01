@@ -41,7 +41,8 @@ export class CacheEntryOptions {
   /**
    * Resolved grace period options
    */
-  gracePeriod: { enabled: false } | { enabled: true; duration?: number; fallbackDuration?: number }
+  grace: number
+  graceBackoff: number
 
   /**
    * Max time to wait for the lock to be acquired
@@ -55,30 +56,23 @@ export class CacheEntryOptions {
     this.#options = {
       ...defaults,
       ...options,
-      gracePeriod: { ...defaults.gracePeriod, ...options.gracePeriod } as any,
       timeouts: Object.keys(timeouts).length ? timeouts : undefined,
     }
 
+    this.grace = this.#resolveGrace()
+    this.graceBackoff = resolveTtl(this.#options.graceBackoff, null) ?? 0
     this.logicalTtl = this.#resolveLogicalTtl()
     this.physicalTtl = this.#resolvePhysicalTtl()
     this.timeouts = this.#resolveTimeouts()
-    this.gracePeriod = this.#resolveGracePeriod()
     this.lockTimeout = resolveTtl(this.#options.lockTimeout, null)
   }
 
   /**
    * Resolve the grace period options
    */
-  #resolveGracePeriod() {
-    if (!this.#options.gracePeriod || !this.#options.gracePeriod.enabled) {
-      return { enabled: false }
-    }
-
-    return {
-      enabled: true,
-      duration: resolveTtl(this.#options.gracePeriod.duration),
-      fallbackDuration: resolveTtl(this.#options.gracePeriod.fallbackDuration),
-    }
+  #resolveGrace() {
+    if (this.#options.grace === false) return 0
+    return resolveTtl(this.#options.grace, null) ?? 0
   }
 
   /**
@@ -120,13 +114,11 @@ export class CacheEntryOptions {
    * is the same as the logical TTL
    */
   #resolvePhysicalTtl() {
-    return this.isGracePeriodEnabled
-      ? resolveTtl(this.#options.gracePeriod!.duration)
-      : this.logicalTtl
+    return this.isGraceEnabled ? this.grace : this.logicalTtl
   }
 
-  get isGracePeriodEnabled() {
-    return this.#options.gracePeriod?.enabled
+  get isGraceEnabled() {
+    return this.grace > 0
   }
 
   get suppressL2Errors() {
@@ -173,7 +165,7 @@ export class CacheEntryOptions {
      * Because if the soft timeout is reached, we will
      * return the stale value.
      */
-    if (hasFallbackValue && this.isGracePeriodEnabled && this.timeouts.soft) {
+    if (hasFallbackValue && this.isGraceEnabled && this.timeouts.soft) {
       return this.timeouts.soft
     }
 
@@ -194,7 +186,7 @@ export class CacheEntryOptions {
      * that means we should wait at most for the soft timeout
      * duration.
      */
-    if (hasFallbackValue && this.isGracePeriodEnabled && this.timeouts?.soft) {
+    if (hasFallbackValue && this.isGraceEnabled && this.timeouts?.soft) {
       return this.timeouts.soft
     }
   }
