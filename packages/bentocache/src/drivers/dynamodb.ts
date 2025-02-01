@@ -1,4 +1,4 @@
-import chunkify from 'chunkify'
+import { chunkify } from '@julr/utils/array/chunkify'
 import {
   DynamoDBClient,
   GetItemCommand,
