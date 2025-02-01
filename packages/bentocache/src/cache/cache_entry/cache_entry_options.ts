@@ -1,5 +1,7 @@
 import { hexoid } from 'hexoid'
+import { is } from '@julr/utils/is'
 
+import * as exceptions from '../../errors.js'
 import { resolveTtl } from '../../helpers.js'
 import type { Duration, RawCommonOptions } from '../../types/main.js'
 
@@ -139,11 +141,30 @@ export class CacheEntryOptions {
    * factory
    */
   factoryTimeout(hasFallbackValue: boolean) {
-    if (hasFallbackValue && this.isGraceEnabled && typeof this.timeout === 'number') {
-      return this.timeout
+    if (hasFallbackValue && this.isGraceEnabled && is.number(this.timeout)) {
+      return {
+        type: 'soft',
+        duration: this.timeout,
+        exception: exceptions.E_FACTORY_SOFT_TIMEOUT,
+      }
     }
 
-    return this.hardTimeout
+    if (this.hardTimeout) {
+      return {
+        type: 'hard',
+        duration: this.hardTimeout,
+        exception: exceptions.E_FACTORY_HARD_TIMEOUT,
+      }
+    }
+
+    return
+  }
+
+  /**
+   * Determine if we should use the SWR strategy
+   */
+  shouldSwr(hasFallback: boolean) {
+    return this.isGraceEnabled && this.timeout === 0 && hasFallback
   }
 
   /**
@@ -160,7 +181,7 @@ export class CacheEntryOptions {
      * that means we should wait at most for the soft timeout
      * duration.
      */
-    if (hasFallbackValue && this.isGraceEnabled && this.timeout) {
+    if (hasFallbackValue && this.isGraceEnabled && typeof this.timeout === 'number') {
       return this.timeout
     }
   }

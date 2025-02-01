@@ -22,7 +22,7 @@ export class TwoTierHandler {
     protected stack: CacheStack,
     protected stackWriter: CacheStackWriter,
   ) {
-    this.#factoryRunner = new FactoryRunner(this.stack, this.stackWriter, this.#locks)
+    this.#factoryRunner = new FactoryRunner(this.stackWriter, this.#locks)
   }
 
   get logger() {
@@ -170,7 +170,9 @@ export class TwoTierHandler {
 
     try {
       const hasFallback = !!localItem || !!remoteItem
-      return await this.#factoryRunner.run(key, factory, hasFallback, options, releaser)
+      const result = await this.#factoryRunner.run(key, factory, hasFallback, options, releaser)
+      this.#emit(new events.CacheMiss(key, this.stack.name))
+      return result
     } catch (err) {
       /**
        * If we hitted a soft timeout and we have a graced value, returns it

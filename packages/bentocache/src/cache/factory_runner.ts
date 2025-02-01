@@ -3,8 +3,6 @@ import type { MutexInterface } from 'async-mutex'
 
 import type { Locks } from './locks.js'
 import * as exceptions from '../errors.js'
-import { events } from '../events/index.js'
-import type { CacheStack } from './stack/cache_stack.js'
 import type { GetSetFactory } from '../types/helpers.js'
 import type { CacheStackWriter } from './stack/cache_stack_writer.js'
 import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
@@ -13,37 +11,35 @@ import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
  * Factory Runner is responsible for executing factories
  */
 export class FactoryRunner {
-  #stack: CacheStack
   #stackWriter: CacheStackWriter
   #locks: Locks
 
-  constructor(stack: CacheStack, stackWriter: CacheStackWriter, locks: Locks) {
-    this.#stack = stack
+  constructor(stackWriter: CacheStackWriter, locks: Locks) {
     this.#stackWriter = stackWriter
     this.#locks = locks
   }
 
-  async saveBackgroundFactoryResult(
+  async #runFactory(
     key: string,
-    factoryResult: unknown,
+    factory: GetSetFactory,
     options: CacheEntryOptions,
     lockReleaser: MutexInterface.Releaser,
+    isBackground = false,
   ) {
-    await this.#stackWriter.set(key, factoryResult, options)
-    this.#locks.release(key, lockReleaser)
-  }
+    try {
+      const result = await factory({
+        setTtl: (ttl) => options.setLogicalTtl(ttl),
+      })
 
-  async writeFactoryResult(
-    key: string,
-    item: unknown,
-    options: CacheEntryOptions,
-    lockReleaser: MutexInterface.Releaser,
-  ) {
-    await this.#stackWriter.set(key, item, options)
+      await this.#stackWriter.set(key, result, options)
+      return result
+    } catch (error) {
+      if (!isBackground) throw error
 
-    this.#stack.emit(new events.CacheMiss(key, this.#stack.name))
-    this.#stack.logger.trace({ key, cache: this.#stack.name, opId: options.id }, 'cache miss')
-    this.#locks.release(key, lockReleaser)
+      // TODO Global error handler
+    } finally {
+      this.#locks.release(key, lockReleaser)
+    }
   }
 
   async run(
@@ -53,31 +49,25 @@ export class FactoryRunner {
     options: CacheEntryOptions,
     lockReleaser: MutexInterface.Releaser,
   ) {
-    const timeoutDuration = options.factoryTimeout(hasFallback)
-    const timeoutException =
-      timeoutDuration === options.hardTimeout
-        ? exceptions.E_FACTORY_HARD_TIMEOUT
-        : exceptions.E_FACTORY_SOFT_TIMEOUT
+    const timeout = options.factoryTimeout(hasFallback)
 
-    const promisifiedFactory = async () => {
-      return await factory({ setTtl: (ttl) => options.setLogicalTtl(ttl) })
+    /**
+     * If the timeout is 0, we will not wait for the factory to resolve
+     * And immediately return the fallback value
+     */
+    if (options.shouldSwr(hasFallback)) {
+      this.#runFactory(key, factory, options, lockReleaser, true)
+      throw new exceptions.E_FACTORY_SOFT_TIMEOUT()
     }
 
-    const factoryPromise = promisifiedFactory()
-
-    const factoryResult = await pTimeout(factoryPromise, {
-      milliseconds: !timeoutDuration ? Number.POSITIVE_INFINITY : timeoutDuration,
+    const runFactory = this.#runFactory(key, factory, options, lockReleaser)
+    const result = await pTimeout(runFactory, {
+      milliseconds: timeout?.duration ?? Number.POSITIVE_INFINITY,
       fallback: async () => {
-        factoryPromise
-          .then((result) => this.saveBackgroundFactoryResult(key, result, options, lockReleaser))
-          .catch(() => {})
-          .finally(() => this.#locks.release(key, lockReleaser))
-
-        throw new timeoutException()
+        throw new timeout!.exception()
       },
     })
 
-    await this.writeFactoryResult(key, factoryResult, options, lockReleaser)
-    return factoryResult
+    return result
   }
 }

@@ -22,7 +22,7 @@ export class SingleTierHandler {
     protected stack: CacheStack,
     protected stackWriter: CacheStackWriter,
   ) {
-    this.#factoryRunner = new FactoryRunner(this.stack, this.stackWriter, this.#locks)
+    this.#factoryRunner = new FactoryRunner(this.stackWriter, this.#locks)
   }
 
   get logger() {
@@ -124,7 +124,7 @@ export class SingleTierHandler {
      */
     let releaser: MutexInterface.Releaser
     try {
-      releaser = await this.#acquireLock(key, false, options)
+      releaser = await this.#acquireLock(key, !!remoteItem, options)
     } catch (err) {
       return this.#returnGracedValueOrThrow(key, remoteItem, options, err)
     }
@@ -141,7 +141,9 @@ export class SingleTierHandler {
 
     try {
       const hasFallback = !!remoteItem
-      return await this.#factoryRunner.run(key, factory, hasFallback, options, releaser)
+      const result = await this.#factoryRunner.run(key, factory, hasFallback, options, releaser)
+      this.#emit(new events.CacheMiss(key, this.stack.name))
+      return result
     } catch (err) {
       /**
        * If we hitted a soft timeout and we have a graced value, returns it

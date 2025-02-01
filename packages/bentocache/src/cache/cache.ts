@@ -1,3 +1,5 @@
+import { is } from '@julr/utils/is'
+
 import { events } from '../events/index.js'
 import { CacheBusMessageType } from '../types/main.js'
 import type { CacheStack } from './stack/cache_stack.js'
@@ -35,7 +37,7 @@ export class Cache implements CacheProvider {
   }
 
   #resolveDefaultValue(defaultValue?: Factory) {
-    return typeof defaultValue === 'function' ? defaultValue() : (defaultValue ?? undefined)
+    return is.function(defaultValue) ? defaultValue() : (defaultValue ?? undefined)
   }
 
   /**

@@ -72,17 +72,17 @@ test.group('Cache Entry Options', () => {
   test('timeout should be soft one if fallback value and grace period enabled', ({ assert }) => {
     const options = new CacheEntryOptions({ grace: '30m', timeout: '1m', hardTimeout: '2m' })
 
-    assert.deepEqual(options.factoryTimeout(true), string.milliseconds.parse('1m'))
+    assert.deepEqual(options.factoryTimeout(true)?.duration, string.milliseconds.parse('1m'))
   })
 
   test('timeout should be hard one if fallback value but grace period disabled', ({ assert }) => {
     const options = new CacheEntryOptions({ grace: false, timeout: '1m', hardTimeout: '2m' })
-    assert.deepEqual(options.factoryTimeout(true), string.milliseconds.parse('2m'))
+    assert.deepEqual(options.factoryTimeout(true)?.duration, string.milliseconds.parse('2m'))
   })
 
   test('timeout should be hard one if no fallback value and no grace period', ({ assert }) => {
     const options = new CacheEntryOptions({ grace: false, timeout: '1m', hardTimeout: '2m' })
-    assert.deepEqual(options.factoryTimeout(false), string.milliseconds.parse('2m'))
+    assert.deepEqual(options.factoryTimeout(false)?.duration, string.milliseconds.parse('2m'))
   })
 
   test('no timeouts if not set', ({ assert }) => {
