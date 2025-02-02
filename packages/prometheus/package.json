@@ -1,7 +1,7 @@
 {
   "name": "@bentocache/plugin-prometheus",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Prometheus plugin for Bentocache",
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",
