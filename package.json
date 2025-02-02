@@ -12,6 +12,7 @@
   },
   "scripts": {
     "typecheck": "pnpm run -r --parallel typecheck",
+    "build": "pnpm run -r build",
     "lint": "eslint .",
     "checks": "pnpm lint && pnpm typecheck"
   },
