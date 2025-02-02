@@ -24,7 +24,7 @@
     "@japa/runner": "^4.2.0",
     "@julr/tooling-configs": "^3.1.0",
     "@swc/core": "^1.10.12",
-    "@types/node": "^22.12.0",
+    "@types/node": "^22.13.0",
     "c8": "^10.1.3",
     "copyfiles": "^2.4.1",
     "cross-env": "^7.0.3",

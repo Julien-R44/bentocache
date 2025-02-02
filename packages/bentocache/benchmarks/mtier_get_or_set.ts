@@ -1,5 +1,5 @@
 /**
- * Benchmark a single set operation on a tiered store ( memory + redis )
+ * Benchmark a single get operation on a tiered store ( memory + redis )
  */
 import 'dotenv/config'
 
@@ -8,6 +8,7 @@ import { Bench } from 'tinybench'
 import KeyvRedis from '@keyv/redis'
 import { createCache } from 'cache-manager'
 import { CacheableMemory } from 'cacheable'
+import { setTimeout } from 'node:timers/promises'
 
 import { BentoCache } from '../index.js'
 import { bentostore } from '../src/bento_store.js'
@@ -15,7 +16,7 @@ import { redisDriver } from '../src/drivers/redis.js'
 import { memoryDriver } from '../src/drivers/memory.js'
 import { REDIS_CREDENTIALS } from '../tests/helpers/index.js'
 
-const bench = new Bench()
+const bench = new Bench({})
 
 const bentocache = new BentoCache({
   default: 'tiered',
@@ -30,25 +31,31 @@ const bento = bentocache.use('tiered')
 
 const cacheManager = createCache({
   stores: [
-    new Keyv({
-      store: new CacheableMemory({ ttl: 60_000, lruSize: 5000 }),
-    }),
-
-    new Keyv({
-      store: new KeyvRedis('redis://localhost:6379'),
-    }),
+    new Keyv({ store: new CacheableMemory() }),
+    new Keyv({ store: new KeyvRedis('redis://localhost:6379') }),
   ],
 })
 
-await bento.set({ key: 'key', value: 'value' })
-await cacheManager.set('key', 'value')
+const getFromDb = async () => {
+  await setTimeout(400)
+  return 'value'
+}
 
 bench
   .add('BentoCache', async () => {
-    await bento.set({ key: 'key', value: 10 })
+    return await bento.getOrSet({
+      key: 'bento:key',
+      factory: getFromDb,
+      ttl: 100,
+    })
   })
   .add('CacheManager', async () => {
-    await cacheManager.set('key', 10)
+    const result = await cacheManager.get('cm:key')
+    if (result === null) {
+      await cacheManager.set('cm:key', await getFromDb(), 100)
+    }
+
+    return result ?? 'value'
   })
 
 await bench.run()

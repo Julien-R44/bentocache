@@ -6,8 +6,8 @@ import 'dotenv/config'
 import Keyv from 'keyv'
 import { Redis } from 'ioredis'
 import { Bench } from 'tinybench'
-import { caching } from 'cache-manager'
-import { redisStore } from 'cache-manager-ioredis-yet'
+import KeyvRedis from '@keyv/redis'
+import { createCache } from 'cache-manager'
 
 import { BentoCache } from '../index.js'
 import { bentostore } from '../src/bento_store.js'
@@ -23,9 +23,10 @@ const bentocache = new BentoCache({
   },
 })
 
-const keyv = new Keyv('redis://localhost:6379')
-
-const cacheManager = await caching(await redisStore({ host: 'localhost', port: 6379 }))
+const keyv = new Keyv(new KeyvRedis('redis://localhost:6379'))
+const cacheManager = await createCache({
+  stores: [new Keyv(new KeyvRedis('redis://localhost:6379'))],
+})
 
 await keyv.set('key', 'value')
 await bentocache.set({ key: 'key', value: 'value' })
@@ -53,6 +54,6 @@ console.table(bench.table())
 await Promise.all([
   bentocache.disconnectAll(),
   ioredis.quit(),
-  cacheManager.store.client.disconnect(),
+  cacheManager.disconnect(),
   keyv.disconnect(),
 ])

@@ -75,15 +75,15 @@ Note that event if errors are suppressed and not thrown, they will still be logg
 
 ### `grace`
 
-Default `undefined`
+Default `false`
 
 Levels: `global`, `store`, `operation`
 
-A duration to define the [grace period](./grace_periods.md).
+A duration to define the [grace period](./grace_periods.md). Also can be `false` to disable grace periods.
 
 ### `graceBackoff`
 
-Default: `undefined`
+Default: `10s`
 
 Levels: `global`, `store`, `operation`
 
