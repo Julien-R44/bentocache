@@ -33,7 +33,7 @@
     "prom-client": "^15.0.0"
   },
   "devDependencies": {
-    "@julr/utils": "^1.4.0",
+    "@julr/utils": "^1.5.0",
     "bentocache": "workspace:*",
     "prom-client": "^15.1.3"
   },

@@ -73,7 +73,7 @@
   },
   "dependencies": {
     "@boringnode/bus": "^0.7.0",
-    "@julr/utils": "^1.4.0",
+    "@julr/utils": "^1.5.0",
     "@poppinss/utils": "^6.9.2",
     "async-mutex": "^0.5.0",
     "hexoid": "^2.0.0",
@@ -81,7 +81,7 @@
     "p-timeout": "^6.1.4"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.738.0",
+    "@aws-sdk/client-dynamodb": "^3.741.0",
     "@keyv/redis": "^4.2.0",
     "@keyv/tiered": "^2.0.2",
     "@types/better-sqlite3": "^7.6.12",
@@ -97,7 +97,7 @@
     "knex": "^3.1.0",
     "kysely": "^0.27.5",
     "mysql2": "^3.12.0",
-    "orchid-orm": "^1.40.2",
+    "orchid-orm": "^1.41.0",
     "p-event": "^6.0.1",
     "pg": "^8.13.1",
     "pino": "^9.6.0",
