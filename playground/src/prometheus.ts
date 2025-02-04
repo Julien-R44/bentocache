@@ -36,12 +36,13 @@ server.listen(8080, () => {
 while (true) {
   const key = (Math.random() > 0.5 ? 'users' : 'posts') + ':' + Math.floor(Math.random() * 5)
   if (Math.random() > 0.8) {
-    await bento.delete(key)
+    await bento.delete({ key })
     continue
   }
 
-  const result = await bento.getOrSet(key, async () => {
-    return { hello: 'world' }
+  const result = await bento.getOrSet({
+    key,
+    factory: async () => ({ hello: 'world' }),
   })
 
   console.log('key', key, 'result', result)

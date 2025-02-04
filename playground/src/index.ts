@@ -49,7 +49,7 @@ const bento = new BentoCache({
   },
 })
 
-const result = await bento.get('foo')
+const result = await bento.get({ key: 'foo' })
 console.log(result)
 
 bento.disconnectAll()
