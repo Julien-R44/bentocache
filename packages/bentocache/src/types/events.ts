@@ -1,9 +1,5 @@
-import type { CacheHit } from '../events/cache/cache_hit.js'
-import type { CacheMiss } from '../events/cache/cache_miss.js'
-import type { CacheWritten } from '../events/cache/cache_written.js'
-import type { CacheCleared } from '../events/cache/cache_cleared.js'
-import type { CacheDeleted } from '../events/cache/cache_deleted.js'
-import type { BusMessagePublished } from '../events/bus/bus_message_published.js'
+import type { busEvents } from '../events/bus_events.js'
+import type { cacheEvents } from '../events/cache_events.js'
 
 /**
  * Shape of the emitter accepted by BentoCache
@@ -20,13 +16,13 @@ export interface Emitter {
  * Name/payload of the events emitted by the cache emitter
  */
 export type CacheEvents = {
-  'cache:cleared': ReturnType<CacheCleared['toJSON']>
-  'cache:deleted': ReturnType<CacheDeleted['toJSON']>
-  'cache:hit': ReturnType<CacheHit['toJSON']>
-  'cache:miss': ReturnType<CacheMiss['toJSON']>
-  'cache:written': ReturnType<CacheWritten['toJSON']>
-  'bus:message:published': ReturnType<BusMessagePublished['toJSON']>
-  'bus:message:received': ReturnType<BusMessagePublished['toJSON']>
+  'cache:cleared': ReturnType<typeof cacheEvents.cleared>['data']
+  'cache:deleted': ReturnType<typeof cacheEvents.deleted>['data']
+  'cache:hit': ReturnType<typeof cacheEvents.hit>['data']
+  'cache:miss': ReturnType<typeof cacheEvents.miss>['data']
+  'cache:written': ReturnType<typeof cacheEvents.written>['data']
+  'bus:message:published': ReturnType<typeof busEvents.messagePublished>['data']
+  'bus:message:received': ReturnType<typeof busEvents.messageReceived>['data']
 }
 
 /**
@@ -34,5 +30,5 @@ export type CacheEvents = {
  */
 export interface CacheEvent {
   name: keyof CacheEvents
-  toJSON: () => Record<string, any>
+  data: Record<string, any>
 }

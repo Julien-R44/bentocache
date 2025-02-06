@@ -1,10 +1,9 @@
-import { Bus as RlanzBus } from '@boringnode/bus'
+import { Bus as BoringBus } from '@boringnode/bus'
 import type { Transport } from '@boringnode/bus/types/main'
 
+import { busEvents } from '../events/bus_events.js'
 import { CacheBusMessageType } from '../types/bus.js'
 import type { LocalCache } from '../cache/facades/local_cache.js'
-import { BusMessageReceived } from '../events/bus/bus_message_received.js'
-import { BusMessagePublished } from '../events/bus/bus_message_published.js'
 import type { BusOptions, CacheBusMessage, Emitter, Logger } from '../types/main.js'
 
 /**
@@ -17,7 +16,7 @@ import type { BusOptions, CacheBusMessage, Emitter, Logger } from '../types/main
  * local cache accordingly.
  */
 export class Bus {
-  #bus: RlanzBus
+  #bus: BoringBus
   #logger: Logger
   #emitter: Emitter
   #localCaches: Map<string, LocalCache> = new Map()
@@ -33,7 +32,7 @@ export class Bus {
     this.#emitter = emitter
     this.#logger = logger.child({ context: 'bentocache.bus' })
 
-    this.#bus = new RlanzBus(driver, {
+    this.#bus = new BoringBus(driver, {
       retryQueue: {
         ...options.retryQueue,
         removeDuplicates: true,
@@ -65,7 +64,7 @@ export class Bus {
     if (!message.namespace || !this.#localCaches.has(message.namespace)) return
 
     this.#logger.trace({ ...message, channel: this.#channelName }, 'received message from bus')
-    this.#emitter.emit('bus:message:received', new BusMessageReceived(message))
+    this.#emitter.emit('bus:message:received', busEvents.messageReceived(message).data)
 
     const cache = this.#localCaches.get(message.namespace)
 
@@ -90,7 +89,7 @@ export class Bus {
   async publish(message: CacheBusMessage): Promise<boolean> {
     const wasPublished = await this.#bus.publish(this.#channelName, message)
     if (wasPublished) {
-      this.#emitter.emit('bus:message:published', new BusMessagePublished(message))
+      this.#emitter.emit('bus:message:published', busEvents.messagePublished(message).data)
       return true
     }
 

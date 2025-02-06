@@ -2,11 +2,11 @@ import type { MutexInterface } from 'async-mutex'
 
 import { Locks } from '../locks.js'
 import { errors } from '../../errors.js'
-import { events } from '../../events/index.js'
 import { FactoryRunner } from '../factory_runner.js'
 import type { Factory } from '../../types/helpers.js'
 import type { CacheEvent } from '../../types/events.js'
 import type { CacheStack } from '../stack/cache_stack.js'
+import { cacheEvents } from '../../events/cache_events.js'
 import type { CacheEntry } from '../cache_entry/cache_entry.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 
@@ -33,7 +33,7 @@ export class TwoTierHandler {
    * Emit a CacheEvent using the emitter
    */
   #emit(event: CacheEvent) {
-    return this.stack.emitter.emit(event.name, event.toJSON())
+    return this.stack.emitter.emit(event.name, event.data)
   }
 
   /**
@@ -48,7 +48,7 @@ export class TwoTierHandler {
     const isLogicallyExpired = item.isLogicallyExpired()
     logMsg = logMsg ?? 'local cache hit'
 
-    this.#emit(new events.CacheHit(key, item.getValue(), this.stack.name, isLogicallyExpired))
+    this.#emit(cacheEvents.hit(key, item.getValue(), this.stack.name, isLogicallyExpired))
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, logMsg)
 
     return item.getValue()
@@ -62,7 +62,7 @@ export class TwoTierHandler {
 
     this.stack.l1?.set(key, item.serialize(), options)
 
-    this.#emit(new events.CacheHit(key, item.getValue(), this.stack.name))
+    this.#emit(cacheEvents.hit(key, item.getValue(), this.stack.name))
     return item.getValue()
   }
 
@@ -105,7 +105,7 @@ export class TwoTierHandler {
     }
 
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'returns stale value')
-    this.#emit(new events.CacheHit(key, item.getValue(), this.stack.name, true))
+    this.#emit(cacheEvents.hit(key, item.getValue(), this.stack.name, true))
     return item.getValue()
   }
 
@@ -167,7 +167,7 @@ export class TwoTierHandler {
     try {
       const hasFallback = !!localItem || !!remoteItem
       const result = await this.#factoryRunner.run(key, factory, hasFallback, options, releaser)
-      this.#emit(new events.CacheMiss(key, this.stack.name))
+      this.#emit(cacheEvents.miss(key, this.stack.name))
       return result
     } catch (err) {
       /**

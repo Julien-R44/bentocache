@@ -6,7 +6,7 @@ import { UndefinedValueError } from '../../errors.js'
 import { LocalCache } from '../facades/local_cache.js'
 import { RemoteCache } from '../facades/remote_cache.js'
 import { BaseDriver } from '../../drivers/base_driver.js'
-import { CacheWritten } from '../../events/cache/cache_written.js'
+import { cacheEvents } from '../../events/cache_events.js'
 import type { BentoCacheOptions } from '../../bento_cache_options.js'
 import { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 import {
@@ -96,7 +96,7 @@ export class CacheStack extends BaseDriver {
   }
 
   emit(event: CacheEvent) {
-    return this.emitter.emit(event.name, event.toJSON())
+    return this.emitter.emit(event.name, event.data)
   }
 
   serialize(value: any) {
@@ -126,7 +126,7 @@ export class CacheStack extends BaseDriver {
     await this.l2?.set(key, item, options)
     await this.publish({ type: CacheBusMessageType.Set, keys: [key] })
 
-    this.emit(new CacheWritten(key, value, this.name))
+    this.emit(cacheEvents.written(key, value, this.name))
     return true
   }
 }

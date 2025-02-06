@@ -8,11 +8,6 @@
 export type Duration = number | string | null
 
 /**
- * A factory is a function that returns a value or a promise of a value
- */
-export type MaybePromise<T> = T | Promise<T>
-
-/**
  * A Factory is basically just a function that returns a value
  */
 export type Factory<T = any> = T | (() => T) | Promise<T> | (() => Promise<T>)

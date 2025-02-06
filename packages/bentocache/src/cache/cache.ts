@@ -1,7 +1,7 @@
 import { is } from '@julr/utils/is'
 
-import { events } from '../events/index.js'
 import { CacheBusMessageType } from '../types/main.js'
+import { cacheEvents } from '../events/cache_events.js'
 import type { CacheStack } from './stack/cache_stack.js'
 import type { CacheProvider } from '../types/provider.js'
 import { GetSetHandler } from './get_set/get_set_handler.js'
@@ -54,7 +54,7 @@ export class Cache implements CacheProvider {
     const localItem = this.#stack.l1?.get(key, options)
 
     if (localItem !== undefined && !localItem.isLogicallyExpired()) {
-      this.#stack.emit(new events.CacheHit(key, localItem.getValue(), this.name))
+      this.#stack.emit(cacheEvents.hit(key, localItem.getValue(), this.name))
       return localItem.getValue()
     }
 
@@ -62,27 +62,27 @@ export class Cache implements CacheProvider {
 
     if (remoteItem !== undefined && !remoteItem.isLogicallyExpired()) {
       this.#stack.l1?.set(key, remoteItem.serialize(), options)
-      this.#stack.emit(new events.CacheHit(key, remoteItem.getValue(), this.name))
+      this.#stack.emit(cacheEvents.hit(key, remoteItem.getValue(), this.name))
       return remoteItem.getValue()
     }
 
     if (!options.isGraceEnabled) {
-      this.#stack.emit(new events.CacheMiss(key, this.name))
+      this.#stack.emit(cacheEvents.miss(key, this.name))
       return this.#resolveDefaultValue(defaultValueFn)
     }
 
     if (remoteItem) {
       this.#stack.l1?.set(key, remoteItem.serialize(), options)
-      this.#stack.emit(new events.CacheHit(key, remoteItem.serialize(), this.name, true))
+      this.#stack.emit(cacheEvents.hit(key, remoteItem.serialize(), this.name, true))
       return remoteItem.getValue()
     }
 
     if (localItem) {
-      this.#stack.emit(new events.CacheHit(key, localItem.serialize(), this.name, true))
+      this.#stack.emit(cacheEvents.hit(key, localItem.serialize(), this.name, true))
       return localItem.getValue()
     }
 
-    this.#stack.emit(new events.CacheMiss(key, this.name))
+    this.#stack.emit(cacheEvents.miss(key, this.name))
     return this.#resolveDefaultValue(defaultValueFn)
   }
 
@@ -162,7 +162,7 @@ export class Cache implements CacheProvider {
     this.#stack.l1?.delete(key, cacheOptions)
     await this.#stack.l2?.delete(key, cacheOptions)
 
-    this.#stack.emit(new events.CacheDeleted(key, this.name))
+    this.#stack.emit(cacheEvents.deleted(key, this.name))
     await this.#stack.publish({ type: CacheBusMessageType.Delete, keys: [key] })
 
     return true
@@ -180,7 +180,7 @@ export class Cache implements CacheProvider {
     this.#stack.l1?.deleteMany(keys, cacheOptions)
     await this.#stack.l2?.deleteMany(keys, cacheOptions)
 
-    keys.forEach((key) => this.#stack.emit(new events.CacheDeleted(key, this.name)))
+    keys.forEach((key) => this.#stack.emit(cacheEvents.deleted(key, this.name)))
     await this.#stack.publish({ type: CacheBusMessageType.Delete, keys })
 
     return true
@@ -198,7 +198,7 @@ export class Cache implements CacheProvider {
       this.#stack.publish({ type: CacheBusMessageType.Clear, keys: [] }),
     ])
 
-    this.#stack.emit(new events.CacheCleared(this.name))
+    this.#stack.emit(cacheEvents.cleared(this.name))
   }
 
   /**

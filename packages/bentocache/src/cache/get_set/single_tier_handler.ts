@@ -2,11 +2,11 @@ import type { MutexInterface } from 'async-mutex'
 
 import { Locks } from '../locks.js'
 import { errors } from '../../errors.js'
-import { events } from '../../events/index.js'
 import { FactoryRunner } from '../factory_runner.js'
 import type { Factory } from '../../types/helpers.js'
 import type { CacheEvent } from '../../types/events.js'
 import type { CacheStack } from '../stack/cache_stack.js'
+import { cacheEvents } from '../../events/cache_events.js'
 import type { CacheEntry } from '../cache_entry/cache_entry.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 
@@ -33,7 +33,7 @@ export class SingleTierHandler {
    * Emit a CacheEvent using the emitter
    */
   #emit(event: CacheEvent) {
-    return this.stack.emitter.emit(event.name, event.toJSON())
+    return this.stack.emitter.emit(event.name, event.data)
   }
 
   /**
@@ -42,7 +42,7 @@ export class SingleTierHandler {
   async #returnRemoteCacheValue(key: string, item: CacheEntry, options: CacheEntryOptions) {
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'remote cache hit')
 
-    this.#emit(new events.CacheHit(key, item.getValue(), this.stack.name))
+    this.#emit(cacheEvents.hit(key, item.getValue(), this.stack.name))
     return item.getValue()
   }
 
@@ -65,7 +65,7 @@ export class SingleTierHandler {
   ) {
     if (options.isGraceEnabled && item) {
       const isLogicallyExpired = item.isLogicallyExpired()
-      this.#emit(new events.CacheHit(key, item.getValue(), this.stack.name, isLogicallyExpired))
+      this.#emit(cacheEvents.hit(key, item.getValue(), this.stack.name, isLogicallyExpired))
       this.logger.trace(
         { key, cache: this.stack.name, opId: options.id },
         'remote cache hit (graced)',
@@ -92,7 +92,7 @@ export class SingleTierHandler {
     }
 
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'returns stale value')
-    this.#emit(new events.CacheHit(key, item.getValue(), this.stack.name, true))
+    this.#emit(cacheEvents.hit(key, item.getValue(), this.stack.name, true))
     return item.getValue()
   }
 
@@ -138,7 +138,7 @@ export class SingleTierHandler {
     try {
       const hasFallback = !!remoteItem
       const result = await this.#factoryRunner.run(key, factory, hasFallback, options, releaser)
-      this.#emit(new events.CacheMiss(key, this.stack.name))
+      this.#emit(cacheEvents.miss(key, this.stack.name))
       return result
     } catch (err) {
       /**
