@@ -243,8 +243,8 @@ importers:
         specifier: ^3.12.0
         version: 3.12.0
       orchid-orm:
-        specifier: ^1.41.0
-        version: 1.41.0(typescript@5.7.3)
+        specifier: 1.40.2
+        version: 1.40.2(typescript@5.7.3)
       p-event:
         specifier: ^6.0.1
         version: 6.0.1
@@ -4622,8 +4622,8 @@ packages:
   orchid-core@0.21.5:
     resolution: {integrity: sha512-tfsuqsdZjUyB5VxgKRa8qr7dF+BJ3W2D6G6CB2wR5yCdSHoAF3xFZatHGZ2YmiohI7K4HkLKboKXx441esIyxA==}
 
-  orchid-orm@1.41.0:
-    resolution: {integrity: sha512-l6WQ/Lw9gh4aLMTWs0bI/9dQQiBBP6wHF/WWXvVlToN/qcd6i9t6UkKzhY5G6z64a50RSIpjV2+CgnUwAUxg0Q==}
+  orchid-orm@1.40.2:
+    resolution: {integrity: sha512-wmedHCXKvVC+5fIvxuNHElONCoEmEAr2FO1WfywHcQqUEX+rqbuTFoicHdZeRNQjuvqNuAw7zykHnwD5eIej+g==}
     peerDependencies:
       typescript: '*'
 
@@ -4951,8 +4951,8 @@ packages:
   postgres-range@1.1.4:
     resolution: {integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==}
 
-  pqb@0.45.3:
-    resolution: {integrity: sha512-vyCtPlt7TarRhC3NFMTwOXPHhLVPjh5nzx3GRxgr7CUfBQgCsho7pWF3qqvG+dcd9KUtPuzOyxehHr02pmYjZA==}
+  pqb@0.45.2:
+    resolution: {integrity: sha512-Mg/2dUgQA5kZJhDzYR3/6XiIfo4fJaFZE0KT6CreXCk9qo7iBISdJhih9/6Fg8nulmRzbt8b7uUCRg9ZRSztIw==}
 
   preact@10.19.3:
     resolution: {integrity: sha512-nHHTeFVBTHRGxJXKkKu5hT8C/YWBkPso4/Gad6xuj5dbptt9iF9NZr9pHbPhBrnT2klheu7mHTxTZ/LjwJiEiQ==}
@@ -5076,8 +5076,8 @@ packages:
   quick-format-unescaped@4.0.4:
     resolution: {integrity: sha512-tYC1Q1hgyRuHgloV/YXs2w15unPVh8qfu/qCTfhTYamaw7fyhumKa2yGpdSo87vY32rIclj+4fWYQXUMs9EHvg==}
 
-  rake-db@2.23.30:
-    resolution: {integrity: sha512-0Baw6s0C0QxW+1VCnJKTDK+erc/Wx7AKJEzSyvBF9GR3kgqclhngLsVEzPoEkgIzQWx/FBBXhFQr0DAY3d9GMA==}
+  rake-db@2.23.29:
+    resolution: {integrity: sha512-8qyn3t36qB992Th3H3C1mkoaE+ZHvplQQYm+yEgkbSZX7+U/dMNQBEjCXAPekW+rE2YFO3V3ymHo2g9Vc+wmCQ==}
 
   random-bytes@1.0.0:
     resolution: {integrity: sha512-iv7LhNVO047HzYR3InF6pUcUsPQiHTM1Qal51DcGSuZFBil1aBBWG5eHPNek7bvILMaYJ/8RU1e8w1AMdHmLQQ==}
@@ -11370,13 +11370,13 @@ snapshots:
 
   orchid-core@0.21.5: {}
 
-  orchid-orm@1.41.0(typescript@5.7.3):
+  orchid-orm@1.40.2(typescript@5.7.3):
     dependencies:
       inflection: 3.0.2
       orchid-core: 0.21.5
-      pqb: 0.45.3
+      pqb: 0.45.2
       prompts: 2.4.2
-      rake-db: 2.23.30
+      rake-db: 2.23.29
       typescript: 5.7.3
     transitivePeerDependencies:
       - pg-native
@@ -11696,7 +11696,7 @@ snapshots:
 
   postgres-range@1.1.4: {}
 
-  pqb@0.45.3:
+  pqb@0.45.2:
     dependencies:
       '@types/pg': 8.11.11
       orchid-core: 0.21.5
@@ -11827,10 +11827,10 @@ snapshots:
 
   quick-format-unescaped@4.0.4: {}
 
-  rake-db@2.23.30:
+  rake-db@2.23.29:
     dependencies:
       orchid-core: 0.21.5
-      pqb: 0.45.3
+      pqb: 0.45.2
       prompts: 2.4.2
     transitivePeerDependencies:
       - pg-native
