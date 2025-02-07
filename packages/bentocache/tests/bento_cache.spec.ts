@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import Emittery from 'emittery'
 import { Redis } from 'ioredis'
 import { test } from '@japa/runner'

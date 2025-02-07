@@ -3,7 +3,7 @@ import { is } from '@julr/utils/is'
 
 import { errors } from '../../errors.js'
 import { resolveTtl } from '../../helpers.js'
-import type { Duration, RawCommonOptions } from '../../types/main.js'
+import type { Duration, RawCommonOptions, ValidateOption } from '../../types/main.js'
 
 const toId = hexoid(12)
 
@@ -19,6 +19,38 @@ function resolveGrace(options: RawCommonOptions) {
 }
 
 /**
+ * Resolve validator
+ */
+function resolveValidate(options: RawCommonOptions & ValidateOption) {
+  const validate = options.validate
+  if (!validate) return (value: unknown) => value
+
+  if (typeof validate === 'function') {
+    return (value: unknown) => {
+      try {
+        validate(value)
+      } catch (error) {
+        throw new errors.E_VALIDATION_ERROR(error, { cause: error })
+      }
+
+      return value
+    }
+  }
+
+  if (validate && '~standard' in validate) {
+    return (value: unknown) => {
+      const result = validate['~standard'].validate(value)
+      if (result instanceof Promise) throw new TypeError('Validation must be synchronous')
+      if (result.issues) throw new errors.E_VALIDATION_ERROR(result.issues)
+
+      return result.value
+    }
+  }
+
+  return () => true
+}
+
+/**
  * Cache Entry Options. Define how a cache operation should behave
  *
  * Yes, this is a fake class. Initially, this was a class, but
@@ -27,7 +59,7 @@ function resolveGrace(options: RawCommonOptions) {
  * fake class to have way better performance.
  */
 export function createCacheEntryOptions(
-  newOptions: RawCommonOptions = {},
+  newOptions: RawCommonOptions & ValidateOption = {},
   defaults: Partial<RawCommonOptions> = {},
 ) {
   const options = { ...defaults, ...newOptions }
@@ -91,6 +123,7 @@ export function createCacheEntryOptions(
     lockTimeout,
     onFactoryError: options.onFactoryError ?? defaults.onFactoryError,
     suppressL2Errors: options.suppressL2Errors,
+    validate: resolveValidate(options),
 
     /**
      * Returns a new instance of `CacheItemOptions` with the same

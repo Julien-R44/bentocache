@@ -43,7 +43,7 @@ export class SingleTierHandler {
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'remote cache hit')
 
     this.#emit(cacheEvents.hit(key, item.getValue(), this.stack.name))
-    return item.getValue()
+    return options.validate(item.getValue())
   }
 
   /**

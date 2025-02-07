@@ -1,5 +1,14 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec'
+
 import type { FactoryError } from '../../errors.js'
 import type { Factory, GetSetFactory, RawCommonOptions } from '../main.js'
+
+/**
+ * Validate option
+ */
+export type ValidateOption = {
+  validate?: StandardSchemaV1 | ((value: unknown) => void)
+}
 
 /**
  * Options accepted by the `getOrSet` method
@@ -7,7 +16,8 @@ import type { Factory, GetSetFactory, RawCommonOptions } from '../main.js'
 export type SetCommonOptions = Pick<
   RawCommonOptions,
   'grace' | 'graceBackoff' | 'suppressL2Errors' | 'lockTimeout' | 'ttl' | 'timeout' | 'hardTimeout'
->
+> &
+  ValidateOption
 
 /**
  * Options accepted by the `getOrSet` method when passing an object
@@ -24,10 +34,12 @@ export type GetOrSetOptions<T> = {
 export type GetOrSetForeverOptions<T> = {
   key: string
   factory: GetSetFactory<T>
+  onFactoryError?: (error: FactoryError) => void
 } & Pick<
   RawCommonOptions,
   'grace' | 'graceBackoff' | 'suppressL2Errors' | 'lockTimeout' | 'timeout' | 'hardTimeout'
->
+> &
+  ValidateOption
 
 /**
  * Options accepted by the `set` method
@@ -40,7 +52,8 @@ export type SetOptions = { key: string; value: any } & SetCommonOptions
 export type GetOptions<T> = { key: string; defaultValue?: Factory<T> } & Pick<
   RawCommonOptions,
   'grace' | 'graceBackoff' | 'suppressL2Errors'
->
+> &
+  ValidateOption
 
 /**
  * Options accepted by the `delete` method when passing an object

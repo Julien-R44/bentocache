@@ -112,9 +112,10 @@ export class CacheStack extends BaseDriver {
    */
   async set(key: string, value: any, options: ReturnType<typeof createCacheEntryOptions>) {
     if (is.undefined(value)) throw new UndefinedValueError(key)
+    const validatedValue = options.validate(value)
 
     const rawItem = {
-      value,
+      value: validatedValue,
       logicalExpiration: options.logicalTtlFromNow(),
     }
 
@@ -133,7 +134,7 @@ export class CacheStack extends BaseDriver {
     }
 
     await this.publish({ type: CacheBusMessageType.Set, keys: [key] })
-    this.emit(cacheEvents.written(key, value, this.name))
+    this.emit(cacheEvents.written(key, validatedValue, this.name))
     return true
   }
 }

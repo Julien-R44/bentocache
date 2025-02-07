@@ -41,6 +41,8 @@ export class FactoryRunner {
       await this.#stack.set(key, result, options)
       return result
     } catch (error) {
+      if (error instanceof errors.E_VALIDATION_ERROR) throw error
+
       if (!isBackground) throw new errors.E_FACTORY_ERROR(key, error)
 
       options.onFactoryError?.(new errors.E_FACTORY_ERROR(key, error, true))

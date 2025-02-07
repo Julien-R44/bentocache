@@ -1,4 +1,6 @@
+import { is } from '@julr/utils/is'
 import { Exception } from '@poppinss/utils/exception'
+import type { StandardSchemaV1 } from '@standard-schema/spec'
 
 /**
  * Thrown when a factory has timed out after waiting for soft timeout
@@ -70,8 +72,39 @@ export class UndefinedValueError extends Exception {
   }
 }
 
+/**
+ * Thrown when a validation fails
+ */
+export class ValidationError extends Exception {
+  static code = 'E_VALIDATION_ERROR'
+
+  #isStandardIssues(error: any): error is ReadonlyArray<StandardSchemaV1.Issue> {
+    return is.array(error) && is.object(error[0]) && 'message' in error[0]
+  }
+
+  #formatStandardIssues(issues: ReadonlyArray<StandardSchemaV1.Issue>) {
+    return (
+      '\n' + issues.map((issue) => `- ${issue.message} at "${issue.path?.join('.')}"`).join('\n')
+    )
+  }
+
+  constructor(error: ReadonlyArray<StandardSchemaV1.Issue> | any, options?: ErrorOptions) {
+    super()
+
+    if (this.#isStandardIssues(error)) {
+      this.message = this.#formatStandardIssues(error)
+    } else {
+      this.message = error
+    }
+
+    this.cause = options?.cause
+  }
+}
+
 export const errors = {
   E_FACTORY_ERROR: FactoryError,
   E_FACTORY_SOFT_TIMEOUT: FactorySoftTimeout,
   E_FACTORY_HARD_TIMEOUT: FactoryHardTimeout,
+  E_UNDEFINED_VALUE: UndefinedValueError,
+  E_VALIDATION_ERROR: ValidationError,
 }
