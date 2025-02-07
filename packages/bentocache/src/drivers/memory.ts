@@ -1,5 +1,6 @@
 import { LRUCache } from 'lru-cache'
 import { bytes } from '@julr/utils/string/bytes'
+import { InvalidArgumentsException } from '@poppinss/utils'
 
 import { BaseDriver } from './base_driver.js'
 import type {
@@ -32,6 +33,12 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
     if (config.cacheInstance) {
       this.#cache = config.cacheInstance
       return
+    }
+
+    if (config.serialize === false && (config.maxEntrySize || config.maxSize)) {
+      throw new InvalidArgumentsException(
+        'Cannot use maxSize or maxEntrySize when serialize is set to `false`',
+      )
     }
 
     this.#cache = new LRUCache({

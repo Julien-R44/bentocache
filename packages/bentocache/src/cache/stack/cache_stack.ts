@@ -39,7 +39,11 @@ export class CacheStack extends BaseDriver {
     this.logger = options.logger.child({ cache: this.name })
 
     if (drivers.l1Driver)
-      this.l1 = new LocalCache(drivers.l1Driver, this.logger, this.options.serializer)
+      this.l1 = new LocalCache(
+        drivers.l1Driver,
+        this.logger,
+        this.options.serializeL1 ? this.options.serializer : undefined,
+      )
     if (drivers.l2Driver)
       this.l2 = new RemoteCache(drivers.l2Driver, this.logger, this.options.serializer, !!this.l1)
 
@@ -99,14 +103,6 @@ export class CacheStack extends BaseDriver {
     return this.emitter.emit(event.name, event.data)
   }
 
-  serialize(value: any) {
-    return this.options.serializer.serialize(value)
-  }
-
-  deserialize(value: string) {
-    return this.options.serializer.deserialize(value)
-  }
-
   /**
    * Write a value in the cache stack
    * - Set value in local cache
@@ -117,12 +113,13 @@ export class CacheStack extends BaseDriver {
   async set(key: string, value: any, options: CacheEntryOptions) {
     if (is.undefined(value)) throw new UndefinedValueError(key)
 
-    const item = this.serialize({
+    const rawItem = {
       value,
       logicalExpiration: options.logicalTtlFromNow(),
-    })
+    }
+    const item = this.options.serializer.serialize(rawItem)
 
-    this.l1?.set(key, item, options)
+    this.l1?.set(key, this.options.serializeL1 ? item : rawItem, options)
     await this.l2?.set(key, item, options)
     await this.publish({ type: CacheBusMessageType.Set, keys: [key] })
 

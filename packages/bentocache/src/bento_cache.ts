@@ -59,7 +59,10 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
 
   #createProvider(cacheName: string, store: BentoStore): CacheProvider {
     const entry = store.entry
-    const driverItemOptions = this.#options.cloneWith(entry.options)
+    const driverItemOptions = this.#options
+      .cloneWith(entry.options)
+      .serializeL1Cache(entry.l1?.options.serialize ?? true)
+
     const cacheStack = new CacheStack(cacheName, driverItemOptions, {
       l1Driver: entry.l1?.factory({ prefix: driverItemOptions.prefix, ...entry.l1.options }),
       l2Driver: entry.l2?.factory({ prefix: driverItemOptions.prefix, ...entry.l2.options }),

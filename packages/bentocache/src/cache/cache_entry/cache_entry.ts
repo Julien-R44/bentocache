@@ -21,9 +21,9 @@ export class CacheEntry {
    */
   #logicalExpiration: number
 
-  #serializer: CacheSerializer
+  #serializer?: CacheSerializer
 
-  constructor(key: string, item: Record<string, any>, serializer: CacheSerializer) {
+  constructor(key: string, item: Record<string, any>, serializer?: CacheSerializer) {
     this.#key = key
     this.#value = item.value
     this.#logicalExpiration = item.logicalExpiration
@@ -46,8 +46,10 @@ export class CacheEntry {
     return Date.now() >= this.#logicalExpiration
   }
 
-  static fromDriver(key: string, item: string, serializer: CacheSerializer) {
-    return new CacheEntry(key, serializer.deserialize(item), serializer)
+  static fromDriver(key: string, item: string | Record<string, any>, serializer?: CacheSerializer) {
+    if (!serializer && typeof item !== 'string') return new CacheEntry(key, item, serializer)
+
+    return new CacheEntry(key, serializer!.deserialize(item) ?? item, serializer)
   }
 
   applyBackoff(duration: number) {
@@ -61,9 +63,9 @@ export class CacheEntry {
   }
 
   serialize() {
-    return this.#serializer.serialize({
-      value: this.#value,
-      logicalExpiration: this.#logicalExpiration,
-    })
+    const raw = { value: this.#value, logicalExpiration: this.#logicalExpiration }
+
+    if (this.#serializer) return this.#serializer.serialize(raw)
+    return raw
   }
 }

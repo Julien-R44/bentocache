@@ -72,6 +72,11 @@ export class BentoCacheOptions {
    */
   lockTimeout?: Duration = null
 
+  /**
+   * If the L1 cache should be serialized
+   */
+  serializeL1: boolean = true
+
   constructor(options: RawBentoCacheOptions) {
     this.#options = lodash.merge({}, this, options)
 
@@ -86,7 +91,13 @@ export class BentoCacheOptions {
 
     this.emitter = this.#options.emitter!
     this.serializer = this.#options.serializer ?? defaultSerializer
+
     this.logger = this.#options.logger!.child({ pkg: 'bentocache' })
+  }
+
+  serializeL1Cache(shouldSerialize: boolean = true) {
+    this.serializeL1 = shouldSerialize
+    return this
   }
 
   cloneWith(options: RawBentoCacheOptions) {

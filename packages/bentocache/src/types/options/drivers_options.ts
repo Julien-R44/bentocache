@@ -78,6 +78,21 @@ export type MemoryConfig = {
    * it will NOT be stored
    */
   maxEntrySize?: Bytes
+
+  /**
+   * Should the entries be serialized before storing
+   * them in the cache.
+   *
+   * Note that, if unset, you cannot use maxSize or maxEntrySize
+   * since the size of deserialized objects cannot be calculated.
+   *
+   * **Also make sure to read the below documentation. This option
+   * can cause issues if not used correctly.**
+   *
+   * @see http://bentocache.dev/docs/cache-drivers#serialize-option
+   * @default true
+   */
+  serialize?: boolean
 } & DriverCommonOptions
 
 /**

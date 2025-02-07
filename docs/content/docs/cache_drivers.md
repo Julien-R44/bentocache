@@ -111,8 +111,18 @@ const bento = new BentoCache({
 | `maxSize`      | The maximum size of the cache **in bytes**.                                                                                                          | N/A     |
 | `maxItems`     | The maximum number of entries that the cache can contain. Note that fewer items may be stored if you are also using `maxSize` and the cache is full. | N/A     |
 | `maxEntrySize` | The maximum size of a single entry in bytes.                                                                                                         | N/A     |
+| `serialize`    | If the data stored in the memory cache should be serialized/parsed using `JSON.stringify` and `JSON.parse`.                                          | `true`  |
 
 `maxSize` and `maxEntrySize` accept human-readable strings. We use [bytes](https://www.npmjs.com/package/bytes) under the hood so make sure to ensure the format is correct. A `number` can also be passed to these options.
+
+### `serialize` option
+
+By default, the data stored in the memory cache will always be serialized using `JSON.stringify` and `JSON.parse`.
+You can disable this feature by setting `serialize` to `false`. This allows for a much faster throughput but at the expense of:
+- not being able to limit the size of the stored data, because we can't really know the size of an unserialized object. So if `maxSize` or `maxEntrySize` is set, it throws an error, but you still can use `maxItems` option.
+- **Having inconsistent return between the L1 and L2 cache**. The data stored in the L2 Cache will always be serialized because it passes over the network. Therefore, depending on whether the data is retrieved from the L1 and L2, we can have data that does not have the same form. For example, a Date instance will become a string if retrieved from the L2, but will remain a Date instance if retrieved from the L1. So, **you should put extra care when using this feature with an additional L2 cache**.
+
+We recommend never storing anything that is not serializable in the memory cache when an L2 cache is used ( `Date`, `Map`, classes instances, functions etc.. ). However, if you are only using the memory cache, it is safe to store anything you.
 
 ## DynamoDB
 
