@@ -8,7 +8,7 @@ import { RemoteCache } from '../facades/remote_cache.js'
 import { BaseDriver } from '../../drivers/base_driver.js'
 import { cacheEvents } from '../../events/cache_events.js'
 import type { BentoCacheOptions } from '../../bento_cache_options.js'
-import { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
+import { createCacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 import {
   type BusDriver,
   type BusOptions,
@@ -23,7 +23,7 @@ export class CacheStack extends BaseDriver {
   l1?: LocalCache
   l2?: RemoteCache
   bus?: Bus
-  defaultOptions: CacheEntryOptions
+  defaultOptions: ReturnType<typeof createCacheEntryOptions>
   logger: Logger
   #busDriver?: BusDriver
   #busOptions?: BusOptions
@@ -50,7 +50,7 @@ export class CacheStack extends BaseDriver {
     this.bus = bus ? bus : this.#createBus(drivers.busDriver, drivers.busOptions)
     if (this.l1) this.bus?.manageCache(this.prefix, this.l1)
 
-    this.defaultOptions = new CacheEntryOptions(options)
+    this.defaultOptions = createCacheEntryOptions(this.options)
   }
 
   get emitter() {
@@ -110,7 +110,7 @@ export class CacheStack extends BaseDriver {
    * - Publish a message to the bus
    * - Emit a CacheWritten event
    */
-  async set(key: string, value: any, options: CacheEntryOptions) {
+  async set(key: string, value: any, options: ReturnType<typeof createCacheEntryOptions>) {
     if (is.undefined(value)) throw new UndefinedValueError(key)
 
     const rawItem = {

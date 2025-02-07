@@ -6,7 +6,7 @@ import { RedisDriver } from '../../src/drivers/redis.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
 import { JsonSerializer } from '../../src/serializers/json.js'
 import { RemoteCache } from '../../src/cache/facades/remote_cache.js'
-import { CacheEntryOptions } from '../../src/cache/cache_entry/cache_entry_options.js'
+import { createCacheEntryOptions } from '../../src/cache/cache_entry/cache_entry_options.js'
 
 test.group('Remote Cache', () => {
   test('should rethrows errors if suppressL2Errors is disabled', async ({ assert, cleanup }) => {
@@ -18,7 +18,7 @@ test.group('Remote Cache', () => {
 
     chaosCacheDriver.alwaysThrow()
 
-    const options = new CacheEntryOptions({ suppressL2Errors: false })
+    const options = createCacheEntryOptions({ suppressL2Errors: false })
 
     await assert.rejects(() => cache.get('foo', options))
     await assert.rejects(() => cache.set('foo', 'bar', options))
@@ -38,7 +38,7 @@ test.group('Remote Cache', () => {
 
     chaosCacheDriver.alwaysThrow()
 
-    const options = new CacheEntryOptions({ suppressL2Errors: true })
+    const options = createCacheEntryOptions({ suppressL2Errors: true })
 
     await assert.doesNotReject(() => cache.get('foo', options))
     await assert.doesNotReject(() => cache.set('foo', 'bar', options))
@@ -61,7 +61,7 @@ test.group('Remote Cache', () => {
 
     chaosCacheDriver.alwaysThrow()
 
-    const options = new CacheEntryOptions({})
+    const options = createCacheEntryOptions({})
 
     await assert.rejects(() => cache.get('foo', options))
     await assert.rejects(() => cache.set('foo', 'bar', options))
@@ -84,7 +84,7 @@ test.group('Remote Cache', () => {
 
     chaosCacheDriver.alwaysThrow()
 
-    const options = new CacheEntryOptions({ suppressL2Errors: true })
+    const options = createCacheEntryOptions({ suppressL2Errors: true })
 
     await assert.doesNotReject(() => cache.get('foo', options))
     await assert.doesNotReject(() => cache.set('foo', 'bar', options))

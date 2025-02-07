@@ -3,11 +3,7 @@ import pinoLoki from 'pino-loki'
 import { sleep } from '@julr/utils/misc'
 
 export const BASE_URL = new URL('./tmp/', import.meta.url)
-
-export const REDIS_CREDENTIALS = {
-  host: process.env.REDIS_HOST!,
-  port: Number(process.env.REDIS_PORT),
-}
+export const REDIS_CREDENTIALS = { host: 'localhost', port: 6379 }
 
 /**
  * Returns a factory that will throw an error when invoked
