@@ -97,11 +97,11 @@ await bench
     return result ?? 'value'
   })
   .add('Tiered Get - BentoCache', async () => {
-    const result = bentocacheTiered.get({ key: 'bento:foo' })
+    const result = await bentocacheTiered.get({ key: 'bento:foo' })
     if (!result) await bentocacheTiered.set({ key: 'bento:foo', value: 'value', ttl: '10s' })
   })
   .add('Tiered Get - CacheManager', async () => {
-    const result = cacheManagerTiered.get('cm:barbar')
+    const result = await cacheManagerTiered.get('cm:barbar')
     if (!result) await cacheManagerTiered.set('cm:barbar', 'value', 10_000)
   })
   .add('Tiered Set - BentoCache', async () => {
