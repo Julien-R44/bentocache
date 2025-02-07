@@ -12,18 +12,30 @@ export type Duration = number | string | null
  */
 export type Factory<T = any> = T | (() => T) | Promise<T> | (() => Promise<T>)
 
-export type GetSetFactoryOptions = {
+export type GetSetFactoryContext = {
   /**
-   * Set dynamically the TTL
-   * See Adaptive caching documentation for more information
+   * Dynamically set the TTL
+   * @see https://bentocache.dev/docs/adaptive-caching
    */
   setTtl: (ttl: Duration) => void
+
+  /**
+   * Make the factory fail with a custom error.
+   * Nothing will be cached and if a graced value is available, it will be returned
+   */
+  fail: (message?: string) => void
+
+  /**
+   * Make the factory do not cache anything. **If a graced value is available,
+   * it will not be used**
+   */
+  skip: () => undefined
 }
 
 /**
  * GetOrSet Factory
  */
-export type GetSetFactory<T = any> = (options: GetSetFactoryOptions) => T | Promise<T>
+export type GetSetFactory<T = any> = (options: GetSetFactoryContext) => T | Promise<T>
 
 /**
  * Logger interface
