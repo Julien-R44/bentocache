@@ -2,6 +2,8 @@ import { pino } from 'pino'
 import pinoLoki from 'pino-loki'
 import { sleep } from '@julr/utils/misc'
 
+import type { GetSetFactory, GetSetFactoryContext } from '../../src/types/helpers.js'
+
 export const BASE_URL = new URL('./tmp/', import.meta.url)
 export const REDIS_CREDENTIALS = { host: 'localhost', port: 6379 }
 
@@ -50,4 +52,18 @@ export const traceLogger = (pretty = true) => {
       host: 'http://localhost:3100',
     }),
   )
+}
+
+export function sequentialFactory(callbacks: GetSetFactory[]) {
+  let index = 0
+
+  const sequence = (options: GetSetFactoryContext) => {
+    const cb = callbacks[index]
+    index++
+
+    return cb(options)
+  }
+
+  sequence.callsCount = () => index
+  return sequence
 }

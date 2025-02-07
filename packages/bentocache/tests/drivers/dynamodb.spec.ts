@@ -14,17 +14,19 @@ const dynamoClient = new DynamoDBClient({
  * Create the table for storing the cache
  */
 async function createTable() {
-  await dynamoClient.send(
-    new CreateTableCommand({
-      TableName: 'cache',
-      KeySchema: [{ AttributeName: 'key', KeyType: 'HASH' }],
-      AttributeDefinitions: [{ AttributeName: 'key', AttributeType: 'S' }],
-      ProvisionedThroughput: {
-        ReadCapacityUnits: 4,
-        WriteCapacityUnits: 4,
-      },
-    }),
-  )
+  await dynamoClient
+    .send(
+      new CreateTableCommand({
+        TableName: 'cache',
+        KeySchema: [{ AttributeName: 'key', KeyType: 'HASH' }],
+        AttributeDefinitions: [{ AttributeName: 'key', AttributeType: 'S' }],
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 4,
+          WriteCapacityUnits: 4,
+        },
+      }),
+    )
+    .catch(() => {})
 }
 
 /**

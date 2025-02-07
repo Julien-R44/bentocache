@@ -13,6 +13,7 @@ import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
 export class FactoryRunner {
   #locks: Locks
   #stack: CacheStack
+  #skipSymbol = Symbol('bentocache.skip')
 
   constructor(stack: CacheStack, locks: Locks) {
     this.#stack = stack
@@ -29,7 +30,13 @@ export class FactoryRunner {
     try {
       const result = await factory({
         setTtl: (ttl) => options.setLogicalTtl(ttl),
+        skip: () => this.#skipSymbol as any as undefined,
+        fail: (message) => {
+          throw new Error(message ?? 'Factory failed')
+        },
       })
+
+      if (result === this.#skipSymbol) return
 
       await this.#stack.set(key, result, options)
       return result
