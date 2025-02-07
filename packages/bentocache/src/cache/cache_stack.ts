@@ -1,14 +1,14 @@
 import { is } from '@julr/utils/is'
 import lodash from '@poppinss/utils/lodash'
 
-import { Bus } from '../../bus/bus.js'
-import { UndefinedValueError } from '../../errors.js'
-import { LocalCache } from '../facades/local_cache.js'
-import { RemoteCache } from '../facades/remote_cache.js'
-import { BaseDriver } from '../../drivers/base_driver.js'
-import { cacheEvents } from '../../events/cache_events.js'
-import type { BentoCacheOptions } from '../../bento_cache_options.js'
-import { createCacheEntryOptions } from '../cache_entry/cache_entry_options.js'
+import { Bus } from '../bus/bus.js'
+import { UndefinedValueError } from '../errors.js'
+import { LocalCache } from './facades/local_cache.js'
+import { BaseDriver } from '../drivers/base_driver.js'
+import { RemoteCache } from './facades/remote_cache.js'
+import { cacheEvents } from '../events/cache_events.js'
+import type { BentoCacheOptions } from '../bento_cache_options.js'
+import { createCacheEntryOptions } from './cache_entry/cache_entry_options.js'
 import {
   type BusDriver,
   type BusOptions,
@@ -17,7 +17,7 @@ import {
   type CacheBusMessage,
   type Logger,
   CacheBusMessageType,
-} from '../../types/main.js'
+} from '../types/main.js'
 
 export class CacheStack extends BaseDriver {
   l1?: LocalCache

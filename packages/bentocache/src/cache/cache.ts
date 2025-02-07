@@ -1,8 +1,8 @@
 import { is } from '@julr/utils/is'
 
+import type { CacheStack } from './cache_stack.js'
 import { CacheBusMessageType } from '../types/main.js'
 import { cacheEvents } from '../events/cache_events.js'
-import type { CacheStack } from './stack/cache_stack.js'
 import type { CacheProvider } from '../types/provider.js'
 import { GetSetHandler } from './get_set/get_set_handler.js'
 import type {
