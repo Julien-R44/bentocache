@@ -7,69 +7,69 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 21
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 21
 
-    - name: Install pnpm
-      run: |
-        corepack enable
-        corepack prepare pnpm@latest --activate
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
 
-    - name: Install dependencies
-      run: pnpm install
+      - name: Install dependencies
+        run: pnpm install
 
-    - name: Lint
-      run: pnpm lint
+      - name: Lint
+        run: pnpm lint
 
   typecheck:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 21
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 21
 
-    - name: Install pnpm
-      run: |
-        corepack enable
-        corepack prepare pnpm@latest --activate
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
 
-    - name: Install dependencies
-      run: |
-        pnpm install
-        pnpm -r build
+      - name: Install dependencies
+        run: |
+          pnpm install
+          pnpm -r build
 
-    - name: Typecheck
-      run: pnpm typecheck
+      - name: Typecheck
+        run: pnpm typecheck
 
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 21
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 21
 
-    - name: Install pnpm
-      run: |
-        corepack enable
-        corepack prepare pnpm@latest --activate
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
 
-    - name: Install dependencies
-      run: pnpm install
+      - name: Install dependencies
+        run: pnpm install
 
-    - name: Build
-      run: pnpm -C packages/bentocache build
+      - name: Build
+        run: pnpm -C packages/bentocache build
 
   tests:
     runs-on: ubuntu-latest
@@ -101,30 +101,26 @@ jobs:
           - 3306:3306
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 21
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 21
 
-    - name: Install pnpm
-      run: |
-        corepack enable
-        corepack prepare pnpm@latest --activate
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
 
-    - name: Install dependencies
-      run: |
-        pnpm install
-        pnpm -r build
+      - name: Install dependencies
+        run: |
+          pnpm install
+          pnpm -r build
 
-    - name: Run tests
-      env:
-        REDIS_HOST: localhost
-        REDIS_PORT: 6379
-        DYNAMODB_ENDPOINT: http://localhost:8000
-        UPSTASH_HOST: ${{ secrets.UPSTASH_HOST }}
-        UPSTASH_PORT: ${{ secrets.UPSTASH_PORT }}
-        UPSTASH_USERNAME: ${{ secrets.UPSTASH_USERNAME }}
-        UPSTASH_PASSWORD: ${{ secrets.UPSTASH_PASSWORD }}
-      run: FORCE_COLOR=1 pnpm test -r
+      - name: Run tests
+        env:
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          DYNAMODB_ENDPOINT: http://localhost:8000
+        run: FORCE_COLOR=1 pnpm test -r
