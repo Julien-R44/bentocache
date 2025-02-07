@@ -88,7 +88,7 @@ export class SingleTierHandler {
         'apply fallback duration',
       )
 
-      this.stack.l2?.set(key, item.applyBackoff(options.graceBackoff).serialize(), options)
+      this.stack.l2?.set(key, item.applyBackoff(options.graceBackoff).serialize() as any, options)
     }
 
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'returns stale value')
