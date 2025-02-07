@@ -96,6 +96,12 @@
     "category": "Plugins"
   },
   {
+    "permalink": "integration-adonisjs",
+    "title": "AdonisJS",
+    "contentPath": "./integrations/adonisjs.md",
+    "category": "Integrations"
+  },
+  {
     "permalink": "custom-cache-driver",
     "title": "Create a custom cache driver",
     "contentPath": "./extend/custom_cache_driver.md",
