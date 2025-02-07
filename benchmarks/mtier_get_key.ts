@@ -8,12 +8,11 @@ import { Bench } from 'tinybench'
 import KeyvRedis from '@keyv/redis'
 import { createCache } from 'cache-manager'
 import { CacheableMemory } from 'cacheable'
+import { BentoCache, bentostore } from 'bentocache'
+import { redisDriver } from 'bentocache/drivers/redis'
+import { memoryDriver } from 'bentocache/drivers/memory'
 
-import { BentoCache } from '../index.js'
-import { bentostore } from '../src/bento_store.js'
-import { redisDriver } from '../src/drivers/redis.js'
-import { memoryDriver } from '../src/drivers/memory.js'
-import { REDIS_CREDENTIALS } from '../tests/helpers/index.js'
+import { REDIS_CREDENTIALS } from './helpers.js'
 
 const bench = new Bench()
 

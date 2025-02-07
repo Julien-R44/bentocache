@@ -7,11 +7,11 @@ import { createCache } from 'cache-manager'
 import { CacheableMemory } from 'cacheable'
 
 import { getFromDb } from './helpers.js'
-import { BentoCache } from '../src/bento_cache.js'
-import { bentostore } from '../src/bento_store.js'
-import { redisDriver } from '../src/drivers/redis.js'
-import { memoryDriver } from '../src/drivers/memory.js'
-import { REDIS_CREDENTIALS } from '../tests/helpers/index.js'
+import { BentoCache } from '../packages/bentocache/src/bento_cache.js'
+import { bentostore } from '../packages/bentocache/src/bento_store.js'
+import { redisDriver } from '../packages/bentocache/src/drivers/redis.js'
+import { memoryDriver } from '../packages/bentocache/src/drivers/memory.js'
+import { REDIS_CREDENTIALS } from '../packages/bentocache/tests/helpers/index.js'
 
 /**
  * Init providers

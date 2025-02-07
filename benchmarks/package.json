@@ -1,0 +1,23 @@
+{
+  "name": "@bentocache/benchmarks",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@keyv/redis": "^4.2.0",
+    "bentocache": "workspace:*",
+    "cache-manager": "^6.4.0",
+    "cacheable": "^1.8.8",
+    "ioredis": "^5.4.2",
+    "keyv": "^5.2.3",
+    "tinybench": "^3.1.1"
+  }
+}

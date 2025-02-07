@@ -65,9 +65,6 @@ importers:
       testcontainers:
         specifier: ^10.17.2
         version: 10.17.2
-      tinybench:
-        specifier: ^3.1.1
-        version: 3.1.1
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@swc/core@1.10.14)(@types/node@22.13.1)(typescript@5.7.3)
@@ -77,6 +74,30 @@ importers:
       typescript:
         specifier: ~5.7.3
         version: 5.7.3
+
+  benchmarks:
+    devDependencies:
+      '@keyv/redis':
+        specifier: ^4.2.0
+        version: 4.2.0
+      bentocache:
+        specifier: workspace:*
+        version: link:../packages/bentocache
+      cache-manager:
+        specifier: ^6.4.0
+        version: 6.4.0
+      cacheable:
+        specifier: ^1.8.8
+        version: 1.8.8
+      ioredis:
+        specifier: ^5.4.2
+        version: 5.4.2
+      keyv:
+        specifier: ^5.2.3
+        version: 5.2.3
+      tinybench:
+        specifier: ^3.1.1
+        version: 3.1.1
 
   docs:
     dependencies:
@@ -200,9 +221,6 @@ importers:
       '@aws-sdk/client-dynamodb':
         specifier: ^3.741.0
         version: 3.741.0
-      '@keyv/redis':
-        specifier: ^4.2.0
-        version: 4.2.0
       '@types/better-sqlite3':
         specifier: ^7.6.12
         version: 7.6.12
@@ -212,12 +230,6 @@ importers:
       better-sqlite3:
         specifier: ^11.8.1
         version: 11.8.1
-      cache-manager:
-        specifier: ^6.4.0
-        version: 6.4.0
-      cacheable:
-        specifier: ^1.8.8
-        version: 1.8.8
       dayjs:
         specifier: ^1.11.13
         version: 1.11.13
@@ -230,9 +242,6 @@ importers:
       ioredis:
         specifier: ^5.4.2
         version: 5.4.2
-      keyv:
-        specifier: ^5.2.3
-        version: 5.2.3
       knex:
         specifier: ^3.1.0
         version: 3.1.0(better-sqlite3@11.8.1)(mysql2@3.12.0)(pg@8.13.1)(sqlite3@5.1.7)
