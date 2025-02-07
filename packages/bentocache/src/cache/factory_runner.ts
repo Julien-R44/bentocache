@@ -41,9 +41,9 @@ export class FactoryRunner {
       await this.#stack.set(key, result, options)
       return result
     } catch (error) {
-      if (!isBackground) throw new errors.E_FACTORY_ERROR(key, error)
+      options.onFactoryError?.(new errors.E_FACTORY_ERROR(key, error, isBackground))
 
-      options.onFactoryError?.(new errors.E_FACTORY_ERROR(key, error, true))
+      if (!isBackground) throw new errors.E_FACTORY_ERROR(key, error)
     } finally {
       this.#locks.release(key, lockReleaser)
     }

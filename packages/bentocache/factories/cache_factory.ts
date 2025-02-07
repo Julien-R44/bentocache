@@ -41,6 +41,7 @@ export class CacheFactory {
       emitter: this.#parameters.emitter,
       lockTimeout: this.#parameters.lockTimeout,
       serializer: this.#parameters.serializer,
+      onFactoryError: this.#parameters.onFactoryError,
     }).serializeL1Cache(this.#l1Options.serialize ?? true)
 
     const stack = new CacheStack('primary', options, {

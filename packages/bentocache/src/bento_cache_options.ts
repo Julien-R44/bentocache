@@ -3,6 +3,7 @@ import lodash from '@poppinss/utils/lodash'
 import string from '@poppinss/utils/string'
 import { noopLogger } from '@julr/utils/logger'
 
+import type { FactoryError } from './errors.js'
 import { JsonSerializer } from './serializers/json.js'
 import type {
   CacheSerializer,
@@ -76,6 +77,7 @@ export class BentoCacheOptions {
    * If the L1 cache should be serialized
    */
   serializeL1: boolean = true
+  onFactoryError?: (error: FactoryError) => void
 
   constructor(options: RawBentoCacheOptions) {
     this.#options = lodash.merge({}, this, options)
@@ -93,6 +95,7 @@ export class BentoCacheOptions {
     this.serializer = this.#options.serializer ?? defaultSerializer
 
     this.logger = this.#options.logger!.child({ pkg: 'bentocache' })
+    this.onFactoryError = this.#options.onFactoryError
   }
 
   serializeL1Cache(shouldSerialize: boolean = true) {
