@@ -6,7 +6,7 @@ summary: "Comprehensive list of all methods available when using BentoCache"
 
 Below is a list of all the methods available when using BentoCache.
 
-### namespace
+## namespace
 
 Returns a new instance of the driver namespace. See [Namespaces](./namespaces.md) for more information.
 
@@ -20,7 +20,7 @@ usersNamespace.set('3', { name: 'Doe' });
 usersNamespace.clear();
 ```
 
-### get 
+## get 
 
 `get` allows you to retrieve a value from the cache. It returns `undefined` if the key does not exist.
 
@@ -35,7 +35,7 @@ const products = await bento.get({
 });
 ```
 
-### set
+## set
 
 Set a value in the cache.
 
@@ -47,7 +47,7 @@ await bento.set({
 })
 ```
 
-### setForever
+## setForever
 
 Set a value in the cache forever. It will never expire.
 
@@ -59,7 +59,7 @@ await bento.setForever({
 })
 ```
 
-### getOrSet
+## getOrSet
 
 This is the most powerful method of BentoCache. You should probably use this method most of the time.
 
@@ -81,24 +81,69 @@ const products = await bento.getOrSet({
 })
 ```
 
-The `getOrSet` factory function accepts an `options` object as argument that can be used to dynamically set some cache options. This can be particulary useful when caching options depends on the value itself.
+The `getOrSet` factory function accepts an `ctx` object as argument that can be used to do multiple things:
+
+### ctx.setTtl
+
+`setTtl` allows you to set the TTL of the key dynamically. This is useful when the TTL depends on the value itself.
 
 ```ts
 const products = await bento.getOrSet({
   key: 'token',
-  factory: async (options) => {
+  factory: async (ctx) => {
     const token = await fetchAccessToken()
-    
+
     options.setTtl(token.expiresIn)
-    
+
     return token
   }
 })
 ```
 
-Auth tokens are a perfect example of this use case. The cached token should expire when the token itself expires. And we know the expiration time only after fetching the token.
+Auth tokens are a perfect example of this use case. The cached token should expire when the token itself expires. And we know the expiration time only after fetching the token. See [Adaptive Caching docs](./adaptive_caching.md) for more information.
 
-### getOrSetForever
+### ctx.skip
+
+Returning `skip` in a factory will not cache the value, and `getOrSet` will returns `undefined` even if there is a stale item in cache.
+It will force the key to be recalculated on the next call.
+
+```ts
+cache.getOrSet({
+  key: 'foo',
+  factory: ({ skip, fail }) => {
+    const item = await getFromDb()
+    if (!item) {
+      return skip()
+    }
+
+    return item
+  }
+})
+```
+
+### ctx.fail
+
+Returning `fail` in a factory will not cache the value and will throw an error. If there is a stale item in cache, it will be used.
+
+```ts
+cache.getOrSet({
+  key: 'foo',
+  factory: ({ skip, fail }) => {
+    const item = await getFromDb()
+    if (!item) {
+      return skip()
+    }
+
+    if (item.isInvalid) {
+      return fail('Item is invalid')
+    }
+
+    return item
+  }
+})
+```
+
+## getOrSetForever
 
 Same as `getOrSet`, but the value will never expire.
 
@@ -109,7 +154,7 @@ const products = await bento.getOrSetForever({
 })
 ```
 
-### has
+## has
 
 Returns `true` if the key exists in the cache, `false` otherwise.
 
@@ -117,7 +162,7 @@ Returns `true` if the key exists in the cache, `false` otherwise.
 const hasProducts = await bento.has({ key: 'products' })
 ```
 
-### missing
+## missing
 
 Returns `true` if the key does not exist in the cache, `false` otherwise.
 
@@ -125,7 +170,7 @@ Returns `true` if the key does not exist in the cache, `false` otherwise.
 const missingProducts = await bento.missing({ key: 'products' })
 ```
 
-### pull
+## pull
 
 Get the value of the key, and then delete it from the cache. Returns `undefined` if the key does not exist.
 
@@ -133,7 +178,7 @@ Get the value of the key, and then delete it from the cache. Returns `undefined`
 const products = await bento.pull({ key: 'products' })
 ```
 
-### delete
+## delete
 
 Delete a key from the cache.
 
@@ -141,7 +186,7 @@ Delete a key from the cache.
 await bento.delete({ key: 'products' })
 ```
 
-### deleteMany
+## deleteMany
 
 Delete multiple keys from the cache.
 
@@ -149,7 +194,7 @@ Delete multiple keys from the cache.
 await bento.deleteMany({ keys: ['products', 'users'] })
 ```
 
-### clear
+## clear
 
 Clear the cache. This will delete all the keys in the cache if called from the "root" instance. If called from a namespace, it will only delete the keys in that namespace.
 
@@ -157,7 +202,7 @@ Clear the cache. This will delete all the keys in the cache if called from the "
 await bento.clear();
 ```
 
-### disconnect
+## disconnect
 
 Disconnect from the cache. This will close the connection to the cache server, if applicable.
 
