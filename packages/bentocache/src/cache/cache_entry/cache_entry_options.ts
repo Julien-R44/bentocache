@@ -73,6 +73,13 @@ export function createCacheEntryOptions(
     },
 
     /**
+     * Determine if the gracing system is enabled
+     */
+    get isGraceEnabled() {
+      return grace > 0
+    },
+
+    /**
      * Timeouts for the cache operations
      */
     timeout,
@@ -83,7 +90,6 @@ export function createCacheEntryOptions(
      */
     lockTimeout,
     onFactoryError: options.onFactoryError ?? defaults.onFactoryError,
-    isGraceEnabled: grace > 0,
     suppressL2Errors: options.suppressL2Errors,
 
     /**
