@@ -3,7 +3,7 @@ import type { MutexInterface } from 'async-mutex'
 
 import { errors } from '../errors.js'
 import type { Locks } from './locks.js'
-import type { CacheStack } from './stack/cache_stack.js'
+import type { CacheStack } from './cache_stack.js'
 import type { GetSetFactory } from '../types/helpers.js'
 import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
 

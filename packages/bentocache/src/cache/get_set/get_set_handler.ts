@@ -1,6 +1,6 @@
+import type { CacheStack } from '../cache_stack.js'
 import type { Factory } from '../../types/helpers.js'
 import { TwoTierHandler } from './two_tier_handler.js'
-import type { CacheStack } from '../stack/cache_stack.js'
 import { SingleTierHandler } from './single_tier_handler.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 

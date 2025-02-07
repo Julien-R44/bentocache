@@ -1,7 +1,7 @@
 import { Cache } from './cache/cache.js'
 import type { BentoStore } from './bento_store.js'
+import { CacheStack } from './cache/cache_stack.js'
 import type { CacheProvider } from './types/provider.js'
-import { CacheStack } from './cache/stack/cache_stack.js'
 import { BentoCacheOptions } from './bento_cache_options.js'
 import type {
   CacheEvents,
