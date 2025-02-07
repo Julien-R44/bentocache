@@ -1,6 +1,3 @@
-/**
- * Benchmark a single get operation on a tiered store ( memory + redis )
- */
 import 'dotenv/config'
 
 import { Bench } from 'tinybench'
@@ -9,7 +6,7 @@ import { createProviders, getFromDb } from './helpers.js'
 
 const { bentocache, cacheManager } = createProviders({
   withMemory: true,
-  withRedis: true,
+  withRedis: false,
   serializeL1: false,
 })
 
