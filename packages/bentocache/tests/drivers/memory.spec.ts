@@ -72,4 +72,26 @@ test.group('Memory Driver', (group) => {
     assert.equal(r2, q2)
     assert.equal(r3, q3)
   })
+
+  test('throw if serialize is false and maxSize is defined', async ({ assert }) => {
+    const fn = () => {
+      new MemoryDriver({
+        serialize: false,
+        maxSize: '200b',
+      })
+    }
+
+    assert.throws(fn, 'Cannot use maxSize or maxEntrySize when serialize is set to `false`')
+  })
+
+  test('throw if serialize is false and maxEntrySize is defined', async ({ assert }) => {
+    const fn = () => {
+      new MemoryDriver({
+        serialize: false,
+        maxEntrySize: '200b',
+      })
+    }
+
+    assert.throws(fn, 'Cannot use maxSize or maxEntrySize when serialize is set to `false`')
+  })
 })

@@ -453,4 +453,22 @@ test.group('One tier tests', () => {
     const inTwoDays = dayjs().add(2, 'day')
     assert.isTrue(dayjs(logicalExpiration).isSame(inTwoDays, 'day'))
   })
+
+  test('should not serialize l1 if serializeL1 is false', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1({ serialize: false }).withRedisL2().create()
+
+    await cache.set({ key: 'foo', value: { date: new Date() } })
+    const r1 = await cache.get({ key: 'foo' })
+    const r2 = await cache.getOrSet({ key: 'bar', factory: () => ({ date: new Date() }) })
+    const r3 = await cache.get({ key: 'bar' })
+
+    assert.instanceOf(r1.date, Date)
+    assert.instanceOf(r2.date, Date)
+    assert.instanceOf(r3.date, Date)
+
+    const { cache: cache2 } = new CacheFactory().withMemoryL1().withRedisL2().create()
+
+    const r4 = await cache2.get({ key: 'foo' })
+    assert.isString(r4.date)
+  })
 })

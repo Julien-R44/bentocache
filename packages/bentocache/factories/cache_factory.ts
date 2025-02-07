@@ -6,9 +6,9 @@ import { MemoryTransport } from '@boringnode/bus/transports/memory'
 import { Cache } from '../src/cache/cache.js'
 import { RedisDriver } from '../src/drivers/redis.js'
 import { MemoryDriver } from '../src/drivers/memory.js'
-import type { CacheStackDrivers } from '../src/types/main.js'
 import { CacheStack } from '../src/cache/stack/cache_stack.js'
 import { BentoCacheOptions } from '../src/bento_cache_options.js'
+import type { CacheStackDrivers, MemoryConfig } from '../src/types/main.js'
 import type { RawBentoCacheOptions } from '../src/types/options/options.js'
 
 /**
@@ -17,6 +17,7 @@ import type { RawBentoCacheOptions } from '../src/types/options/options.js'
  */
 export class CacheFactory {
   #parameters: Partial<RawBentoCacheOptions & CacheStackDrivers> = {}
+  #l1Options: MemoryConfig = {}
   enabledL1L2Config: boolean = false
 
   #cleanupCache(cache: Cache) {
@@ -40,7 +41,7 @@ export class CacheFactory {
       emitter: this.#parameters.emitter,
       lockTimeout: this.#parameters.lockTimeout,
       serializer: this.#parameters.serializer,
-    })
+    }).serializeL1Cache(this.#l1Options.serialize ?? true)
 
     const stack = new CacheStack('primary', options, {
       l1Driver: this.#parameters.l1Driver,
@@ -63,8 +64,9 @@ export class CacheFactory {
   /**
    * Adds a Memory L1 driver to the cache stack
    */
-  withMemoryL1() {
-    this.#parameters.l1Driver = new MemoryDriver({ maxSize: 100_000, prefix: 'test' })
+  withMemoryL1(options: MemoryConfig = {}) {
+    this.#l1Options = options
+    this.#parameters.l1Driver = new MemoryDriver({ prefix: 'test', ...options })
     return this
   }
 

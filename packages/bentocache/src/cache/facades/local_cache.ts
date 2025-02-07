@@ -9,9 +9,9 @@ import type { Logger, L1CacheDriver, CacheSerializer } from '../../types/main.js
 export class LocalCache {
   #driver: L1CacheDriver
   #logger: Logger
-  #serializer: CacheSerializer
+  #serializer: CacheSerializer | undefined
 
-  constructor(driver: L1CacheDriver, logger: Logger, serializer: CacheSerializer) {
+  constructor(driver: L1CacheDriver, logger: Logger, serializer: CacheSerializer | undefined) {
     this.#driver = driver
     this.#serializer = serializer
     this.#logger = logger.child({ context: 'bentocache.localCache' })
@@ -41,7 +41,7 @@ export class LocalCache {
   /**
    * Set a new item in the local cache
    */
-  set(key: string, value: string, options: CacheEntryOptions) {
+  set(key: string, value: any, options: CacheEntryOptions) {
     /**
      * If grace period is disabled and Physical TTL is 0 or less, we can just delete the item.
      */
@@ -78,7 +78,7 @@ export class LocalCache {
     if (value === undefined) return
 
     const newEntry = CacheEntry.fromDriver(key, value, this.#serializer).expire().serialize()
-    return this.#driver.set(key, newEntry, this.#driver.getRemainingTtl(key))
+    return this.#driver.set(key, newEntry as any, this.#driver.getRemainingTtl(key))
   }
 
   /**
