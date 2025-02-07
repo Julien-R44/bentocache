@@ -59,14 +59,18 @@ export function createCacheEntryOptions(
      * Logical TTL is when the value is considered expired
      * but still can be in the cache ( Grace period )
      */
-    logicalTtl,
+    get logicalTtl() {
+      return logicalTtl
+    },
 
     /**
      * Physical TTL is the time when value will be automatically
      * removed from the cache. This is the Grace period
      * duration
      */
-    physicalTtl,
+    get physicalTtl() {
+      return physicalTtl
+    },
 
     /**
      * Timeouts for the cache operations
