@@ -13,6 +13,8 @@ You will need to install `ioredis` to use this driver.
 The Redis driver can be used with many different providers:
 - Upstash
 - Vercel KV
+- Valkey
+- KeyDB
 - DragonFly
 - Redis Cluster
 
