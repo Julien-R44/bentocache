@@ -117,12 +117,22 @@ export class CacheStack extends BaseDriver {
       value,
       logicalExpiration: options.logicalTtlFromNow(),
     }
-    const item = this.options.serializer.serialize(rawItem)
 
-    this.l1?.set(key, this.options.serializeL1 ? item : rawItem, options)
-    await this.l2?.set(key, item, options)
+    /**
+     * Store raw or serialized value in the local cache based on the serializeL1 option
+     */
+    const l1Item = this.options.serializeL1 ? this.options.serializer.serialize(rawItem) : rawItem
+    this.l1?.set(key, l1Item, options)
+
+    /**
+     * Store the serialized value in the remote cache
+     */
+    if (this.l2) {
+      const l2Item = this.options.serializeL1 ? l1Item : this.options.serializer.serialize(rawItem)
+      await this.l2?.set(key, l2Item as any, options)
+    }
+
     await this.publish({ type: CacheBusMessageType.Set, keys: [key] })
-
     this.emit(cacheEvents.written(key, value, this.name))
     return true
   }
