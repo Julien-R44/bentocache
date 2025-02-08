@@ -65,8 +65,8 @@ test.group('Cache Entry Options', () => {
     const r1 = createCacheEntryOptions({ grace: false })
     const r2 = r1.cloneWith({ grace: '60m' })
 
-    assert.isFalse(r1.getIsGraceEnabled())
-    assert.isTrue(r2.getIsGraceEnabled())
+    assert.isFalse(r1.isGraceEnabled())
+    assert.isTrue(r2.isGraceEnabled())
   })
 
   test('timeout should be soft one if fallback value and grace period enabled', ({ assert }) => {
