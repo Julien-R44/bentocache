@@ -59,7 +59,7 @@ export function createCacheEntryOptions(
      * Logical TTL is when the value is considered expired
      * but still can be in the cache ( Grace period )
      */
-    get logicalTtl() {
+    getLogicalTtl() {
       return logicalTtl
     },
 
@@ -68,14 +68,14 @@ export function createCacheEntryOptions(
      * removed from the cache. This is the Grace period
      * duration
      */
-    get physicalTtl() {
+    getPhysicalTtl() {
       return physicalTtl
     },
 
     /**
      * Determine if the gracing system is enabled
      */
-    get isGraceEnabled() {
+    isGraceEnabled() {
       return grace > 0
     },
 
@@ -111,7 +111,7 @@ export function createCacheEntryOptions(
       options.ttl = newTtl
 
       logicalTtl = resolveTtl(options.ttl)
-      physicalTtl = self.isGraceEnabled ? grace : logicalTtl
+      physicalTtl = self.isGraceEnabled() ? grace : logicalTtl
 
       return self
     },
@@ -139,7 +139,7 @@ export function createCacheEntryOptions(
      * factory
      */
     factoryTimeout(hasFallbackValue: boolean) {
-      if (hasFallbackValue && self.isGraceEnabled && is.number(timeout)) {
+      if (hasFallbackValue && self.isGraceEnabled() && is.number(timeout)) {
         return { type: 'soft', duration: timeout, exception: errors.E_FACTORY_SOFT_TIMEOUT }
       }
 
@@ -152,7 +152,7 @@ export function createCacheEntryOptions(
      * Determine if we should use the SWR strategy
      */
     shouldSwr(hasFallback: boolean) {
-      return self.isGraceEnabled && timeout === 0 && hasFallback
+      return self.isGraceEnabled() && timeout === 0 && hasFallback
     },
 
     /**
@@ -167,7 +167,7 @@ export function createCacheEntryOptions(
        * that means we should wait at most for the soft timeout
        * duration.
        */
-      if (hasFallbackValue && self.isGraceEnabled && typeof timeout === 'number') {
+      if (hasFallbackValue && self.isGraceEnabled() && typeof timeout === 'number') {
         return timeout
       }
     },

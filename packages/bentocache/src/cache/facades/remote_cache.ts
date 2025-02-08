@@ -73,7 +73,7 @@ export class RemoteCache {
    */
   async set(key: string, value: string, options: CacheEntryOptions) {
     return await this.#tryCacheOperation('set', options, false, async () => {
-      await this.#driver.set(key, value, options.physicalTtl)
+      await this.#driver.set(key, value, options.getPhysicalTtl())
       return true
     })
   }

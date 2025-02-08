@@ -10,31 +10,31 @@ test.group('Cache Entry Options', () => {
 
     const options = createCacheEntryOptions(override, defaults)
 
-    assert.equal(options.logicalTtl, string.milliseconds.parse('10m'))
-    assert.equal(options.physicalTtl, string.milliseconds.parse('30m'))
+    assert.equal(options.getLogicalTtl(), string.milliseconds.parse('10m'))
+    assert.equal(options.getPhysicalTtl(), string.milliseconds.parse('30m'))
   })
 
   test('physical ttl should be logical ttl when grace period is disabled', ({ assert }) => {
     const options = createCacheEntryOptions({ ttl: '10m' })
 
-    assert.equal(options.physicalTtl, string.milliseconds.parse('10m'))
+    assert.equal(options.getPhysicalTtl(), string.milliseconds.parse('10m'))
   })
 
   test('physical ttl should be grace period ttl when enabled', ({ assert }) => {
     const options = createCacheEntryOptions({ ttl: '10m', grace: '30m' })
-    assert.equal(options.physicalTtl, string.milliseconds.parse('30m'))
+    assert.equal(options.getPhysicalTtl(), string.milliseconds.parse('30m'))
   })
 
   test('null ttl should be kept and resolved to undefined', ({ assert }) => {
     const options = createCacheEntryOptions({ ttl: null, grace: '30m' })
-    assert.deepEqual(options.logicalTtl, undefined)
+    assert.deepEqual(options.getLogicalTtl(), undefined)
   })
 
   test('clone with null ttl should be kept and resolved as undefined', ({ assert }) => {
     const options = createCacheEntryOptions({ ttl: '10m', grace: '30m' })
     const clone = options.cloneWith({ ttl: null })
 
-    assert.deepEqual(clone.logicalTtl, undefined)
+    assert.deepEqual(clone.getLogicalTtl(), undefined)
   })
 
   test('should assign timeouts', ({ assert }) => {
@@ -65,8 +65,8 @@ test.group('Cache Entry Options', () => {
     const r1 = createCacheEntryOptions({ grace: false })
     const r2 = r1.cloneWith({ grace: '60m' })
 
-    assert.isFalse(r1.isGraceEnabled)
-    assert.isTrue(r2.isGraceEnabled)
+    assert.isFalse(r1.getIsGraceEnabled())
+    assert.isTrue(r2.getIsGraceEnabled())
   })
 
   test('timeout should be soft one if fallback value and grace period enabled', ({ assert }) => {
@@ -112,7 +112,7 @@ test.group('Cache Entry Options', () => {
 
     options.setLogicalTtl(string.milliseconds.parse('5m'))
 
-    assert.equal(options.logicalTtl, string.milliseconds.parse('5m'))
-    assert.equal(options.physicalTtl, string.milliseconds.parse('5m'))
+    assert.equal(options.getLogicalTtl(), string.milliseconds.parse('5m'))
+    assert.equal(options.getPhysicalTtl(), string.milliseconds.parse('5m'))
   })
 })
