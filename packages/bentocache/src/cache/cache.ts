@@ -66,7 +66,7 @@ export class Cache implements CacheProvider {
       return remoteItem.getValue()
     }
 
-    if (!options.isGraceEnabled) {
+    if (!options.isGraceEnabled()) {
       this.#stack.emit(cacheEvents.miss(key, this.name))
       return this.#resolveDefaultValue(defaultValueFn)
     }

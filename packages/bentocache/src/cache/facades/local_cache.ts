@@ -45,7 +45,8 @@ export class LocalCache {
     /**
      * If grace period is disabled and Physical TTL is 0 or less, we can just delete the item.
      */
-    if (!options.isGraceEnabled && options.physicalTtl && options.physicalTtl <= 0) {
+    const physicalTtl = options.getPhysicalTtl()
+    if (!options.isGraceEnabled() && physicalTtl && physicalTtl <= 0) {
       return this.delete(key, options)
     }
 
@@ -53,7 +54,7 @@ export class LocalCache {
      * Save the item to the local cache
      */
     this.#logger.trace({ key, value, opId: options.id }, 'saving local cache item')
-    this.#driver.set(key, value, options.physicalTtl)
+    this.#driver.set(key, value, physicalTtl)
   }
 
   /**

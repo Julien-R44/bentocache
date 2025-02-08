@@ -25,10 +25,6 @@ export class SingleTierHandler {
     return this.stack.logger
   }
 
-  get emitter() {
-    return this.stack.emitter
-  }
-
   /**
    * Emit a CacheEvent using the emitter
    */
@@ -63,7 +59,7 @@ export class SingleTierHandler {
     options: CacheEntryOptions,
     err: Error,
   ) {
-    if (options.isGraceEnabled && item) {
+    if (options.isGraceEnabled() && item) {
       const isLogicallyExpired = item.isLogicallyExpired()
       this.#emit(cacheEvents.hit(key, item.getValue(), this.stack.name, isLogicallyExpired))
       this.logger.trace(
@@ -158,7 +154,7 @@ export class SingleTierHandler {
         'factory error',
       )
 
-      if (staleItem && options.isGraceEnabled) {
+      if (staleItem && options.isGraceEnabled()) {
         this.#locks.release(key, releaser)
         return this.#applyFallbackAndReturnGracedValue(key, staleItem, options)
       }

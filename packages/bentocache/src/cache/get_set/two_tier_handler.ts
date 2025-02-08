@@ -25,10 +25,6 @@ export class TwoTierHandler {
     return this.stack.logger
   }
 
-  get emitter() {
-    return this.stack.emitter
-  }
-
   /**
    * Emit a CacheEvent using the emitter
    */
@@ -83,7 +79,7 @@ export class TwoTierHandler {
     options: CacheEntryOptions,
     err: Error,
   ) {
-    if (options.isGraceEnabled && item) {
+    if (options.isGraceEnabled() && item) {
       return this.#returnLocalCacheValue(key, item, options, 'local cache hit (graced)')
     }
 
@@ -187,7 +183,7 @@ export class TwoTierHandler {
         'factory error',
       )
 
-      if (staleItem && options.isGraceEnabled) {
+      if (staleItem && options.isGraceEnabled()) {
         this.#locks.release(key, releaser)
         return this.#applyFallbackAndReturnGracedValue(key, staleItem, options)
       }
