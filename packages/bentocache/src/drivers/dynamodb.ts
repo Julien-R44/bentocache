@@ -267,6 +267,7 @@ export class DynamoDbDriver extends BaseDriver implements CacheDriver {
    * Delete multiple keys from the cache
    */
   async deleteMany(keys: string[]) {
+    if (keys.length === 0) return true
     await Promise.all(keys.map((key) => this.delete(key)))
     return true
   }
