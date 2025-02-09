@@ -1,5 +1,82 @@
 # bentocache
 
+## 1.1.0
+
+### Minor Changes
+
+- 07224ba: Add two new functions in the factory callback context:
+
+  ```ts
+  cache.getOrSet({
+    key: 'foo',
+    factory: ({ skip, fail }) => {
+      const item = await getFromDb()
+      if (!item) {
+        return skip()
+      }
+
+      if (item.isInvalid) {
+        return fail('Item is invalid')
+      }
+
+      return item
+    },
+  })
+  ```
+
+  ## Skip
+
+  Returning `skip` in a factory will not cache the value, and `getOrSet` will returns `undefined` even if there is a stale item in cache.
+  It will force the key to be recalculated on the next call.
+
+  ## Fail
+
+  Returning `fail` in a factory will not cache the value and will throw an error. If there is a stale item in cache, it will be used.
+
+- 2578357: Added a `serialize: false` to the memory driver.
+
+  It means that, the data stored in the memory cache will not be serialized/parsed using `JSON.stringify` and `JSON.parse`. This allows for a much faster throughput but at the expense of:
+
+  - not being able to limit the size of the stored data, because we can't really know the size of an unserialized object
+  - Having inconsistent return between the L1 and L2 cache. The data stored in the L2 Cache will always be serialized because it passes over the network. Therefore, depending on whether the data is retrieved from the L1 and L2, we can have data that does not have the same form. For example, a Date instance will become a string if retrieved from the L2, but will remain a Date instance if retrieved from the L1. So, you should put extra care when using this feature with an additional L2 cache.
+
+### Patch Changes
+
+- 09cd234: Refactoring of CacheEntryOptions class. We switch to a simple function that returns an object rather than a class. Given that CacheEntryOptions is heavily used : it was instantiated for every cache operation, we gain a lot in performance.
+- 1939ab9: Deleted the getters usage in the CacheEntryOptions file. Looks like getters are super slow. Just removing them doubled the performance in some cases.
+
+  Before :
+
+  ```sh
+  ┌─────────┬──────────────────────────────────┬─────────────────────┬─────────────────────┬────────────────────────┬────────────────────────┬─────────┐
+  │ (index) │ Task name                        │ Latency avg (ns)    │ Latency med (ns)    │ Throughput avg (ops/s) │ Throughput med (ops/s) │ Samples │
+  ├─────────┼──────────────────────────────────┼─────────────────────┼─────────────────────┼────────────────────────┼────────────────────────┼─────────┤
+  │ 0       │ 'L1 GetOrSet - BentoCache'       │ '16613 ± 97.87%'    │ '1560.0 ± 45.00'    │ '613098 ± 0.10%'       │ '641026 ± 19040'       │ 83796   │
+  │ 1       │ 'L1 GetOrSet - CacheManager'     │ '953451 ± 111.03%'  │ '160022 ± 3815.00'  │ '5700 ± 1.23%'         │ '6249 ± 151'           │ 1049    │
+  │ 4       │ 'Tiered GetOrSet - BentoCache'   │ '16105 ± 98.11%'    │ '1515.0 ± 45.00'    │ '636621 ± 0.08%'       │ '660066 ± 20206'       │ 86675   │
+  │ 5       │ 'Tiered GetOrSet - CacheManager' │ '877297 ± 111.36%'  │ '161617 ± 2876.00'  │ '5948 ± 0.67%'         │ '6187 ± 112'           │ 1140    │
+  │ 6       │ 'Tiered Get - BentoCache'        │ '1542.4 ± 4.43%'    │ '992.00 ± 18.00'    │ '973931 ± 0.03%'       │ '1008065 ± 17966'      │ 648343  │
+  │ 7       │ 'Tiered Get - CacheManager'      │ '1957.6 ± 0.51%'    │ '1848.0 ± 26.00'    │ '534458 ± 0.02%'       │ '541126 ± 7722'        │ 510827  │
+  └─────────┴──────────────────────────────────┴─────────────────────┴─────────────────────┴────────────────────────┴────────────────────────┴─────────┘
+  ```
+
+  After:
+
+  ```sh
+  ┌─────────┬──────────────────────────────────┬─────────────────────┬─────────────────────┬────────────────────────┬────────────────────────┬─────────┐
+  │ (index) │ Task name                        │ Latency avg (ns)    │ Latency med (ns)    │ Throughput avg (ops/s) │ Throughput med (ops/s) │ Samples │
+  ├─────────┼──────────────────────────────────┼─────────────────────┼─────────────────────┼────────────────────────┼────────────────────────┼─────────┤
+  │ 0       │ 'L1 GetOrSet - BentoCache'       │ '9610.3 ± 98.26%'   │ '1109.0 ± 29.00'    │ '879036 ± 0.05%'       │ '901713 ± 22979'       │ 143980  │
+  │ 1       │ 'L1 GetOrSet - CacheManager'     │ '906687 ± 110.96%'  │ '172470 ± 1785.00'  │ '5601 ± 0.56%'         │ '5798 ± 61'            │ 1103    │
+  │ 4       │ 'Tiered GetOrSet - BentoCache'   │ '8752.8 ± 98.40%'   │ '1060.0 ± 19.00'    │ '924367 ± 0.04%'       │ '943396 ± 17219'       │ 158461  │
+  │ 5       │ 'Tiered GetOrSet - CacheManager' │ '925163 ± 111.45%'  │ '173578 ± 2970.00'  │ '5590 ± 0.55%'         │ '5761 ± 100'           │ 1081    │
+  │ 6       │ 'Tiered Get - BentoCache'        │ '556.57 ± 0.52%'    │ '511.00 ± 10.00'    │ '1923598 ± 0.01%'      │ '1956947 ± 37561'      │ 1796720 │
+  │ 7       │ 'Tiered Get - CacheManager'      │ '2060.2 ± 2.54%'    │ '1928.0 ± 20.00'    │ '513068 ± 0.02%'       │ '518672 ± 5325'        │ 485387  │
+  └─────────┴──────────────────────────────────┴─────────────────────┴─────────────────────┴────────────────────────┴────────────────────────┴─────────┘
+  ```
+
+  Pretty good improvement 😁
+
 ## 1.0.0
 
 - eeb3c8c: BREAKING CHANGES:
