@@ -103,6 +103,11 @@ export function registerCacheDriverTestSuite(options: {
     assert.deepEqual(await cache.get('key2'), undefined)
   })
 
+  test('deleteMany() return true when no keys are provided', async ({ assert }) => {
+    const result = await cache.deleteMany([])
+    assert.isFalse(result)
+  })
+
   test('delete() returns true when key is removed', async ({ assert }) => {
     await cache.set('key1', 'value1')
     const result = await cache.delete('key1')

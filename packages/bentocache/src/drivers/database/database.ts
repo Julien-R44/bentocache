@@ -156,6 +156,7 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
    * Delete multiple keys from the cache
    */
   async deleteMany(keys: string[]) {
+    if (keys.length === 0) return true
     await this.#initialized
 
     keys = keys.map((key) => this.getItemKey(key))

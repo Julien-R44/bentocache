@@ -131,6 +131,7 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
    * Delete multiple keys from the cache
    */
   deleteMany(keys: string[]) {
+    if (keys.length === 0) return true
     for (const key of keys) this.delete(key)
     return true
   }

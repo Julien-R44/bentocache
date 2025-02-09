@@ -138,6 +138,7 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
    * Delete multiple keys from the cache
    */
   async deleteMany(keys: string[]) {
+    if (keys.length === 0) return true
     await this.#connection.del(keys.map((key) => this.getItemKey(key)))
     return true
   }
