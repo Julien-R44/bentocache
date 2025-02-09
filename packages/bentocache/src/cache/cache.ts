@@ -90,7 +90,7 @@ export class Cache implements CacheProvider {
    * Set a value in the cache
    * Returns true if the value was set, false otherwise
    */
-  async set(options: SetOptions) {
+  set(options: SetOptions) {
     const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
     return this.#stack.set(options.key, options.value, cacheOptions)
   }
@@ -99,7 +99,7 @@ export class Cache implements CacheProvider {
    * Set a value in the cache forever
    * Returns true if the value was set, false otherwise
    */
-  async setForever(options: SetOptions) {
+  setForever(options: SetOptions) {
     return this.set({ ttl: null, ...options })
   }
 
@@ -107,7 +107,7 @@ export class Cache implements CacheProvider {
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory and return it
    */
-  async getOrSet<T>(options: GetOrSetOptions<T>): Promise<T> {
+  getOrSet<T>(options: GetOrSetOptions<T>): Promise<T> {
     const cacheOptions = this.#stack.defaultOptions.cloneWith(options)
     return this.#getSetHandler.handle(options.key, options.factory, cacheOptions)
   }
@@ -116,7 +116,7 @@ export class Cache implements CacheProvider {
    * Retrieve an item from the cache if it exists, otherwise store the value
    * provided by the factory forever and return it
    */
-  async getOrSetForever<T>(options: GetOrSetForeverOptions<T>): Promise<T> {
+  getOrSetForever<T>(options: GetOrSetForeverOptions<T>): Promise<T> {
     const cacheOptions = this.#stack.defaultOptions.cloneWith({ ttl: null, ...options })
     return this.#getSetHandler.handle(options.key, options.factory, cacheOptions)
   }

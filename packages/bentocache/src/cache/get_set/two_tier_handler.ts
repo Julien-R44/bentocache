@@ -112,18 +112,12 @@ export class TwoTierHandler {
     return !!item && !item.isLogicallyExpired()
   }
 
-  async handle(key: string, factory: Factory, options: CacheEntryOptions) {
-    let localItem: CacheEntry | undefined
-
-    /**
-     * First we check the local cache. If we have a valid item, just
-     * returns it without acquiring a lock.
-     */
-    localItem = this.stack.l1?.get(key, options)
-    if (this.#isItemValid(localItem)) {
-      return this.#returnLocalCacheValue(key, localItem, options)
-    }
-
+  async #lockAndHandle(
+    key: string,
+    factory: Factory,
+    options: CacheEntryOptions,
+    localItem?: CacheEntry,
+  ) {
     /**
      * Since we didn't find a valid item in the local cache, we need to
      * check the remote cache, or invoke the factory.
@@ -191,5 +185,23 @@ export class TwoTierHandler {
       this.#locks.release(key, releaser)
       throw err
     }
+  }
+
+  handle(key: string, factory: Factory, options: CacheEntryOptions) {
+    /**
+     * First we check the local cache. If we have a valid item, just
+     * returns it without acquiring a lock.
+     */
+    const localItem = this.stack.l1?.get(key, options)
+    if (this.#isItemValid(localItem)) {
+      return this.#returnLocalCacheValue(key, localItem, options)
+    }
+
+    /**
+     * Next, delegate to the lock-and-handle async method so we can keep
+     * this method synchronous and avoid an overhead of async/await
+     * in case we have a valid item in the local cache.
+     */
+    return this.#lockAndHandle(key, factory, options, localItem)
   }
 }

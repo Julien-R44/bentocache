@@ -20,11 +20,11 @@ export class GetSetHandler {
    * Therefore we come here to determine which handler to use
    * depending on the configuration of the stack.
    */
-  async handle(key: string, factory: Factory, options: CacheEntryOptions) {
+  handle(key: string, factory: Factory, options: CacheEntryOptions) {
     if (this.stack.l2 && !this.stack.l1) {
-      return await this.#singleTierHandler.handle(key, factory, options)
+      return this.#singleTierHandler.handle(key, factory, options)
     }
 
-    return await this.#twoTierHandler.handle(key, factory, options)
+    return this.#twoTierHandler.handle(key, factory, options)
   }
 }
