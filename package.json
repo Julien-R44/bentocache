@@ -1,7 +1,6 @@
 {
   "name": "@bentocache/monorepo",
   "type": "module",
-  "version": "1.0.0-beta.5",
   "private": true,
   "packageManager": "pnpm@10.2.0",
   "description": "Multi-tier cache module for Node.js. Redis, Upstash, CloudfareKV, File, in-memory and others drivers",
