@@ -147,6 +147,6 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
    * Closes the connection to the cache
    */
   async disconnect() {
-    await this.#connection.quit()
+    this.#connection.disconnect()
   }
 }
