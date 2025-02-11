@@ -145,7 +145,7 @@ test.group('Cache', () => {
     await cache.get({ key: 'foo' })
 
     const value = local.get('foo', stack.defaultOptions)
-    assert.deepEqual(value?.getValue(), 'bar')
+    assert.deepEqual(value?.entry.getValue(), 'bar')
   })
 
   test('return default value if item not found in local and remote', async ({ assert }) => {
@@ -192,7 +192,7 @@ test.group('Cache', () => {
     const localeValue = local.get('key1', stack.defaultOptions)
 
     assert.deepEqual(value, 'bar')
-    assert.deepEqual(localeValue?.getValue(), 'bar')
+    assert.deepEqual(localeValue?.entry.getValue(), 'bar')
   })
 
   test('store values in both when key does not exists in local and remote', async ({ assert }) => {
@@ -204,8 +204,8 @@ test.group('Cache', () => {
     const remoteValue = await remote.get('key1', stack.defaultOptions)
 
     assert.deepEqual(value, 'bar')
-    assert.deepEqual(localeValue!.getValue(), 'bar')
-    assert.deepEqual(remoteValue!.getValue(), 'bar')
+    assert.deepEqual(localeValue!.entry.getValue(), 'bar')
+    assert.deepEqual(remoteValue!.entry.getValue(), 'bar')
   })
 
   test('with specific ttl', async ({ assert }) => {
@@ -311,7 +311,7 @@ test.group('Cache', () => {
     await sleep(100)
 
     const entry = local.get('key1', stack.defaultOptions)
-    assert.deepEqual(entry?.isLogicallyExpired(), true)
+    assert.deepEqual(entry?.isGraced, true)
 
     await sleep(2000)
 
@@ -354,8 +354,8 @@ test.group('Cache', () => {
     const r1 = local.get('foo', stack.defaultOptions)
     const r2 = await remote.get('foo', stack.defaultOptions)
 
-    assert.deepEqual(r1!.getValue(), 'bar')
-    assert.deepEqual(r2!.getValue(), 'bar')
+    assert.deepEqual(r1!.entry.getValue(), 'bar')
+    assert.deepEqual(r2!.entry.getValue(), 'bar')
   })
 
   test('set should expires others local cache', async ({ assert }) => {
@@ -379,7 +379,7 @@ test.group('Cache', () => {
     await sleep(100)
 
     assert.isDefined(r1)
-    assert.isBelow(r1!.getLogicalExpiration(), Date.now())
+    assert.isBelow(r1!.entry.getLogicalExpiration(), Date.now())
     assert.equal(r2, 'baz')
   })
 
@@ -654,8 +654,8 @@ test.group('Cache', () => {
     assert.deepEqual(r1, 'bar')
     assert.deepEqual(r2, 'bar')
     assert.isUndefined(r3)
-    assert.deepEqual(r4?.getValue(), 'bar')
-    assert.deepEqual(r5?.getValue(), 'bar')
+    assert.deepEqual(r4?.entry.getValue(), 'bar')
+    assert.deepEqual(r5?.entry.getValue(), 'bar')
   })
 
   test('Bus shouldnt receive messages emitted by itself', async ({ assert }) => {
@@ -667,7 +667,7 @@ test.group('Cache', () => {
     const r2 = local.get('foo', stack.defaultOptions)
 
     assert.deepEqual(r1, { foo: 'bar' })
-    assert.deepEqual(r2?.getValue(), { foo: 'bar' })
+    assert.deepEqual(r2?.entry.getValue(), { foo: 'bar' })
   })
 
   test('when local and remote hitted items are logically it should prioritize remote', async ({

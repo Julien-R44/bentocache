@@ -9,7 +9,7 @@
   "keywords": [],
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "bench:all": "pnpm tsx all.ts"
   },
   "devDependencies": {
     "@keyv/redis": "^4.2.0",

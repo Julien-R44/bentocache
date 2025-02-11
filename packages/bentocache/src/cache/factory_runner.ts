@@ -38,9 +38,14 @@ export class FactoryRunner {
 
       if (result === this.#skipSymbol) return
 
+      this.#stack.logger.info({ cache: this.#stack.name, opId: options.id, key }, 'factory success')
       await this.#stack.set(key, result, options)
       return result
     } catch (error) {
+      this.#stack.logger.warn(
+        { cache: this.#stack.name, opId: options.id, key, error },
+        'factory failed',
+      )
       options.onFactoryError?.(new errors.E_FACTORY_ERROR(key, error, isBackground))
 
       if (!isBackground) throw new errors.E_FACTORY_ERROR(key, error)
@@ -57,6 +62,14 @@ export class FactoryRunner {
     lockReleaser: MutexInterface.Releaser,
   ) {
     const timeout = options.factoryTimeout(hasFallback)
+    if (timeout) {
+      this.#stack.logger.info(
+        { cache: this.#stack.name, opId: options.id, key },
+        `running factory with ${timeout.type} timeout of ${timeout.duration}ms`,
+      )
+    } else {
+      this.#stack.logger.info({ cache: this.#stack.name, opId: options.id, key }, 'running factory')
+    }
 
     /**
      * If the timeout is 0, we will not wait for the factory to resolve
@@ -71,6 +84,10 @@ export class FactoryRunner {
     const result = await pTimeout(runFactory, {
       milliseconds: timeout?.duration ?? Number.POSITIVE_INFINITY,
       fallback: async () => {
+        this.#stack.logger.warn(
+          { cache: this.#stack.name, opId: options.id, key },
+          `factory timed out after ${timeout?.duration}ms`,
+        )
         throw new timeout!.exception(key)
       },
     })

@@ -448,7 +448,7 @@ test.group('One tier tests', () => {
     })
 
     const res = local.get('key1', stack.defaultOptions)!
-    const logicalExpiration = res.getLogicalExpiration()
+    const logicalExpiration = res.entry.getLogicalExpiration()
 
     const inTwoDays = dayjs().add(2, 'day')
     assert.isTrue(dayjs(logicalExpiration).isSame(inTwoDays, 'day'))

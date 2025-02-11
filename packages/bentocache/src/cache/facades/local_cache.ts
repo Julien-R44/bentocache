@@ -1,6 +1,7 @@
+import type { Logger } from '../../logger.js'
 import { CacheEntry } from '../cache_entry/cache_entry.js'
+import type { L1CacheDriver, CacheSerializer } from '../../types/main.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
-import type { Logger, L1CacheDriver, CacheSerializer } from '../../types/main.js'
 
 /**
  * LocalCache is a wrapper around a CacheDriver that provides a
@@ -14,7 +15,7 @@ export class LocalCache {
   constructor(driver: L1CacheDriver, logger: Logger, serializer: CacheSerializer | undefined) {
     this.#driver = driver
     this.#serializer = serializer
-    this.#logger = logger.child({ context: 'bentocache.localCache' })
+    this.#logger = logger.child({ layer: 'l1' })
   }
 
   /**
@@ -24,18 +25,26 @@ export class LocalCache {
     /**
      * Try to get the item from the local cache
      */
-    this.#logger.trace({ key, opId: options.id }, 'try getting local cache item')
+    this.#logger.trace({ key, opId: options.id }, 'try getting from l1 cache')
     const value = this.#driver.get(key)
 
     /**
      * If the item is not found, return undefined
      */
     if (value === undefined) {
-      this.#logger.trace({ key, opId: options.id }, 'local cache item not found')
+      this.#logger.debug({ key, opId: options.id }, 'cache miss')
       return
     }
 
-    return CacheEntry.fromDriver(key, value, this.#serializer)
+    const entry = CacheEntry.fromDriver(key, value, this.#serializer)
+    const isGraced = entry.isLogicallyExpired()
+    if (isGraced) {
+      this.#logger.debug({ key, opId: options.id }, 'cache hit (graced)')
+    } else {
+      this.#logger.debug({ key, opId: options.id }, 'cache hit')
+    }
+
+    return { entry, isGraced }
   }
 
   /**
@@ -53,7 +62,7 @@ export class LocalCache {
     /**
      * Save the item to the local cache
      */
-    this.#logger.trace({ key, value, opId: options.id }, 'saving local cache item')
+    this.#logger.debug({ key, opId: options.id }, 'saving item')
     this.#driver.set(key, value, physicalTtl)
   }
 
@@ -61,7 +70,7 @@ export class LocalCache {
    * Delete an item from the local cache
    */
   delete(key: string, options?: CacheEntryOptions) {
-    this.#logger.trace({ key, opId: options?.id }, 'deleting local cache item')
+    this.#logger.debug({ key, opId: options?.id }, 'deleting item')
     return this.#driver.delete(key)
   }
 
@@ -73,7 +82,7 @@ export class LocalCache {
    * is down and the grace period is enabled
    */
   logicallyExpire(key: string) {
-    this.#logger.trace({ key }, 'logically expiring local cache item')
+    this.#logger.debug({ key }, 'logically expiring item')
 
     const value = this.#driver.get(key)
     if (value === undefined) return
@@ -86,7 +95,7 @@ export class LocalCache {
    * Delete many item from the local cache
    */
   deleteMany(keys: string[], options: CacheEntryOptions) {
-    this.#logger.trace({ keys, options, opId: options.id }, 'deleting local cache items')
+    this.#logger.debug({ keys, options, opId: options.id }, 'deleting items')
     this.#driver.deleteMany(keys)
   }
 

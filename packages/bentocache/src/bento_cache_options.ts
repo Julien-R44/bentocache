@@ -3,16 +3,11 @@ import lodash from '@poppinss/utils/lodash'
 import string from '@poppinss/utils/string'
 import { noopLogger } from '@julr/utils/logger'
 
+import { Logger } from './logger.js'
 import { resolveTtl } from './helpers.js'
 import type { FactoryError } from './errors.js'
 import { JsonSerializer } from './serializers/json.js'
-import type {
-  CacheSerializer,
-  Duration,
-  Emitter,
-  Logger,
-  RawBentoCacheOptions,
-} from './types/main.js'
+import type { CacheSerializer, Duration, Emitter, RawBentoCacheOptions } from './types/main.js'
 
 const defaultSerializer = new JsonSerializer()
 
@@ -57,7 +52,7 @@ export class BentoCacheOptions {
   /**
    * The logger used throughout the library
    */
-  logger: Logger = noopLogger()
+  logger: Logger
 
   /**
    * The emitter used throughout the library
@@ -102,7 +97,7 @@ export class BentoCacheOptions {
     this.serializer = this.#options.serializer ?? defaultSerializer
     this.l2CircuitBreakerDuration = resolveTtl(this.#options.l2CircuitBreakerDuration, null)
 
-    this.logger = this.#options.logger!.child({ pkg: 'bentocache' })
+    this.logger = new Logger(this.#options.logger ?? noopLogger())
     this.onFactoryError = this.#options.onFactoryError
   }
 

@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import { testLogger } from '@julr/utils/logger'
 
+import { Logger } from '../../src/logger.js'
 import { MemoryDriver } from '../../src/drivers/memory.js'
 import { JsonSerializer } from '../../src/serializers/json.js'
 import { LocalCache } from '../../src/cache/facades/local_cache.js'
@@ -8,7 +9,11 @@ import { createCacheEntryOptions } from '../../src/cache/cache_entry/cache_entry
 
 test.group('Local Cache', () => {
   test('logically expire should works', ({ assert }) => {
-    const localCache = new LocalCache(new MemoryDriver(), testLogger(), new JsonSerializer())
+    const localCache = new LocalCache(
+      new MemoryDriver(),
+      new Logger(testLogger()),
+      new JsonSerializer(),
+    )
     const options = createCacheEntryOptions({ ttl: '30m' })
 
     const logicalExpiration = Date.now() + 1000 * 60 * 30
@@ -21,13 +26,13 @@ test.group('Local Cache', () => {
 
     const entryUpdated = localCache.get('foo', options)
 
-    assert.isFalse(entry.isLogicallyExpired())
-    assert.isTrue(entryUpdated?.isLogicallyExpired())
+    assert.isFalse(entry.entry.isLogicallyExpired())
+    assert.isTrue(entryUpdated?.entry.isLogicallyExpired())
   })
 
   test('logically expire should keep the same physical ttl', ({ assert }) => {
     const driver = new MemoryDriver()
-    const localCache = new LocalCache(driver, testLogger(), new JsonSerializer())
+    const localCache = new LocalCache(driver, new Logger(testLogger()), new JsonSerializer())
     const options = createCacheEntryOptions({ ttl: '30m' })
 
     const logicalExpiration = Date.now() + 1000 * 60 * 30

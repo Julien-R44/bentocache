@@ -2,6 +2,7 @@ import { is } from '@julr/utils/is'
 import lodash from '@poppinss/utils/lodash'
 
 import { Bus } from '../bus/bus.js'
+import type { Logger } from '../logger.js'
 import { UndefinedValueError } from '../errors.js'
 import { LocalCache } from './facades/local_cache.js'
 import { BaseDriver } from '../drivers/base_driver.js'
@@ -15,7 +16,6 @@ import {
   type CacheEvent,
   type CacheStackDrivers,
   type CacheBusMessage,
-  type Logger,
   CacheBusMessageType,
 } from '../types/main.js'
 
@@ -65,9 +65,8 @@ export class CacheStack extends BaseDriver {
       { retryQueue: { enabled: true, maxSize: undefined } },
       busOptions,
     )
-    const newBus = new Bus(this.name, this.#busDriver, this.logger, this.emitter, this.#busOptions)
 
-    return newBus
+    return new Bus(this.name, this.#busDriver, this.logger, this.emitter, this.#busOptions)
   }
 
   namespace(namespace: string): CacheStack {
