@@ -3,10 +3,10 @@ import { sleep } from '@julr/utils/misc'
 import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
 import { RedisDriver } from '../../src/drivers/redis.js'
-import { UndefinedValueError } from '../../src/errors.js'
 import { NullDriver } from '../helpers/null/null_driver.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
+import { L2CacheError, UndefinedValueError } from '../../src/errors.js'
 import { throwingFactory, slowFactory, REDIS_CREDENTIALS } from '../helpers/index.js'
 
 test.group('Cache', () => {
@@ -343,8 +343,9 @@ test.group('Cache', () => {
       suppressL2Errors: false,
     })
 
-    await assert.rejects(() => r2, 'Chaos: Random error')
-  }).skip()
+    // @ts-ignore
+    await assert.rejects(() => r2, L2CacheError)
+  })
 
   test('set() set item in local and remote store', async ({ assert }) => {
     const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
@@ -419,7 +420,8 @@ test.group('Cache', () => {
     remoteDriver.alwaysThrow()
     const r1 = cache.deleteMany({ keys: ['foo', 'bar'], suppressL2Errors: false })
 
-    await assert.rejects(() => r1, 'Chaos: Random error')
+    // @ts-ignore
+    await assert.rejects(() => r1, L2CacheError)
 
     const r2 = local.get('foo', stack.defaultOptions)
     const r3 = local.get('bar', stack.defaultOptions)
@@ -515,7 +517,8 @@ test.group('Cache', () => {
     remoteDriver.alwaysThrow()
     const r1 = cache.delete({ key: 'foo', suppressL2Errors: false })
 
-    await assert.rejects(() => r1, 'Chaos: Random error')
+    // @ts-ignore
+    await assert.rejects(() => r1, L2CacheError)
 
     // but local cache should be deleted
     const r2 = local.get('foo', stack.defaultOptions)

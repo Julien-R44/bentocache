@@ -1,9 +1,11 @@
 import { test } from '@japa/runner'
 import { sleep } from '@julr/utils/misc'
 
-import { throwingFactory } from '../helpers/index.js'
-import type { FactoryError } from '../../src/errors.js'
+import { RedisDriver } from '../../src/drivers/redis.js'
+import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
+import { L2CacheError, type FactoryError } from '../../src/errors.js'
+import { REDIS_CREDENTIALS, throwingFactory } from '../helpers/index.js'
 
 test.group('Error handling', () => {
   test('handle foreground factory error', async ({ assert }) => {
@@ -52,4 +54,22 @@ test.group('Error handling', () => {
       .getOrSet({ key: 'error', factory: throwingFactory('Factory error') })
       .catch(() => {})
   })
+
+  test('should throw E_L2_CACHE_ERROR if l2 fails', async ({ cleanup }) => {
+    const l2 = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
+    cleanup(() => l2.disconnect())
+
+    const { cache } = new CacheFactory()
+      .withMemoryL1()
+      .merge({ l2Driver: l2, suppressL2Errors: false })
+      .create()
+
+    await cache.getOrSet({
+      key: 'foo',
+      factory: () => {
+        l2.alwaysThrow()
+        return 'bar'
+      },
+    })
+  }).throws(L2CacheError.message, L2CacheError)
 })

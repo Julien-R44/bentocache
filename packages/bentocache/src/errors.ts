@@ -70,8 +70,22 @@ export class UndefinedValueError extends Exception {
   }
 }
 
+/**
+ * Thrown when a L2 Cache operation fail
+ */
+export class L2CacheError extends Exception {
+  static code = 'E_L2_CACHE_ERROR'
+  static message = 'An error occurred while interacting with the L2 cache'
+
+  constructor(cause: any) {
+    super(L2CacheError.message, { cause })
+  }
+}
+
 export const errors = {
   E_FACTORY_ERROR: FactoryError,
   E_FACTORY_SOFT_TIMEOUT: FactorySoftTimeout,
   E_FACTORY_HARD_TIMEOUT: FactoryHardTimeout,
+  E_UNDEFINED_VALUE: UndefinedValueError,
+  E_L2_CACHE_ERROR: L2CacheError,
 }

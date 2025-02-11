@@ -6,6 +6,7 @@ import { MemoryTransport } from '@boringnode/bus/transports/memory'
 import { Cache } from '../src/cache/cache.js'
 import { RedisDriver } from '../src/drivers/redis.js'
 import { MemoryDriver } from '../src/drivers/memory.js'
+import { traceLogger } from '../tests/helpers/index.js'
 import { CacheStack } from '../src/cache/cache_stack.js'
 import { BentoCacheOptions } from '../src/bento_cache_options.js'
 import type { CacheStackDrivers, MemoryConfig } from '../src/types/main.js'
@@ -78,6 +79,14 @@ export class CacheFactory {
     this.#parameters.l2Driver ??= new RedisDriver({ connection: { host: '127.0.0.1', port: 6379 } })
     this.#parameters.busDriver ??= new MemoryTransport()
 
+    return this
+  }
+
+  /**
+   * Adds a trace logger. Useful for quick debugging while testing
+   */
+  withTraceLogger() {
+    this.#parameters.logger = traceLogger(true)
     return this
   }
 

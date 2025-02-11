@@ -144,10 +144,7 @@ export class SingleTierHandler {
        * Otherwise, that means we had a factory error. If we have a graced
        * value, returns it
        */
-      this.logger.trace(
-        { key, cache: this.stack.name, opId: options.id, error: err },
-        'factory error',
-      )
+      this.logger.trace({ key, cache: this.stack.name, opId: options.id, err }, 'factory error')
 
       if (staleItem && options.isGraceEnabled()) {
         this.#locks.release(key, releaser)

@@ -17,7 +17,7 @@ test.group('Circuit breaking', () => {
     assert.isTrue(cb.isOpen())
     await sleep(200)
     assert.isTrue(cb.isOpen())
-    await sleep(200)
+    await sleep(210)
     assert.isFalse(cb.isOpen())
     assert.isTrue(cb.isClosed())
   })
@@ -47,7 +47,7 @@ test.group('Circuit breaking', () => {
     assert.deepEqual(get.mock.callCount(), 1)
 
     // Wait for the circuit breaker to close
-    await sleep(200)
+    await sleep(210)
 
     await cache.get({ key: 'foo' })
 

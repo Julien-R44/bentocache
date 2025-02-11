@@ -1,4 +1,5 @@
 import pTimeout from 'p-timeout'
+import { tryAsync } from '@julr/utils/functions'
 import type { MutexInterface } from 'async-mutex'
 
 import { errors } from '../errors.js'
@@ -6,6 +7,14 @@ import type { Locks } from './locks.js'
 import type { CacheStack } from './cache_stack.js'
 import type { GetSetFactory } from '../types/helpers.js'
 import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
+
+interface RunFactoryParameters {
+  key: string
+  factory: GetSetFactory
+  options: CacheEntryOptions
+  lockReleaser: MutexInterface.Releaser
+  isBackground?: boolean
+}
 
 /**
  * Factory Runner is responsible for executing factories
@@ -20,38 +29,68 @@ export class FactoryRunner {
     this.#locks = locks
   }
 
-  async #runFactory(
-    key: string,
-    factory: GetSetFactory,
-    options: CacheEntryOptions,
-    lockReleaser: MutexInterface.Releaser,
-    isBackground = false,
-  ) {
-    try {
-      const result = await factory({
-        setTtl: (ttl) => options.setLogicalTtl(ttl),
+  /**
+   * Process a factory error
+   */
+  #processFactoryError(params: RunFactoryParameters, error: Error | null) {
+    this.#stack.logger.warn(
+      { cache: this.#stack.name, opId: params.options.id, key: params.key, err: error },
+      'factory failed',
+    )
+
+    this.#locks.release(params.key, params.lockReleaser)
+
+    const factoryError = new errors.E_FACTORY_ERROR(params.key, error, params.isBackground)
+    params.options.onFactoryError?.(factoryError)
+
+    if (!params.isBackground) throw factoryError
+    return
+  }
+
+  async #runFactory(params: RunFactoryParameters) {
+    params.isBackground ??= false
+
+    /**
+     * Execute the factory
+     */
+    const [result, error] = await tryAsync(async () => {
+      const result = await params.factory({
+        setTtl: (ttl) => params.options.setLogicalTtl(ttl),
         skip: () => this.#skipSymbol as any as undefined,
         fail: (message) => {
           throw new Error(message ?? 'Factory failed')
         },
       })
 
-      if (result === this.#skipSymbol) return
-
-      this.#stack.logger.info({ cache: this.#stack.name, opId: options.id, key }, 'factory success')
-      await this.#stack.set(key, result, options)
-      return result
-    } catch (error) {
-      this.#stack.logger.warn(
-        { cache: this.#stack.name, opId: options.id, key, error },
-        'factory failed',
+      this.#stack.logger.info(
+        { cache: this.#stack.name, opId: params.options.id, key: params.key },
+        'factory success',
       )
-      options.onFactoryError?.(new errors.E_FACTORY_ERROR(key, error, isBackground))
 
-      if (!isBackground) throw new errors.E_FACTORY_ERROR(key, error)
-    } finally {
-      this.#locks.release(key, lockReleaser)
+      return result
+    })
+
+    if (this.#skipSymbol === result) {
+      this.#locks.release(params.key, params.lockReleaser)
+      return
     }
+
+    /**
+     * If the factory has thrown an error, we will log it and throw a FactoryError
+     * after releasing the lock
+     */
+    if (error) return this.#processFactoryError(params, error)
+
+    /**
+     * Save the factory result in the catch
+     */
+    try {
+      await this.#stack.set(params.key, result, params.options)
+    } finally {
+      this.#locks.release(params.key, params.lockReleaser)
+    }
+
+    return result
   }
 
   async run(
@@ -76,11 +115,11 @@ export class FactoryRunner {
      * And immediately return the fallback value
      */
     if (options.shouldSwr(hasFallback)) {
-      this.#runFactory(key, factory, options, lockReleaser, true)
+      this.#runFactory({ key, factory, options, lockReleaser, isBackground: true })
       throw new errors.E_FACTORY_SOFT_TIMEOUT(key)
     }
 
-    const runFactory = this.#runFactory(key, factory, options, lockReleaser)
+    const runFactory = this.#runFactory({ key, factory, options, lockReleaser })
     const result = await pTimeout(runFactory, {
       milliseconds: timeout?.duration ?? Number.POSITIVE_INFINITY,
       fallback: async () => {

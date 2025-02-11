@@ -187,11 +187,7 @@ test.group('Soft Timeout', () => {
 
   test('background factory still release the lock if it fails', async ({ assert }) => {
     const { cache } = new CacheFactory()
-      .merge({
-        ttl: 100,
-        grace: '6h',
-        timeout: 200,
-      })
+      .merge({ ttl: 100, grace: '6h', timeout: 200 })
       .withL1L2Config()
       .create()
 

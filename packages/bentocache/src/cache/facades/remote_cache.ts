@@ -1,5 +1,6 @@
 import { is } from '@julr/utils/is'
 
+import { errors } from '../../errors.js'
 import type { Logger } from '../../logger.js'
 import type { L2CacheDriver } from '../../types/main.js'
 import { CacheEntry } from '../cache_entry/cache_entry.js'
@@ -67,7 +68,7 @@ export class RemoteCache {
         return fallbackValue
       }
 
-      throw error
+      throw new errors.E_L2_CACHE_ERROR(error)
     }
   }
 

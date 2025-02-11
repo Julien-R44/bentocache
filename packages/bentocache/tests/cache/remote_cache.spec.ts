@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import { testLogger } from '@julr/utils/logger'
 
 import { Logger } from '../../src/logger.js'
+import { L2CacheError } from '../../src/errors.js'
 import { REDIS_CREDENTIALS } from '../helpers/index.js'
 import { RedisDriver } from '../../src/drivers/redis.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
@@ -118,5 +119,35 @@ test.group('Remote Cache', () => {
 
     const errors = logger.logs.filter((log) => log.level === 'error')
     assert.deepEqual(errors.length, 5)
+  })
+
+  test('should throw E_L2_CACHE_ERROR if the driver throws an error', async ({
+    assert,
+    cleanup,
+  }) => {
+    const logger = testLogger()
+    const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
+    const cache = new RemoteCache(
+      chaosCacheDriver,
+      new Logger(logger),
+      true,
+      new BentoCacheOptions({ suppressL2Errors: false }),
+    )
+
+    cleanup(() => chaosCacheDriver.disconnect())
+
+    chaosCacheDriver.alwaysThrow()
+
+    const options = createCacheEntryOptions({ suppressL2Errors: false })
+
+    await assert.rejects(async () => {
+      await cache.get('foo', options)
+      // @ts-ignore
+    }, L2CacheError)
+
+    await assert.rejects(async () => {
+      await cache.set('foo', 'bar', options)
+      // @ts-ignore
+    }, L2CacheError)
   })
 })
