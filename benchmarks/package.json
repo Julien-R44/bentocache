@@ -1,7 +1,6 @@
 {
   "name": "@bentocache/benchmarks",
   "type": "module",
-  "version": "0.0.0",
   "private": true,
   "description": "",
   "author": "Julien Ripouteau <julien@ripouteau.com>",
