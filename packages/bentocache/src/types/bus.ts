@@ -31,6 +31,11 @@ export const CacheBusMessageType = {
    * An item was deleted from the cache
    */
   Delete: 'delete',
+
+  /**
+   * An item was logically expired
+   */
+  Expire: 'expire',
 }
 export type CacheBusMessageType = (typeof CacheBusMessageType)[keyof typeof CacheBusMessageType]
 

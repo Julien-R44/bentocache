@@ -70,6 +70,13 @@ export interface CacheProvider {
   deleteMany(options: DeleteManyOptions): Promise<boolean>
 
   /**
+   * Expire a key from the cache.
+   * Entry will not be fully deleted but expired and
+   * retained for the grace period if enabled.
+   */
+  expire(options: DeleteOptions): Promise<boolean>
+
+  /**
    * Remove all items from the cache
    */
   clear(options?: ClearOptions): Promise<void>

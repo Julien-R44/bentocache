@@ -10,7 +10,7 @@ export type SetCommonOptions = Pick<
 >
 
 /**
- * Options accepted by the `getOrSet` method when passing an object
+ * Options accepted by the `getOrSet` method
  */
 export type GetOrSetOptions<T> = {
   key: string
@@ -19,7 +19,7 @@ export type GetOrSetOptions<T> = {
 } & SetCommonOptions
 
 /**
- * Options accepted by the `getOrSetForever` method when passing an object
+ * Options accepted by the `getOrSetForever` method
  */
 export type GetOrSetForeverOptions<T> = {
   key: string
@@ -35,7 +35,7 @@ export type GetOrSetForeverOptions<T> = {
 export type SetOptions = { key: string; value: any } & SetCommonOptions
 
 /**
- * Options accepted by the `get` method when passing an object
+ * Options accepted by the `get` method
  */
 export type GetOptions<T> = { key: string; defaultValue?: Factory<T> } & Pick<
   RawCommonOptions,
@@ -43,13 +43,18 @@ export type GetOptions<T> = { key: string; defaultValue?: Factory<T> } & Pick<
 >
 
 /**
- * Options accepted by the `delete` method when passing an object
+ * Options accepted by the `delete` method
  */
 export type DeleteOptions = { key: string } & Pick<RawCommonOptions, 'suppressL2Errors'>
 export type DeleteManyOptions = { keys: string[] } & Pick<RawCommonOptions, 'suppressL2Errors'>
 
 /**
- * Options accepted by the `has` method when passing an object
+ * Options accepted by the `expire` method
+ */
+export type ExpireOptions = { key: string } & Pick<RawCommonOptions, 'suppressL2Errors'>
+
+/**
+ * Options accepted by the `has` method
  */
 export type HasOptions = { key: string } & Pick<RawCommonOptions, 'suppressL2Errors'>
 

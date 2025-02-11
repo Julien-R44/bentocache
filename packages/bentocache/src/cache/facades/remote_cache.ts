@@ -124,6 +124,21 @@ export class RemoteCache {
   }
 
   /**
+   * Make an item logically expire in the remote cache
+   */
+  async logicallyExpire(key: string, options: CacheEntryOptions) {
+    return await this.#tryCacheOperation('logicallyExpire', options, false, async () => {
+      this.#logger.debug({ key, opId: options.id }, 'logically expiring item')
+
+      const value = await this.#driver.get(key)
+      if (value === undefined) return
+
+      const entry = CacheEntry.fromDriver(key, value, this.#options.serializer).expire().serialize()
+      return await this.#driver.set(key, entry as any, options.getPhysicalTtl())
+    })
+  }
+
+  /**
    * Create a new namespace for the remote cache
    */
   namespace(namespace: string) {

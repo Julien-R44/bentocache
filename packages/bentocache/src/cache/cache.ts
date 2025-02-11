@@ -16,6 +16,7 @@ import type {
   DeleteOptions,
   DeleteManyOptions,
   GetOrSetForeverOptions,
+  ExpireOptions,
 } from '../types/main.js'
 
 export class Cache implements CacheProvider {
@@ -213,6 +214,24 @@ export class Cache implements CacheProvider {
     keys.forEach((key) => this.#stack.emit(cacheEvents.deleted(key, this.name)))
     await this.#stack.publish({ type: CacheBusMessageType.Delete, keys })
 
+    return true
+  }
+
+  /**
+   * Expire a key from the cache.
+   * Entry will not be fully deleted but expired and
+   * retained for the grace period if enabled.
+   */
+  async expire(rawOptions: ExpireOptions) {
+    const key = rawOptions.key
+    const options = this.#stack.defaultOptions.cloneWith(rawOptions)
+    this.#options.logger.logMethod({ method: 'expire', cacheName: this.name, key, options })
+
+    this.#stack.l1?.logicallyExpire(key, options)
+    await this.#stack.l2?.logicallyExpire(key, options)
+    await this.#stack.publish({ type: CacheBusMessageType.Expire, keys: [key] })
+
+    this.#stack.emit(cacheEvents.expire(key, this.name))
     return true
   }
 
