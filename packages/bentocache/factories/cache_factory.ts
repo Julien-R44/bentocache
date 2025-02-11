@@ -32,16 +32,7 @@ export class CacheFactory {
    */
   #createCacheStack() {
     const options = new BentoCacheOptions({
-      ttl: this.#parameters.ttl,
-      grace: this.#parameters.grace,
-      graceBackoff: this.#parameters.graceBackoff,
-      timeout: this.#parameters.timeout,
-      hardTimeout: this.#parameters.hardTimeout,
-      logger: this.#parameters.logger,
-      emitter: this.#parameters.emitter,
-      lockTimeout: this.#parameters.lockTimeout,
-      serializer: this.#parameters.serializer,
-      onFactoryError: this.#parameters.onFactoryError,
+      ...this.#parameters,
     }).serializeL1Cache(this.#l1Options.serialize ?? true)
 
     const stack = new CacheStack('primary', options, {

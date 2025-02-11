@@ -4,7 +4,7 @@ import { testLogger } from '@julr/utils/logger'
 import { REDIS_CREDENTIALS } from '../helpers/index.js'
 import { RedisDriver } from '../../src/drivers/redis.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
-import { JsonSerializer } from '../../src/serializers/json.js'
+import { BentoCacheOptions } from '../../src/bento_cache_options.js'
 import { RemoteCache } from '../../src/cache/facades/remote_cache.js'
 import { createCacheEntryOptions } from '../../src/cache/cache_entry/cache_entry_options.js'
 
@@ -12,7 +12,7 @@ test.group('Remote Cache', () => {
   test('should rethrows errors if suppressL2Errors is disabled', async ({ assert, cleanup }) => {
     const logger = testLogger()
     const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
-    const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer(), true)
+    const cache = new RemoteCache(chaosCacheDriver, logger, true, new BentoCacheOptions({}))
 
     cleanup(() => chaosCacheDriver.disconnect())
 
@@ -32,7 +32,7 @@ test.group('Remote Cache', () => {
   test('should ignore errors if suppressL2Errors is enabled', async ({ assert, cleanup }) => {
     const logger = testLogger()
     const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
-    const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer(), true)
+    const cache = new RemoteCache(chaosCacheDriver, logger, true, new BentoCacheOptions({}))
 
     cleanup(() => chaosCacheDriver.disconnect())
 
@@ -55,7 +55,7 @@ test.group('Remote Cache', () => {
   }) => {
     const logger = testLogger()
     const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
-    const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer(), false)
+    const cache = new RemoteCache(chaosCacheDriver, logger, false, new BentoCacheOptions({}))
 
     cleanup(() => chaosCacheDriver.disconnect())
 
@@ -78,7 +78,7 @@ test.group('Remote Cache', () => {
   }) => {
     const logger = testLogger()
     const chaosCacheDriver = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
-    const cache = new RemoteCache(chaosCacheDriver, logger, new JsonSerializer(), false)
+    const cache = new RemoteCache(chaosCacheDriver, logger, false, new BentoCacheOptions({}))
 
     cleanup(() => chaosCacheDriver.disconnect())
 

@@ -56,6 +56,14 @@ export type RawCommonOptions = {
    * throws an error
    */
   onFactoryError?: (error: FactoryError) => void
+
+  /**
+   * Duration for the circuit breaker to stay open
+   * if l2 cache fails
+   *
+   * @default null Means, no circuit breaker
+   */
+  l2CircuitBreakerDuration?: Duration
 }
 
 /**
@@ -82,7 +90,7 @@ export type RawBentoCacheOptions = {
   emitter?: Emitter
 
   /**
-   * Custom serialiser
+   * Custom serializer
    */
   serializer?: CacheSerializer
 } & RawCommonOptions

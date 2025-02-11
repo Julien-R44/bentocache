@@ -1,8 +1,10 @@
 import { is } from '@julr/utils/is'
 
 import { CacheEntry } from '../cache_entry/cache_entry.js'
+import { CircuitBreaker } from '../../circuit_breaker/index.js'
+import type { L2CacheDriver, Logger } from '../../types/main.js'
+import type { BentoCacheOptions } from '../../bento_cache_options.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
-import type { CacheSerializer, L2CacheDriver, Logger } from '../../types/main.js'
 
 /**
  * RemoteCache is a wrapper around a L2 Cache Driver that provides
@@ -11,18 +13,23 @@ import type { CacheSerializer, L2CacheDriver, Logger } from '../../types/main.js
 export class RemoteCache {
   #driver: L2CacheDriver
   #logger: Logger
-  #serializer: CacheSerializer
   #hasL1Backup: boolean
+  #circuitBreaker?: CircuitBreaker
+  #options: BentoCacheOptions
 
   constructor(
     driver: L2CacheDriver,
     logger: Logger,
-    serializer: CacheSerializer,
     hasL1Backup: boolean,
+    options: BentoCacheOptions,
   ) {
-    this.#hasL1Backup = hasL1Backup
     this.#driver = driver
-    this.#serializer = serializer
+    this.#options = options
+    this.#hasL1Backup = hasL1Backup
+    this.#circuitBreaker = options.l2CircuitBreakerDuration
+      ? new CircuitBreaker({ breakDuration: options.l2CircuitBreakerDuration })
+      : undefined
+
     this.#logger = logger.child({ context: 'bentocache.remoteCache' })
   }
 
@@ -36,10 +43,17 @@ export class RemoteCache {
     fallbackValue: unknown,
     fn: () => any,
   ) {
+    if (this.#circuitBreaker?.isOpen()) {
+      this.#logger.error({ opId: options.id }, `circuit breaker is open. ignoring operation`)
+      return fallbackValue
+    }
+
     try {
       return await fn()
     } catch (error) {
       this.#logger.error({ error, opId: options.id }, `(${operation}) failed on remote cache`)
+
+      this.#circuitBreaker?.open()
 
       /**
        * SuppressL2Errors is enabled automatically if undefined and we have a L1 backup
@@ -64,7 +78,7 @@ export class RemoteCache {
       const value = await this.#driver.get(key)
       if (value === undefined) return
 
-      return CacheEntry.fromDriver(key, value, this.#serializer)
+      return CacheEntry.fromDriver(key, value, this.#options.serializer)
     })
   }
 
