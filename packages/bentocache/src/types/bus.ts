@@ -16,22 +16,23 @@ export type CacheBusMessage = {
   namespace?: string
 }
 
-export enum CacheBusMessageType {
+export const CacheBusMessageType = {
   /**
    * An item was set in the cache
    */
-  Set = 'set',
+  Set: 'set',
 
   /**
    * Whole cache was cleared
    */
-  Clear = 'clear',
+  Clear: 'clear',
 
   /**
    * An item was deleted from the cache
    */
-  Delete = 'delete',
+  Delete: 'delete',
 }
+export type CacheBusMessageType = (typeof CacheBusMessageType)[keyof typeof CacheBusMessageType]
 
 export type BusOptions = {
   /**
