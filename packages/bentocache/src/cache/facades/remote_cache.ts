@@ -1,8 +1,9 @@
 import { is } from '@julr/utils/is'
 
+import type { Logger } from '../../logger.js'
+import type { L2CacheDriver } from '../../types/main.js'
 import { CacheEntry } from '../cache_entry/cache_entry.js'
 import { CircuitBreaker } from '../../circuit_breaker/index.js'
-import type { L2CacheDriver, Logger } from '../../types/main.js'
 import type { BentoCacheOptions } from '../../bento_cache_options.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 

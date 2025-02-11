@@ -1,6 +1,7 @@
+import type { Logger } from '../../logger.js'
 import { CacheEntry } from '../cache_entry/cache_entry.js'
+import type { L1CacheDriver, CacheSerializer } from '../../types/main.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
-import type { Logger, L1CacheDriver, CacheSerializer } from '../../types/main.js'
 
 /**
  * LocalCache is a wrapper around a CacheDriver that provides a

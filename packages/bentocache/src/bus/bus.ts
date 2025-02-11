@@ -1,10 +1,11 @@
 import { Bus as BoringBus } from '@boringnode/bus'
 import type { Transport } from '@boringnode/bus/types/main'
 
+import type { Logger } from '../logger.js'
 import { busEvents } from '../events/bus_events.js'
 import { CacheBusMessageType } from '../types/bus.js'
 import type { LocalCache } from '../cache/facades/local_cache.js'
-import type { BusOptions, CacheBusMessage, Emitter, Logger } from '../types/main.js'
+import type { BusOptions, CacheBusMessage, Emitter } from '../types/main.js'
 
 /**
  * The bus is used to notify other processes about cache changes.
