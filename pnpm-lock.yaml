@@ -208,9 +208,6 @@ importers:
       async-mutex:
         specifier: ^0.5.0
         version: 0.5.0
-      hexoid:
-        specifier: ^2.0.0
-        version: 2.0.0
       lru-cache:
         specifier: ^11.0.2
         version: 11.0.2
@@ -296,6 +293,9 @@ importers:
       bentocache:
         specifier: workspace:*
         version: link:../packages/bentocache
+      pino:
+        specifier: ^9.6.0
+        version: 9.6.0
     devDependencies:
       cross-env:
         specifier: 7.0.3
@@ -3622,10 +3622,6 @@ packages:
 
   help-me@5.0.0:
     resolution: {integrity: sha512-7xgomUX6ADmcYzFik0HzAxh/73YlKR9bmFzf51CZwR+b6YtzU2m0u49hQCqV6SvlqIqsaxovfwdvbnsw3b/zpg==}
-
-  hexoid@2.0.0:
-    resolution: {integrity: sha512-qlspKUK7IlSQv2o+5I7yhUd7TxlOG2Vr5LTa3ve2XSNVKAL/n/u/7KLvKmFNimomDIKvZFXWHv0T12mv7rT8Aw==}
-    engines: {node: '>=8'}
 
   hono@4.6.20:
     resolution: {integrity: sha512-5qfNQeaIptMaJKyoJ6N/q4gIq0DBp2FCRaLNuUI3LlJKL4S37DY/rLL1uAxA4wrPB39tJ3s+f7kgI79O4ScSug==}
@@ -10230,8 +10226,6 @@ snapshots:
   he@1.2.0: {}
 
   help-me@5.0.0: {}
-
-  hexoid@2.0.0: {}
 
   hono@4.6.20: {}
 

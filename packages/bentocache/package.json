@@ -76,7 +76,6 @@
     "@julr/utils": "^1.6.2",
     "@poppinss/utils": "^6.9.2",
     "async-mutex": "^0.5.0",
-    "hexoid": "^2.0.0",
     "lru-cache": "^11.0.2",
     "p-timeout": "^6.1.4"
   },

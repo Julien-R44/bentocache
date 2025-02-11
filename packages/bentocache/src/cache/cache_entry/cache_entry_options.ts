@@ -1,8 +1,7 @@
-import { hexoid } from 'hexoid'
 import { is } from '@julr/utils/is'
 
 import { errors } from '../../errors.js'
-import { resolveTtl } from '../../helpers.js'
+import { hexoid, resolveTtl } from '../../helpers.js'
 import type { Duration, RawCommonOptions } from '../../types/main.js'
 
 const toId = hexoid(12)
