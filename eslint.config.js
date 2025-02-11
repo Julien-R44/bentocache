@@ -8,4 +8,9 @@ export default await julr({
       './docs/tsconfig.json',
     ],
   },
+
+  rules: {
+    // TODO disable in julr/tooling-configs. useful for vanilla enums
+    '@typescript-eslint/no-redeclare': 'off',
+  },
 })
