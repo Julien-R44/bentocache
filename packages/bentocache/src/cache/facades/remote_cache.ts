@@ -38,15 +38,15 @@ export class RemoteCache {
    * Try to execute a cache operation and fallback to a default value
    * if the operation fails
    */
-  async #tryCacheOperation<T>(
+  async #tryCacheOperation<T, K>(
     operation: string,
     options: CacheEntryOptions,
-    fallbackValue: unknown,
+    fallbackValue: K,
     fn: () => T,
-  ): Promise<T> {
+  ): Promise<T | K> {
     if (this.#circuitBreaker?.isOpen()) {
       this.#logger.error({ opId: options.id }, `circuit breaker is open. ignoring operation`)
-      return fallbackValue as any
+      return fallbackValue
     }
 
     try {
@@ -64,7 +64,7 @@ export class RemoteCache {
         (is.undefined(options.suppressL2Errors) && this.#hasL1Backup) ||
         options.suppressL2Errors
       ) {
-        return fallbackValue as any
+        return fallbackValue
       }
 
       throw error
