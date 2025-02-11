@@ -3,6 +3,7 @@ import lodash from '@poppinss/utils/lodash'
 import string from '@poppinss/utils/string'
 import { noopLogger } from '@julr/utils/logger'
 
+import { resolveTtl } from './helpers.js'
 import type { FactoryError } from './errors.js'
 import { JsonSerializer } from './serializers/json.js'
 import type {
@@ -74,6 +75,12 @@ export class BentoCacheOptions {
   lockTimeout?: Duration = null
 
   /**
+   * Duration for the circuit breaker to stay open
+   * if l2 cache fails
+   */
+  l2CircuitBreakerDuration: number | undefined
+
+  /**
    * If the L1 cache should be serialized
    */
   serializeL1: boolean = true
@@ -93,6 +100,7 @@ export class BentoCacheOptions {
 
     this.emitter = this.#options.emitter!
     this.serializer = this.#options.serializer ?? defaultSerializer
+    this.l2CircuitBreakerDuration = resolveTtl(this.#options.l2CircuitBreakerDuration, null)
 
     this.logger = this.#options.logger!.child({ pkg: 'bentocache' })
     this.onFactoryError = this.#options.onFactoryError
