@@ -7,7 +7,7 @@ import { FactoryRunner } from '../factory_runner.js'
 import type { Factory } from '../../types/helpers.js'
 import type { CacheEvent } from '../../types/events.js'
 import { cacheEvents } from '../../events/cache_events.js'
-import type { CacheEntry } from '../cache_entry/cache_entry.js'
+import type { GetCacheValueReturn } from '../../types/internals/index.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 
 export class SingleTierHandler {
@@ -35,11 +35,15 @@ export class SingleTierHandler {
   /**
    * Returns a value from the remote cache and emit a CacheHit event
    */
-  async #returnRemoteCacheValue(key: string, item: CacheEntry, options: CacheEntryOptions) {
-    this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'remote cache hit')
+  async #returnRemoteCacheValue(
+    key: string,
+    item: GetCacheValueReturn,
+    options: CacheEntryOptions,
+  ) {
+    this.logger.logL2Hit({ cacheName: this.stack.name, key, options })
 
-    this.#emit(cacheEvents.hit(key, item.getValue(), this.stack.name))
-    return item.getValue()
+    this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name))
+    return item.entry.getValue()
   }
 
   /**
@@ -55,19 +59,13 @@ export class SingleTierHandler {
 
   #returnGracedValueOrThrow(
     key: string,
-    item: CacheEntry | undefined,
+    item: GetCacheValueReturn | undefined,
     options: CacheEntryOptions,
     err: Error,
   ) {
     if (options.isGraceEnabled() && item) {
-      const isLogicallyExpired = item.isLogicallyExpired()
-      this.#emit(cacheEvents.hit(key, item.getValue(), this.stack.name, isLogicallyExpired))
-      this.logger.trace(
-        { key, cache: this.stack.name, opId: options.id },
-        'remote cache hit (graced)',
-      )
-
-      return item.getValue()
+      this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, item.isGraced))
+      return item.entry.getValue()
     }
 
     throw err
@@ -75,7 +73,7 @@ export class SingleTierHandler {
 
   async #applyFallbackAndReturnGracedValue(
     key: string,
-    item: CacheEntry,
+    item: GetCacheValueReturn,
     options: CacheEntryOptions,
   ) {
     if (options.grace && options.graceBackoff) {
@@ -84,29 +82,26 @@ export class SingleTierHandler {
         'apply fallback duration',
       )
 
-      this.stack.l2?.set(key, item.applyBackoff(options.graceBackoff).serialize() as any, options)
+      this.stack.l2?.set(
+        key,
+        item.entry.applyBackoff(options.graceBackoff).serialize() as any,
+        options,
+      )
     }
 
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'returns stale value')
-    this.#emit(cacheEvents.hit(key, item.getValue(), this.stack.name, true))
-    return item.getValue()
-  }
-
-  /**
-   * Check if a cache item is not undefined and not logically expired
-   */
-  #isItemValid(item: CacheEntry | undefined): item is CacheEntry {
-    return !!item && !item.isLogicallyExpired()
+    this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, true))
+    return item.entry.getValue()
   }
 
   async handle(key: string, factory: Factory, options: CacheEntryOptions) {
-    let remoteItem: CacheEntry | undefined
+    let remoteItem: GetCacheValueReturn | undefined
 
     /**
      * Check in the remote cache first if we have something
      */
     remoteItem = await this.stack.l2?.get(key, options)
-    if (this.#isItemValid(remoteItem)) {
+    if (remoteItem?.isGraced === false) {
       return this.#returnRemoteCacheValue(key, remoteItem, options)
     }
 
@@ -126,7 +121,7 @@ export class SingleTierHandler {
      * already set the value
      */
     remoteItem = await this.stack.l2?.get(key, options)
-    if (this.#isItemValid(remoteItem)) {
+    if (remoteItem?.isGraced === false) {
       this.#locks.release(key, releaser)
       return this.#returnRemoteCacheValue(key, remoteItem, options)
     }

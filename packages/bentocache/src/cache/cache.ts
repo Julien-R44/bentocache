@@ -28,11 +28,11 @@ export class Cache implements CacheProvider {
   #stack: CacheStack
   #options: BentoCacheOptions
 
-  constructor(name: string, stack: CacheStack, options: BentoCacheOptions) {
+  constructor(name: string, stack: CacheStack) {
     this.name = name
 
     this.#stack = stack
-    this.#options = options
+    this.#options = stack.options
     this.#getSetHandler = new GetSetHandler(this.#stack)
   }
 
@@ -44,7 +44,7 @@ export class Cache implements CacheProvider {
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string) {
-    return new Cache(this.name, this.#stack.namespace(namespace), this.#options)
+    return new Cache(this.name, this.#stack.namespace(namespace))
   }
 
   get<T = any>(options: GetOptions<T>): Promise<T>
@@ -56,32 +56,32 @@ export class Cache implements CacheProvider {
     this.#options.logger.logMethod({ method: 'get', key, options, cacheName: this.name })
 
     const localItem = this.#stack.l1?.get(key, options)
-    if (localItem !== undefined && !localItem.isLogicallyExpired()) {
-      this.#stack.emit(cacheEvents.hit(key, localItem.getValue(), this.name))
+    if (localItem?.isGraced === false) {
+      this.#stack.emit(cacheEvents.hit(key, localItem.entry.getValue(), this.name))
       this.#options.logger.logL1Hit({ cacheName: this.name, key, options })
-      return localItem.getValue()
+      return localItem.entry.getValue()
     }
 
     const remoteItem = await this.#stack.l2?.get(key, options)
 
-    if (remoteItem !== undefined && !remoteItem.isLogicallyExpired()) {
-      this.#stack.l1?.set(key, remoteItem.serialize(), options)
-      this.#stack.emit(cacheEvents.hit(key, remoteItem.getValue(), this.name))
+    if (remoteItem?.isGraced === false) {
+      this.#stack.l1?.set(key, remoteItem.entry.serialize(), options)
+      this.#stack.emit(cacheEvents.hit(key, remoteItem.entry.getValue(), this.name))
       this.#options.logger.logL2Hit({ cacheName: this.name, key, options })
-      return remoteItem.getValue()
+      return remoteItem.entry.getValue()
     }
 
     if (remoteItem && options.isGraceEnabled()) {
-      this.#stack.l1?.set(key, remoteItem.serialize(), options)
-      this.#stack.emit(cacheEvents.hit(key, remoteItem.serialize(), this.name, true))
+      this.#stack.l1?.set(key, remoteItem.entry.serialize(), options)
+      this.#stack.emit(cacheEvents.hit(key, remoteItem.entry.serialize(), this.name, true))
       this.#options.logger.logL2Hit({ cacheName: this.name, key, options, graced: true })
-      return remoteItem.getValue()
+      return remoteItem.entry.getValue()
     }
 
     if (localItem && options.isGraceEnabled()) {
-      this.#stack.emit(cacheEvents.hit(key, localItem.serialize(), this.name, true))
+      this.#stack.emit(cacheEvents.hit(key, localItem.entry.serialize(), this.name, true))
       this.#options.logger.logL1Hit({ cacheName: this.name, key, options, graced: true })
-      return localItem.getValue()
+      return localItem.entry.getValue()
     }
 
     this.#stack.emit(cacheEvents.miss(key, this.name))

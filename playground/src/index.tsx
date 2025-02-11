@@ -9,7 +9,10 @@ const app = new Hono().use(logger())
 
 const slowFetcher = async (url: string, timeout: number = 1000) => {
   await setTimeout(timeout)
-  return fetch(url).then((response) => response.json())
+  return fetch(url).then(async (response) => ({
+    ...(await response.json()),
+    fetchedAt: new Date().toISOString(),
+  }))
 }
 
 app.get('/cache-user/:id', async (c) => {
@@ -44,10 +47,31 @@ app.get('/cached-user/:id', async (c) => {
   )
 })
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
+app.get('/get-set-post/:id', async (c) => {
+  const id = c.req.param('id')
+  const user = await bento.getOrSet({
+    key: `posts-${id}`,
+    factory: async () => {
+      const result = await slowFetcher(`https://jsonplaceholder.typicode.com/posts/${id}`)
+      setTimeout(5000).then(() => console.log('5s passed. expired'))
+
+      return result
+    },
+    ttl: '5s',
+    grace: '10m',
+  })
+
+  return c.html(
+    <div>
+      <h1>User {id}</h1>
+      <p>From cache or set</p>
+      <pre>{JSON.stringify(user, null, 2)}</pre>
+    </div>,
+  )
 })
 
+app.get('/', (c) => c.text('Hello Hono!'))
+
 const port = 3042
-console.log(`Server is running on http://localhost:${port}`)
 serve({ fetch: app.fetch, port })
+console.log(`Server is running on http://localhost:${port}`)

@@ -147,8 +147,8 @@ test.group('Soft Timeout', () => {
     const r3 = await remote.get('key', stack.defaultOptions)
 
     assert.deepEqual(r1, 'graced value')
-    assert.deepEqual(r2?.getValue(), 'new factory value')
-    assert.deepEqual(r3?.getValue(), 'new factory value')
+    assert.deepEqual(r2?.entry.getValue(), 'new factory value')
+    assert.deepEqual(r3?.entry.getValue(), 'new factory value')
   })
 
   test('background factory should not generate an unhandled promise rejection', async ({
@@ -272,7 +272,7 @@ test.group('Hard timeout', () => {
     const r3 = await remote.get('key', stack.defaultOptions)
 
     assert.deepEqual(r1, undefined)
-    assert.deepEqual(r2?.getValue(), 'new factory value')
-    assert.deepEqual(r3?.getValue(), 'new factory value')
+    assert.deepEqual(r2?.entry.getValue(), 'new factory value')
+    assert.deepEqual(r3?.entry.getValue(), 'new factory value')
   })
 })

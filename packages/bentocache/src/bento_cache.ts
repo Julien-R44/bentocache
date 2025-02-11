@@ -70,7 +70,7 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
       busOptions: entry.bus?.options,
     })
 
-    return new Cache(cacheName, cacheStack, this.#options)
+    return new Cache(cacheName, cacheStack)
   }
 
   get defaultStoreName() {

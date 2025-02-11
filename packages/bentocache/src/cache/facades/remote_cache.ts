@@ -31,22 +31,22 @@ export class RemoteCache {
       ? new CircuitBreaker({ breakDuration: options.l2CircuitBreakerDuration })
       : undefined
 
-    this.#logger = logger.child({ context: 'bentocache.remoteCache' })
+    this.#logger = logger.child({ layer: 'l2' })
   }
 
   /**
    * Try to execute a cache operation and fallback to a default value
    * if the operation fails
    */
-  async #tryCacheOperation(
+  async #tryCacheOperation<T>(
     operation: string,
     options: CacheEntryOptions,
     fallbackValue: unknown,
-    fn: () => any,
-  ) {
+    fn: () => T,
+  ): Promise<T> {
     if (this.#circuitBreaker?.isOpen()) {
       this.#logger.error({ opId: options.id }, `circuit breaker is open. ignoring operation`)
-      return fallbackValue
+      return fallbackValue as any
     }
 
     try {
@@ -64,7 +64,7 @@ export class RemoteCache {
         (is.undefined(options.suppressL2Errors) && this.#hasL1Backup) ||
         options.suppressL2Errors
       ) {
-        return fallbackValue
+        return fallbackValue as any
       }
 
       throw error
@@ -79,7 +79,15 @@ export class RemoteCache {
       const value = await this.#driver.get(key)
       if (value === undefined) return
 
-      return CacheEntry.fromDriver(key, value, this.#options.serializer)
+      const entry = CacheEntry.fromDriver(key, value, this.#options.serializer)
+      const isGraced = entry.isLogicallyExpired()
+      if (isGraced) {
+        this.#logger.debug({ key, opId: options.id }, 'cache hit (graced)')
+      } else {
+        this.#logger.debug({ key, opId: options.id }, 'cache hit')
+      }
+
+      return { entry, isGraced }
     })
   }
 
@@ -88,6 +96,7 @@ export class RemoteCache {
    */
   async set(key: string, value: string, options: CacheEntryOptions) {
     return await this.#tryCacheOperation('set', options, false, async () => {
+      this.#logger.debug({ key, opId: options.id }, 'saving item')
       await this.#driver.set(key, value, options.getPhysicalTtl())
       return true
     })
@@ -98,6 +107,7 @@ export class RemoteCache {
    */
   async delete(key: string, options: CacheEntryOptions) {
     return await this.#tryCacheOperation('delete', options, false, async () => {
+      this.#logger.debug({ key, opId: options.id }, 'deleting item')
       return await this.#driver.delete(key)
     })
   }
@@ -107,6 +117,7 @@ export class RemoteCache {
    */
   async deleteMany(keys: string[], options: CacheEntryOptions) {
     return await this.#tryCacheOperation('deleteMany', options, false, async () => {
+      this.#logger.debug({ keys, opId: options.id }, 'deleting items')
       return await this.#driver.deleteMany(keys)
     })
   }
