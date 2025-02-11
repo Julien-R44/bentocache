@@ -37,6 +37,7 @@
     "testcontainers": "^10.17.2",
     "ts-node": "^10.9.2",
     "tsup": "^8.3.6",
+    "tsx": "^4.19.2",
     "typescript": "~5.7.3"
   },
   "prettier": "@julr/tooling-configs/prettier"

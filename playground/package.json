@@ -1,19 +1,13 @@
 {
   "name": "@bentocache/playground",
   "type": "module",
-  "private": true,
   "scripts": {
-    "start": "cross-env NODE_NO_WARNINGS=1 node --loader ts-node/esm src/index.ts",
-    "start-server": "cross-env NODE_NO_WARNINGS=1 node --loader ts-node/esm src/server.ts"
+    "dev": "tsx watch src/index.tsx"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.741.0",
-    "@bentocache/plugin-prometheus": "workspace:*",
+    "@hono/node-server": "^1.13.8",
     "bentocache": "workspace:*",
+    "hono": "^4.6.20",
     "pino": "^9.6.0"
-  },
-  "devDependencies": {
-    "cross-env": "7.0.3",
-    "prom-client": "^15.1.3"
   }
 }
