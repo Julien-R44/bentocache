@@ -36,7 +36,7 @@ export class Bus {
       retryQueue: {
         ...options.retryQueue,
         removeDuplicates: true,
-        retryInterval: options.retryQueue?.retryInterval || false,
+        retryInterval: options.retryQueue?.retryInterval ?? 2000,
       },
     })
 

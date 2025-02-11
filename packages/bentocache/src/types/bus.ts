@@ -52,6 +52,8 @@ export type BusOptions = {
 
     /**
      * The interval between each retry attempt
+     *
+     * @default '2s'
      */
     retryInterval?: Duration | false
   }

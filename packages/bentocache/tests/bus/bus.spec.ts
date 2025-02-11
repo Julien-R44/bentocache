@@ -170,6 +170,32 @@ test.group('Bus synchronization', () => {
     assert.deepEqual(await cache3.get({ key: 'foo' }), 3)
   }).disableTimeout()
 
+  test('should have a default retry interval of 2s', async ({ assert }) => {
+    const bus1 = new ChaosBus(new MemoryTransport())
+    const bus2 = new ChaosBus(new MemoryTransport())
+
+    const [cache1] = new CacheFactory().withL1L2Config().merge({ busDriver: bus1 }).create()
+    const [cache2] = new CacheFactory().withL1L2Config().merge({ busDriver: bus2 }).create()
+
+    bus1.alwaysThrow()
+    bus2.alwaysThrow()
+
+    await cache1.set({ key: 'foo', value: 1 })
+    await cache2.set({ key: 'foo', value: 2 })
+
+    await sleep(200)
+
+    bus1.neverThrow()
+    bus2.neverThrow()
+
+    await cache1.set({ key: 'foo2', value: 1 })
+
+    await sleep(2000)
+
+    assert.deepEqual(await cache1.get({ key: 'foo' }), 2)
+    assert.deepEqual(await cache2.get({ key: 'foo' }), 2)
+  }).disableTimeout()
+
   test('should not process retry queue if disabled', async ({ assert }) => {
     const bus1 = new ChaosBus(new MemoryTransport())
     const bus2 = new ChaosBus(new MemoryTransport())
