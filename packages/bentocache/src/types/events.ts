@@ -20,6 +20,7 @@ export type CacheEvents = {
   'cache:deleted': ReturnType<typeof cacheEvents.deleted>['data']
   'cache:hit': ReturnType<typeof cacheEvents.hit>['data']
   'cache:miss': ReturnType<typeof cacheEvents.miss>['data']
+  'cache:expire': ReturnType<typeof cacheEvents.expire>['data']
   'cache:written': ReturnType<typeof cacheEvents.written>['data']
   'bus:message:published': ReturnType<typeof busEvents.messagePublished>['data']
   'bus:message:received': ReturnType<typeof busEvents.messageReceived>['data']

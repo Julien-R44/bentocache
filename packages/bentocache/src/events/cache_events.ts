@@ -29,4 +29,10 @@ export const cacheEvents = {
       data: { key, value, store },
     }
   },
+  expire(key: string, store: string) {
+    return {
+      name: 'cache:expire' as const,
+      data: { key, store },
+    }
+  },
 }

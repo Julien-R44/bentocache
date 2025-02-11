@@ -77,6 +77,10 @@ export class Bus {
       for (const key of message.keys) cache?.logicallyExpire(key)
     }
 
+    if (message.type === CacheBusMessageType.Expire) {
+      for (const key of message.keys) cache?.logicallyExpire(key)
+    }
+
     if (message.type === CacheBusMessageType.Clear) {
       cache?.clear()
     }

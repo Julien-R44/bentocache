@@ -75,28 +75,24 @@ export class LocalCache {
   }
 
   /**
-   * Make an item logically expire in the local cache
-   *
-   * That means that the item will be expired but kept in the cache
-   * in order to be able to return it to the user if the remote cache
-   * is down and the grace period is enabled
+   * Delete many item from the local cache
    */
-  logicallyExpire(key: string) {
-    this.#logger.debug({ key }, 'logically expiring item')
+  deleteMany(keys: string[], options: CacheEntryOptions) {
+    this.#logger.debug({ keys, options, opId: options.id }, 'deleting items')
+    this.#driver.deleteMany(keys)
+  }
+
+  /**
+   * Make an item logically expire in the local cache
+   */
+  logicallyExpire(key: string, options?: CacheEntryOptions) {
+    this.#logger.debug({ key, opId: options?.id }, 'logically expiring item')
 
     const value = this.#driver.get(key)
     if (value === undefined) return
 
     const newEntry = CacheEntry.fromDriver(key, value, this.#serializer).expire().serialize()
     return this.#driver.set(key, newEntry as any, this.#driver.getRemainingTtl(key))
-  }
-
-  /**
-   * Delete many item from the local cache
-   */
-  deleteMany(keys: string[], options: CacheEntryOptions) {
-    this.#logger.debug({ keys, options, opId: options.id }, 'deleting items')
-    this.#driver.deleteMany(keys)
   }
 
   /**

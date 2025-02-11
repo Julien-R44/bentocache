@@ -33,13 +33,19 @@ export class BinaryEncoder implements TransportEncoder {
   protected busMessageTypeToNum(type: CacheBusMessageType): number {
     if (type === CacheBusMessageType.Set) return 0x01
     if (type === CacheBusMessageType.Clear) return 0x02
-    return 0x03
+    if (type === CacheBusMessageType.Delete) return 0x03
+    if (type === CacheBusMessageType.Expire) return 0x04
+
+    throw new Error(`Unknown message type: ${type}`)
   }
 
   protected numToBusMessageType(num: number): CacheBusMessageType {
     if (num === 0x01) return CacheBusMessageType.Set
     if (num === 0x02) return CacheBusMessageType.Clear
-    return CacheBusMessageType.Delete
+    if (num === 0x03) return CacheBusMessageType.Delete
+    if (num === 0x04) return CacheBusMessageType.Expire
+
+    throw new Error(`Unknown message type: ${num}`)
   }
 
   /**

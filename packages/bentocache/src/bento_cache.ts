@@ -15,6 +15,7 @@ import type {
   HasOptions,
   DeleteOptions,
   DeleteManyOptions,
+  ExpireOptions,
 } from './types/main.js'
 
 export class BentoCache<KnownCaches extends Record<string, BentoStore>> implements CacheProvider {
@@ -206,6 +207,15 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    */
   async deleteMany(options: DeleteManyOptions): Promise<boolean> {
     return this.use().deleteMany(options)
+  }
+
+  /**
+   * Expire a key from the cache.
+   * Entry will not be fully deleted but expired and
+   * retained for the grace period if enabled.
+   */
+  async expire(options: ExpireOptions) {
+    return this.use().expire(options)
   }
 
   /**
