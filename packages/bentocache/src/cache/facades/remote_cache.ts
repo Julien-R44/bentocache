@@ -52,8 +52,8 @@ export class RemoteCache {
 
     try {
       return await fn()
-    } catch (error) {
-      this.#logger.error({ error, opId: options.id }, `(${operation}) failed on remote cache`)
+    } catch (err) {
+      this.#logger.error({ err, opId: options.id }, `(${operation}) failed on remote cache`)
 
       this.#circuitBreaker?.open()
 
@@ -68,7 +68,7 @@ export class RemoteCache {
         return fallbackValue
       }
 
-      throw new errors.E_L2_CACHE_ERROR(error)
+      throw new errors.E_L2_CACHE_ERROR(err)
     }
   }
 
