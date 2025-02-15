@@ -85,6 +85,12 @@ export function createCacheEntryOptions(
     hardTimeout,
 
     /**
+     * Skip options
+     */
+    skipL2Write: options.skipL2Write ?? false,
+    skipBusNotify: options.skipBusNotify ?? false,
+
+    /**
      * Max time to wait for the lock to be acquired
      */
     lockTimeout,

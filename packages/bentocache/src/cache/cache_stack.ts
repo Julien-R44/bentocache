@@ -9,6 +9,7 @@ import { BaseDriver } from '../drivers/base_driver.js'
 import { RemoteCache } from './facades/remote_cache.js'
 import { cacheEvents } from '../events/cache_events.js'
 import type { BentoCacheOptions } from '../bento_cache_options.js'
+import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
 import { createCacheEntryOptions } from './cache_entry/cache_entry_options.js'
 import {
   type BusDriver,
@@ -94,7 +95,12 @@ export class CacheStack extends BaseDriver {
    * @returns true if the message was published, false if not
    * and undefined if a bus is not part of the stack
    */
-  async publish(message: CacheBusMessage): Promise<boolean | undefined> {
+  async publish(
+    message: CacheBusMessage,
+    options?: CacheEntryOptions,
+  ): Promise<boolean | undefined> {
+    if (options?.skipBusNotify) return
+
     return this.bus?.publish({ ...message, namespace: this.prefix })
   }
 
@@ -109,7 +115,7 @@ export class CacheStack extends BaseDriver {
    * - Publish a message to the bus
    * - Emit a CacheWritten event
    */
-  async set(key: string, value: any, options: ReturnType<typeof createCacheEntryOptions>) {
+  async set(key: string, value: any, options: CacheEntryOptions) {
     if (is.undefined(value)) throw new UndefinedValueError(key)
 
     const rawItem = {
@@ -128,12 +134,12 @@ export class CacheStack extends BaseDriver {
     /**
      * Store the serialized value in the remote cache
      */
-    if (this.l2) {
+    if (this.l2 && options.skipL2Write !== true) {
       const l2Item = this.options.serializeL1 ? l1Item : this.options.serializer.serialize(rawItem)
       await this.l2?.set(key, l2Item as any, options)
     }
 
-    await this.publish({ type: CacheBusMessageType.Set, keys: [key] })
+    await this.publish({ type: CacheBusMessageType.Set, keys: [key] }, options)
     this.emit(cacheEvents.written(key, value, this.name))
     return true
   }
