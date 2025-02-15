@@ -1,4 +1,3 @@
-import type { FactoryError } from '../../errors.js'
 import type { Factory, GetSetFactory, RawCommonOptions } from '../main.js'
 
 /**
@@ -6,7 +5,16 @@ import type { Factory, GetSetFactory, RawCommonOptions } from '../main.js'
  */
 export type SetCommonOptions = Pick<
   RawCommonOptions,
-  'grace' | 'graceBackoff' | 'suppressL2Errors' | 'lockTimeout' | 'ttl' | 'timeout' | 'hardTimeout'
+  | 'grace'
+  | 'graceBackoff'
+  | 'suppressL2Errors'
+  | 'lockTimeout'
+  | 'ttl'
+  | 'timeout'
+  | 'hardTimeout'
+  | 'skipBusNotify'
+  | 'skipL2Write'
+  | 'onFactoryError'
 >
 
 /**
@@ -15,7 +23,6 @@ export type SetCommonOptions = Pick<
 export type GetOrSetOptions<T> = {
   key: string
   factory: GetSetFactory<T>
-  onFactoryError?: (error: FactoryError) => void
 } & SetCommonOptions
 
 /**
@@ -24,10 +31,7 @@ export type GetOrSetOptions<T> = {
 export type GetOrSetForeverOptions<T> = {
   key: string
   factory: GetSetFactory<T>
-} & Pick<
-  RawCommonOptions,
-  'grace' | 'graceBackoff' | 'suppressL2Errors' | 'lockTimeout' | 'timeout' | 'hardTimeout'
->
+} & Omit<SetCommonOptions, 'ttl'>
 
 /**
  * Options accepted by the `set` method

@@ -58,6 +58,18 @@ export type RawCommonOptions = {
   onFactoryError?: (error: FactoryError) => void
 
   /**
+   * Should the cache entry be written to the L2 cache
+   * @default false
+   */
+  skipL2Write?: boolean
+
+  /**
+   * Should the bus be used for cache invalidation
+   * @default false
+   */
+  skipBusNotify?: boolean
+
+  /**
    * Duration for the circuit breaker to stay open
    * if l2 cache fails
    *

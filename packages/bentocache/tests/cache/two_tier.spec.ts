@@ -747,4 +747,30 @@ test.group('Cache', () => {
     assert.deepEqual(localEntry?.entry.getCreatedAt(), remoteEntry?.entry.getCreatedAt())
     assert.deepEqual(remoteEntry?.entry.getCreatedAt(), originalRemoteEntry?.entry.getCreatedAt())
   })
+
+  test('should be able to skip bus notify', async ({ assert }) => {
+    const [cache1] = new CacheFactory().withL1L2Config().create()
+    const [cache2] = new CacheFactory().withL1L2Config().create()
+
+    await cache1.set({ key: 'foo', value: 'bar' })
+    await cache2.get({ key: 'foo' })
+
+    await cache2.set({ key: 'foo', value: 'baz', skipBusNotify: true })
+
+    const r1 = await cache1.get({ key: 'foo' })
+    const r2 = await cache2.get({ key: 'foo' })
+
+    assert.deepEqual(r1, 'bar')
+    assert.deepEqual(r2, 'baz')
+  })
+
+  test('should be able to skip l2 write', async ({ assert }) => {
+    const [cache1] = new CacheFactory().withL1L2Config().create()
+    const [cache2] = new CacheFactory().withL1L2Config().create()
+
+    await cache1.set({ key: 'foo', value: 'bar', skipL2Write: true })
+    const r1 = await cache2.get({ key: 'foo' })
+
+    assert.isUndefined(r1)
+  })
 })
