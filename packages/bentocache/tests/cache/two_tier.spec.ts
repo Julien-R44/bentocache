@@ -729,4 +729,22 @@ test.group('Cache', () => {
       assert.instanceOf(error, UndefinedValueError)
     }
   })
+
+  test('local cache entry should have same createdAt has distributed when fetched', async ({
+    assert,
+  }) => {
+    const [cache1, , remote1] = new CacheFactory().withL1L2Config().create()
+    const [cache2, local2, remote2, stack] = new CacheFactory().withL1L2Config().create()
+
+    await cache1.set({ key: 'foo', value: 'bar' })
+
+    await cache2.get({ key: 'foo' })
+    const localEntry = local2.get('foo', stack.defaultOptions)
+    const remoteEntry = await remote2.get('foo', stack.defaultOptions)
+    const originalRemoteEntry = await remote1.get('foo', stack.defaultOptions)
+
+    assert.isDefined(localEntry?.entry.getCreatedAt())
+    assert.deepEqual(localEntry?.entry.getCreatedAt(), remoteEntry?.entry.getCreatedAt())
+    assert.deepEqual(remoteEntry?.entry.getCreatedAt(), originalRemoteEntry?.entry.getCreatedAt())
+  })
 })

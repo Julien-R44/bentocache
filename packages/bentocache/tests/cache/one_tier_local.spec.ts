@@ -471,4 +471,17 @@ test.group('One tier tests', () => {
     const r4 = await cache2.get({ key: 'foo' })
     assert.isString(r4.date)
   })
+
+  test('has correct timestamp', async ({ assert }) => {
+    const { local, cache, stack } = new CacheFactory().withMemoryL1().create()
+    const testValue = { key: 'testKey', value: 'testValue' }
+
+    await cache.set(testValue)
+    const r1 = local.get(testValue.key, stack.defaultOptions)
+    await sleep(100)
+    const r2 = local.get(testValue.key, stack.defaultOptions)
+
+    assert.isDefined(r1?.entry.getCreatedAt())
+    assert.deepEqual(r1?.entry.getCreatedAt(), r2?.entry.getCreatedAt())
+  })
 })

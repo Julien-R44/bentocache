@@ -21,6 +21,11 @@ export class CacheEntry {
    */
   #logicalExpiration: number
 
+  /**
+   * The time when the item was created.
+   */
+  #createdAt: number
+
   #serializer?: CacheSerializer
 
   constructor(key: string, item: Record<string, any>, serializer?: CacheSerializer) {
@@ -28,6 +33,7 @@ export class CacheEntry {
     this.#value = item.value
     this.#logicalExpiration = item.logicalExpiration
     this.#serializer = serializer
+    this.#createdAt = item.createdAt
   }
 
   getValue() {
@@ -38,8 +44,16 @@ export class CacheEntry {
     return this.#key
   }
 
+  getCreatedAt() {
+    return this.#createdAt
+  }
+
   getLogicalExpiration() {
     return this.#logicalExpiration
+  }
+
+  getTags() {
+    return this.#tags
   }
 
   isLogicallyExpired() {
@@ -63,7 +77,11 @@ export class CacheEntry {
   }
 
   serialize() {
-    const raw = { value: this.#value, logicalExpiration: this.#logicalExpiration }
+    const raw = {
+      value: this.#value,
+      logicalExpiration: this.#logicalExpiration,
+      createdAt: this.#createdAt,
+    }
 
     if (this.#serializer) return this.#serializer.serialize(raw)
     return raw
