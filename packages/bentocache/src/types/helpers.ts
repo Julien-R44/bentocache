@@ -16,8 +16,15 @@ export type GetSetFactoryContext = {
   /**
    * Dynamically set the TTL
    * @see https://bentocache.dev/docs/adaptive-caching
+   *
+   * @deprecated use `setOptions` instead
    */
   setTtl: (ttl: Duration) => void
+
+  /**
+   * Set the options for the current factory
+   */
+  setOptions: (options: { ttl?: Duration; skipBusNotify?: boolean; skipL2Write?: boolean }) => void
 
   /**
    * Make the factory fail with a custom error.
@@ -30,6 +37,11 @@ export type GetSetFactoryContext = {
    * it will not be used**
    */
   skip: () => undefined
+
+  /**
+   * Graced entry if available
+   */
+  gracedEntry: { value: any } | undefined
 }
 
 /**

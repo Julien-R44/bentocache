@@ -6,6 +6,7 @@ import { errors } from '../errors.js'
 import type { Locks } from './locks.js'
 import type { CacheStack } from './cache_stack.js'
 import type { GetSetFactory } from '../types/helpers.js'
+import type { GetCacheValueReturn } from '../types/internals/index.js'
 import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
 
 interface RunFactoryParameters {
@@ -14,6 +15,7 @@ interface RunFactoryParameters {
   options: CacheEntryOptions
   lockReleaser: MutexInterface.Releaser
   isBackground?: boolean
+  gracedValue?: GetCacheValueReturn
 }
 
 /**
@@ -60,6 +62,14 @@ export class FactoryRunner {
         fail: (message) => {
           throw new Error(message ?? 'Factory failed')
         },
+        setOptions: (options) => {
+          if (options.ttl) params.options.setLogicalTtl(options.ttl)
+          params.options.skipBusNotify = options.skipBusNotify ?? false
+          params.options.skipL2Write = options.skipL2Write ?? false
+        },
+        gracedEntry: params.gracedValue
+          ? { value: params.gracedValue?.entry.getValue() }
+          : undefined,
       })
 
       this.#stack.logger.info(
@@ -96,11 +106,12 @@ export class FactoryRunner {
   async run(
     key: string,
     factory: GetSetFactory,
-    hasFallback: boolean,
+    gracedValue: GetCacheValueReturn | undefined,
     options: CacheEntryOptions,
     lockReleaser: MutexInterface.Releaser,
   ) {
-    const timeout = options.factoryTimeout(hasFallback)
+    const hasGracedValue = !!gracedValue
+    const timeout = options.factoryTimeout(hasGracedValue)
     if (timeout) {
       this.#stack.logger.info(
         { cache: this.#stack.name, opId: options.id, key },
@@ -114,12 +125,13 @@ export class FactoryRunner {
      * If the timeout is 0, we will not wait for the factory to resolve
      * And immediately return the fallback value
      */
-    if (options.shouldSwr(hasFallback)) {
+    if (options.shouldSwr(hasGracedValue)) {
       this.#runFactory({ key, factory, options, lockReleaser, isBackground: true })
       throw new errors.E_FACTORY_SOFT_TIMEOUT(key)
     }
 
-    const runFactory = this.#runFactory({ key, factory, options, lockReleaser })
+    const runFactory = this.#runFactory({ key, factory, options, lockReleaser, gracedValue })
+
     const result = await pTimeout(runFactory, {
       milliseconds: timeout?.duration ?? Number.POSITIVE_INFINITY,
       fallback: async () => {
