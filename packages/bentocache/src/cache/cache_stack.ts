@@ -115,6 +115,8 @@ export class CacheStack extends BaseDriver {
     const rawItem = {
       value,
       logicalExpiration: options.logicalTtlFromNow(),
+      tags: options.tags,
+      createdAt: Date.now(),
     }
 
     /**
