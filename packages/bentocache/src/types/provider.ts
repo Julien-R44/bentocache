@@ -7,6 +7,7 @@ import type {
   GetOptions,
   HasOptions,
   SetOptions,
+  DeleteByTagOptions,
 } from './main.js'
 
 /**
@@ -68,6 +69,11 @@ export interface CacheProvider {
    * Delete multiple keys from the cache
    */
   deleteMany(options: DeleteManyOptions): Promise<boolean>
+
+  /**
+   * Delete all keys with a specific tag
+   */
+  deleteByTag(options: DeleteByTagOptions): Promise<boolean>
 
   /**
    * Expire a key from the cache.

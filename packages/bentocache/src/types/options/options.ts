@@ -76,6 +76,11 @@ export type RawCommonOptions = {
    * @default null Means, no circuit breaker
    */
   l2CircuitBreakerDuration?: Duration
+
+  /**
+   * Tags that will be associated with the cache entry
+   */
+  tags?: string[]
 }
 
 /**
