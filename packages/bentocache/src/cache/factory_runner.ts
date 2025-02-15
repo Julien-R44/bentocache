@@ -57,11 +57,12 @@ export class FactoryRunner {
      */
     const [result, error] = await tryAsync(async () => {
       const result = await params.factory({
-        setTtl: (ttl) => params.options.setLogicalTtl(ttl),
         skip: () => this.#skipSymbol as any as undefined,
         fail: (message) => {
           throw new Error(message ?? 'Factory failed')
         },
+        setTtl: (ttl) => params.options.setLogicalTtl(ttl),
+        setTags: (tags) => params.options.tags.push(...tags),
         setOptions: (options) => {
           if (options.ttl) params.options.setLogicalTtl(options.ttl)
           params.options.skipBusNotify = options.skipBusNotify ?? false

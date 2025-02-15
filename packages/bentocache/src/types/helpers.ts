@@ -27,6 +27,11 @@ export type GetSetFactoryContext = {
   setOptions: (options: { ttl?: Duration; skipBusNotify?: boolean; skipL2Write?: boolean }) => void
 
   /**
+   * Set the tags for the current factory
+   */
+  setTags: (tags: string[]) => void
+
+  /**
    * Make the factory fail with a custom error.
    * Nothing will be cached and if a graced value is available, it will be returned
    */
