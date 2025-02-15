@@ -75,7 +75,7 @@ export class CacheFactory {
    * Adds a cache stack preset with Memory + Redis + Memory Bus
    */
   withL1L2Config() {
-    this.#parameters.l1Driver ??= new MemoryDriver({ maxSize: 100, prefix: 'test' })
+    this.#parameters.l1Driver ??= new MemoryDriver({ maxItems: 100, prefix: 'test' })
     this.#parameters.l2Driver ??= new RedisDriver({ connection: { host: '127.0.0.1', port: 6379 } })
     this.#parameters.busDriver ??= new MemoryTransport()
 

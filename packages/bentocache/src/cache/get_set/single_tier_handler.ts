@@ -127,8 +127,7 @@ export class SingleTierHandler {
     }
 
     try {
-      const hasFallback = !!remoteItem
-      const result = await this.#factoryRunner.run(key, factory, hasFallback, options, releaser)
+      const result = await this.#factoryRunner.run(key, factory, remoteItem, options, releaser)
       this.#emit(cacheEvents.miss(key, this.stack.name))
       return result
     } catch (err) {

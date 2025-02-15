@@ -139,8 +139,8 @@ export class TwoTierHandler {
     }
 
     try {
-      const hasFallback = !!localItem || !!remoteItem
-      const result = await this.#factoryRunner.run(key, factory, hasFallback, options, releaser)
+      const gracedValue = localItem || remoteItem
+      const result = await this.#factoryRunner.run(key, factory, gracedValue, options, releaser)
       this.#emit(cacheEvents.miss(key, this.stack.name))
 
       return result

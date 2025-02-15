@@ -41,10 +41,16 @@ export class Logger {
     cacheName: string
     options: CacheEntryOptions
     key?: string | string[]
+    tags?: string[]
     method: string
   }) {
     this.internalLogger.debug(
-      { cacheName: options.cacheName, opId: options.options.id, key: options.key },
+      {
+        cacheName: options.cacheName,
+        opId: options.options.id,
+        key: options.key,
+        tags: options.tags,
+      },
       `'${options.method}' method called`,
     )
   }

@@ -15,6 +15,7 @@ export type SetCommonOptions = Pick<
   | 'skipBusNotify'
   | 'skipL2Write'
   | 'onFactoryError'
+  | 'tags'
 >
 
 /**
@@ -51,6 +52,11 @@ export type GetOptions<T> = { key: string; defaultValue?: Factory<T> } & Pick<
  */
 export type DeleteOptions = { key: string } & Pick<RawCommonOptions, 'suppressL2Errors'>
 export type DeleteManyOptions = { keys: string[] } & Pick<RawCommonOptions, 'suppressL2Errors'>
+
+/**
+ * Options accepted by the `deleteByTag` method
+ */
+export type DeleteByTagOptions = { tags: string[] } & Pick<RawCommonOptions, 'suppressL2Errors'>
 
 /**
  * Options accepted by the `expire` method

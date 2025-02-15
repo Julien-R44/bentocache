@@ -85,6 +85,11 @@ export function createCacheEntryOptions(
     hardTimeout,
 
     /**
+     * Tags to associate with the cache entry
+     */
+    tags: options.tags ?? [],
+
+    /**
      * Skip options
      */
     skipL2Write: options.skipL2Write ?? false,

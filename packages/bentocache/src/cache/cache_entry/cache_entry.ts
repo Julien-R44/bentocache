@@ -13,6 +13,7 @@ export class CacheEntry {
    * The value of the item.
    */
   #value: any
+  #tags: string[]
 
   /**
    * The logical expiration is the time in miliseconds when the item
@@ -31,6 +32,7 @@ export class CacheEntry {
   constructor(key: string, item: Record<string, any>, serializer?: CacheSerializer) {
     this.#key = key
     this.#value = item.value
+    this.#tags = item.tags ?? []
     this.#logicalExpiration = item.logicalExpiration
     this.#serializer = serializer
     this.#createdAt = item.createdAt
@@ -79,8 +81,9 @@ export class CacheEntry {
   serialize() {
     const raw = {
       value: this.#value,
-      logicalExpiration: this.#logicalExpiration,
+      tags: this.#tags,
       createdAt: this.#createdAt,
+      logicalExpiration: this.#logicalExpiration,
     }
 
     if (this.#serializer) return this.#serializer.serialize(raw)
