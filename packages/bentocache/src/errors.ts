@@ -1,4 +1,4 @@
-import { Exception } from '@poppinss/utils/exception'
+import { Exception } from '@poppinss/exception'
 
 /**
  * Thrown when a factory has timed out after waiting for soft timeout

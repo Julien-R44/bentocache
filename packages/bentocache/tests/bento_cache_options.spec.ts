@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import string from '@poppinss/utils/string'
+import { ms } from '@julr/utils/string/ms'
 
 import { BentoCacheOptions } from '../src/bento_cache_options.js'
 
@@ -7,7 +7,7 @@ test.group('Bento Cache Options', () => {
   test('default values', ({ assert }) => {
     const options = new BentoCacheOptions({})
 
-    assert.deepEqual(options.ttl, string.milliseconds.parse('30m'))
+    assert.deepEqual(options.ttl, ms.parse('30m'))
     assert.deepEqual(options.prefix, 'bentocache')
   })
 

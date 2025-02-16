@@ -1,4 +1,3 @@
-import lodash from '@poppinss/utils/lodash'
 import { getActiveTest } from '@japa/runner'
 import { hybridReturn } from '@julr/utils/misc'
 import { MemoryTransport } from '@boringnode/bus/transports/memory'
@@ -50,7 +49,7 @@ export class CacheFactory {
    * Merge custom parameters with the default parameters
    */
   merge(parameters: Partial<RawBentoCacheOptions & CacheStackDrivers>) {
-    this.#parameters = lodash.merge({}, this.#parameters, parameters)
+    this.#parameters = { ...this.#parameters, ...parameters }
     return this
   }
 

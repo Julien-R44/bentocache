@@ -1,4 +1,4 @@
-import { InvalidArgumentsException } from '@poppinss/utils/exceptions'
+import { InvalidArgumentsException } from '@poppinss/exception'
 
 const CircuitBreakerState = { Closed: 0, Open: 1 }
 

@@ -1,6 +1,6 @@
 import { LRUCache } from 'lru-cache'
 import { bytes } from '@julr/utils/string/bytes'
-import { InvalidArgumentsException } from '@poppinss/utils/exceptions'
+import { InvalidArgumentsException } from '@poppinss/exception'
 
 import { BaseDriver } from './base_driver.js'
 import type {

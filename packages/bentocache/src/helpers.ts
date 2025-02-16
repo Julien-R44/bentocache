@@ -1,4 +1,4 @@
-import string from '@poppinss/utils/string'
+import { ms } from '@julr/utils/string/ms'
 
 import type { Duration } from './types/main.js'
 
@@ -17,12 +17,12 @@ export function resolveTtl(ttl?: Duration, defaultTtl: Duration = 30_000) {
 
   if (ttl === undefined) {
     if (typeof defaultTtl === 'number') return defaultTtl
-    if (typeof defaultTtl === 'string') return string.milliseconds.parse(defaultTtl)
+    if (typeof defaultTtl === 'string') return ms.parse(defaultTtl)
 
     return undefined
   }
 
-  return string.milliseconds.parse(ttl)
+  return ms.parse(ttl)
 }
 
 /**

@@ -1,6 +1,5 @@
 import EventEmitter from 'node:events'
-import lodash from '@poppinss/utils/lodash'
-import string from '@poppinss/utils/string'
+import { ms } from '@julr/utils/string/ms'
 import { noopLogger } from '@julr/utils/logger'
 
 import { Logger } from './logger.js'
@@ -25,7 +24,7 @@ export class BentoCacheOptions {
    *
    * @default 30m
    */
-  ttl: Duration = string.milliseconds.parse('30m')
+  ttl: Duration = ms.parse('30m')
 
   /**
    * Default prefix for all caches
@@ -36,7 +35,7 @@ export class BentoCacheOptions {
    * The grace period options
    */
   grace: Duration | false = false
-  graceBackoff: Duration = string.milliseconds.parse('10s')
+  graceBackoff: Duration = ms.parse('10s')
 
   /**
    * Whether to suppress L2 cache errors
@@ -82,7 +81,7 @@ export class BentoCacheOptions {
   onFactoryError?: (error: FactoryError) => void
 
   constructor(options: RawBentoCacheOptions) {
-    this.#options = lodash.merge({}, this, options)
+    this.#options = { ...this, ...options }
 
     this.prefix = this.#options.prefix!
     this.ttl = this.#options.ttl!
@@ -107,7 +106,7 @@ export class BentoCacheOptions {
   }
 
   cloneWith(options: RawBentoCacheOptions) {
-    const newOptions = lodash.merge({}, this.#options, options)
+    const newOptions = { ...this.#options, ...options }
     return new BentoCacheOptions(newOptions)
   }
 }

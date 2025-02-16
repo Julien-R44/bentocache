@@ -1,5 +1,4 @@
 import { is } from '@julr/utils/is'
-import lodash from '@poppinss/utils/lodash'
 
 import { Bus } from '../bus/bus.js'
 import type { Logger } from '../logger.js'
@@ -67,10 +66,10 @@ export class CacheStack extends BaseDriver {
     if (!busDriver) return
 
     this.#busDriver = busDriver
-    this.#busOptions = lodash.merge(
-      { retryQueue: { enabled: true, maxSize: undefined } },
-      busOptions,
-    )
+    this.#busOptions = {
+      retryQueue: { enabled: true, maxSize: undefined },
+      ...busOptions,
+    }
 
     return new Bus(this.name, this.#busDriver, this.logger, this.emitter, this.#busOptions)
   }

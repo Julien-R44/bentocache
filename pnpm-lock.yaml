@@ -205,9 +205,9 @@ importers:
       '@julr/utils':
         specifier: ^1.8.0
         version: 1.8.0
-      '@poppinss/utils':
-        specifier: ^6.9.2
-        version: 6.9.2
+      '@poppinss/exception':
+        specifier: ^1.2.0
+        version: 1.2.0
       async-mutex:
         specifier: ^0.5.0
         version: 0.5.0
