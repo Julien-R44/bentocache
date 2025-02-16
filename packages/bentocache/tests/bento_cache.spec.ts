@@ -241,4 +241,29 @@ test.group('Bento Cache', () => {
 
     assert.equal(bento.defaultStoreName, 'primary')
   })
+
+  test('should not accept some options', async () => {
+    const opts = {
+      default: 'memory',
+      stores: { memory: bentostore().useL1Layer(memoryDriver({})) },
+    }
+
+    new BentoCache({
+      ...opts,
+      // @ts-expect-error invalid option
+      tags: ['foo'],
+    })
+
+    new BentoCache({
+      ...opts,
+      // @ts-expect-error invalid option
+      skipBusNotify: true,
+    })
+
+    new BentoCache({
+      ...opts,
+      // @ts-expect-error invalid option
+      skipL2Write: true,
+    })
+  })
 })
