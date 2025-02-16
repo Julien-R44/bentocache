@@ -2,7 +2,7 @@
   "name": "@bentocache/monorepo",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.2.0",
+  "packageManager": "pnpm@10.4.0",
   "description": "Multi-tier cache module for Node.js. Redis, Upstash, CloudfareKV, File, in-memory and others drivers",
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",
@@ -23,22 +23,27 @@
     "@japa/file-system": "^2.3.2",
     "@japa/runner": "^4.2.0",
     "@julr/tooling-configs": "^4.0.0",
-    "@swc/core": "^1.10.14",
-    "@types/node": "^22.13.1",
+    "@swc/core": "^1.10.16",
+    "@types/node": "^22.13.4",
     "c8": "^10.1.3",
     "copyfiles": "^2.4.1",
     "cross-env": "^7.0.3",
     "del-cli": "^6.0.0",
     "dotenv": "^16.4.7",
-    "eslint": "^9.19.0",
+    "eslint": "^9.20.1",
     "pino-pretty": "^13.0.0",
-    "prettier": "^3.4.2",
+    "prettier": "^3.5.1",
     "release-it": "^18.1.2",
-    "testcontainers": "^10.17.2",
+    "testcontainers": "^10.18.0",
     "ts-node": "^10.9.2",
     "tsup": "^8.3.6",
     "tsx": "^4.19.2",
     "typescript": "~5.7.3"
   },
-  "prettier": "@julr/tooling-configs/prettier"
+  "prettier": "@julr/tooling-configs/prettier",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core"
+    ]
+  }
 }

@@ -15,7 +15,7 @@
     "#src/*": "./src/*.js"
   },
   "dependencies": {
-    "@adonisjs/core": "^6.17.1",
+    "@adonisjs/core": "^6.17.2",
     "@adonisjs/static": "^1.1.1",
     "@radix-ui/colors": "^3.0.0",
     "@ryangjchandler/alpine-tooltip": "^2.0.1",
@@ -40,6 +40,6 @@
     "reflect-metadata": "^0.2.2",
     "undici": "^7.3.0",
     "unpoly": "^3.10.2",
-    "vite": "^6.0.11"
+    "vite": "^6.1.0"
   }
 }

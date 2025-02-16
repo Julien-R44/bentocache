@@ -15,7 +15,7 @@
     "bentocache": "workspace:*",
     "cache-manager": "^6.4.0",
     "cacheable": "^1.8.8",
-    "ioredis": "^5.4.2",
+    "ioredis": "^5.5.0",
     "keyv": "^5.2.3",
     "tinybench": "^3.1.1"
   }

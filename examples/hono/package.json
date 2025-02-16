@@ -6,11 +6,11 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",
-    "bentocache": "workspace:*",
-    "hono": "^4.6.20"
+    "bentocache": "^1.1.0",
+    "hono": "^4.7.1"
   },
   "devDependencies": {
-    "@types/node": "^22.13.1",
+    "@types/node": "^22.13.4",
     "tsx": "^4.19.2"
   }
 }
