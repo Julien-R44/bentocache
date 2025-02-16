@@ -42,6 +42,12 @@
     "category": "Guides"
   },
   {
+    "permalink": "tagging",
+    "title": "Tagging",
+    "contentPath": "./tags.md",
+    "category": "Guides"
+  },
+  {
     "permalink": "namespaces",
     "title": "Namespaces",
     "contentPath": "./namespaces.md",

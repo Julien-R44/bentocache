@@ -14,6 +14,7 @@
 - 🛡️ Grace period and timeouts. Serve stale data when the store is dead or slow
 - 🤓 SWR-like caching strategy
 - 🗂️ Namespaces. Group your keys by categories.
+- 🏷️ Tagging. Easy invalidations.
 - 🛑 Cache stamped protection.
 - 🏷️ Named caches
 - 📖 Well documented + handy JSDoc annotations
@@ -89,9 +90,23 @@ See the [drivers documentation](https://bentocache.dev/docs/cache-drivers) for l
 
 If your factory is taking too long to execute, you can just return a little bit of stale data while keeping the factory running in the background. Next time the entry is requested, it will be already computed and served immediately.
 
+### Tagging
+
+Allows associating a cache entry with one or more tags to simplify invalidation. Instead of managing individual keys, entries can be grouped under multiple tags and invalidated in a single operation.
+
+```ts
+await bento.getOrSet({
+  key: 'foo',
+  factory: getFromDb(),
+  tags: ['tag-1', 'tag-2']
+});
+
+await bento.deleteByTags({ tags: ['tag-1'] });
+```
+
 ### Namespaces
 
-The ability to create logical groups for cache keys together, so you can invalidate everything at once later :
+Another way to group your keys is to use namespaces. This allows you to invalidate everything at once later :
 
 ```ts
 const users = bento.namespace('users')

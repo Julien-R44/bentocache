@@ -132,6 +132,34 @@ const bento = new BentoCache({
 })
 ```
 
+### `l2CircuitBreakerDuration`
+
+Default: `undefined (disabled)`
+
+Levels: `global`, `store`, `operation`
+
+This option allows you to enable a simple circuit breaker system for the L2 Cache. If defined, the circuit breaker will open when a call to our distributed cache fails. It will stay open for `l2CircuitBreakerDuration` seconds. 
+
+If you're not familiar with the circuit breaker system, to summarize it very simply: if an operation on the L2 Cache fails and the circuit breaker option is activated, then all future operations on the L2 Cache will be rejected for `l2CircuitBreakerDuration` seconds, in order to avoid overloading the L2 Cache with operations that are likely to fail. 
+
+Once the `l2CircuitBreakerDuration` seconds have passed, the circuit breaker closes and operations on the L2 Cache can resume.
+
+### skipL2Write
+
+Default: `false`
+
+Levels: `operation`
+
+If `true`, the L2 Cache will not be called to write a value.
+
+### skipBusNotify
+
+Default: `false`
+
+Levels: `operation`
+
+If `true`, no notification will be sent to the bus after an operation.
+
 ### `serializer`
 
 Default: `JSON.stringify` and `JSON.parse`

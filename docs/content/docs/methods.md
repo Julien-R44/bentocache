@@ -83,25 +83,6 @@ const products = await bento.getOrSet({
 
 The `getOrSet` factory function accepts an `ctx` object as argument that can be used to do multiple things:
 
-### ctx.setTtl
-
-`setTtl` allows you to set the TTL of the key dynamically. This is useful when the TTL depends on the value itself.
-
-```ts
-const products = await bento.getOrSet({
-  key: 'token',
-  factory: async (ctx) => {
-    const token = await fetchAccessToken()
-
-    options.setTtl(token.expiresIn)
-
-    return token
-  }
-})
-```
-
-Auth tokens are a perfect example of this use case. The cached token should expire when the token itself expires. And we know the expiration time only after fetching the token. See [Adaptive Caching docs](./adaptive_caching.md) for more information.
-
 ### ctx.skip
 
 Returning `skip` in a factory will not cache the value, and `getOrSet` will returns `undefined` even if there is a stale item in cache.
@@ -139,6 +120,47 @@ cache.getOrSet({
     }
 
     return item
+  }
+})
+```
+
+### ctx.setOptions
+
+`setOptions` allows you to update the options of the cache entry. This is useful when you want to update the TTL, grace period, or tags and when it depends on the value itself.
+
+
+```ts
+const products = await bento.getOrSet({
+  key: 'token',
+  factory: async (ctx) => {
+    const token = await fetchAccessToken()
+
+    options.setOptions({
+      ttl: token.expiresIn,
+      tags: ['auth', 'token'],
+    })
+
+    return token
+  }
+})
+```
+
+
+Auth tokens are a perfect example of this use case. The cached token should expire when the token itself expires. And we know the expiration time only after fetching the token. See [Adaptive Caching docs](./adaptive_caching.md) for more information.
+
+### ctx.gracedEntry
+
+If a stale value is available in the cache, `ctx.gracedEntry` will contain it. This can be useful if you want to do something based on the stale value.
+
+```ts
+const products = await bento.getOrSet({
+  key: 'products',
+  factory: async (ctx) => {
+    if (ctx.gracedEntry?.value === 'bar') {
+      return 'foo'
+    }
+
+    return 'bar'
   }
 })
 ```
@@ -184,6 +206,32 @@ Delete a key from the cache.
 
 ```ts
 await bento.delete({ key: 'products' })
+```
+
+## expire
+
+This method is slightly different from `delete`:
+
+When we delete a key, it is completely removed and forgotten. This means that even if we use grace periods, the value will no longer be available.
+
+`expire` works like `delete`, except that instead of completely removing the value, we just mark it as expired/stale but keep it for the [grace period](./grace_periods.md). For example:
+
+```ts
+// Set a value with a grace period of 6 minutes
+await cache.set({ 
+  key: 'hello',
+  value: 'world',
+  grace: '6m'
+})
+
+// Expire the value. It is kept in the cache but marked as STALE for 6 minutes
+await cache.expire({ key: 'hello' })
+
+// Here, a get with `grace: false` will return nothing, because we have a stale value
+const r1 = await cache.get({ key: 'hello', grace: false })
+
+// Here it will return the value, because it is still within the grace period
+const r2 = await cache.get({ key: 'hello' })
 ```
 
 ## deleteMany

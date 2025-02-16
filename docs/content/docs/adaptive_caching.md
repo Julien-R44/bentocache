@@ -31,7 +31,7 @@ const authToken = await bento.getOrSet({
   key: 'token',
   factory: async (options) => {
     const token = await fetchAccessToken();
-    options.setTtl(token.expiresIn);
+    options.setOptions({ ttl: token.expiresIn });
     return token;
   }
 });
@@ -53,9 +53,9 @@ const news = await namespace.getOrSet({
     const newsItem = await fetchNews(newsId);
 
     if (newsItem.hasBeenUpdatedRecently) {
-      options.setTtl('5m');
+      options.setOptions({ ttl: '5m' });
     } else {
-      options.setTtl('2d');
+      options.setOptions({ ttl: '2d' });
     }
 
     return newsItem;
