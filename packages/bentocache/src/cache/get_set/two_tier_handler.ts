@@ -122,9 +122,10 @@ export class TwoTierHandler {
      * could have written a value while we were waiting for the lock.
      */
     localItem = this.stack.l1?.get(key, options)
-    if (localItem?.isGraced === false) {
+    const isLocalItemValid = await this.stack.isEntryValid(localItem)
+    if (isLocalItemValid) {
       this.#locks.release(key, releaser)
-      return this.#returnL1Value(key, localItem)
+      return this.#returnL1Value(key, localItem!)
     }
 
     /**
@@ -133,9 +134,10 @@ export class TwoTierHandler {
      * and returns it.
      */
     const remoteItem = await this.stack.l2?.get(key, options)
-    if (remoteItem?.isGraced === false) {
+    const isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
+    if (isRemoteItemValid) {
       this.#locks.release(key, releaser)
-      return this.#returnRemoteCacheValue(key, remoteItem, options)
+      return this.#returnRemoteCacheValue(key, remoteItem!, options)
     }
 
     try {
@@ -174,14 +176,25 @@ export class TwoTierHandler {
      * First we check the local cache. If we have a valid item, just
      * returns it without acquiring a lock.
      */
-    const item = this.stack.l1?.get(key, options)
-    if (item?.isGraced === false) return this.#returnL1Value(key, item)
+    const localItem = this.stack.l1?.get(key, options)
+    const isLocalItemValid = this.stack.isEntryValid(localItem)
+
+    // A bit nasty, but to keep maximum performance, we avoid async/await here.
+    // Let's check for a better way to handle this later.
+    if (isLocalItemValid instanceof Promise) {
+      return isLocalItemValid.then((valid) => {
+        if (valid) return this.#returnL1Value(key, localItem!)
+        return this.#lockAndHandle(key, factory, options, localItem)
+      })
+    }
+
+    if (isLocalItemValid) return this.#returnL1Value(key, localItem!)
 
     /**
      * Next, delegate to the lock-and-handle async method so we can keep
      * this method synchronous and avoid an overhead of async/await
      * in case we have a valid item in the local cache.
      */
-    return this.#lockAndHandle(key, factory, options, item)
+    return this.#lockAndHandle(key, factory, options, localItem)
   }
 }

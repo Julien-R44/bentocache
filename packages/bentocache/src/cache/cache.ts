@@ -17,6 +17,7 @@ import type {
   DeleteManyOptions,
   GetOrSetForeverOptions,
   ExpireOptions,
+  DeleteByTagOptions,
 } from '../types/main.js'
 
 export class Cache implements CacheProvider {
@@ -35,6 +36,7 @@ export class Cache implements CacheProvider {
     this.#stack = stack
     this.#options = stack.options
     this.#getSetHandler = new GetSetHandler(this.#stack)
+    this.#stack.setTagSystemGetSetHandler(this.#getSetHandler)
   }
 
   #resolveDefaultValue(defaultValue?: Factory) {
@@ -57,19 +59,21 @@ export class Cache implements CacheProvider {
     this.#options.logger.logMethod({ method: 'get', key, options, cacheName: this.name })
 
     const localItem = this.#stack.l1?.get(key, options)
-    if (localItem?.isGraced === false) {
-      this.#stack.emit(cacheEvents.hit(key, localItem.entry.getValue(), this.name))
+    const isLocalItemValid = await this.#stack.isEntryValid(localItem)
+    if (isLocalItemValid) {
+      this.#stack.emit(cacheEvents.hit(key, localItem!.entry.getValue(), this.name))
       this.#options.logger.logL1Hit({ cacheName: this.name, key, options })
-      return localItem.entry.getValue()
+      return localItem!.entry.getValue()
     }
 
     const remoteItem = await this.#stack.l2?.get(key, options)
+    const isRemoteItemValid = await this.#stack.isEntryValid(remoteItem)
 
-    if (remoteItem?.isGraced === false) {
-      this.#stack.l1?.set(key, remoteItem.entry.serialize(), options)
-      this.#stack.emit(cacheEvents.hit(key, remoteItem.entry.getValue(), this.name))
+    if (isRemoteItemValid) {
+      this.#stack.l1?.set(key, remoteItem!.entry.serialize(), options)
+      this.#stack.emit(cacheEvents.hit(key, remoteItem!.entry.getValue(), this.name))
       this.#options.logger.logL2Hit({ cacheName: this.name, key, options })
-      return remoteItem.entry.getValue()
+      return remoteItem!.entry.getValue()
     }
 
     if (remoteItem && options.isGraceEnabled()) {
@@ -194,6 +198,18 @@ export class Cache implements CacheProvider {
   }
 
   /**
+   * Invalidate all keys with the given tags
+   */
+  async deleteByTag(rawOptions: DeleteByTagOptions): Promise<boolean> {
+    const tags = rawOptions.tags
+    const options = this.#stack.defaultOptions.cloneWith(rawOptions)
+
+    this.#options.logger.logMethod({ method: 'deleteByTag', cacheName: this.name, tags, options })
+
+    return await this.#stack.createTagInvalidations(tags)
+  }
+
+  /**
    * Delete multiple keys from local and remote cache
    * Then emit cache:deleted events for each key
    * And finally publish invalidation through the bus
@@ -222,17 +238,12 @@ export class Cache implements CacheProvider {
    * Entry will not be fully deleted but expired and
    * retained for the grace period if enabled.
    */
-  async expire(rawOptions: ExpireOptions) {
+  expire(rawOptions: ExpireOptions) {
     const key = rawOptions.key
     const options = this.#stack.defaultOptions.cloneWith(rawOptions)
     this.#options.logger.logMethod({ method: 'expire', cacheName: this.name, key, options })
 
-    this.#stack.l1?.logicallyExpire(key, options)
-    await this.#stack.l2?.logicallyExpire(key, options)
-    await this.#stack.publish({ type: CacheBusMessageType.Expire, keys: [key] })
-
-    this.#stack.emit(cacheEvents.expire(key, this.name))
-    return true
+    return this.#stack.expire(key, options)
   }
 
   /**

@@ -3,12 +3,15 @@ import lodash from '@poppinss/utils/lodash'
 
 import { Bus } from '../bus/bus.js'
 import type { Logger } from '../logger.js'
+import { TagSystem } from './tag_system.js'
 import { UndefinedValueError } from '../errors.js'
 import { LocalCache } from './facades/local_cache.js'
 import { BaseDriver } from '../drivers/base_driver.js'
 import { RemoteCache } from './facades/remote_cache.js'
 import { cacheEvents } from '../events/cache_events.js'
+import type { GetSetHandler } from './get_set/get_set_handler.js'
 import type { BentoCacheOptions } from '../bento_cache_options.js'
+import type { GetCacheValueReturn } from '../types/internals/index.js'
 import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
 import { createCacheEntryOptions } from './cache_entry/cache_entry_options.js'
 import {
@@ -28,6 +31,7 @@ export class CacheStack extends BaseDriver {
   logger: Logger
   #busDriver?: BusDriver
   #busOptions?: BusOptions
+  #tagSystem: TagSystem
   #namespaceCache: Map<string, CacheStack> = new Map()
 
   constructor(
@@ -51,6 +55,7 @@ export class CacheStack extends BaseDriver {
     this.bus = bus ? bus : this.#createBus(drivers.busDriver, drivers.busOptions)
     if (this.l1) this.bus?.manageCache(this.prefix, this.l1)
 
+    this.#tagSystem = new TagSystem(this)
     this.defaultOptions = createCacheEntryOptions(this.options)
   }
 
@@ -68,6 +73,10 @@ export class CacheStack extends BaseDriver {
     )
 
     return new Bus(this.name, this.#busDriver, this.logger, this.emitter, this.#busOptions)
+  }
+
+  setTagSystemGetSetHandler(getSetHandler: GetSetHandler) {
+    this.#tagSystem.setGetSetHandler(getSetHandler)
   }
 
   namespace(namespace: string): CacheStack {
@@ -142,5 +151,45 @@ export class CacheStack extends BaseDriver {
     await this.publish({ type: CacheBusMessageType.Set, keys: [key] }, options)
     this.emit(cacheEvents.written(key, value, this.name))
     return true
+  }
+
+  /**
+   * Expire a key from the cache.
+   * Entry will not be fully deleted but expired and
+   * retained for the grace period if enabled.
+   */
+  async expire(key: string, options: CacheEntryOptions) {
+    this.l1?.logicallyExpire(key, options)
+    await this.l2?.logicallyExpire(key, options)
+    await this.publish({ type: CacheBusMessageType.Expire, keys: [key] })
+
+    this.emit(cacheEvents.expire(key, this.name))
+    return true
+  }
+
+  /**
+   * Check if an item is valid.
+   * Valid means :
+   * - Logically not expired ( not graced )
+   * - Not invalidated by a tag
+   */
+  isEntryValid(item: GetCacheValueReturn | undefined): Promise<boolean> | boolean {
+    if (!item) return false
+
+    const isGraced = item?.isGraced === true
+    if (isGraced) return false
+
+    if (item.entry.getTags().length === 0) return true
+
+    return this.#tagSystem.isTagInvalidated(item.entry).then((isTagInvalidated) => {
+      return !isTagInvalidated
+    })
+  }
+
+  /**
+   * Create invalidation keys for a list of tags
+   */
+  async createTagInvalidations(tags: string[]) {
+    return this.#tagSystem.createTagInvalidations(tags)
   }
 }
