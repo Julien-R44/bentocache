@@ -184,8 +184,8 @@ importers:
         specifier: ^1.13.8
         version: 1.13.8(hono@4.7.1)
       bentocache:
-        specifier: ^1.1.0
-        version: 1.1.0(@aws-sdk/client-dynamodb@3.749.0)(ioredis@5.5.0)(knex@3.1.0)(kysely@0.27.5)(orchid-orm@1.40.2(typescript@5.7.3))
+        specifier: ^1.2.0
+        version: 1.2.0(@aws-sdk/client-dynamodb@3.749.0)(ioredis@5.5.0)(knex@3.1.0)(kysely@0.27.5)(orchid-orm@1.40.2(typescript@5.7.3))
       hono:
         specifier: ^4.7.1
         version: 4.7.1
@@ -2386,8 +2386,8 @@ packages:
   before-after-hook@3.0.2:
     resolution: {integrity: sha512-Nik3Sc0ncrMK4UUdXQmAnRtzmNQTAAXmXIopizwZ1W1t8QmfJj+zL4OA2I7XPTPW5z5TDqv4hRo/JzouDJnX3A==}
 
-  bentocache@1.1.0:
-    resolution: {integrity: sha512-KuZN619eDkk9iDNwHLyerVi3iRr+uLSG0OWackN1z41+ari/4Ff2UQyo464s1cutRvvago6HzZ28MzUlo5qfrA==}
+  bentocache@1.2.0:
+    resolution: {integrity: sha512-t8LCJdRrurFL5fUztCf6DvN4xss6M+8qZ877QnvqKdsEbshRqU44a8q3KGfSqA0uryDAQcduZznwUKmGlHxGGg==}
     peerDependencies:
       '@aws-sdk/client-dynamodb': ^3.438.0
       ioredis: ^5.3.2
@@ -3676,10 +3676,6 @@ packages:
 
   help-me@5.0.0:
     resolution: {integrity: sha512-7xgomUX6ADmcYzFik0HzAxh/73YlKR9bmFzf51CZwR+b6YtzU2m0u49hQCqV6SvlqIqsaxovfwdvbnsw3b/zpg==}
-
-  hexoid@2.0.0:
-    resolution: {integrity: sha512-qlspKUK7IlSQv2o+5I7yhUd7TxlOG2Vr5LTa3ve2XSNVKAL/n/u/7KLvKmFNimomDIKvZFXWHv0T12mv7rT8Aw==}
-    engines: {node: '>=8'}
 
   hono@4.7.1:
     resolution: {integrity: sha512-V3eWoPkBxoNgFCkSc5Y5rpLF6YoQQx1pkYO4qrF6YfOw8RZbujUNlJLZCxh0z9gZct70+je2Ih7Zrdpv21hP9w==}
@@ -8941,13 +8937,12 @@ snapshots:
 
   before-after-hook@3.0.2: {}
 
-  bentocache@1.1.0(@aws-sdk/client-dynamodb@3.749.0)(ioredis@5.5.0)(knex@3.1.0)(kysely@0.27.5)(orchid-orm@1.40.2(typescript@5.7.3)):
+  bentocache@1.2.0(@aws-sdk/client-dynamodb@3.749.0)(ioredis@5.5.0)(knex@3.1.0)(kysely@0.27.5)(orchid-orm@1.40.2(typescript@5.7.3)):
     dependencies:
       '@boringnode/bus': 0.7.0(ioredis@5.5.0)
       '@julr/utils': 1.8.0
-      '@poppinss/utils': 6.9.2
+      '@poppinss/exception': 1.2.0
       async-mutex: 0.5.0
-      hexoid: 2.0.0
       lru-cache: 11.0.2
       p-timeout: 6.1.4
     optionalDependencies:
@@ -10387,8 +10382,6 @@ snapshots:
   he@1.2.0: {}
 
   help-me@5.0.0: {}
-
-  hexoid@2.0.0: {}
 
   hono@4.7.1: {}
 
