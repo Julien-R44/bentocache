@@ -95,14 +95,13 @@ export class SingleTierHandler {
   }
 
   async handle(key: string, factory: Factory, options: CacheEntryOptions) {
-    let remoteItem: GetCacheValueReturn | undefined
-
     /**
      * Check in the remote cache first if we have something
      */
-    remoteItem = await this.stack.l2?.get(key, options)
-    if (remoteItem?.isGraced === false) {
-      return this.#returnRemoteCacheValue(key, remoteItem, options)
+    let remoteItem = await this.stack.l2?.get(key, options)
+    let isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
+    if (isRemoteItemValid) {
+      return this.#returnRemoteCacheValue(key, remoteItem!, options)
     }
 
     /**
@@ -121,9 +120,10 @@ export class SingleTierHandler {
      * already set the value
      */
     remoteItem = await this.stack.l2?.get(key, options)
-    if (remoteItem?.isGraced === false) {
+    isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
+    if (isRemoteItemValid) {
       this.#locks.release(key, releaser)
-      return this.#returnRemoteCacheValue(key, remoteItem, options)
+      return this.#returnRemoteCacheValue(key, remoteItem!, options)
     }
 
     try {
