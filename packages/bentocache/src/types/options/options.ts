@@ -110,7 +110,7 @@ export type RawBentoCacheOptions = {
    * Custom serializer
    */
   serializer?: CacheSerializer
-} & RawCommonOptions
+} & Omit<RawCommonOptions, 'tags' | 'skipBusNotify' | 'skipL2Write'>
 
 /**
  * The options that can be passed when creating
