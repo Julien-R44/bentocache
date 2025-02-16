@@ -1,6 +1,7 @@
 {
   "name": "@bentocache/playground",
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "tsx watch src/index.tsx"
   },

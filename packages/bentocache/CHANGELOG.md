@@ -1,5 +1,129 @@
 # bentocache
 
+## 1.2.0
+
+### Minor Changes
+
+- 8bb87b6: Add a new `expire` method.
+
+  This method is slightly different from `delete`:
+
+  When we delete a key, it is completely removed and forgotten. This means that even if we use grace periods, the value will no longer be available.
+
+  `expire` works like `delete`, except that instead of completely removing the value, we just mark it as expired but keep it for the grace period. For example:
+
+  ```ts
+  // Set a value with a grace period of 6 minutes
+  await cache.set({
+    key: 'hello',
+    value: 'world',
+    grace: '6m',
+  })
+
+  // Expire the value. It is kept in the cache but marked as STALE for 6 minutes
+  await cache.expire({ key: 'hello' })
+
+  // Here, a get with grace: false will return nothing, because the value is stale
+  const r1 = await cache.get({ key: 'hello', grace: false })
+
+  // Here, a get with grace: true will return the value, because it is still within the grace period
+  const r2 = await cache.get({ key: 'hello' })
+
+  assert.deepEqual(r1, undefined)
+  assert.deepEqual(r2, 'world')
+  ```
+
+- d513fe2: Add a new `E_L2_CACHE_ERROR`. Before this commit, error happening when interacting with the L2 cache were not wrapped in a custom error. This is now the case. If needed, you can still access the original error by using the `cause` property of the `E_L2_CACHE_ERROR` error.
+
+  ```ts
+  import { errors } from 'bentocache'
+
+  try {
+    await cache.getOrSet({
+      key: 'foo',
+      factory: getFromDb(),
+    })
+  } catch (err) {
+    if (err instanceof errors.E_L2_CACHE_ERROR) {
+      console.error('An error happened while interacting with the L2 cache', err.cause)
+    }
+  }
+  ```
+
+- 4d1feb5: Added a super simple circuit breaker system to the L2 Cache :
+
+  - a `l2CircuitBreakerDuration` parameter to set the duration of the circuit breaker. How many seconds the circuit breaker will stay open.
+  - If defined, the circuit breaker will open when a call to our distributed cache fails. It will stay open for `l2CircuitBreakerDuration` seconds.
+
+  We may introduce more sophisticated circuit breaker system in the future, but for now, this simple system should be enough.
+
+- 6b1f42a: Enhance Factory Context by adding some new props.
+
+  ```ts
+  await cache.getOrSet({
+    key: 'foo',
+    factory: (ctx) => {
+      // You can access the graced entry, if any, from the context
+      if (ctx.gracedEntry?.value === 'bar') {
+        return 'foo'
+      }
+
+      // You should now use `setOptions` to update cache entry options
+      ctx.setOptions({
+        tags: ['foo'],
+        ttl: '2s',
+        skipL2Write: true,
+      })
+
+      return 'foo'
+    },
+  })
+  ```
+
+  `setTtl` has been deprecated in favor of `setOptions` and will be removed in the next major version.
+
+- 73ac0fa: Add **experimental** tagging support. See https://github.com/Julien-R44/bentocache/issues/53
+
+  ```ts
+  await bento.getOrSet({
+    key: 'foo',
+    factory: getFromDb(),
+    tags: ['tag-1', 'tag-2'],
+  })
+
+  await bento.set({
+    key: 'foo',
+    tags: ['tag-1'],
+  })
+  ```
+
+  Then, we can delete all entries tagged with tag-1 using:
+
+  ```ts
+  await bento.deleteByTags({ tags: ['tag-1'] })
+  ```
+
+  As this is a rather complex feature, let's consider it experimental for now. Please report any bugs on Github issues
+
+- 6b1f42a: Add `skipL2Write` and `skipBusNotify` options.
+
+  ```ts
+  await cache.getOrSet({
+    key: 'foo',
+    skipL2Write: true,
+    skipBusNotify: true,
+    factory: () => 'foo',
+  })
+  ```
+
+  When enabled, `skipL2Write` will prevent the entry from being written to L2 cache, and `skipBusNotify` will prevent any notification from being sent to the bus. You will probably never need to use these options, but they were useful for internal code, so decided to expose them.
+
+- b9db3b5: Rework the logs issued by bentocache to make them much cleaner, more consistent and make debug easier
+
+### Patch Changes
+
+- 491d12e: Handle deleteMany with empty keys list
+
 ## 1.1.0
 
 ### Minor Changes

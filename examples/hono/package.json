@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",
-    "bentocache": "^1.1.0",
+    "bentocache": "^1.2.0",
     "hono": "^4.7.1"
   },
   "devDependencies": {
