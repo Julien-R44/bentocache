@@ -15,14 +15,21 @@ const slowFetcher = async (url: string, timeout: number = 1000) => {
   }))
 }
 
+app.get('/invalidate-users', async (c) => {
+  await bento.deleteByTag({ tags: ['user'] })
+
+  return c.text('Invalidated users')
+})
+
 app.get('/cache-user/:id', async (c) => {
   const id = c.req.param('id')
   const user = await slowFetcher(`https://jsonplaceholder.typicode.com/users/${id}`)
 
   await bento.set({
-    ttl: '10s',
+    ttl: '50s',
     key: `user-${id}`,
     value: user,
+    tags: ['user'],
   })
 
   return c.html(
