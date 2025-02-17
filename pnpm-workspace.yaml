@@ -2,6 +2,7 @@ packages:
   - packages/*
   - playground
   - benchmarks
+  - simulator
   - examples/*
   - apps/*
   - docs
