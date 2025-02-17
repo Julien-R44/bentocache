@@ -5,9 +5,9 @@ services:
       - '6379:6379'
 
   redis-insight:
-    image: redislabs/redisinsight:latest
+    image: redis/redisinsight:latest
     ports:
-      - '8001:8001'
+      - '5540:5540'
 
   dynamodb:
     image: amazon/dynamodb-local
