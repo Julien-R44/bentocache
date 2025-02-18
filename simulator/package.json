@@ -44,7 +44,7 @@
     "@julr/utils": "^1.8.0",
     "@primevue/themes": "^4.2.5",
     "@vinejs/vine": "^3.0.0",
-    "bentocache": "^1.2.0",
+    "bentocache": "workspace:*",
     "edge.js": "^6.2.1",
     "primeicons": "^7.0.0",
     "primevue": "^4.2.5",

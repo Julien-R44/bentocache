@@ -59,17 +59,19 @@ for (let i = 0; i < kNodesCount; i++) {
 }
 
 router.get('/', async ({ inertia }) => {
-  const results = nodes.entries().map(async ([key, cache]) => {
-    return {
-      name: key,
-      result: await cache.bento.get({ key: 'value', defaultValue: 0 }),
-      busId: cache.bus.id,
-    }
-  })
+  const results = await Promise.all(
+    nodes.entries().map(async ([key, cache]) => {
+      return {
+        name: key,
+        result: await cache.bento.get({ key: 'value', defaultValue: 0 }),
+        busId: cache.bus.id,
+      }
+    }),
+  )
 
   return inertia.render('home', {
     correctValue: await trueCache.get({ key: 'value', defaultValue: 0 }),
-    caches: await Promise.all(results),
+    caches: results,
     state,
     sentMessages: [...nodes.entries()]
       .map(([key, cache]) =>

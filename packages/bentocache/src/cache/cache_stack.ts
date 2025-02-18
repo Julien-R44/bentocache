@@ -142,12 +142,19 @@ export class CacheStack extends BaseDriver {
     /**
      * Store the serialized value in the remote cache
      */
+    let l2Success = false
     if (this.l2 && options.skipL2Write !== true) {
       const l2Item = this.options.serializeL1 ? l1Item : this.options.serializer.serialize(rawItem)
-      await this.l2?.set(key, l2Item as any, options)
+      l2Success = await this.l2?.set(key, l2Item as any, options)
     }
 
-    await this.publish({ type: CacheBusMessageType.Set, keys: [key] }, options)
+    /**
+     * Publish only if the remote cache write was successful.
+     */
+    if ((this.l2 && l2Success) || !this.l2) {
+      await this.publish({ type: CacheBusMessageType.Set, keys: [key] }, options)
+    }
+
     this.emit(cacheEvents.written(key, value, this.name))
     return true
   }

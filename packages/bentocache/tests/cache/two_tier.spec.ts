@@ -3,6 +3,7 @@ import { sleep } from '@julr/utils/misc'
 import { MemoryTransport } from '@boringnode/bus/transports/memory'
 
 import { RedisDriver } from '../../src/drivers/redis.js'
+import { ChaosBus } from '../helpers/chaos/chaos_bus.js'
 import { NullDriver } from '../helpers/null/null_driver.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
@@ -772,5 +773,33 @@ test.group('Cache', () => {
     const r1 = await cache2.get({ key: 'foo' })
 
     assert.isUndefined(r1)
+  })
+
+  test('should not publish to bus if l2 could not be written', async ({ assert }) => {
+    const redis1 = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
+    const redis2 = new ChaosCache(new RedisDriver({ connection: REDIS_CREDENTIALS }))
+    const bus1 = new ChaosBus(new MemoryTransport())
+    const bus2 = new ChaosBus(new MemoryTransport())
+
+    const [cache1] = new CacheFactory()
+      .merge({ l2Driver: redis1, busDriver: bus1 })
+      .withL1L2Config()
+      .create()
+    const [cache2] = new CacheFactory()
+      .merge({ l2Driver: redis2, busDriver: bus2 })
+      .withL1L2Config()
+      .create()
+
+    await cache1.set({ key: 'foo', value: 'bar' })
+    const r1 = await cache2.get({ key: 'foo' })
+
+    redis1.alwaysThrow()
+    redis2.alwaysThrow()
+
+    await cache1.set({ key: 'foo', value: 'baz' })
+    const r2 = await cache2.get({ key: 'foo' })
+
+    assert.deepEqual(r1, 'bar')
+    assert.deepEqual(r2, 'bar')
   })
 })

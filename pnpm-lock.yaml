@@ -320,8 +320,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       bentocache:
-        specifier: ^1.2.0
-        version: 1.2.0(@aws-sdk/client-dynamodb@3.749.0)(ioredis@5.5.0)(knex@3.1.0)(kysely@0.27.5)(orchid-orm@1.40.2(typescript@5.7.3))
+        specifier: workspace:*
+        version: link:../packages/bentocache
       edge.js:
         specifier: ^6.2.1
         version: 6.2.1
@@ -2900,26 +2900,6 @@ packages:
 
   before-after-hook@3.0.2:
     resolution: {integrity: sha512-Nik3Sc0ncrMK4UUdXQmAnRtzmNQTAAXmXIopizwZ1W1t8QmfJj+zL4OA2I7XPTPW5z5TDqv4hRo/JzouDJnX3A==}
-
-  bentocache@1.2.0:
-    resolution: {integrity: sha512-t8LCJdRrurFL5fUztCf6DvN4xss6M+8qZ877QnvqKdsEbshRqU44a8q3KGfSqA0uryDAQcduZznwUKmGlHxGGg==}
-    peerDependencies:
-      '@aws-sdk/client-dynamodb': ^3.438.0
-      ioredis: ^5.3.2
-      knex: ^3.0.1
-      kysely: ^0.27.3
-      orchid-orm: ^1.24.0
-    peerDependenciesMeta:
-      '@aws-sdk/client-dynamodb':
-        optional: true
-      ioredis:
-        optional: true
-      knex:
-        optional: true
-      kysely:
-        optional: true
-      orchid-orm:
-        optional: true
 
   better-path-resolve@1.0.0:
     resolution: {integrity: sha512-pbnl5XzGBdrFU/wT4jqmJVPn2B6UHPBOhzMQkY/SPUPB6QtUXtmBHBIwCbXJol93mOpGMnQyP/+BB19q04xj7g==}
@@ -10426,21 +10406,6 @@ snapshots:
       tweetnacl: 0.14.5
 
   before-after-hook@3.0.2: {}
-
-  bentocache@1.2.0(@aws-sdk/client-dynamodb@3.749.0)(ioredis@5.5.0)(knex@3.1.0)(kysely@0.27.5)(orchid-orm@1.40.2(typescript@5.7.3)):
-    dependencies:
-      '@boringnode/bus': 0.7.0(ioredis@5.5.0)
-      '@julr/utils': 1.8.0
-      '@poppinss/exception': 1.2.0
-      async-mutex: 0.5.0
-      lru-cache: 11.0.2
-      p-timeout: 6.1.4
-    optionalDependencies:
-      '@aws-sdk/client-dynamodb': 3.749.0
-      ioredis: 5.5.0
-      knex: 3.1.0(better-sqlite3@11.8.1)(mysql2@3.12.0)(pg@8.13.3)(sqlite3@5.1.7)
-      kysely: 0.27.5
-      orchid-orm: 1.40.2(typescript@5.7.3)
 
   better-path-resolve@1.0.0:
     dependencies:
