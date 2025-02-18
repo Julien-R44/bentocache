@@ -2,6 +2,13 @@ import type { Serializable, SubscribeHandler, Transport } from '@boringnode/bus/
 
 import { ChaosInjector } from './chaos_injector.js'
 
+interface BusMessage {
+  channel: string
+  message: Serializable
+  busId: string
+  timestamp: number
+}
+
 export class ChaosBus implements Transport {
   /**
    * The inner transport driver that is wrapped
@@ -13,6 +20,9 @@ export class ChaosBus implements Transport {
    */
   #chaosInjector: ChaosInjector
   id!: string
+
+  sentMessages: Array<BusMessage> = []
+  receivedMessages: Array<BusMessage> = []
 
   constructor(innerTransport: Transport) {
     this.#innerTransport = innerTransport
@@ -48,11 +58,25 @@ export class ChaosBus implements Transport {
 
   async publish(channel: string, message: Serializable) {
     await this.#chaosInjector.injectChaos()
+    this.sentMessages.push({
+      channel,
+      message,
+      busId: this.id,
+      timestamp: Date.now(),
+    })
     return this.#innerTransport.publish(channel, message)
   }
 
   async subscribe<T extends Serializable>(channel: string, handler: SubscribeHandler<T>) {
-    return this.#innerTransport.subscribe(channel, handler)
+    return this.#innerTransport.subscribe(channel, (message) => {
+      this.receivedMessages.push({
+        channel,
+        message,
+        busId: this.id,
+        timestamp: Date.now(),
+      })
+      return handler(message as any)
+    })
   }
 
   unsubscribe(channel: string) {

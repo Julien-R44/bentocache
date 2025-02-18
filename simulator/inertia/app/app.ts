@@ -1,7 +1,6 @@
 /// <reference path="../../adonisrc.ts" />
 /// <reference path="../../config/inertia.ts" />
 
-import '@unocss/reset/tailwind-compat.css'
 import 'virtual:uno.css'
 import 'primeicons/primeicons.css'
 

@@ -71,6 +71,20 @@ router.get('/', async ({ inertia }) => {
     correctValue: await trueCache.get({ key: 'value', defaultValue: 0 }),
     caches: await Promise.all(results),
     state,
+    sentMessages: [...nodes.entries()]
+      .map(([key, cache]) =>
+        cache.bus.sentMessages.map((message) => ({ ...message, cacheName: key })),
+      )
+      .flat()
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 40),
+    receivedMessages: [...nodes.entries()]
+      .map(([key, cache]) =>
+        cache.bus.receivedMessages.map((message) => ({ ...message, cacheName: key })),
+      )
+      .flat()
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 40),
   })
 })
 
@@ -84,6 +98,19 @@ router.post('/set', async ({ request, response }) => {
   const cache = nodes.get(cacheName)
   const currentValue = await cache!.bento.get({ key: 'value', defaultValue: 0 })
   await cache?.bento.set({ key: 'value', value: currentValue + 1 })
+
+  return response.redirect().toPath('/')
+})
+
+router.post('/delete', async ({ request, response }) => {
+  const cacheName = request.input('name')
+
+  if (!nodes.has(cacheName)) {
+    return response.status(400).send('Invalid cache name')
+  }
+
+  const cache = nodes.get(cacheName)
+  await cache?.bento.delete({ key: 'value' })
 
   return response.redirect().toPath('/')
 })
