@@ -105,9 +105,8 @@ function getCacheColor(name: string) {
           </div>
         </template>
         <template #content>
-          <div>
-            Current Value :
-            <span class="text-lg font-semibold">{{ cache.result }}</span>
+          <div class="flex justify-center py-3 text-5xl w-full text-center font-semibold">
+            {{ cache.result }}
           </div>
           <div class="flex gap-2 mt-2"></div>
         </template>

@@ -17,6 +17,7 @@ const nodes: Map<string, { bento: BentoCache<any>; bus: ChaosBus; l2: ChaosCache
 const trueCache = new BentoCache({
   default: 'default',
   prefix: '',
+  grace: '2h',
   stores: {
     default: bentostore().useL2Layer(
       redisDriver({ connection: { host: '127.0.0.1', port: 6379 } }),
@@ -43,6 +44,7 @@ for (let i = 0; i < kNodesCount; i++) {
 
   const bentoCache = new BentoCache({
     default: 'default',
+    grace: '2h',
     stores: {
       default: bentostore()
         .useL1Layer(memoryDriver({ serialize: true }))
