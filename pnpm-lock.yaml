@@ -178,25 +178,6 @@ importers:
         specifier: ^6.1.0
         version: 6.1.0(@types/node@22.13.4)(jiti@2.4.2)(lightningcss@1.29.1)(terser@5.39.0)(tsx@4.19.2)(yaml@2.7.0)
 
-  examples/hono:
-    dependencies:
-      '@hono/node-server':
-        specifier: ^1.13.8
-        version: 1.13.8(hono@4.7.1)
-      bentocache:
-        specifier: ^1.2.0
-        version: 1.2.0(@aws-sdk/client-dynamodb@3.749.0)(ioredis@5.5.0)(knex@3.1.0)(kysely@0.27.5)(orchid-orm@1.40.2(typescript@5.7.3))
-      hono:
-        specifier: ^4.7.1
-        version: 4.7.1
-    devDependencies:
-      '@types/node':
-        specifier: ^22.13.4
-        version: 22.13.4
-      tsx:
-        specifier: ^4.19.2
-        version: 4.19.2
-
   packages/bentocache:
     dependencies:
       '@boringnode/bus':
