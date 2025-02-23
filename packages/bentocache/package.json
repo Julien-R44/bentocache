@@ -72,7 +72,7 @@
     }
   },
   "dependencies": {
-    "@boringnode/bus": "^0.7.0",
+    "@boringnode/bus": "^0.7.1",
     "@julr/utils": "^1.8.0",
     "@poppinss/exception": "^1.2.0",
     "async-mutex": "^0.5.0",
@@ -80,7 +80,7 @@
     "p-timeout": "^6.1.4"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.749.0",
+    "@aws-sdk/client-dynamodb": "^3.751.0",
     "@types/better-sqlite3": "^7.6.12",
     "@types/pg": "^8.11.11",
     "better-sqlite3": "^11.8.1",
