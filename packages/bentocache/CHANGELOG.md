@@ -1,5 +1,11 @@
 # bentocache
 
+## 1.2.1
+
+### Patch Changes
+
+- 1e54547: Updated dependencies, including @boringnode/bus which includes a change for attempting to fix #58
+
 ## 1.2.0
 
 ### Minor Changes
