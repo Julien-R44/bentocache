@@ -119,14 +119,10 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
    */
   async clear() {
     let cursor = '0'
-    const COUNT = 1000 // Number of keys to scan in each SCAN iteration
+    const COUNT = 1000
 
-    while (true) {
-      /**
-       *  Use SCAN to iterate through keys with the prefix
-       * @see https://redis.io/commands/scan
-       */
-      const [newCursor, keys]: [string, string[]] = await this.#connection.scan(
+    do {
+      const [newCursor, keys] = await this.#connection.scan(
         cursor,
         'MATCH',
         `${this.prefix}*`,
@@ -134,14 +130,10 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
         COUNT,
       )
 
-      if (keys.length) {
-        await this.#connection.del(keys)
-      }
+      if (keys.length) await this.#connection.del(keys)
 
-      cursor = newCursor // Update the cursor for the next SCAN iteration
-
-      if (cursor == '0') break // Exit loop when no more keys to scan
-    }
+      cursor = newCursor
+    } while (cursor !== '0')
   }
 
   /**
