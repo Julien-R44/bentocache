@@ -12,7 +12,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 21
+          node-version: 22
 
       - name: Install pnpm
         run: |
@@ -34,7 +34,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 21
+          node-version: 22
 
       - name: Install pnpm
         run: |
@@ -58,7 +58,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 21
+          node-version: 22
 
       - name: Install pnpm
         run: |
@@ -77,15 +77,15 @@ jobs:
 
     services:
       redis:
-        image: redis:6.2-alpine
+        image: redis:7-bookworm
         ports:
           - 6379:6379
       dynamodb:
-        image: amazon/dynamodb-local
+        image: amazon/dynamodb-local:2.6.1
         ports:
           - 8000:8000
       postgres:
-        image: postgres:15-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -106,7 +106,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 21
+          node-version: 22
 
       - name: Install pnpm
         run: |
@@ -122,5 +122,5 @@ jobs:
         env:
           REDIS_HOST: localhost
           REDIS_PORT: 6379
-          DYNAMODB_ENDPOINT: http://localhost:8000
-        run: FORCE_COLOR=1 pnpm test -r
+          FORCE_COLOR: 1
+        run: pnpm test
