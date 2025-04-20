@@ -44,7 +44,7 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
     this.#cache = new LRUCache({
       max: config.maxItems ?? 1000,
       maxEntrySize: config.maxEntrySize ? bytes.parse(config.maxEntrySize) : undefined,
-      ttlAutopurge: true,
+      ttlAutopurge: false,
       ...(config.maxSize
         ? {
             maxSize: config.maxSize ? bytes.parse(config.maxSize) : undefined,
@@ -89,6 +89,7 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
    * Returns true if the value was set, false otherwise
    */
   set(key: string, value: string, ttl?: number) {
+    console.log('set', key, value, ttl)
     this.#cache.set(this.getItemKey(key), value, { ttl })
     return true
   }
