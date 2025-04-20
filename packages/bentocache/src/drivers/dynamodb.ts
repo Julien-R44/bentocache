@@ -200,14 +200,6 @@ export class DynamoDbDriver extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Check if a key exists in the cache
-   */
-  async has(key: string) {
-    const item = await this.get(key)
-    return item !== undefined
-  }
-
-  /**
    * Remove all items from the cache
    */
   async clear() {

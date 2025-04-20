@@ -146,15 +146,6 @@ export class RemoteCache {
   }
 
   /**
-   * Check if an item exists in the remote cache
-   */
-  async has(key: string, options: CacheEntryOptions) {
-    return await this.#tryCacheOperation('has', options, false, async () => {
-      return await this.#driver.has(key)
-    })
-  }
-
-  /**
    * Clear the remote cache
    */
   async clear(options: CacheEntryOptions) {

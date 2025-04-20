@@ -102,13 +102,6 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
   }
 
   /**
-   * Check if a key exists in the cache
-   */
-  has(key: string) {
-    return this.#cache.has(this.getItemKey(key))
-  }
-
-  /**
    * Remove all items from the cache
    */
   async clear() {

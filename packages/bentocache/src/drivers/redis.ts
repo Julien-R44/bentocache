@@ -107,14 +107,6 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
   }
 
   /**
-   * Check if a key exists in the cache
-   */
-  async has(key: string) {
-    const exists = await this.#connection.exists(this.getItemKey(key))
-    return exists > 0
-  }
-
-  /**
    * Remove all items from the cache
    */
   async clear() {

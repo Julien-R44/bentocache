@@ -32,10 +32,6 @@ interface L2CacheDriver {
    */
   set(key: string, value: string, ttl?: number): Promise<boolean>
 
-  /**
-   * Check if a key exists in the cache
-   */
-  has(key: string): Promise<boolean>
 
   /**
    * Remove all items from the cache
