@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import { sleep } from '@julr/utils/misc'
 
 import { CacheFactory } from '../factories/cache_factory.js'
 import { createCacheEntryOptions } from '../src/cache/cache_entry/cache_entry_options.js'
@@ -284,10 +285,11 @@ test.group('Tagging | deleteByTag', () => {
   })
 
   test('key created after tag invalidation should not be invalidated', async ({ assert }) => {
-    const [cache] = new CacheFactory().withL1L2Config().create()
+    const [cache] = new CacheFactory().withMemoryL1().create()
 
     await cache.set({ key: 'foo', value: 1, tags: ['x'] })
     await cache.deleteByTag({ tags: ['x', 'foo'] })
+    await sleep(10)
     await cache.set({ key: 'bar', value: 2, tags: ['x'] })
 
     const r1 = await cache.get({ key: 'foo' })

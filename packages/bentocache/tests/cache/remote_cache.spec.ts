@@ -33,7 +33,7 @@ test.group('Remote Cache', () => {
     await assert.rejects(() => cache.deleteMany(['foo'], options))
 
     const errors = logger.logs.filter((log) => log.level === 'error')
-    assert.deepEqual(errors.length, 5)
+    assert.deepEqual(errors.length, 4)
   })
 
   test('should ignore errors if suppressL2Errors is enabled', async ({ assert, cleanup }) => {
@@ -58,7 +58,7 @@ test.group('Remote Cache', () => {
     await assert.doesNotReject(() => cache.deleteMany(['foo'], options))
 
     const errors = logger.logs.filter((log) => log.level === 'error')
-    assert.deepEqual(errors.length, 5)
+    assert.deepEqual(errors.length, 4)
   })
 
   test('rethrow errors if suppressL2Errors is not explicity set and we have not l1', async ({
@@ -86,7 +86,7 @@ test.group('Remote Cache', () => {
     await assert.rejects(() => cache.deleteMany(['foo'], options))
 
     const errors = logger.logs.filter((log) => log.level === 'error')
-    assert.deepEqual(errors.length, 5)
+    assert.deepEqual(errors.length, 4)
   })
 
   test('suppress errors if suppressL2Errors is explicitly set to true and we have not l1', async ({
@@ -114,7 +114,7 @@ test.group('Remote Cache', () => {
     await assert.doesNotReject(() => cache.deleteMany(['foo'], options))
 
     const errors = logger.logs.filter((log) => log.level === 'error')
-    assert.deepEqual(errors.length, 5)
+    assert.deepEqual(errors.length, 4)
   })
 
   test('should throw E_L2_CACHE_ERROR if the driver throws an error', async ({

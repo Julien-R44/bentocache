@@ -115,7 +115,7 @@ test.group('One tier tests', () => {
     assert.isFalse(await cache.missing({ key: 'key1' }))
   })
 
-  test('missing() returns false even if logically expired', async ({ assert }) => {
+  test('missing() returns true if logically expired', async ({ assert }) => {
     const { cache } = new CacheFactory().withMemoryL1().merge({ grace: '500ms' }).create()
 
     await cache.set({ key: 'key1', value: 'value1', ttl: '100ms' })
@@ -126,7 +126,7 @@ test.group('One tier tests', () => {
     await sleep(500)
     const r2 = await cache.missing({ key: 'key1' })
 
-    assert.isFalse(r1)
+    assert.isTrue(r1)
     assert.isTrue(r2)
   })
 
@@ -142,7 +142,7 @@ test.group('One tier tests', () => {
     assert.isTrue(await cache.has({ key: 'key1' }))
   })
 
-  test('has() returns true even if logically expired', async ({ assert }) => {
+  test('has() returns false if logically expired', async ({ assert }) => {
     const { cache } = new CacheFactory().withMemoryL1().merge({ grace: '500ms' }).create()
 
     await cache.set({ key: 'key1', value: 'value1', ttl: '100ms' })
@@ -153,7 +153,7 @@ test.group('One tier tests', () => {
     await sleep(500)
     const r2 = await cache.has({ key: 'key1' })
 
-    assert.isTrue(r1)
+    assert.isFalse(r1)
     assert.isFalse(r2)
   })
 

@@ -6,7 +6,7 @@ import { registerCacheDriverTestSuite } from '../helpers/driver_test_suite.js'
 
 const dynamoClient = new DynamoDBClient({
   region: 'eu-west-3',
-  endpoint: process.env.DYNAMODB_ENDPOINT,
+  endpoint: 'http://localhost:8000',
   credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
 })
 
@@ -53,7 +53,7 @@ test.group('DynamoDB driver', (group) => {
       return new DynamoDbDriver({
         prefix: 'japa',
         region: 'eu-west-3',
-        endpoint: process.env.DYNAMODB_ENDPOINT,
+        endpoint: 'http://localhost:8000',
         credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
         table: { name: 'cache' },
         ...options,
