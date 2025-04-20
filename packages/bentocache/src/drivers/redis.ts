@@ -1,6 +1,7 @@
 import { Redis as IoRedis } from 'ioredis'
 import type { RedisOptions as IoRedisOptions } from 'ioredis'
 import { RedisTransport } from '@boringnode/bus/transports/redis'
+import type { RedisTransportConfig } from '@boringnode/bus/types/main'
 
 import { BaseDriver } from './base_driver.js'
 import { BinaryEncoder } from '../bus/encoders/binary_encoder.js'
@@ -30,7 +31,7 @@ export function redisBusDriver(
     options,
     factory: () => {
       return new RedisTransport(
-        { ...options.connection, useMessageBuffer: true },
+        { ...options.connection, useMessageBuffer: true } as RedisTransportConfig,
         new BinaryEncoder(),
       )
     },
@@ -122,7 +123,7 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
         COUNT,
       )
 
-      if (keys.length) await this.#connection.del(keys)
+      if (keys.length) await this.#connection.unlink(keys)
 
       cursor = newCursor
     } while (cursor !== '0')
@@ -133,7 +134,7 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
    * Returns true if the key was deleted, false otherwise
    */
   async delete(key: string) {
-    const deletedKeys = await this.#connection.del(this.getItemKey(key))
+    const deletedKeys = await this.#connection.unlink(this.getItemKey(key))
     return deletedKeys > 0
   }
 
@@ -142,7 +143,7 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
    */
   async deleteMany(keys: string[]) {
     if (keys.length === 0) return true
-    await this.#connection.del(keys.map((key) => this.getItemKey(key)))
+    await this.#connection.unlink(keys.map((key) => this.getItemKey(key)))
     return true
   }
 
