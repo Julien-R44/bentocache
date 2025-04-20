@@ -104,7 +104,7 @@ export function registerCacheDriverTestSuite(options: {
 
   test('deleteMany() return true when no keys are provided', async ({ assert }) => {
     const result = await cache.deleteMany([])
-    assert.isFalse(result)
+    assert.isTrue(result)
   })
 
   test('delete() returns true when key is removed', async ({ assert }) => {
