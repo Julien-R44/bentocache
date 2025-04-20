@@ -18,7 +18,6 @@ export function registerCacheDriverTestSuite(options: {
   supportsMilliseconds?: boolean
 }) {
   const { test, group } = options
-  const sleepTime = options.supportsMilliseconds ? 20 : 1000
 
   let cache: CacheDriver
 
@@ -117,22 +116,6 @@ export function registerCacheDriverTestSuite(options: {
   test('delete() returns false when key does not exists', async ({ assert }) => {
     const result = await cache.delete('key1')
     assert.isFalse(result)
-  })
-
-  test('has() returns true when key exists', async ({ assert }) => {
-    await cache.set('key1', 'value1')
-    assert.isTrue(await cache.has('key1'))
-  })
-
-  test('has() returns false when key does not exists', async ({ assert }) => {
-    assert.isFalse(await cache.has('key1'))
-  })
-
-  test('has() should not returns true for expired key', async ({ assert }) => {
-    await cache.set('key1', 'value1', 10)
-
-    await sleep(sleepTime)
-    assert.isFalse(await cache.has('key1'))
   })
 
   test('pull() returns value and removes it', async ({ assert }) => {

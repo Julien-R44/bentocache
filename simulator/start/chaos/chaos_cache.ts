@@ -82,6 +82,11 @@ export class ChaosCache<Cache extends L1CacheDriver | L2CacheDriver> implements 
     return this.#innerCache.set(key, value, ttl)
   }
 
+  async has(key: string) {
+    await this.#chaosInjector.injectChaos()
+    return this.#innerCache.has(key)
+  }
+
   async delete(key: string) {
     await this.#chaosInjector.injectChaos()
     return this.#innerCache.delete(key)
