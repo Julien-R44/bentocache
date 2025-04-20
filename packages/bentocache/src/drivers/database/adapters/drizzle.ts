@@ -163,10 +163,15 @@ export class DrizzleAdapter implements DatabaseAdapter {
   }
 
   /**
-   * Disconnect from the database (not required for Drizzle)
+   * Disconnect from the database
    */
   async disconnect(): Promise<void> {
-    // No explicit disconnect needed for Drizzle
+    if ('$client' in this.#connection) {
+      const client = this.#connection.$client as any
+      if (typeof client.end === 'function') {
+        await client.end()
+      }
+    }
   }
 
   /**

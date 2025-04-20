@@ -6,7 +6,6 @@ import { createDrizzleStore } from './helpers.js'
 import { registerCacheDriverTestSuite } from '../../../src/test_suite.js'
 
 test.group('Drizzle | MySQL driver', (group) => {
-  // 只有在连接成功时才注册测试套件
   registerCacheDriverTestSuite({
     test,
     group,
@@ -16,18 +15,13 @@ test.group('Drizzle | MySQL driver', (group) => {
         client: mysql.createPool({
           host: 'localhost',
           port: 3306,
-          database: 'test',
+          database: 'mysql',
           user: 'root',
           password: 'root',
         }),
       })
 
-      return createDrizzleStore({
-        connection: db,
-        dialect: 'mysql',
-        prefix: 'japa',
-        ...options,
-      })
+      return createDrizzleStore({ connection: db, dialect: 'mysql', prefix: 'japa', ...options })
     },
   })
 })

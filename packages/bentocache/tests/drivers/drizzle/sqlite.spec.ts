@@ -11,9 +11,7 @@ test.group('Drizzle | SQLite driver', (group) => {
     group,
     supportsMilliseconds: false,
     createDriver: (options) => {
-      const db = drizzle({
-        client: new Database('./cache.db'),
-      })
+      const db = drizzle({ client: new Database('./cache.db') })
 
       return createDrizzleStore({
         connection: db,

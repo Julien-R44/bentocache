@@ -15,8 +15,8 @@ test.group('Drizzle | Postgres driver', (group) => {
         host: 'localhost',
         port: 5432,
         database: 'postgres',
-        user: 'mudong17',
-        password: '12345678',
+        user: 'postgres',
+        password: 'postgres',
       })
       const db = drizzle({ client: pool })
 
