@@ -124,17 +124,6 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
   }
 
   /**
-   * Check if a key exists in the cache
-   */
-  async has(key: string) {
-    await this.#initialized
-    const result = await this.get(key)
-
-    if (!result) return false
-    return true
-  }
-
-  /**
    * Remove all items from the cache
    */
   async clear() {

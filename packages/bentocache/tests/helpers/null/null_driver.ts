@@ -21,10 +21,6 @@ export class NullDriver extends BaseDriver implements CacheDriver<false> {
     return true
   }
 
-  has(_key: string): any {
-    return false
-  }
-
   clear(): any {
     return
   }

@@ -156,10 +156,15 @@ export class Cache implements CacheProvider {
       options: entryOptions,
     })
 
-    const inRemote = await this.#stack.l2?.has(key, entryOptions)
-    const inLocal = this.#stack.l1?.has(key)
+    const localEntry = this.#stack.l1?.get(key, entryOptions)
+    const isLocalEntryValid = await this.#stack.isEntryValid(localEntry)
+    if (isLocalEntryValid) return true
 
-    return !!(inRemote || inLocal)
+    const inRemote = await this.#stack.l2?.get(key, entryOptions)
+    const isRemoteEntryValid = await this.#stack.isEntryValid(inRemote)
+    if (isRemoteEntryValid) return true
+
+    return false
   }
 
   /**

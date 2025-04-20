@@ -164,33 +164,6 @@ export class FileDriver extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Check if a key exists in the cache
-   */
-  async has(key: string) {
-    key = this.getItemKey(key)
-
-    /**
-     * Check if the file exists
-     */
-    const path = this.#keyToPath(key)
-    const pathExists = await this.#pathExists(path)
-    if (!pathExists) return false
-
-    /**
-     * Check if the file is expired
-     */
-    const content = await readFile(path, { encoding: 'utf-8' })
-    const [, expire] = JSON.parse(content)
-
-    if (expire !== -1 && expire < Date.now()) {
-      await this.delete(key)
-      return false
-    }
-
-    return true
-  }
-
-  /**
    * Remove all items from the cache
    */
   async clear() {

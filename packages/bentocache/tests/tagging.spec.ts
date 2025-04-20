@@ -296,4 +296,17 @@ test.group('Tagging | deleteByTag', () => {
     assert.isUndefined(r1)
     assert.deepEqual(r2, 2)
   })
+
+  test('has shouldnt return true for invalidated tags', async ({ assert }) => {
+    const { cache } = new CacheFactory().withL1L2Config().create()
+
+    await cache.set({ key: 'foo', value: 1, tags: ['x'] })
+
+    const r1 = await cache.has({ key: 'foo' })
+    await cache.deleteByTag({ tags: ['x'] })
+    const r2 = await cache.has({ key: 'foo' })
+
+    assert.isTrue(r1)
+    assert.isFalse(r2)
+  })
 })

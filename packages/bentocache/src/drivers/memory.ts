@@ -78,10 +78,9 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
    * Returns the value if the key exists, undefined otherwise
    */
   pull(key: string) {
-    if (!this.has(key)) return undefined
-
     const value = this.get(key)
     this.delete(key)
+
     return value
   }
 
@@ -99,13 +98,6 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
    */
   getRemainingTtl(key: string) {
     return this.#cache.getRemainingTTL(this.getItemKey(key))
-  }
-
-  /**
-   * Check if a key exists in the cache
-   */
-  has(key: string) {
-    return this.#cache.has(this.getItemKey(key))
   }
 
   /**

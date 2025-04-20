@@ -26,11 +26,6 @@ export interface CacheDriver<Async extends boolean = true> {
   set(key: string, value: string, ttl?: number): PromiseOr<boolean, Async>
 
   /**
-   * Check if a key exists in the cache
-   */
-  has(key: string): PromiseOr<boolean, Async>
-
-  /**
    * Remove all items from the cache
    */
   clear(): PromiseOr<void, Async>

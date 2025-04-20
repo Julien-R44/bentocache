@@ -103,13 +103,6 @@ export class LocalCache {
   }
 
   /**
-   * Check if an item exists in the local cache
-   */
-  has(key: string) {
-    return this.#driver.has(key)
-  }
-
-  /**
    * Clear the local cache
    */
   clear() {
