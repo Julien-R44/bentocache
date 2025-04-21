@@ -1,5 +1,14 @@
 # bentocache
 
+## 1.2.2
+
+### Patch Changes
+
+- c932ac5: Disable TTL Autopurge du driver memoire. It allows to avoid overflow errors when a TTL of +25 days is set. See issue [#61](https://github.com/Julien-R44/bentocache/issues/61) for more information.
+- 0a2b25c: Fix `has` returning `true` on entries previously deleted by tag (see #64). The `has` method now relies on the driver's internal `get` method instead of `has`. This means the driver's `has` implementation is no longer used, and if you maintain a custom driver, you can safely remove it.
+- 6b01e1c: Fix knex driver throwing an error when quickly disconnecting from the database after application start. See https://github.com/adonisjs/cache/issues/12#issuecomment-2791372837
+- 73d25cd: Update clear method to use SCAN instead of KEYS for non-blocking. Also replace `del` commands with `unlink` since this is non blocking.
+
 ## 1.2.1
 
 ### Patch Changes
