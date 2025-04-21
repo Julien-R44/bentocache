@@ -89,7 +89,6 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
    * Returns true if the value was set, false otherwise
    */
   set(key: string, value: string, ttl?: number) {
-    console.log('set', key, value, ttl)
     this.#cache.set(this.getItemKey(key), value, { ttl })
     return true
   }

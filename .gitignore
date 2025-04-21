@@ -25,3 +25,4 @@ yarn-error.log
 dist
 .todo.md
 tmp
+simulator/public/assets

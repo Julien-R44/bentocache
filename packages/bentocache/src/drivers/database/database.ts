@@ -1,3 +1,5 @@
+import { asyncNoop, once } from '@julr/utils/functions'
+
 import { resolveTtl } from '../../helpers.js'
 import { BaseDriver } from '../base_driver.js'
 import type { DatabaseConfig, CacheDriver, DatabaseAdapter } from '../../types/main.js'
@@ -16,9 +18,9 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
   #adapter: DatabaseAdapter
 
   /**
-   * A promise that resolves when the table is created
+   * Initialize by creating the table
    */
-  #initialized: Promise<void>
+  #initializer: () => Promise<any>
 
   /**
    * Pruning interval
@@ -30,16 +32,16 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
     this.#adapter = adapter
 
     if (isNamespace) {
-      this.#initialized = Promise.resolve()
+      this.#initializer = asyncNoop
       return
     }
 
     this.#adapter.setTableName(config.tableName || 'bentocache')
 
     if (config.autoCreateTable !== false) {
-      this.#initialized = this.#adapter.createTableIfNotExists()
+      this.#initializer = once(async () => await this.#adapter.createTableIfNotExists())
     } else {
-      this.#initialized = Promise.resolve()
+      this.#initializer = asyncNoop
     }
 
     if (config.pruneInterval === false) return
@@ -52,7 +54,7 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
    */
   #startPruneInterval(interval: number) {
     this.#pruneInterval = setInterval(async () => {
-      await this.#initialized
+      await this.#initializer()
       await this.#adapter
         .pruneExpiredEntries()
         .catch((err) => console.error('[bentocache] failed to prune expired entries', err))
@@ -83,7 +85,7 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
    * Get a value from the cache
    */
   async get(key: string) {
-    await this.#initialized
+    await this.#initializer()
 
     const result = await this.#adapter.get(this.getItemKey(key))
     if (!result) return
@@ -113,7 +115,7 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
    * Returns true if the value was set, false otherwise
    */
   async set(key: string, value: any, ttl?: number) {
-    await this.#initialized
+    await this.#initializer()
     await this.#adapter.set({
       key: this.getItemKey(key),
       value,
@@ -127,7 +129,7 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
    * Remove all items from the cache
    */
   async clear() {
-    await this.#initialized
+    await this.#initializer()
 
     await this.#adapter.clear(this.prefix)
   }
@@ -137,7 +139,7 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
    * Returns true if the key was deleted, false otherwise
    */
   async delete(key: string) {
-    await this.#initialized
+    await this.#initializer()
     return this.#adapter.delete(this.getItemKey(key))
   }
 
@@ -146,7 +148,7 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
    */
   async deleteMany(keys: string[]) {
     if (keys.length === 0) return true
-    await this.#initialized
+    await this.#initializer()
 
     keys = keys.map((key) => this.getItemKey(key))
     const result = await this.#adapter.deleteMany(keys)
