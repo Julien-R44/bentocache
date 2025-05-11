@@ -105,7 +105,7 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
    */
   async clear() {
     for (const key of this.#cache.keys()) {
-      if (key.startsWith(this.prefix)) {
+      if (key.startsWith(`${this.prefix}:`)) {
         this.#cache.delete(key)
       }
     }

@@ -88,7 +88,7 @@ export class DynamoDbDriver extends BaseDriver implements CacheDriver {
         ProjectionExpression: '#key',
         FilterExpression: 'begins_with(#key, :prefix)',
         ExpressionAttributeNames: { '#key': 'key' },
-        ExpressionAttributeValues: { ':prefix': { S: this.prefix } },
+        ExpressionAttributeValues: { ':prefix': { S: `${this.prefix}:` } },
         ExclusiveStartKey: exclusiveStartKey,
       }),
     )
