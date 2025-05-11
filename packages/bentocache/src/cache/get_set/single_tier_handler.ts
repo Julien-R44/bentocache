@@ -96,17 +96,22 @@ export class SingleTierHandler {
 
   async handle(key: string, factory: Factory, options: CacheEntryOptions) {
     /**
-     * Check in the remote cache first if we have something
+     * If forceFresh is not true, check in the remote cache first
      */
-    let remoteItem = await this.stack.l2?.get(key, options)
-    let isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
-    if (isRemoteItemValid) {
-      return this.#returnRemoteCacheValue(key, remoteItem!, options)
+    let remoteItem: GetCacheValueReturn | undefined
+    let isRemoteItemValid = false
+
+    if (!options.forceFresh) {
+      remoteItem = await this.stack.l2?.get(key, options)
+      isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
+      if (isRemoteItemValid) {
+        return this.#returnRemoteCacheValue(key, remoteItem!, options)
+      }
     }
 
     /**
-     * If nothing is found in the remote cache, we try to acquire a lock
-     * to run the factory
+     * If nothing is found in the remote cache, or if forceFresh is true,
+     * we try to acquire a lock to run the factory
      */
     let releaser: MutexInterface.Releaser
     try {
@@ -116,14 +121,16 @@ export class SingleTierHandler {
     }
 
     /**
-     * Check in the remote cache again, in case another process
+     * If not forceFresh, check in the remote cache again, in case another process
      * already set the value
      */
-    remoteItem = await this.stack.l2?.get(key, options)
-    isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
-    if (isRemoteItemValid) {
-      this.#locks.release(key, releaser)
-      return this.#returnRemoteCacheValue(key, remoteItem!, options)
+    if (!options.forceFresh) {
+      remoteItem = await this.stack.l2?.get(key, options)
+      isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
+      if (isRemoteItemValid) {
+        this.#locks.release(key, releaser)
+        return this.#returnRemoteCacheValue(key, remoteItem!, options)
+      }
     }
 
     try {
@@ -132,7 +139,7 @@ export class SingleTierHandler {
       return result
     } catch (err) {
       /**
-       * If we hitted a soft timeout and we have a graced value, returns it
+       * If we hit a soft timeout and we have a graced value, returns it
        */
       const staleItem = remoteItem
       if (err instanceof errors.E_FACTORY_SOFT_TIMEOUT && staleItem) {
