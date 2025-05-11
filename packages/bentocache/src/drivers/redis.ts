@@ -115,6 +115,7 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
     const COUNT = 1000
     const prefix = this.prefix && `${this.prefix}:`
     const keyPrefix = this.#connection.options.keyPrefix
+
     do {
       const [newCursor, keys] = await this.#connection.scan(
         cursor,
@@ -124,8 +125,7 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
         COUNT,
       )
 
-      if (keys.length)
-        this.#connection.unlink(keys.map((key) => key.slice(keyPrefix.length)));
+      if (keys.length) this.#connection.unlink(keys.map((key) => key.slice(keyPrefix?.length)))
 
       cursor = newCursor
     } while (cursor !== '0')
