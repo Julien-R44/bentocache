@@ -1,5 +1,16 @@
 # bentocache
 
+## 1.3.0
+
+### Minor Changes
+
+- 25073fa: Added a `forceFresh` option to the `getOrSet` method. This option allows you to force the factory to be re-executed and its result to be cached, even if a valid value is already present in the cache. Can be useful for debugging purposes or when you promptly want to have a fresh value.
+
+### Patch Changes
+
+- e0a9094: - Fix Redis driver not respecting the `keyPrefix` option from `ioredis` when using the `clear()` method
+  - Fix namespace conflict where keys containing a namespace name as a substring were incorrectly cleared. For example, a key named `usersAbc` was incorrectly evicted when calling `cache.namespace('users').clear()`. Now, only keys with an exact namespace prefix match (`users:`) will be cleared.
+
 ## 1.2.2
 
 ### Patch Changes
