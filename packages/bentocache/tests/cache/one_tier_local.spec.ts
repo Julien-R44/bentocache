@@ -464,4 +464,66 @@ test.group('One tier tests', () => {
     assert.isDefined(r1?.entry.getCreatedAt())
     assert.deepEqual(r1?.entry.getCreatedAt(), r2?.entry.getCreatedAt())
   })
+
+  test('getOrSet() should execute factory when forceFresh is true', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    // First set a value
+    await cache.set({ key: 'key1', value: 'initial', ttl: '1h' })
+
+    // Then try to get it with forceFresh
+    const value = await cache.getOrSet({
+      key: 'key1',
+      factory: () => 'updated',
+      forceFresh: true,
+    })
+
+    assert.equal(value, 'updated')
+    assert.equal(await cache.get({ key: 'key1' }), 'updated')
+  })
+
+  test('getOrSet() with forceFresh should execute factory even during grace period', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory().withMemoryL1().merge({ grace: '1h' }).create()
+
+    // Set initial value with short TTL
+    await cache.getOrSet({
+      key: 'key1',
+      ttl: '10ms',
+      factory: () => 'initial',
+    })
+
+    // Wait for TTL to expire, now we're in grace period
+    await sleep(20)
+
+    // Get with forceFresh should ignore grace period and execute factory
+    const value = await cache.getOrSet({
+      key: 'key1',
+      factory: () => 'updated',
+      forceFresh: true,
+    })
+
+    assert.equal(value, 'updated')
+    assert.equal(await cache.get({ key: 'key1' }), 'updated')
+  })
+
+  test('getOrSet() with forceFresh should throw if factory throws', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().merge({ grace: '1h' }).create()
+
+    // Set initial value
+    await cache.set({ key: 'key1', value: 'initial' })
+
+    // Get with forceFresh and throwing factory
+    await assert.rejects(() =>
+      cache.getOrSet({
+        key: 'key1',
+        factory: throwingFactory('forced error'),
+        forceFresh: true,
+      }),
+    )
+
+    // Original value should still be intact
+    assert.equal(await cache.get({ key: 'key1' }), 'initial')
+  })
 })

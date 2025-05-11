@@ -24,7 +24,8 @@ export type SetCommonOptions = Pick<
 export type GetOrSetOptions<T> = {
   key: string
   factory: GetSetFactory<T>
-} & SetCommonOptions
+} & SetCommonOptions &
+  Pick<RawCommonOptions, 'forceFresh'>
 
 /**
  * Options accepted by the `getOrSetForever` method

@@ -802,4 +802,106 @@ test.group('Cache', () => {
     assert.deepEqual(r1, 'bar')
     assert.deepEqual(r2, 'bar')
   })
+
+  test('getOrSet() should execute factory even if value exists in L1 when forceFresh is true', async ({
+    assert,
+  }) => {
+    const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
+
+    // Set initial value in L1 and L2
+    await cache.set({ key: 'key1', value: 'initial' })
+
+    // Get with forceFresh should execute factory
+    const value = await cache.getOrSet({
+      key: 'key1',
+      factory: () => 'updated',
+      forceFresh: true,
+    })
+
+    // Both L1 and L2 should be updated
+    const l1Value = local.get('key1', stack.defaultOptions)
+    const l2Value = await remote.get('key1', stack.defaultOptions)
+
+    assert.equal(value, 'updated')
+    assert.equal(l1Value?.entry.getValue(), 'updated')
+    assert.equal(l2Value?.entry.getValue(), 'updated')
+  })
+
+  test('getOrSet() should execute factory even if value exists in L2 when forceFresh is true', async ({
+    assert,
+  }) => {
+    const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
+
+    // Set initial value in L2 only
+    await remote.set('key1', JSON.stringify({ value: 'initial' }), stack.defaultOptions)
+
+    // Get with forceFresh should execute factory
+    const value = await cache.getOrSet({
+      key: 'key1',
+      factory: () => 'updated',
+      forceFresh: true,
+    })
+
+    // Both L1 and L2 should have the updated value
+    const l1Value = local.get('key1', stack.defaultOptions)
+    const l2Value = await remote.get('key1', stack.defaultOptions)
+
+    assert.equal(value, 'updated')
+    assert.equal(l1Value?.entry.getValue(), 'updated')
+    assert.equal(l2Value?.entry.getValue(), 'updated')
+  })
+
+  test('getOrSet() with forceFresh should execute factory even during grace period in L1+L2 setup', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory().withL1L2Config().merge({ grace: '1h' }).create()
+
+    // Set initial value with short TTL
+    await cache.getOrSet({
+      key: 'key1',
+      ttl: '10ms',
+      factory: () => 'initial',
+    })
+
+    // Wait for TTL to expire, now we're in grace period
+    await sleep(20)
+
+    // Get with forceFresh should ignore grace period and execute factory
+    const value = await cache.getOrSet({
+      key: 'key1',
+      factory: () => 'updated',
+      forceFresh: true,
+    })
+
+    assert.equal(value, 'updated')
+    assert.equal(await cache.get({ key: 'key1' }), 'updated')
+  })
+
+  test('getOrSet() with forceFresh should throw if factory throws in L1+L2 setup', async ({
+    assert,
+  }) => {
+    const { cache, local, remote, stack } = new CacheFactory()
+      .withL1L2Config()
+      .merge({ grace: '1h' })
+      .create()
+
+    // Set initial value
+    await cache.set({ key: 'key1', value: 'initial' })
+
+    // Get with forceFresh and throwing factory
+    await assert.rejects(() =>
+      cache.getOrSet({
+        key: 'key1',
+        factory: throwingFactory('forced error'),
+        forceFresh: true,
+      }),
+    )
+
+    // Original value should still be intact in both tiers
+    const l1Value = local.get('key1', stack.defaultOptions)
+    const l2Value = await remote.get('key1', stack.defaultOptions)
+
+    assert.equal(l1Value?.entry.getValue(), 'initial')
+    assert.equal(l2Value?.entry.getValue(), 'initial')
+  })
 })

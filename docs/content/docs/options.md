@@ -103,6 +103,14 @@ Levels: `global`, `store`, `operation`
 
 A duration to define a hard [timeout](./timeouts.md#hard-timeouts).
 
+### `forceFresh`
+Default: `false`
+
+Levels: `operation`
+
+If `true`, the factory will be re-executed and its result will be cached, even if a valid value is already present in the cache.
+However, if ever your factory is throwing an error, and a graced value is present in the cache, the graced value will be returned instead of the factory result.
+
 ### `lockTimeout`
 
 Default: `undefined`

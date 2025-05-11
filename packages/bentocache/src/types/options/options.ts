@@ -9,6 +9,13 @@ import type { CacheSerializer, Duration, Emitter, Logger } from '../main.js'
  */
 export type RawCommonOptions = {
   /**
+   * Forces executing the factory even if a valid value is found in cache.
+   * Can be useful for debugging or when you want to force a refresh
+   * @default false
+   */
+  forceFresh?: boolean
+
+  /**
    * The soft timeout. Once this timeout is reached,
    * the factory will try to return a graced value
    * if available

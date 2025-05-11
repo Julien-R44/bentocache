@@ -117,27 +117,28 @@ export class TwoTierHandler {
 
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'acquired lock')
 
-    /**
-     * We need to check the local cache again, because another process
-     * could have written a value while we were waiting for the lock.
-     */
-    localItem = this.stack.l1?.get(key, options)
-    const isLocalItemValid = await this.stack.isEntryValid(localItem)
-    if (isLocalItemValid) {
-      this.#locks.release(key, releaser)
-      return this.#returnL1Value(key, localItem!)
-    }
+    let remoteItem
+    if (!options.forceFresh) {
+      /**
+       * Check local cache again, as another process could have written a value
+       * while we were waiting for the lock.
+       */
+      localItem = this.stack.l1?.get(key, options)
+      const isLocalItemValid = await this.stack.isEntryValid(localItem)
+      if (isLocalItemValid) {
+        this.#locks.release(key, releaser)
+        return this.#returnL1Value(key, localItem!)
+      }
 
-    /**
-     * If local cache was empty, maybe there is something in the remote
-     * cache. If we find a valid item, we save it in the local cache
-     * and returns it.
-     */
-    const remoteItem = await this.stack.l2?.get(key, options)
-    const isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
-    if (isRemoteItemValid) {
-      this.#locks.release(key, releaser)
-      return this.#returnRemoteCacheValue(key, remoteItem!, options)
+      /**
+       * Check remote cache in case something was written there
+       */
+      remoteItem = await this.stack.l2?.get(key, options)
+      const isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
+      if (isRemoteItemValid) {
+        this.#locks.release(key, releaser)
+        return this.#returnRemoteCacheValue(key, remoteItem!, options)
+      }
     }
 
     try {
@@ -148,7 +149,7 @@ export class TwoTierHandler {
       return result
     } catch (err) {
       /**
-       * If we hitted a soft timeout and we have a graced value, returns it
+       * If we hit a soft timeout and we have a graced value, returns it
        */
       const staleItem = remoteItem ?? localItem
       if (err instanceof errors.E_FACTORY_SOFT_TIMEOUT && staleItem) {
@@ -172,6 +173,8 @@ export class TwoTierHandler {
   }
 
   handle(key: string, factory: Factory, options: CacheEntryOptions) {
+    if (options.forceFresh) return this.#lockAndHandle(key, factory, options)
+
     /**
      * First we check the local cache. If we have a valid item, just
      * returns it without acquiring a lock.

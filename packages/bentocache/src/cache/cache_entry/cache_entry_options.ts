@@ -40,6 +40,7 @@ export function createCacheEntryOptions(
   const timeout = resolveTtl(options.timeout, null)
   const hardTimeout = resolveTtl(options.hardTimeout, null)
   const lockTimeout = resolveTtl(options.lockTimeout, null)
+  const forceFresh = options.forceFresh ?? false
 
   const self = {
     /**
@@ -101,6 +102,11 @@ export function createCacheEntryOptions(
     lockTimeout,
     onFactoryError: options.onFactoryError ?? defaults.onFactoryError,
     suppressL2Errors: options.suppressL2Errors,
+
+    /**
+     * Force fresh option
+     */
+    forceFresh,
 
     /**
      * Returns a new instance of `CacheItemOptions` with the same
