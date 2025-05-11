@@ -192,4 +192,19 @@ export function registerCacheDriverTestSuite(options: {
     assert.deepEqual(r3, 'value2')
     assert.deepEqual(r4, 'value2')
   })
+
+  test('namespace clear() should only clear prefixed keys', async ({ assert }) => {
+    const users = cache.namespace('users')
+
+    await cache.set('usersAbc', 'value1')
+    await users.set('abc', 'value2')
+
+    await users.clear()
+
+    const r1 = await cache.get('usersAbc')
+    const r2 = await users.get('abc')
+
+    assert.deepEqual(r1, 'value1')
+    assert.isUndefined(r2)
+  })
 }

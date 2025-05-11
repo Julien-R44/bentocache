@@ -131,7 +131,7 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
   async clear() {
     await this.#initializer()
 
-    await this.#adapter.clear(this.prefix)
+    await this.#adapter.clear(`${this.prefix}:`)
   }
 
   /**

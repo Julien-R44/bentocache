@@ -113,17 +113,20 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
   async clear() {
     let cursor = '0'
     const COUNT = 1000
+    const prefix = this.prefix && `${this.prefix}:`
+    const connectionKeyPrefix = this.#connection.options.keyPrefix
 
     do {
       const [newCursor, keys] = await this.#connection.scan(
         cursor,
         'MATCH',
-        `${this.prefix}*`,
+        `${connectionKeyPrefix}${prefix}*`,
         'COUNT',
         COUNT,
       )
 
-      if (keys.length) await this.#connection.unlink(keys)
+      if (keys.length)
+        this.#connection.unlink(keys.map((key) => key.slice(connectionKeyPrefix?.length)))
 
       cursor = newCursor
     } while (cursor !== '0')
