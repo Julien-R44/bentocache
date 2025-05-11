@@ -6,9 +6,11 @@
     "dev": "tsx watch src/index.tsx"
   },
   "dependencies": {
+    "@bentocache/plugin-prometheus": "workspace:*",
     "@hono/node-server": "^1.14.1",
     "bentocache": "workspace:*",
     "hono": "^4.7.9",
-    "pino": "^9.6.0"
+    "pino": "^9.6.0",
+    "prom-client": "^15.1.3"
   }
 }

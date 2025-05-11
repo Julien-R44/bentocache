@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { logger } from 'hono/logger'
+import { register } from 'prom-client'
 import { serve } from '@hono/node-server'
 import { setTimeout } from 'node:timers/promises'
 
@@ -78,6 +79,9 @@ app.get('/get-set-post/:id', async (c) => {
 })
 
 app.get('/', (c) => c.text('Hello Hono!'))
+app.get('/metrics', async (c) => {
+  return c.text(await register.metrics(), 200, { 'Content-Type': register.contentType })
+})
 
 const port = 3042
 serve({ fetch: app.fetch, port })

@@ -2,6 +2,7 @@ import { pino } from 'pino'
 import { BentoCache, bentostore } from 'bentocache'
 import { redisDriver } from 'bentocache/drivers/redis'
 import { memoryDriver } from 'bentocache/drivers/memory'
+import { prometheusPlugin } from '@bentocache/plugin-prometheus'
 
 export const bento = new BentoCache({
   default: 'memoryAndRedis',
@@ -12,6 +13,7 @@ export const bento = new BentoCache({
       options: { colorize: true },
     },
   }),
+  plugins: [prometheusPlugin()],
   stores: {
     memory: bentostore().useL1Layer(memoryDriver({})),
 
