@@ -1,6 +1,9 @@
 import type { Knex } from 'knex'
 import type { Kysely } from 'kysely'
+import type { MySql2Database } from 'drizzle-orm/mysql2'
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
+import type { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
 import type { Redis as IoRedis, RedisOptions as IoRedisOptions } from 'ioredis'
 import type { DbResult, DefaultColumnTypes, DefaultSchemaConfig } from 'orchid-orm'
 
@@ -175,4 +178,18 @@ export interface OrchidConfig extends DatabaseConfig {
    * The Orchid ORM instance
    */
   connection: DbResult<DefaultColumnTypes<DefaultSchemaConfig>>
+}
+
+/**
+ * Configuration accepted by the Drizzle ORM adapter
+ */
+export interface DrizzleConfig extends DatabaseConfig {
+  /**
+   * The Drizzle ORM instance
+   */
+  dialect: 'pg' | 'mysql' | 'sqlite'
+  connection:
+    | NodePgDatabase<Record<string, never>>
+    | MySql2Database<any>
+    | BetterSQLite3Database<any>
 }
