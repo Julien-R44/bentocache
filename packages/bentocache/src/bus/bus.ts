@@ -62,7 +62,7 @@ export class Bus {
    * This is where we update the local cache.
    */
   async #onMessage(message: CacheBusMessage) {
-    if (!message.namespace || !this.#localCaches.has(message.namespace)) return
+    if (!this.#localCaches.has(message.namespace)) return
 
     this.#logger.trace({ ...message, channel: this.#channelName }, 'received message from bus')
     this.#emitter.emit('bus:message:received', busEvents.messageReceived(message).data)
