@@ -2,6 +2,7 @@ import { dirname, join } from 'node:path'
 import { Worker } from 'node:worker_threads'
 import { access, mkdir, readFile, writeFile, rm } from 'node:fs/promises'
 
+import { Locks } from '../../cache/locks.js'
 import { resolveTtl } from '../../helpers.js'
 import { BaseDriver } from '../base_driver.js'
 import type { CacheDriver, CreateDriverResult, FileConfig } from '../../types/main.js'
@@ -33,6 +34,7 @@ export class FileDriver extends BaseDriver implements CacheDriver {
    * Worker thread that will clean up the expired files
    */
   #cleanerWorker?: Worker
+  #locks = new Locks()
 
   declare config: FileConfig
 
@@ -51,6 +53,15 @@ export class FileDriver extends BaseDriver implements CacheDriver {
     this.#cleanerWorker = new Worker(new URL('./cleaner_worker.js', import.meta.url), {
       workerData: { directory: this.#directory, pruneInterval: resolveTtl(config.pruneInterval) },
     })
+  }
+
+  /**
+   * A simple mutex to write to the file system to avoid any
+   * compromised data
+   */
+  #runExclusiveKey<T>(key: string, fn: () => Promise<T>) {
+    const lock = this.#locks.getOrCreateForKey(key)
+    return lock.runExclusive(fn)
   }
 
   /**
@@ -121,9 +132,7 @@ export class FileDriver extends BaseDriver implements CacheDriver {
 
     const path = this.#keyToPath(key)
     const pathExists = await this.#pathExists(path)
-    if (!pathExists) {
-      return undefined
-    }
+    if (!pathExists) return undefined
 
     const content = await readFile(path, { encoding: 'utf-8' })
     const [value, expire] = JSON.parse(content)
@@ -154,13 +163,15 @@ export class FileDriver extends BaseDriver implements CacheDriver {
    * Returns true if the value was set, false otherwise
    */
   async set(key: string, value: string, ttl?: number) {
-    key = this.getItemKey(key)
-    await this.#outputFile(
-      this.#keyToPath(key),
-      JSON.stringify([value, ttl ? Date.now() + ttl : -1]),
-    )
+    return this.#runExclusiveKey(key, async () => {
+      key = this.getItemKey(key)
+      await this.#outputFile(
+        this.#keyToPath(key),
+        JSON.stringify([value, ttl ? Date.now() + ttl : -1]),
+      )
 
-    return true
+      return true
+    })
   }
 
   /**
