@@ -62,4 +62,24 @@ test.group('File Driver | Prune', () => {
     assert.isFalse(await fs.exists('foo2'))
     assert.isFalse(await fs.exists('foo3/1'))
   })
+
+  test('should not write compromised data', async ({ cleanup, assert }) => {
+    const driver = new FileDriver({
+      pruneInterval: 500,
+      directory: fileURLToPath(BASE_URL),
+    })
+
+    cleanup(() => driver.disconnect())
+
+    await Promise.all([
+      driver.set('foo', 'bar', 300),
+      driver.set('foo', 'bar', undefined),
+      driver.set('foo', 'dar', undefined),
+      driver.set('foo', 'bar', 300),
+      driver.set('foo', 'bar', 300),
+      driver.set('foo', 'bar', undefined),
+    ])
+
+    await assert.doesNotReject(() => driver.get('foo'))
+  })
 })
