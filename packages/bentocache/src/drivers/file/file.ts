@@ -5,13 +5,21 @@ import { access, mkdir, readFile, writeFile, rm } from 'node:fs/promises'
 import { Locks } from '../../cache/locks.js'
 import { resolveTtl } from '../../helpers.js'
 import { BaseDriver } from '../base_driver.js'
-import type { CacheDriver, CreateDriverResult, FileConfig } from '../../types/main.js'
+import type {
+  CacheDriver,
+  CreateDriverResult,
+  DriverCommonInternalOptions,
+  FileConfig,
+} from '../../types/main.js'
 
 /**
  * Create a new file driver
  */
 export function fileDriver(options: FileConfig): CreateDriverResult<FileDriver> {
-  return { options, factory: (config: FileConfig) => new FileDriver(config) }
+  return {
+    options,
+    factory: (config: FileConfig & DriverCommonInternalOptions) => new FileDriver(config),
+  }
 }
 
 /**
@@ -36,7 +44,7 @@ export class FileDriver extends BaseDriver implements CacheDriver {
   #cleanerWorker?: Worker
   #locks = new Locks()
 
-  declare config: FileConfig
+  declare config: FileConfig & DriverCommonInternalOptions
 
   constructor(config: FileConfig, isNamespace: boolean = false) {
     super(config)
@@ -52,6 +60,15 @@ export class FileDriver extends BaseDriver implements CacheDriver {
 
     this.#cleanerWorker = new Worker(new URL('./cleaner_worker.js', import.meta.url), {
       workerData: { directory: this.#directory, pruneInterval: resolveTtl(config.pruneInterval) },
+    })
+
+    const logger = this.config.logger?.child({ context: 'bentocache.file-driver' })
+    this.#cleanerWorker.on('message', (message) => {
+      if (message.type === 'error') {
+        ;(logger || console).error({ err: message.error }, 'failed to prune expired items')
+      } else if (message.type === 'info') {
+        logger?.info(message.message)
+      }
     })
   }
 

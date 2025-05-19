@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import { fileURLToPath } from 'node:url'
 import { sleep } from '@julr/utils/misc'
+import { testLogger } from '@julr/utils/logger'
 
 import { BASE_URL } from '../helpers/index.js'
 import { FileDriver } from '../../src/drivers/file/file.js'
@@ -61,6 +62,26 @@ test.group('File Driver | Prune', () => {
     assert.isTrue(await fs.exists('foo'))
     assert.isFalse(await fs.exists('foo2'))
     assert.isFalse(await fs.exists('foo3/1'))
+  })
+
+  test('use configured logger', async ({ assert, fs, cleanup }) => {
+    const logger = testLogger()
+    const driver = new FileDriver({
+      pruneInterval: 500,
+      directory: fileURLToPath(BASE_URL),
+      // @ts-ignore
+      logger: logger as any,
+    })
+
+    cleanup(() => driver.disconnect())
+
+    await fs.create('foo', 'invalid content')
+    await Promise.all([driver.set('foo2', 'bar', 300), driver.set('foo3:1', 'bar', 300)])
+    await sleep(1000)
+
+    assert.deepEqual(logger.logs.length, 2)
+    assert.deepEqual(logger.logs[0].level, 'error')
+    assert.deepEqual(logger.logs[0].msg, 'failed to prune expired items')
   })
 
   test('should not write compromised data', async ({ cleanup, assert }) => {

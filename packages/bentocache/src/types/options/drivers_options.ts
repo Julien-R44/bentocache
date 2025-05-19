@@ -4,6 +4,7 @@ import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
 import type { Redis as IoRedis, RedisOptions as IoRedisOptions } from 'ioredis'
 import type { DbResult, DefaultColumnTypes, DefaultSchemaConfig } from 'orchid-orm'
 
+import type { Logger } from '../../logger.js'
 import type { Duration } from '../helpers.js'
 
 /**
@@ -15,6 +16,10 @@ import type { Duration } from '../helpers.js'
  */
 export type DriverCommonOptions = {
   prefix?: string
+}
+
+export type DriverCommonInternalOptions = {
+  logger?: Logger
 }
 
 /**
