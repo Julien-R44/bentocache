@@ -1,8 +1,8 @@
 // @ts-check
 
 import { join } from 'node:path'
-import { workerData } from 'node:worker_threads'
 import { readdir, unlink, readFile } from 'node:fs/promises'
+import { parentPort, workerData } from 'node:worker_threads'
 
 const directory = workerData.directory
 const pruneIntervalInMs = workerData.pruneInterval
@@ -35,7 +35,7 @@ async function prune() {
 
     const filePath = join(dirEntry.path, dirEntry.name)
     await deleteFileIfExpired(filePath).catch((error) => {
-      console.error('[bentocache] file cleaner worker error', error)
+      parentPort?.postMessage({ type: 'error', error })
     })
   }
 }
@@ -43,7 +43,8 @@ async function prune() {
 setInterval(async () => {
   try {
     await prune()
+    parentPort?.postMessage({ type: 'info', message: 'cache cleaned up' })
   } catch (error) {
-    console.error('[bentocache] file cleaner worker error', error)
+    parentPort?.postMessage({ type: 'error', error })
   }
 }, pruneIntervalInMs)
