@@ -33,6 +33,29 @@ test.group('Bus synchronization', () => {
     assert.isUndefined(await cache3.get({ key }))
   }).disableTimeout()
 
+  test('synchronize multiple cache without prefixes', async ({ assert }) => {
+    const key = 'foo'
+
+    const [cache1] = new CacheFactory().withL1L2Config().merge({ prefix: '' }).create()
+    const [cache2] = new CacheFactory().withL1L2Config().merge({ prefix: '' }).create()
+    const [cache3] = new CacheFactory().withL1L2Config().merge({ prefix: '' }).create()
+
+    await cache1.set({ key, value: 24 })
+    await sleep(100)
+
+    assert.equal(await cache1.get({ key }), 24)
+    assert.equal(await cache2.get({ key }), 24)
+    assert.equal(await cache3.get({ key }), 24)
+
+    await cache1.delete({ key })
+
+    await sleep(100)
+
+    assert.isUndefined(await cache1.get({ key }))
+    assert.isUndefined(await cache2.get({ key }))
+    assert.isUndefined(await cache3.get({ key }))
+  }).disableTimeout()
+
   test('synchronize multiple cache with a namespace', async ({ assert }) => {
     const key = 'foo'
 

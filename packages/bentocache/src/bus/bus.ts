@@ -52,9 +52,9 @@ export class Bus {
    * @param namespace The namespace
    * @param cache The LocalCache instance
    */
-  manageCache(namespace: string, cache: LocalCache) {
+  manageCache(namespace: string | undefined, cache: LocalCache) {
     this.#logger.trace({ namespace, channel: this.#channelName }, 'added namespaced cache')
-    this.#localCaches?.set(namespace, cache)
+    this.#localCaches?.set(namespace || '__default__', cache)
   }
 
   /**
@@ -62,6 +62,8 @@ export class Bus {
    * This is where we update the local cache.
    */
   async #onMessage(message: CacheBusMessage) {
+    message.namespace = message.namespace || '__default__'
+
     if (!message.namespace || !this.#localCaches.has(message.namespace)) return
 
     this.#logger.trace({ ...message, channel: this.#channelName }, 'received message from bus')
