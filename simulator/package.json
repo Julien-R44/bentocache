@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@adonisjs/auth": "^9.4.0",
-    "@adonisjs/core": "^6.17.2",
+    "@adonisjs/core": "^6.18.0",
     "@adonisjs/cors": "^2.2.1",
     "@adonisjs/inertia": "^3.1.1",
     "@adonisjs/lucid": "^21.6.1",
@@ -39,7 +39,7 @@
     "@adonisjs/shield": "^8.2.0",
     "@adonisjs/static": "^1.1.1",
     "@adonisjs/vite": "^4.0.0",
-    "@inertiajs/vue3": "^2.0.9",
+    "@inertiajs/vue3": "^2.0.11",
     "@julr/utils": "^1.9.0",
     "@primevue/themes": "^4.3.4",
     "@vinejs/vine": "^3.0.1",
@@ -48,7 +48,7 @@
     "primeicons": "^7.0.0",
     "primevue": "^4.3.4",
     "reflect-metadata": "^0.2.2",
-    "vue": "^3.5.13"
+    "vue": "^3.5.14"
   },
   "devDependencies": {
     "@adonisjs/assembler": "^7.8.2",
@@ -58,13 +58,13 @@
     "@japa/plugin-adonisjs": "^4.0.0",
     "@japa/runner": "^4.2.0",
     "@swc/core": "1.10.16",
-    "@types/node": "^22.15.17",
-    "@unocss/reset": "^66.1.1",
+    "@types/node": "^22.15.19",
+    "@unocss/reset": "^66.1.2",
     "@vitejs/plugin-vue": "^5.2.4",
     "hot-hook": "^0.4.0",
     "pino-pretty": "^13.0.0",
     "ts-node-maintained": "^10.9.5",
-    "unocss": "^66.1.1",
+    "unocss": "^66.1.2",
     "vite": "^6.3.5"
   },
   "hotHook": {

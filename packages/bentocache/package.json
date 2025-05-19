@@ -80,9 +80,9 @@
     "p-timeout": "^6.1.4"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.806.0",
+    "@aws-sdk/client-dynamodb": "^3.812.0",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/pg": "^8.15.1",
+    "@types/pg": "^8.15.2",
     "better-sqlite3": "^11.10.0",
     "dayjs": "^1.11.13",
     "emittery": "^1.1.0",
@@ -92,8 +92,8 @@
     "mysql2": "^3.14.1",
     "orchid-orm": "1.40.2",
     "p-event": "^6.0.1",
-    "pg": "^8.15.6",
-    "pino": "^9.6.0",
+    "pg": "^8.16.0",
+    "pino": "^9.7.0",
     "pino-loki": "^2.5.0",
     "sqlite3": "^5.1.7",
     "superjson": "^2.2.2"
