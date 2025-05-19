@@ -1,5 +1,21 @@
 # bentocache
 
+## 1.4.0
+
+### Minor Changes
+
+- 2c5e4e7: Cleaner Worker Thread logs for the file driver now use the configured logger for better integration with structured logging system
+
+  See [#74](https://github.com/Julien-R44/bentocache/issues/74)
+
+### Patch Changes
+
+- 5941f90: Fix race condition with file driver writing corrupted data to disk   
+
+  See [#74](https://github.com/Julien-R44/bentocache/issues/74)
+
+- 5009b58: Fix bus synchronization issue when prefix is empty
+
 ## 1.3.0
 
 ### Minor Changes
