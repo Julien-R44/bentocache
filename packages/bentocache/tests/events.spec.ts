@@ -30,7 +30,13 @@ test.group('Cache events', () => {
     cache.get({ key: 'key' })
 
     const event = await eventPromise
-    assert.deepEqual(event, { key: 'key', value: 'value', store: 'primary', graced: false })
+    assert.deepEqual(event, {
+      key: 'key',
+      value: 'value',
+      store: 'primary',
+      graced: false,
+      layer: 'l1',
+    })
   })
 
   test('emit cache:written event when calling set()', async ({ assert }) => {
@@ -82,7 +88,13 @@ test.group('Cache events', () => {
     const [deletedEvent, hitEvent] = await promises
 
     assert.deepEqual(deletedEvent, { key: 'key', store: 'primary' })
-    assert.deepEqual(hitEvent, { key: 'key', value: 'value', store: 'primary', graced: false })
+    assert.deepEqual(hitEvent, {
+      key: 'key',
+      value: 'value',
+      store: 'primary',
+      graced: false,
+      layer: 'l1',
+    })
   })
 
   test('clear() emit cache:cleared event', async ({ assert }) => {
@@ -129,7 +141,13 @@ test.group('Cache events', () => {
     await cache.set({ key: 'foo', value: 'bar' })
     cache.getOrSet({ key: 'foo', factory: () => 'baz' })
 
-    assert.deepEqual(await event, { key: 'foo', value: 'bar', store: 'primary', graced: false })
+    assert.deepEqual(await event, {
+      key: 'foo',
+      value: 'bar',
+      store: 'primary',
+      graced: false,
+      layer: 'l1',
+    })
   })
 
   test('getOrSet emit cache:written and cache:miss when value is not found', async ({ assert }) => {

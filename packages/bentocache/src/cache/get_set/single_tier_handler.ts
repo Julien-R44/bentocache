@@ -42,7 +42,7 @@ export class SingleTierHandler {
   ) {
     this.logger.logL2Hit({ cacheName: this.stack.name, key, options })
 
-    this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name))
+    this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, 'l2'))
     return item.entry.getValue()
   }
 
@@ -64,7 +64,7 @@ export class SingleTierHandler {
     err: Error,
   ) {
     if (options.isGraceEnabled() && item) {
-      this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, item.isGraced))
+      this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, 'l2', item.isGraced))
       return item.entry.getValue()
     }
 
@@ -90,7 +90,7 @@ export class SingleTierHandler {
     }
 
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'returns stale value')
-    this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, true))
+    this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, 'l2', true))
     return item.entry.getValue()
   }
 
