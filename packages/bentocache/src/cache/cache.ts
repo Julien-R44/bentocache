@@ -78,13 +78,13 @@ export class Cache implements CacheProvider {
 
     if (remoteItem && options.isGraceEnabled()) {
       this.#stack.l1?.set(key, remoteItem.entry.serialize(), options)
-      this.#stack.emit(cacheEvents.hit(key, remoteItem.entry.serialize(), this.name, true))
+      this.#stack.emit(cacheEvents.hit(key, remoteItem.entry.serialize(), this.name, 'l2', true))
       this.#options.logger.logL2Hit({ cacheName: this.name, key, options, graced: true })
       return remoteItem.entry.getValue()
     }
 
     if (localItem && options.isGraceEnabled()) {
-      this.#stack.emit(cacheEvents.hit(key, localItem.entry.serialize(), this.name, true))
+      this.#stack.emit(cacheEvents.hit(key, localItem.entry.serialize(), this.name, 'l2', true))
       this.#options.logger.logL1Hit({ cacheName: this.name, key, options, graced: true })
       return localItem.entry.getValue()
     }

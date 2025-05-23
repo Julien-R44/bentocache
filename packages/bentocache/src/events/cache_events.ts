@@ -11,10 +11,10 @@ export const cacheEvents = {
       data: { key, store },
     }
   },
-  hit(key: string, value: any, store: string, graced: boolean = false) {
+  hit(key: string, value: any, store: string, layer: 'l1' | 'l2' = 'l1', graced: boolean = false) {
     return {
       name: 'cache:hit' as const,
-      data: { key, value, store, graced },
+      data: { key, value, store, layer, graced },
     }
   },
   miss(key: string, store: string) {

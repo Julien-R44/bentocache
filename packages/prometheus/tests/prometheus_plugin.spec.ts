@@ -43,7 +43,10 @@ test.group('Prometheus Plugin', () => {
     const writes = await registry.getSingleMetric('bentocache_writes')?.get()
     const deletes = await registry.getSingleMetric('bentocache_deletes')?.get()
 
-    assert.deepEqual(hits?.values.at(0), { value: 1, labels: { store: 'memory', key: 'foo' } })
+    assert.deepEqual(hits?.values.at(0), {
+      value: 1,
+      labels: { store: 'memory', key: 'foo', layer: 'l1' },
+    })
     assert.deepEqual(misses?.values.at(0), { value: 1, labels: { store: 'memory', key: 'foo' } })
     assert.deepEqual(writes?.values.at(0), { value: 1, labels: { store: 'memory', key: 'foo' } })
     assert.deepEqual(deletes?.values.at(0), { value: 1, labels: { store: 'memory', key: 'foo' } })
@@ -72,7 +75,7 @@ test.group('Prometheus Plugin', () => {
     assert.isUndefined(misses?.values.at(0))
     assert.deepEqual(gracedHits?.values.at(0), {
       value: 1,
-      labels: { store: 'memory', key: 'foo' },
+      labels: { store: 'memory', key: 'foo', layer: 'l1' },
     })
   })
 
@@ -103,7 +106,7 @@ test.group('Prometheus Plugin', () => {
 
     assert.deepEqual(hits?.values.at(0), {
       value: 2,
-      labels: { store: 'memory', key: 'posts:*' },
+      labels: { store: 'memory', key: 'posts:*', layer: 'l1' },
     })
 
     assert.deepEqual(writes?.values.at(0), {

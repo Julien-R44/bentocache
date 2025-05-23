@@ -36,7 +36,7 @@ export class TwoTierHandler {
    * Returns a value from the local cache and emit a CacheHit event
    */
   #returnL1Value(key: string, item: GetCacheValueReturn) {
-    this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, item.isGraced))
+    this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, 'l1', item.isGraced))
     return item.entry.getValue()
   }
 
@@ -50,7 +50,7 @@ export class TwoTierHandler {
   ) {
     this.stack.l1?.set(key, item.entry.serialize(), options)
 
-    this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name))
+    this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, 'l2'))
     return item.entry.getValue()
   }
 
@@ -78,6 +78,7 @@ export class TwoTierHandler {
   async #applyFallbackAndReturnGracedValue(
     key: string,
     item: GetCacheValueReturn,
+    layer: 'l1' | 'l2',
     options: CacheEntryOptions,
   ) {
     if (options.grace && options.graceBackoff) {
@@ -90,7 +91,7 @@ export class TwoTierHandler {
     }
 
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'returns stale value')
-    this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, true))
+    this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, layer, true))
     return item.entry.getValue()
   }
 
@@ -164,7 +165,12 @@ export class TwoTierHandler {
 
       if (staleItem && options.isGraceEnabled()) {
         this.#locks.release(key, releaser)
-        return this.#applyFallbackAndReturnGracedValue(key, staleItem, options)
+        return this.#applyFallbackAndReturnGracedValue(
+          key,
+          staleItem,
+          staleItem === localItem ? 'l1' : 'l2',
+          options,
+        )
       }
 
       this.#locks.release(key, releaser)

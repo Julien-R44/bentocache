@@ -36,14 +36,14 @@ export class PrometheusPlugin implements BentoCachePlugin {
     this.#metrics.cacheGracedHits = new promClient.Counter({
       name: this.#buildMetricName('graced_hits'),
       help: 'Number of cache graced hits',
-      labelNames: ['store', 'key'],
+      labelNames: ['store', 'key', 'layer'],
       registers: [registry],
     })
 
     this.#metrics.cacheHits = new promClient.Counter({
       name: this.#buildMetricName('hits'),
       help: 'Number of cache hits',
-      labelNames: ['store', 'key'],
+      labelNames: ['store', 'key', 'layer'],
       registers: [registry],
     })
 
@@ -114,9 +114,9 @@ export class PrometheusPlugin implements BentoCachePlugin {
       const key = this.#getKeyLabel(event.key)
 
       if (event.graced) {
-        this.#metrics.cacheGracedHits.inc({ store: event.store, key })
+        this.#metrics.cacheGracedHits.inc({ store: event.store, layer: event.layer, key })
       } else {
-        this.#metrics.cacheHits.inc({ store: event.store, key })
+        this.#metrics.cacheHits.inc({ store: event.store, layer: event.layer, key })
       }
     })
 
