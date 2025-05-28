@@ -5,7 +5,7 @@ summary: Associate tags with your cache keys to easily invalidat a bunch of keys
 # Tags
 
 :::warning
-Tags are available since v1.2.0 and still **experimental**. 
+Tags are available since v1.2.0 and still **experimental**.
 
 We will **not** make breaking changes without a major version, but no guarantees are made about the stability of this feature yet.
 
@@ -30,7 +30,7 @@ await bento.set({ key: 'foo', tags: ['tag-1'] });
 To invalidate all entries linked to a tag:
 
 ```ts
-await bento.deleteByTags({ tags: ['tag-1'] });
+await bento.deleteByTag({ tags: ['tag-1'] });
 ```
 
 Now, imagine that the tags depend on the cached value itself. In that case, you can use [adaptive caching](./adaptive_caching.md) to update tags dynamically based on the computed value.
@@ -107,7 +107,7 @@ Note that we also store the creation date of the entry as `createdAt`.
 Now, we invalidate the `tag-1` tag:
 
 ```ts
-await bento.deleteByTags({ tags: ['tag-1'] });
+await bento.deleteByTag({ tags: ['tag-1'] });
 ```
 
 Instead of scanning and deleting every entry associated with `tag-1`, Bentocache simply stores the invalidation timestamp under a special cache key:
@@ -120,11 +120,11 @@ So, we store the invalidation timestamp of the tag under the key `__bentocache:t
 
 Now, when fetching an entry, Bentocache checks if it was created before the tag was invalidated. If it was, Bentocache considers the entry stale and ignores it.
 
-In fact, the implementation is a bit more complex than that, but that's the general idea. 
+In fact, the implementation is a bit more complex than that, but that's the general idea.
 
 ## Limitations
 
-The main limitation of this system is that you should avoid using too many tags on a single entry. The more tags you use per entry, the more invalidation timestamps Bentocache needs to store and especially check when fetching an entry. This can increase lookup times and impact performance. 
+The main limitation of this system is that you should avoid using too many tags on a single entry. The more tags you use per entry, the more invalidation timestamps Bentocache needs to store and especially check when fetching an entry. This can increase lookup times and impact performance.
 
 In fact, the same issue exists in other systems like Loki, OpenTelemetry, TimescaleDB etc.. where it's known as the "high cardinality" problem. To maintain optimal performance, it's recommended to **keep the number of tags per entry reasonable**.
 
