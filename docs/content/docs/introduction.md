@@ -22,7 +22,7 @@ Bentocache is a robust multi-tier caching library for Node.js applications
 - 📝 Easy Prometheus integration and ready-to-use Grafana dashboard
 - 🧩 Easily extendable with your own driver
 
-## Why Bentocache ? 
+## Why Bentocache ?
 
 There are already caching libraries for Node: [`keyv`](https://keyv.org/), [`cache-manager`](https://github.com/node-cache-manager/node-cache-manager#readme), or [`unstorage`](https://unstorage.unjs.io/). However, I think that we could rather consider these libraries as bridges that allow different stores to be used via a unified API, rather than true caching solutions as such.
 
@@ -36,7 +36,7 @@ Bentocache is a caching solution aimed at combining performance and flexibility.
 
 ### One-level
 
-The one-level mode is a standard caching method. Choose from a variety of drivers such as **Redis**, **In-Memory**, **Filesystem**, **DynamoDB**, and more, and you're ready to go. 
+The one-level mode is a standard caching method. Choose from a variety of drivers such as **Redis**, **In-Memory**, **Filesystem**, **DynamoDB**, and more, and you're ready to go.
 
 In addition to this, you benefit from many features that allow you to efficiently manage your cache, such as **cache stampede protection**, **grace periods**, **timeouts**, **namespaces**, etc.
 
@@ -55,7 +55,7 @@ All of this is managed invisibly for you via Bentocache. The only thing to do is
 
 The major benefit of multi-tier caching is that it allows for responses between 2,000x and 5,000x faster. While Redis is fast, accessing RAM is REALLY MUCH faster.
 
-In fact, it's a quite common pattern : to quote an example, it's [what Stackoverflow does](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/#layers-of-cache-at-stack-overflow). 
+In fact, it's a quite common pattern : to quote an example, it's [what Stackoverflow does](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/#layers-of-cache-at-stack-overflow).
 
 
 To give some perspective, here's a simple benchmark that shows the difference between a simple distributed cache ( using Redis ) vs a multi-tier cache ( using Redis + In-memory cache ) :
@@ -99,7 +99,7 @@ Only a Redis driver for the bus is currently available. We probably have drivers
 
 - [Retry queue](./multi_tier.md#retry-queue-strategy) : When an application fails to publish something to the bus, it is added to a queue and retried later.
 
-### Timeouts 
+### Timeouts
 
 If your factory is taking too long to execute, you can just return a little bit of stale data while keeping the factory running in the background. Next time the entry is requested, it will be already computed and served immediately.
 
@@ -114,7 +114,7 @@ await bento.getOrSet({
   tags: ['tag-1', 'tag-2']
 });
 
-await bento.deleteByTags({ tags: ['tag-1'] });
+await bento.deleteByTag({ tags: ['tag-1'] });
 ```
 
 ### Namespaces
@@ -127,7 +127,7 @@ const users = bento.namespace('users')
 users.set({ key: '32', value: { name: 'foo' } })
 users.set({ key: '33', value: { name: 'bar' } })
 
-users.clear() 
+users.clear()
 ```
 
 ### Events
@@ -154,7 +154,7 @@ bento.getOrSet({
 })
 ```
 
-In this case, when only 20% or less of the TTL remains and the entry is requested : 
+In this case, when only 20% or less of the TTL remains and the entry is requested :
 
 - It will return the cached value to the user.
 - Start a background refresh by calling the factory.
