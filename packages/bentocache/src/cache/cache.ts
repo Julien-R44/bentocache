@@ -17,7 +17,7 @@ import type {
   DeleteManyOptions,
   GetOrSetForeverOptions,
   ExpireOptions,
-  DeleteByTagOptions,
+  ExpireByTagOptions,
 } from '../types/main.js'
 
 export class Cache implements CacheProvider {
@@ -205,11 +205,11 @@ export class Cache implements CacheProvider {
   /**
    * Invalidate all keys with the given tags
    */
-  async deleteByTag(rawOptions: DeleteByTagOptions): Promise<boolean> {
+  async expireByTag(rawOptions: ExpireByTagOptions): Promise<boolean> {
     const tags = rawOptions.tags
     const options = this.#stack.defaultOptions.cloneWith(rawOptions)
 
-    this.#options.logger.logMethod({ method: 'deleteByTag', cacheName: this.name, tags, options })
+    this.#options.logger.logMethod({ method: 'expireByTag', cacheName: this.name, tags, options })
 
     return await this.#stack.createTagInvalidations(tags)
   }

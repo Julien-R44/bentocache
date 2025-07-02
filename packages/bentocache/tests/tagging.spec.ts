@@ -5,9 +5,9 @@ import { CacheFactory } from '../factories/cache_factory.js'
 import { createCacheEntryOptions } from '../src/cache/cache_entry/cache_entry_options.js'
 
 test.group('Tagging | Internals', () => {
-  test('deleteByTag should store invalidated tags with timestamps', async ({ assert }) => {
+  test('expireByTag should store invalidated tags with timestamps', async ({ assert }) => {
     const { cache } = new CacheFactory().withL1L2Config().create()
-    await cache.deleteByTag({ tags: ['tag1', 'tag2'] })
+    await cache.expireByTag({ tags: ['tag1', 'tag2'] })
     const r1 = await cache.get({ key: '___bc:t:tag1' })
     const r2 = await cache.get({ key: '___bc:t:tag1' })
 
@@ -28,12 +28,12 @@ test.group('Tagging | Internals', () => {
   })
 })
 
-test.group('Tagging | deleteByTag', () => {
+test.group('Tagging | expireByTag', () => {
   test('basic', async ({ assert }) => {
     const { cache } = new CacheFactory().withL1L2Config().create()
 
     await cache.set({ key: 'key1', value: 'value1', tags: ['tag1'] })
-    await cache.deleteByTag({ tags: ['tag1'] })
+    await cache.expireByTag({ tags: ['tag1'] })
 
     const r1 = await cache.get({ key: 'key1' })
     assert.deepEqual(r1, undefined)
@@ -60,7 +60,7 @@ test.group('Tagging | deleteByTag', () => {
     assert.deepEqual(r2, 2)
     assert.deepEqual(r3, 3)
 
-    await cache.deleteByTag({ tags: ['x'] })
+    await cache.expireByTag({ tags: ['x'] })
 
     const r4 = await cache.get({ key: 'foo' })
     const r5 = await cache.getOrSet({ key: 'bar', factory: () => 222, tags: ['y', 'z'] })
@@ -70,7 +70,7 @@ test.group('Tagging | deleteByTag', () => {
     assert.deepEqual(r5, 2)
     assert.deepEqual(r6, 333)
 
-    await cache.deleteByTag({ tags: ['y'] })
+    await cache.expireByTag({ tags: ['y'] })
 
     const r7 = await cache.getOrSet({ key: 'foo', factory: () => 1111, tags: ['x', 'y'] })
     const r8 = await cache.getOrSet({ key: 'bar', factory: () => 2222, tags: ['y', 'z'] })
@@ -96,7 +96,7 @@ test.group('Tagging | deleteByTag', () => {
     assert.deepEqual(bar1, 2)
     assert.deepEqual(baz1, 3)
 
-    await cache.deleteByTag({ tags: ['x', 'z'] })
+    await cache.expireByTag({ tags: ['x', 'z'] })
 
     const foo2 = await cache.get({ key: 'foo' })
     const bar2 = await cache.get({ key: 'bar' })
@@ -106,7 +106,7 @@ test.group('Tagging | deleteByTag', () => {
     assert.deepEqual(bar2, 2)
     assert.isUndefined(baz2)
 
-    await cache.deleteByTag({ tags: [] })
+    await cache.expireByTag({ tags: [] })
 
     const foo4 = await cache.get({ key: 'foo' })
     const bar4 = await cache.get({ key: 'bar' })
@@ -116,7 +116,7 @@ test.group('Tagging | deleteByTag', () => {
     assert.deepEqual(bar4, 2)
     assert.isUndefined(baz4)
 
-    await cache.deleteByTag({ tags: ['y', 'non-existing'] })
+    await cache.expireByTag({ tags: ['y', 'non-existing'] })
 
     const foo5 = await cache.get({ key: 'foo' })
     const bar5 = await cache.get({ key: 'bar' })
@@ -144,7 +144,7 @@ test.group('Tagging | deleteByTag', () => {
     assert.deepEqual(bar1, 2)
     assert.deepEqual(baz1, 3)
 
-    await cache1.deleteByTag({ tags: ['x'] })
+    await cache1.expireByTag({ tags: ['x'] })
 
     const foo2 = await cache1.get({ key: 'foo' })
     const bar2 = await cache2.getOrSet({ key: 'bar', factory: () => 222, tags: ['y', 'z'] })
@@ -154,7 +154,7 @@ test.group('Tagging | deleteByTag', () => {
     assert.deepEqual(bar2, 2)
     assert.deepEqual(baz2, 333)
 
-    await cache2.deleteByTag({ tags: ['y'] })
+    await cache2.expireByTag({ tags: ['y'] })
 
     const foo3 = await cache1.getOrSet({ key: 'foo', factory: () => 1111, tags: ['x', 'y'] })
     const bar3 = await cache2.getOrSet({ key: 'bar', factory: () => 2222, tags: ['y', 'z'] })
@@ -198,7 +198,7 @@ test.group('Tagging | deleteByTag', () => {
     assert.deepEqual(cache3bar1, 2)
     assert.deepEqual(cache3baz1, 3)
 
-    await cache1.deleteByTag({ tags: ['x', 'z'] })
+    await cache1.expireByTag({ tags: ['x', 'z'] })
 
     const cache2foo2 = await cache2.get({ key: 'foo' })
     const cache2bar2 = await cache2.get({ key: 'bar' })
@@ -216,7 +216,7 @@ test.group('Tagging | deleteByTag', () => {
     assert.deepEqual(cache3bar2, 2)
     assert.isUndefined(cache3baz2)
 
-    await cache3.deleteByTag({ tags: ['y', 'non-existing'] })
+    await cache3.expireByTag({ tags: ['y', 'non-existing'] })
 
     const cache1foo3 = await cache1.get({ key: 'foo' })
     const cache1bar3 = await cache1.get({ key: 'bar' })
@@ -253,7 +253,7 @@ test.group('Tagging | deleteByTag', () => {
     await cache1.set({ key: 'bar', value: 2, tags: ['x'] })
     await posts.set({ key: 'baz', value: 3, tags: ['x'] })
 
-    await posts.deleteByTag({ tags: ['x'] })
+    await posts.expireByTag({ tags: ['x'] })
 
     const userFoo1 = await users.get({ key: 'foo' })
     const postFoo1 = await posts.get({ key: 'baz' })
@@ -263,7 +263,7 @@ test.group('Tagging | deleteByTag', () => {
     assert.isUndefined(postFoo1)
     assert.deepEqual(cacheFoo1, 2)
 
-    await cache1.deleteByTag({ tags: ['x'] })
+    await cache1.expireByTag({ tags: ['x'] })
 
     const usersFoo2 = await users.get({ key: 'foo' })
     const postsFoo2 = await posts.get({ key: 'baz' })
@@ -273,7 +273,7 @@ test.group('Tagging | deleteByTag', () => {
     assert.isUndefined(postsFoo2)
     assert.isUndefined(cacheFoo2)
 
-    await users.deleteByTag({ tags: ['x'] })
+    await users.expireByTag({ tags: ['x'] })
 
     const usersFoo3 = await users.get({ key: 'foo' })
     const postsFoo3 = await posts.get({ key: 'baz' })
@@ -288,7 +288,7 @@ test.group('Tagging | deleteByTag', () => {
     const [cache] = new CacheFactory().withMemoryL1().create()
 
     await cache.set({ key: 'foo', value: 1, tags: ['x'] })
-    await cache.deleteByTag({ tags: ['x', 'foo'] })
+    await cache.expireByTag({ tags: ['x', 'foo'] })
     await sleep(10)
     await cache.set({ key: 'bar', value: 2, tags: ['x'] })
 
@@ -305,7 +305,7 @@ test.group('Tagging | deleteByTag', () => {
     await cache.set({ key: 'foo', value: 1, tags: ['x'] })
 
     const r1 = await cache.has({ key: 'foo' })
-    await cache.deleteByTag({ tags: ['x'] })
+    await cache.expireByTag({ tags: ['x'] })
     const r2 = await cache.has({ key: 'foo' })
 
     assert.isTrue(r1)
