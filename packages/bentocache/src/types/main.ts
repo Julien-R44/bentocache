@@ -77,7 +77,7 @@ export type {
   DeleteManyOptions,
   DeleteOptions,
   ExpireByTagOptions,
-  DeleteByTagsOptions,
+  DeleteByTagOptions,
   ExpireOptions,
   GetOptions,
   GetOrSetForeverOptions,

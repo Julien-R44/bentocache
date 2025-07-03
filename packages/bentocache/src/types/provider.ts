@@ -8,7 +8,7 @@ import type {
   HasOptions,
   SetOptions,
   ExpireByTagOptions,
-  DeleteByTagsOptions,
+  DeleteByTagOptions,
 } from './main.js'
 
 /**
@@ -79,7 +79,7 @@ export interface CacheProvider {
   /**
    * Delete all keys with specific tags
    */
-  deleteByTags(options: DeleteByTagsOptions): Promise<boolean>
+  deleteByTag(options: DeleteByTagOptions): Promise<boolean>
 
   /**
    * Expire a key from the cache.

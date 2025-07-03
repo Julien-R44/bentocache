@@ -18,7 +18,7 @@ import type {
   GetOrSetForeverOptions,
   ExpireOptions,
   ExpireByTagOptions,
-  DeleteByTagsOptions,
+  DeleteByTagOptions,
 } from '../types/main.js'
 
 export class Cache implements CacheProvider {
@@ -218,11 +218,11 @@ export class Cache implements CacheProvider {
   /**
    * Delete all keys with specific tags (lazy deletion)
    */
-  async deleteByTags(rawOptions: DeleteByTagsOptions): Promise<boolean> {
+  async deleteByTag(rawOptions: DeleteByTagOptions): Promise<boolean> {
     const tags = rawOptions.tags
     const options = this.#stack.defaultOptions.cloneWith(rawOptions)
 
-    this.#options.logger.logMethod({ method: 'deleteByTags', cacheName: this.name, tags, options })
+    this.#options.logger.logMethod({ method: 'deleteByTag', cacheName: this.name, tags, options })
 
     const result = await this.#stack.createTagDeletionTimestamps(tags)
     if (result) {
