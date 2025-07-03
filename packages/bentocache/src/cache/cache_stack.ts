@@ -178,8 +178,9 @@ export class CacheStack extends BaseDriver {
    * Valid means :
    * - Logically not expired ( not graced )
    * - Not invalidated by a tag
+   * - Not marked for hard deletion by a tag
    */
-  isEntryValid(item: GetCacheValueReturn | undefined): Promise<boolean> | boolean {
+  isEntryValid(item: GetCacheValueReturn | undefined): boolean | Promise<boolean> {
     if (!item) return false
 
     const isGraced = item?.isGraced === true
@@ -187,9 +188,30 @@ export class CacheStack extends BaseDriver {
 
     if (item.entry.getTags().length === 0) return true
 
-    return this.#tagSystem.isTagInvalidated(item.entry).then((isTagInvalidated) => {
+    // If we have tags, we need to check both hard deletion and soft invalidation
+    // Run both checks in parallel for better performance
+    return Promise.all([
+      this.#tagSystem.isTagHardDeleted(item.entry),
+      this.#tagSystem.isTagInvalidated(item.entry),
+    ]).then(async ([isHardDeleted, isTagInvalidated]) => {
+      if (isHardDeleted) {
+        // Immediately delete from all layers and return false
+        await this.#deleteFromAllLayers(item.entry.getKey())
+        return false
+      }
+
       return !isTagInvalidated
     })
+  }
+
+  /**
+   * Helper method to delete a key from all cache layers
+   */
+  async #deleteFromAllLayers(key: string) {
+    this.l1?.delete(key)
+    await this.l2?.delete(key, this.defaultOptions)
+    await this.publish({ type: CacheBusMessageType.Delete, keys: [key] })
+    this.emit(cacheEvents.deleted(key, this.name))
   }
 
   /**
@@ -197,5 +219,22 @@ export class CacheStack extends BaseDriver {
    */
   async createTagInvalidations(tags: string[]) {
     return this.#tagSystem.createTagInvalidations(tags)
+  }
+
+  /**
+   * Create hard deletion marks for a list of tags
+   */
+  async createTagDeletionTimestamps(tags: string[]) {
+    const result = await this.#tagSystem.createTagDeletionTimestamps(tags)
+
+    // Also notify other instances via bus that these tags have been marked for deletion
+    if (this.bus) {
+      await this.publish({
+        type: 'cache:tags:deletion-marked' as any,
+        keys: tags.map((tag) => this.#tagSystem.getDeletionTagCacheKey(tag)),
+      })
+    }
+
+    return result
   }
 }

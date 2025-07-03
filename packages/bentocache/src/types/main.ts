@@ -71,3 +71,17 @@ export interface BentoCachePlugin {
  * Dialect available for the SQL driver
  */
 export type DialectName = 'pg' | 'mysql2' | 'better-sqlite3' | 'sqlite3'
+
+export type {
+  ClearOptions,
+  DeleteManyOptions,
+  DeleteOptions,
+  ExpireByTagOptions,
+  DeleteByTagsOptions,
+  ExpireOptions,
+  GetOptions,
+  GetOrSetForeverOptions,
+  GetOrSetOptions,
+  HasOptions,
+  SetOptions,
+} from './options/methods_options.js'

@@ -17,6 +17,7 @@ import type {
   DeleteManyOptions,
   ExpireOptions,
   ExpireByTagOptions,
+  DeleteByTagsOptions,
 } from './types/main.js'
 
 export class BentoCache<KnownCaches extends Record<string, BentoStore>> implements CacheProvider {
@@ -223,6 +224,13 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    */
   async expireByTag(options: ExpireByTagOptions): Promise<boolean> {
     return this.use().expireByTag(options)
+  }
+
+  /**
+   * Delete all keys with specific tags (lazy deletion)
+   */
+  async deleteByTags(options: DeleteByTagsOptions): Promise<boolean> {
+    return this.use().deleteByTags(options)
   }
 
   /**

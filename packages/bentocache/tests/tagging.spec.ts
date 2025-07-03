@@ -312,3 +312,195 @@ test.group('Tagging | expireByTag', () => {
     assert.isFalse(r2)
   })
 })
+
+test.group('Tagging | deleteByTags', () => {
+  test('basic deleteByTags should mark entries for deletion', async ({ assert }) => {
+    const { cache } = new CacheFactory().withL1L2Config().create()
+
+    await cache.set({ key: 'key1', value: 'value1', tags: ['tag1'] })
+    await cache.deleteByTags({ tags: ['tag1'] })
+
+    const r1 = await cache.get({ key: 'key1' })
+    assert.deepEqual(r1, undefined)
+  })
+
+  test('deleteByTags should store deletion timestamps', async ({ assert }) => {
+    const now = Date.now()
+
+    await sleep(10)
+
+    const { cache } = new CacheFactory().withL1L2Config().create()
+    await cache.deleteByTags({ tags: ['tag1', 'tag2'] })
+
+    const r1 = await cache.get({ key: '___bc:d:tag1' })
+    const r2 = await cache.get({ key: '___bc:d:tag2' })
+
+    assert.isNotNull(r1)
+    assert.isNotNull(r2)
+    assert.isTrue(r1 > now)
+    assert.isTrue(r2 > now)
+  })
+
+  test('deleteByTags should delete entries with matching tags', async ({ assert }) => {
+    const { cache } = new CacheFactory().withL1L2Config().create()
+
+    await cache.set({ key: 'foo', value: 1, tags: ['x', 'y'] })
+    await cache.set({ key: 'bar', value: 2, tags: ['y', 'z'] })
+    await cache.set({ key: 'baz', value: 3, tags: ['z'] })
+
+    await cache.deleteByTags({ tags: ['x'] })
+
+    const r1 = await cache.get({ key: 'foo' })
+    const r2 = await cache.get({ key: 'bar' })
+    const r3 = await cache.get({ key: 'baz' })
+
+    assert.isUndefined(r1) // has tag 'x', should be deleted
+    assert.deepEqual(r2, 2) // doesn't have tag 'x', should remain
+    assert.deepEqual(r3, 3) // doesn't have tag 'x', should remain
+  })
+
+  test('deleteByTags should delete entries with multiple matching tags', async ({ assert }) => {
+    const { cache } = new CacheFactory().withL1L2Config().create()
+
+    await cache.set({ key: 'foo', value: 1, tags: ['x', 'y'] })
+    await cache.set({ key: 'bar', value: 2, tags: ['y'] })
+    await cache.set({ key: 'baz', value: 3, tags: ['z'] })
+
+    await cache.deleteByTags({ tags: ['x', 'z'] })
+
+    const r1 = await cache.get({ key: 'foo' })
+    const r2 = await cache.get({ key: 'bar' })
+    const r3 = await cache.get({ key: 'baz' })
+
+    assert.isUndefined(r1) // has tag 'x', should be deleted
+    assert.deepEqual(r2, 2) // doesn't have tags 'x' or 'z', should remain
+    assert.isUndefined(r3) // has tag 'z', should be deleted
+  })
+
+  test('deleteByTags should work with getOrSet', async ({ assert }) => {
+    const { cache } = new CacheFactory().withL1L2Config().create()
+
+    await cache.set({ key: 'foo', value: 1, tags: ['x'] })
+    await cache.deleteByTags({ tags: ['x'] })
+
+    const r1 = await cache.getOrSet({
+      key: 'foo',
+      factory: () => 'new-value',
+      tags: ['x'],
+    })
+
+    assert.deepEqual(r1, 'new-value')
+  })
+
+  test('deleteByTags should work with has method', async ({ assert }) => {
+    const { cache } = new CacheFactory().withL1L2Config().create()
+
+    await cache.set({ key: 'foo', value: 1, tags: ['x'] })
+
+    const r1 = await cache.has({ key: 'foo' })
+    await cache.deleteByTags({ tags: ['x'] })
+    const r2 = await cache.has({ key: 'foo' })
+
+    assert.isTrue(r1)
+    assert.isFalse(r2)
+  })
+
+  test('entries created after deleteByTags should not be deleted', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    await cache.set({ key: 'foo', value: 1, tags: ['x'] })
+    await cache.deleteByTags({ tags: ['x'] })
+    await sleep(10)
+    await cache.set({ key: 'bar', value: 2, tags: ['x'] })
+
+    const r1 = await cache.get({ key: 'foo' })
+    const r2 = await cache.get({ key: 'bar' })
+
+    assert.isUndefined(r1)
+    assert.deepEqual(r2, 2)
+  })
+
+  test('deleteByTags should work with bus notifications', async ({ assert }) => {
+    const [cache1] = new CacheFactory().withL1L2Config().create()
+    const [cache2] = new CacheFactory().withL1L2Config().create()
+    const [cache3] = new CacheFactory().withL1L2Config().create()
+
+    await cache1.set({ key: 'foo', value: 1, tags: ['x', 'y'] })
+    await cache2.set({ key: 'bar', value: 2, tags: ['y', 'z'] })
+    await cache3.set({ key: 'baz', value: 3, tags: ['x', 'z'] })
+
+    // Delete from cache1 should affect all caches
+    await cache1.deleteByTags({ tags: ['x'] })
+
+    const r1 = await cache1.get({ key: 'foo' })
+    const r2 = await cache2.get({ key: 'bar' })
+    const r3 = await cache3.get({ key: 'baz' })
+
+    assert.isUndefined(r1) // cache1: 'foo' has tag 'x', should be deleted
+    assert.deepEqual(r2, 2) // cache2: 'bar' doesn't have tag 'x', should remain
+    assert.isUndefined(r3) // cache3: 'baz' has tag 'x', should be deleted
+  })
+
+  test('deleteByTags should work with namespaces', async ({ assert }) => {
+    const [cache1] = new CacheFactory().withL1L2Config().create()
+
+    const users = cache1.namespace('users')
+    const posts = cache1.namespace('posts')
+
+    await users.set({ key: 'foo', value: 1, tags: ['x'] })
+    await cache1.set({ key: 'bar', value: 2, tags: ['x'] })
+    await posts.set({ key: 'baz', value: 3, tags: ['x'] })
+
+    // Delete from posts namespace should only affect posts
+    await posts.deleteByTags({ tags: ['x'] })
+
+    const userFoo = await users.get({ key: 'foo' })
+    const cacheFoo = await cache1.get({ key: 'bar' })
+    const postFoo = await posts.get({ key: 'baz' })
+
+    assert.deepEqual(userFoo, 1) // users namespace unaffected
+    assert.deepEqual(cacheFoo, 2) // main cache unaffected
+    assert.isUndefined(postFoo) // posts namespace affected
+  })
+
+  test('deleteByTags should handle empty tags array', async ({ assert }) => {
+    const { cache } = new CacheFactory().withL1L2Config().create()
+
+    await cache.set({ key: 'foo', value: 1, tags: ['x'] })
+
+    const result = await cache.deleteByTags({ tags: [] })
+    const r1 = await cache.get({ key: 'foo' })
+
+    assert.isTrue(result)
+    assert.deepEqual(r1, 1) // should remain unaffected
+  })
+
+  test('deleteByTags should handle non-existing tags', async ({ assert }) => {
+    const { cache } = new CacheFactory().withL1L2Config().create()
+
+    await cache.set({ key: 'foo', value: 1, tags: ['x'] })
+
+    const result = await cache.deleteByTags({ tags: ['non-existing'] })
+    const r1 = await cache.get({ key: 'foo' })
+
+    assert.isTrue(result)
+    assert.deepEqual(r1, 1) // should remain unaffected
+  })
+
+  test('deleteByTags should delete from all cache layers', async ({ assert }) => {
+    const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
+
+    await cache.set({ key: 'foo', value: 1, tags: ['x'] })
+    await cache.deleteByTags({ tags: ['x'] })
+
+    // Trigger deletion by accessing the key
+    await cache.get({ key: 'foo' })
+
+    // Check that it's deleted from both layers
+    const r1 = local.get('foo', stack.defaultOptions)
+    const r2 = await remote.get('foo', stack.defaultOptions)
+
+    assert.isUndefined(r1)
+    assert.isUndefined(r2)
+  })
+})
