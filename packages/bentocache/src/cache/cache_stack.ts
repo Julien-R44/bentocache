@@ -180,7 +180,7 @@ export class CacheStack extends BaseDriver {
    * - Not invalidated by a tag
    * - Not marked for hard deletion by a tag
    */
-  isEntryValid(item: GetCacheValueReturn | undefined): boolean | Promise<boolean> {
+  isEntryValid(item: GetCacheValueReturn | undefined): Promise<boolean> | boolean {
     if (!item) return false
 
     const isGraced = item?.isGraced === true

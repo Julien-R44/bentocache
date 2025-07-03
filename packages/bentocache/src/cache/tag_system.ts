@@ -10,14 +10,10 @@ export class TagSystem {
   #kDeletionTagPrefix = '___bc:d:'
 
   #expireOptions = createCacheEntryOptions({})
+
   #getSetTagOptions = createCacheEntryOptions({
     ttl: '10d',
     grace: '10d',
-  })
-
-  #getSetDeletionTagOptions = createCacheEntryOptions({
-    ttl: '30d',
-    grace: '30d',
   })
 
   constructor(private stack: CacheStack) {}
@@ -102,7 +98,7 @@ export class TagSystem {
       const tagDeletionTimestamp = await this.#getSetHandler.handle(
         this.getDeletionTagCacheKey(tag),
         this.#getTagFactory,
-        this.#getSetDeletionTagOptions.cloneWith({}),
+        this.#getSetTagOptions.cloneWith({}),
       )
 
       // If a deletion timestamp exists and the entry was created before or at it, it's hard deleted
@@ -140,7 +136,7 @@ export class TagSystem {
 
     for (const tag of new Set(tags)) {
       const key = this.getDeletionTagCacheKey(tag)
-      await this.stack.set(key, now, this.#getSetDeletionTagOptions)
+      await this.stack.set(key, now, this.#getSetTagOptions)
     }
 
     return true
