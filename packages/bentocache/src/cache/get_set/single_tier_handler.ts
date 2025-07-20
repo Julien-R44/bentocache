@@ -103,7 +103,7 @@ export class SingleTierHandler {
 
     if (!options.forceFresh) {
       remoteItem = await this.stack.l2?.get(key, options)
-      isRemoteItemValid = await this.stack.isEntryValid(remoteItem, options)
+      isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
       if (isRemoteItemValid) {
         return this.#returnRemoteCacheValue(key, remoteItem!, options)
       }
@@ -126,7 +126,7 @@ export class SingleTierHandler {
      */
     if (!options.forceFresh) {
       remoteItem = await this.stack.l2?.get(key, options)
-      isRemoteItemValid = await this.stack.isEntryValid(remoteItem, options)
+      isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
       if (isRemoteItemValid) {
         this.#locks.release(key, releaser)
         return this.#returnRemoteCacheValue(key, remoteItem!, options)

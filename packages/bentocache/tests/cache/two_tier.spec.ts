@@ -904,39 +904,4 @@ test.group('Cache', () => {
     assert.equal(l1Value?.entry.getValue(), 'initial')
     assert.equal(l2Value?.entry.getValue(), 'initial')
   })
-
-  test('getOrSet() should recalculate value when tags change in L1+L2 setup', async ({
-    assert,
-  }) => {
-    const { cache } = new CacheFactory().withL1L2Config().create()
-
-    let factoryCallCount = 0
-    const factory = () => {
-      factoryCallCount++
-      return `value-${factoryCallCount}`
-    }
-
-    // First call with specific tags
-    const result1 = await cache.getOrSet({
-      key: 'test-key',
-      factory,
-      tags: ['tag1', 'tag2'],
-      ttl: '5m',
-    })
-
-    assert.equal(result1, 'value-1')
-    assert.equal(factoryCallCount, 1)
-
-    // Second call with same key but different tags
-    // This should trigger the factory again because tags have changed
-    const result2 = await cache.getOrSet({
-      key: 'test-key',
-      factory,
-      tags: ['tag1', 'tag3'],
-      ttl: '5m',
-    })
-
-    assert.equal(result2, 'value-2')
-    assert.equal(factoryCallCount, 2)
-  })
 })
