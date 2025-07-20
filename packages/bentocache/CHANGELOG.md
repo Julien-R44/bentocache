@@ -1,5 +1,11 @@
 # bentocache
 
+## 1.5.0
+
+### Minor Changes
+
+- eb29853: Add `prune()` method for cache drivers without native TTL support as an alternative to `pruneInterval` strategy
+
 ## 1.4.0
 
 ### Minor Changes
@@ -10,7 +16,7 @@
 
 ### Patch Changes
 
-- 5941f90: Fix race condition with file driver writing corrupted data to disk   
+- 5941f90: Fix race condition with file driver writing corrupted data to disk
 
   See [#74](https://github.com/Julien-R44/bentocache/issues/74)
 
