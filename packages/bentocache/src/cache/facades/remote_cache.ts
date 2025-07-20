@@ -155,6 +155,13 @@ export class RemoteCache {
   }
 
   /**
+   * Manually prune expired cache entries
+   */
+  prune(): Promise<void> {
+    return this.#driver.prune?.() ?? Promise.resolve()
+  }
+
+  /**
    * Disconnect from the remote cache
    */
   disconnect() {

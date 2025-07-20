@@ -103,4 +103,32 @@ test.group('File Driver | Prune', () => {
 
     await assert.doesNotReject(() => driver.get('foo'))
   })
+
+  test('prune manually using prune() method', async ({ assert, fs, cleanup }) => {
+    const driver = new FileDriver({
+      directory: fileURLToPath(BASE_URL),
+    })
+
+    cleanup(() => driver.disconnect())
+
+    await Promise.all([
+      driver.set('foo', 'bar', 300),
+      driver.set('foo2', 'bar', 300),
+      driver.set('foo3:1', 'bar', 300),
+      driver.set('foo4', 'bar', undefined),
+    ])
+
+    assert.isTrue(await fs.exists('foo'))
+    assert.isTrue(await fs.exists('foo2'))
+    assert.isTrue(await fs.exists('foo3/1'))
+    assert.isTrue(await fs.exists('foo4'))
+
+    await sleep(1000)
+    await driver.prune()
+
+    assert.isFalse(await fs.exists('foo'))
+    assert.isFalse(await fs.exists('foo2'))
+    assert.isFalse(await fs.exists('foo3/1'))
+    assert.isTrue(await fs.exists('foo4'))
+  })
 })
