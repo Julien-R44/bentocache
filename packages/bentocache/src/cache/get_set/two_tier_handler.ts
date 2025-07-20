@@ -125,7 +125,7 @@ export class TwoTierHandler {
        * while we were waiting for the lock.
        */
       localItem = this.stack.l1?.get(key, options)
-      const isLocalItemValid = await this.stack.isEntryValid(localItem)
+      const isLocalItemValid = await this.stack.isEntryValid(localItem, options)
       if (isLocalItemValid) {
         this.#locks.release(key, releaser)
         return this.#returnL1Value(key, localItem!)
@@ -135,7 +135,7 @@ export class TwoTierHandler {
        * Check remote cache in case something was written there
        */
       remoteItem = await this.stack.l2?.get(key, options)
-      const isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
+      const isRemoteItemValid = await this.stack.isEntryValid(remoteItem, options)
       if (isRemoteItemValid) {
         this.#locks.release(key, releaser)
         return this.#returnRemoteCacheValue(key, remoteItem!, options)
@@ -186,7 +186,7 @@ export class TwoTierHandler {
      * returns it without acquiring a lock.
      */
     const localItem = this.stack.l1?.get(key, options)
-    const isLocalItemValid = this.stack.isEntryValid(localItem)
+    const isLocalItemValid = this.stack.isEntryValid(localItem, options)
 
     // A bit nasty, but to keep maximum performance, we avoid async/await here.
     // Let's check for a better way to handle this later.
