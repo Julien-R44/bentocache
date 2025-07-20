@@ -174,22 +174,38 @@ export class CacheStack extends BaseDriver {
   }
 
   /**
+   * Compare two arrays of tags to check if they are identical
+   *
+   * See https://github.com/Julien-R44/bentocache/issues/83 for more details
+   * about why we need to compare tags.
+   */
+  #areTagsMatching(cachedTags: string[], newTags: string[] = []): boolean {
+    if (cachedTags.length !== newTags?.length) return false
+
+    return cachedTags.every((tag) => newTags.includes(tag))
+  }
+
+  /**
    * Check if an item is valid.
    * Valid means :
    * - Logically not expired ( not graced )
    * - Not invalidated by a tag
+   * - Tags match with current options (if provided)
    */
-  isEntryValid(item: GetCacheValueReturn | undefined): Promise<boolean> | boolean {
-    if (!item) return false
+  isEntryValid(
+    item: GetCacheValueReturn | undefined,
+    options?: { tags?: string[] },
+  ): Promise<boolean> | boolean {
+    if (!item || item.isGraced) return false
 
-    const isGraced = item?.isGraced === true
-    if (isGraced) return false
+    const cachedTags = item.entry.getTags()
 
-    if (item.entry.getTags().length === 0) return true
+    if (!this.#areTagsMatching(cachedTags, options?.tags)) return false
+    if (!cachedTags.length) return true
 
-    return this.#tagSystem.isTagInvalidated(item.entry).then((isTagInvalidated) => {
-      return !isTagInvalidated
-    })
+    return this.#tagSystem
+      .isTagInvalidated(item.entry)
+      .then((isTagInvalidated) => !isTagInvalidated)
   }
 
   /**
