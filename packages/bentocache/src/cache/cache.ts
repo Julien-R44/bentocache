@@ -268,6 +268,16 @@ export class Cache implements CacheProvider {
   }
 
   /**
+   * Manually prune expired cache entries
+   *
+   * For drivers with native TTL support, this is typically a noop
+   * For drivers without native TTL (PostgreSQL, File), this will remove expired entries
+   */
+  prune(): Promise<void> {
+    return this.#stack.l2?.prune() ?? Promise.resolve()
+  }
+
+  /**
    * Closes the connection to the cache
    */
   async disconnect() {

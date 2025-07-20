@@ -46,6 +46,14 @@ export interface CacheDriver<Async extends boolean = true> {
    * Some drivers may not need this
    */
   disconnect(): PromiseOr<void, Async>
+
+  /**
+   * Manually prune expired cache entries
+   *
+   * For drivers with native TTL support, this is typically a noop
+   * For drivers without native TTL (PostgreSQL, File), this will remove expired entries
+   */
+  prune?(): PromiseOr<void, Async>
 }
 
 /**

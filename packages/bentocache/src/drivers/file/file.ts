@@ -234,4 +234,19 @@ export class FileDriver extends BaseDriver implements CacheDriver {
   async disconnect() {
     await this.#cleanerWorker?.terminate()
   }
+
+  /**
+   * Manually prune expired cache entries by scanning the cache directory
+   * and removing files that have expired.
+   */
+  async prune() {
+    const cacheExists = await this.#pathExists(this.#directory)
+    if (!cacheExists) return
+
+    const { pruneExpiredFiles } = await import('./cleaner.js')
+    await pruneExpiredFiles({
+      directory: this.#directory,
+      onError: (err) => this.config.logger?.error(err),
+    })
+  }
 }

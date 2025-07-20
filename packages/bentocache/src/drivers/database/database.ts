@@ -166,4 +166,12 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
 
     await this.#adapter.disconnect()
   }
+
+  /**
+   * Manually prune expired cache entries.
+   */
+  async prune() {
+    await this.#initializer()
+    await this.#adapter.pruneExpiredEntries()
+  }
 }
