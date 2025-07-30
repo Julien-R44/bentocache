@@ -124,9 +124,21 @@ In fact, the implementation is a bit more complex than that, but that's the gene
 
 ## Limitations
 
+### High cardinality
+
 The main limitation of this system is that you should avoid using too many tags on a single entry. The more tags you use per entry, the more invalidation timestamps Bentocache needs to store and especially check when fetching an entry. This can increase lookup times and impact performance.
 
 In fact, the same issue exists in other systems like Loki, OpenTelemetry, TimescaleDB etc.. where it's known as the "high cardinality" problem. To maintain optimal performance, it's recommended to **keep the number of tags per entry reasonable**.
+
+### Cache doesn't invalidate when tags change
+
+When you modify tags in your code, and then re-deploy, existing cached entries won't be automatically invalidated.
+
+**Example scenario**: You cache an entry with the tag `settings` and a 1 hour TTL. After 30 minutes, you add a `permissions` tag to the same entry in your code and redeploy. If you then try to invalidate all entries with the `permissions` tag, **it won't work**, the cached entry still only has the old `settings` tag.
+
+This constitutes a **breaking change in your own application**. You must manually invalidate the cache when modifying tags in that kind of scenario.
+
+See [this issue](https://github.com/Julien-R44/bentocache/issues/83) for more details.
 
 ## Acknowledgements
 
