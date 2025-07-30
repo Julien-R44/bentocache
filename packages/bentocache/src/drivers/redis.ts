@@ -1,6 +1,6 @@
-import { Redis as IoRedis } from 'ioredis'
 import type { RedisOptions as IoRedisOptions } from 'ioredis'
 import { RedisTransport } from '@boringnode/bus/transports/redis'
+import { Redis as IoRedis, Cluster as IoRedisCluster } from 'ioredis'
 import type { RedisTransportConfig } from '@boringnode/bus/types/main'
 
 import { BaseDriver } from './base_driver.js'
@@ -43,13 +43,13 @@ export function redisBusDriver(
  */
 export class RedisDriver extends BaseDriver implements L2CacheDriver {
   type = 'l2' as const
-  #connection: IoRedis
+  #connection: IoRedis | IoRedisCluster
   declare config: RedisConfig
 
   constructor(config: RedisConfig) {
     super(config)
 
-    if (config.connection instanceof IoRedis) {
+    if (config.connection instanceof IoRedis || config.connection instanceof IoRedisCluster) {
       this.#connection = config.connection
       return
     }

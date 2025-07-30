@@ -4,6 +4,20 @@ services:
     ports:
       - '6379:6379'
 
+  redis-cluster:
+    profiles:
+      - cluster
+    image: grokzen/redis-cluster:7.0.8
+    environment:
+      - IP=0.0.0.0
+      - INITIAL_PORT=7000
+      - MASTERS=3
+      - SLAVES_PER_MASTER=0
+    ports:
+      - '7000:7000'
+      - '7001:7001'
+      - '7002:7002'
+
   redis-insight:
     image: redis/redisinsight:latest
     ports:
