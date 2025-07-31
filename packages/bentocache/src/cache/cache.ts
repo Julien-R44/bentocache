@@ -17,6 +17,7 @@ import type {
   DeleteManyOptions,
   GetOrSetForeverOptions,
   ExpireOptions,
+  ExpireByTagOptions,
   DeleteByTagOptions,
 } from '../types/main.js'
 
@@ -205,13 +206,30 @@ export class Cache implements CacheProvider {
   /**
    * Invalidate all keys with the given tags
    */
+  async expireByTag(rawOptions: ExpireByTagOptions): Promise<boolean> {
+    const tags = rawOptions.tags
+    const options = this.#stack.defaultOptions.cloneWith(rawOptions)
+
+    this.#options.logger.logMethod({ method: 'expireByTag', cacheName: this.name, tags, options })
+
+    return await this.#stack.createTagInvalidations(tags)
+  }
+
+  /**
+   * Delete all keys with specific tags (lazy deletion)
+   */
   async deleteByTag(rawOptions: DeleteByTagOptions): Promise<boolean> {
     const tags = rawOptions.tags
     const options = this.#stack.defaultOptions.cloneWith(rawOptions)
 
     this.#options.logger.logMethod({ method: 'deleteByTag', cacheName: this.name, tags, options })
 
-    return await this.#stack.createTagInvalidations(tags)
+    const result = await this.#stack.createTagDeletionTimestamps(tags)
+    if (result) {
+      // Emit a 'deleted' event, reflecting the intent even if deletion is lazy
+      this.#stack.emit(cacheEvents.deleted('tags:' + tags.join(','), this.name))
+    }
+    return result
   }
 
   /**
