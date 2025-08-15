@@ -188,19 +188,15 @@ export class CacheStack extends BaseDriver {
 
     if (item.entry.getTags().length === 0) return true
 
-    // If we have tags, we need to check both hard deletion and soft invalidation
-    // Run both checks in parallel for better performance
-    return Promise.all([
-      this.#tagSystem.isTagHardDeleted(item.entry),
-      this.#tagSystem.isTagInvalidated(item.entry),
-    ]).then(async ([isHardDeleted, isTagInvalidated]) => {
-      if (isHardDeleted) {
+    // If we have tags, check for both hard deletion and soft invalidation in a single call
+    return this.#tagSystem.checkTagValidation(item.entry).then(async (result) => {
+      if (result.isHardDeleted) {
         // Immediately delete from all layers and return false
         await this.#deleteFromAllLayers(item.entry.getKey())
         return false
       }
 
-      return !isTagInvalidated
+      return !result.isTagInvalidated
     })
   }
 
@@ -231,7 +227,7 @@ export class CacheStack extends BaseDriver {
     if (this.bus) {
       await this.publish({
         type: 'cache:tags:deletion-marked' as any,
-        keys: tags.map((tag) => this.#tagSystem.getDeletionTagCacheKey(tag)),
+        keys: tags.map((tag) => this.#tagSystem.getTagCacheKey(tag)),
       })
     }
 
