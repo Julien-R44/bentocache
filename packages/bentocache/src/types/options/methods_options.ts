@@ -55,6 +55,11 @@ export type DeleteOptions = { key: string } & Pick<RawCommonOptions, 'suppressL2
 export type DeleteManyOptions = { keys: string[] } & Pick<RawCommonOptions, 'suppressL2Errors'>
 
 /**
+ * Options accepted by the `getMany` method
+ */
+export type GetManyOptions<T = any> = { keys: string[]; defaultValue?: Factory<T> } & Pick<RawCommonOptions, 'grace' | 'graceBackoff' | 'suppressL2Errors'>;
+
+/**
  * Options accepted by the `deleteByTag` method
  */
 export type DeleteByTagOptions = { tags: string[] } & Pick<RawCommonOptions, 'suppressL2Errors'>

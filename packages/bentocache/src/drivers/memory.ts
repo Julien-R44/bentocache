@@ -94,6 +94,14 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
   }
 
   /**
+   * Get multiple values from the cache
+   */
+  getMany(keys: string[]) {
+    if (keys.length === 0) return []
+    return keys.map((key) => this.get(key))
+  }
+
+  /**
    * Returns the remaining ttl of a key
    */
   getRemainingTtl(key: string) {

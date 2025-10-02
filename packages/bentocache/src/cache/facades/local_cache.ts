@@ -75,6 +75,14 @@ export class LocalCache {
   }
 
   /**
+   * Batch get many items from the local cache
+   */
+  getMany(keys: string[], options: CacheEntryOptions) {
+    this.#logger.debug({ keys, opId: options.id }, 'batch getting items from l1 cache')
+    return keys.map((key) => this.get(key, options))
+  }
+
+  /**
    * Delete many item from the local cache
    */
   deleteMany(keys: string[], options: CacheEntryOptions) {

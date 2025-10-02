@@ -114,6 +114,37 @@ export class RemoteCache {
   }
 
   /**
+   * Batch get many items from the remote cache
+   */
+  async getMany(keys: string[], options: CacheEntryOptions) {
+    return await this.#tryCacheOperation('getMany', options, [], async () => {
+      this.#logger.debug({ keys, opId: options.id }, 'batch getting items from l2 cache')
+      if (typeof this.#driver.getMany === 'function') {
+        const values = await this.#driver.getMany(keys)
+        return values.map((value, i) => {
+          if (value === undefined) return undefined
+          return {
+            entry: CacheEntry.fromDriver(keys[i], value, this.#options.serializer),
+            isGraced: false,
+          }
+        })
+      }
+      // fallback: parallel single gets
+      const results = await Promise.all(
+        keys.map(async (key) => {
+          const value = await this.#driver.get(key)
+          if (value === undefined) return undefined
+          return {
+            entry: CacheEntry.fromDriver(key, value, this.#options.serializer),
+            isGraced: false,
+          }
+        }),
+      )
+      return results
+    })
+  }
+
+  /**
    * Delete multiple items from the remote cache
    */
   async deleteMany(keys: string[], options: CacheEntryOptions) {

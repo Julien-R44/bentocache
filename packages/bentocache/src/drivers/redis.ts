@@ -73,6 +73,16 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
   }
 
   /**
+   * Get multiple values from the cache
+   */
+  async getMany(keys: string[]) {
+    if (keys.length === 0) return []
+    const prefixedKeys = keys.map((key) => this.getItemKey(key))
+    const values = await this.#connection.mget(prefixedKeys)
+    return values.map((value) => value ?? undefined)
+  }
+
+  /**
    * Get a value from the cache
    */
   async get(key: string) {

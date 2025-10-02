@@ -18,9 +18,84 @@ import type {
   GetOrSetForeverOptions,
   ExpireOptions,
   DeleteByTagOptions,
+  GetManyOptions,
 } from '../types/main.js'
 
 export class Cache implements CacheProvider {
+  /**
+   * Batch get many values from the cache, minimizing roundtrips to L2 if possible
+   * Returns an array of values (or undefined for missing keys) in the same order as the input keys
+   */
+  async getMany<T = any>(rawOptions: GetManyOptions<T>): Promise<(T | undefined | null)[]> {
+    const keys = rawOptions.keys
+    const options = this.#stack.defaultOptions.cloneWith(rawOptions)
+    this.#options.logger.logMethod({ method: 'getMany', key: keys, cacheName: this.name, options })
+
+    // Try L1 batch get if available
+    let l1Results: (any | undefined)[] | undefined
+    if (this.#stack.l1 && typeof this.#stack.l1.getMany === 'function') {
+      l1Results = await this.#stack.l1.getMany(keys, options)
+    } else if (this.#stack.l1) {
+      l1Results = await Promise.all(keys.map((key) => this.#stack.l1!.get(key, options)))
+    }
+
+    // Check which keys are valid in L1
+    const validL1: (any | undefined)[] = []
+    const missingKeys: string[] = []
+    const missingIndexes: number[] = []
+    if (l1Results) {
+      for (const [i, key] of keys.entries()) {
+        const entry = l1Results[i] // use index for results
+        const isValid = await this.#stack.isEntryValid(entry)
+
+        if (isValid) {
+          validL1[i] = entry!.entry.getValue() // correct index in result array
+        } else {
+          validL1[i] = undefined
+          missingKeys.push(key) // remember the string key
+          missingIndexes.push(i) // remember its index
+        }
+      }
+    } else {
+      // No L1, all keys missing
+      for (const [i, key] of keys.entries()) {
+        validL1[i] = undefined
+        missingKeys.push(key)
+        missingIndexes.push(i)
+      }
+    }
+
+    // If everything was found in L1, return
+    if (missingKeys.length === 0) {
+      return validL1
+    }
+
+    // Try L2 batch get if available, for missing keys
+    let l2Results: (any | undefined)[] = []
+    if (this.#stack.l2 && typeof this.#stack.l2.getMany === 'function') {
+      l2Results = await this.#stack.l2.getMany(missingKeys, options)
+    } else if (this.#stack.l2) {
+      l2Results = await Promise.all(missingKeys.map((key) => this.#stack.l2!.get(key, options)))
+    }
+
+    for (const [i, key] of missingKeys.entries()) {
+      const idx = missingIndexes[i]
+      const entry = l2Results[i]
+      const isValid = await this.#stack.isEntryValid(entry)
+
+      if (isValid) {
+        // Optionally populate L1 for hot keys
+        this.#stack.l1?.set(key, entry!.entry.serialize(), options)
+        validL1[idx] = entry!.entry.getValue()
+      } else {
+        // Use defaultValue if provided
+        validL1[idx] = this.#resolveDefaultValue(rawOptions.defaultValue)
+      }
+    }
+
+    return validL1
+  }
+
   /**
    * The name of the cache
    */

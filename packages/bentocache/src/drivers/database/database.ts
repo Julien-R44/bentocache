@@ -82,6 +82,47 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
   }
 
   /**
+   * Get multiple values from the cache
+   */
+  async getMany(keys: string[]) {
+    if (keys.length === 0) return []
+
+    await this.#initializer()
+    const prefixedKeys = keys.map((key) => this.getItemKey(key))
+
+    let results: { key: string; value: any; expiresAt: number | null }[] = []
+
+    if (typeof this.#adapter.getMany === 'function') {
+      results = await this.#adapter.getMany(prefixedKeys)
+    } else {
+      const singleResults = await Promise.all(
+        prefixedKeys.map(async (k) => {
+          const r = await this.#adapter.get(k)
+          if (!r) return undefined
+          return { key: k, value: r.value, expiresAt: r.expiresAt }
+        }),
+      )
+      results = singleResults.filter(
+        (r): r is { key: string; value: any; expiresAt: number | null } => !!r,
+      )
+    }
+
+    const resultsMap = new Map(results.map((r) => [r.key, r]))
+
+    return prefixedKeys.map((prefixedKey) => {
+      const result = resultsMap.get(prefixedKey)
+      if (!result) return undefined
+
+      if (this.#isExpired(result.expiresAt)) {
+        this.#adapter.delete(prefixedKey).catch(() => {})
+        return undefined
+      }
+
+      return result.value
+    })
+  }
+
+  /**
    * Get a value from the cache
    */
   async get(key: string) {

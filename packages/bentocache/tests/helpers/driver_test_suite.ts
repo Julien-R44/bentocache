@@ -42,6 +42,14 @@ export function registerCacheDriverTestSuite(options: {
     assert.deepEqual(await cache.get('key'), 'value')
   })
 
+  test('getMany() should return values for multiple keys in order', async ({ assert }) => {
+    await cache.set('key1', 'value1')
+    await cache.set('key2', 'value2')
+
+    const results = await cache.getMany(['key1', 'key2'])
+    assert.deepEqual(results, ['value1', 'value2'])
+  })
+
   test('set() store a value', async ({ assert }) => {
     await cache.set('key', 'value')
     assert.deepEqual(await cache.get('key'), 'value')

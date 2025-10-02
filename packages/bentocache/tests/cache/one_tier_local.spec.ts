@@ -186,6 +186,21 @@ test.group('One tier tests', () => {
     assert.isFalse(await cache.has({ key: 'key2' }))
   })
 
+  test('getMany should return values for multiple keys in order', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    await cache.set({ key: 'key1', value: 'value1' })
+    await cache.set({ key: 'key2', value: 'value2' })
+    // key3 is missing
+
+    const results = await cache.getMany({ keys: ['key1', 'key2', 'key3'] })
+    assert.deepEqual(results, ['value1', 'value2', undefined])
+
+    // With defaultValue fallback
+    const resultsWithDefault = await cache.getMany({ keys: ['key1', 'key3'], defaultValue: 'def' })
+    assert.deepEqual(resultsWithDefault, ['value1', 'def'])
+  })
+
   test('deleteMany should delete multiple keys', async ({ assert }) => {
     const { cache } = new CacheFactory().withMemoryL1().merge({ grace: '500ms' }).create()
 

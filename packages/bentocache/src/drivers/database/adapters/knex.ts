@@ -44,6 +44,23 @@ export class KnexAdapter implements DatabaseAdapter {
     return { value: result.value, expiresAt: result.expires_at }
   }
 
+  async getMany(
+    keys: string[],
+  ): Promise<{ key: string; value: string; expiresAt: number | null }[]> {
+    if (keys.length === 0) return []
+
+    const results = await this.#connection
+      .from(this.#tableName)
+      .select(['key', 'value', 'expires_at as expiresAt'])
+      .whereIn('key', keys)
+
+    return results.map((row) => ({
+      key: row.key,
+      value: row.value,
+      expiresAt: row.expiresAt,
+    }))
+  }
+
   async delete(key: string): Promise<boolean> {
     const result = await this.#connection.from(this.#tableName).where('key', key).delete()
     return result > 0
