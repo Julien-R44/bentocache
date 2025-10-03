@@ -1,11 +1,13 @@
-import 'dotenv/config'
-
+import { config } from 'dotenv'
+import { resolve } from 'node:path'
 import { assert } from '@japa/assert'
 import { fileSystem } from '@japa/file-system'
 import { expectTypeOf } from '@japa/expect-type'
 import { processCLIArgs, configure, run } from '@japa/runner'
 
 import { BASE_URL } from '../tests/helpers/index.js'
+
+config({ path: resolve(process.cwd(), '.env.testing') })
 
 /*
 |--------------------------------------------------------------------------
