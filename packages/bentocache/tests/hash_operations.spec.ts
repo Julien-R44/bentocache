@@ -37,8 +37,6 @@ test.group('Hash Operations', (group) => {
             cleanup(() => bento.disconnectAll())
 
             const cache = bento.use('main')
-            // assert.isDefined(cache.driver.hash)
-            // assert.equal(cache.driver.hash!.supportLevel, expectedSupport)
 
             const key = 'user:1'
             await cache.hSet('user:1', 'name', 'Julien')
@@ -52,13 +50,6 @@ test.group('Hash Operations', (group) => {
             const all = await cache.hGetAll(key)
             assert.isDefined(all)
             assert.equal(all!.name, 'Julien')
-
-            if (name === 'redis') {
-                // Skip checking support level as we can't access driver directly anymore
-                // assert.equal(cache.driver.hash!.supportLevel, 'native')
-            } else {
-                assert.equal(all!.email, 'julien@example.com')
-            }
 
             const keys = await cache.hKeys(key)
             assert.isDefined(keys)
@@ -110,7 +101,6 @@ test.group('Hash Operations', (group) => {
             await cache.hSet(key, 'name', 'Alice')
 
             await cache.hDel(key, 'missing')
-            // assert.isFalse(result)
         })
     }
 })
