@@ -54,6 +54,51 @@ export interface CacheDriver<Async extends boolean = true> {
    * For drivers without native TTL (PostgreSQL, File), this will remove expired entries
    */
   prune?(): PromiseOr<void, Async>
+
+  /**
+   * Optional hash operations
+   */
+  readonly hash?: HashOperations<Async>
+}
+
+export enum HashSupportLevel {
+  Native = 'native',
+  Simulated = 'simulated',
+}
+
+/**
+ * Interface for hash operations
+ */
+export interface HashOperations<Async extends boolean = true> {
+  /**
+   * The level of support for hash operations
+   */
+  readonly supportLevel: HashSupportLevel
+
+  /**
+   * Get a value from a hash
+   */
+  get(key: string, field: string): PromiseOr<any | undefined, Async>
+
+  /**
+   * Set a value in a hash
+   */
+  set(key: string, field: string, value: any, ttl?: number): PromiseOr<void, Async>
+
+  /**
+   * Get all fields and values from a hash
+   */
+  getAll(key: string): PromiseOr<Record<string, any> | undefined, Async>
+
+  /**
+   * Get all keys from a hash
+   */
+  keys(key: string): PromiseOr<string[] | undefined, Async>
+
+  /**
+   * Delete a field from a hash
+   */
+  delete(key: string, field: string): PromiseOr<boolean, Async>
 }
 
 /**

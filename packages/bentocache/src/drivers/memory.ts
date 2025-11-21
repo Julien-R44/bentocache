@@ -5,6 +5,7 @@ import { InvalidArgumentsException } from '@poppinss/exception'
 import { BaseDriver } from './base_driver.js'
 import type {
   CreateDriverResult,
+  HashOperations,
   L1CacheDriver,
   MemoryConfig as MemoryConfig,
 } from '../types/main.js'
@@ -19,16 +20,25 @@ export function memoryDriver(options: MemoryConfig = {}): CreateDriverResult<Mem
   }
 }
 
+import { HashSupportLevel } from '../types/main.js'
+
 /**
  * A memory caching driver
  */
 export class MemoryDriver extends BaseDriver implements L1CacheDriver {
   type = 'l1' as const
   #cache: LRUCache<string, string>
+  #hashes: Map<string, Map<string, any>>
   declare config: MemoryConfig
 
-  constructor(config: MemoryConfig & { cacheInstance?: LRUCache<string, string> } = {}) {
+  constructor(
+    config: MemoryConfig & {
+      cacheInstance?: LRUCache<string, string>
+      hashes?: Map<string, Map<string, any>>
+    } = {},
+  ) {
     super(config)
+    this.#hashes = config.hashes ?? new Map()
 
     if (config.cacheInstance) {
       this.#cache = config.cacheInstance
@@ -47,9 +57,9 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
       ttlAutopurge: false,
       ...(config.maxSize
         ? {
-            maxSize: config.maxSize ? bytes.parse(config.maxSize) : undefined,
-            sizeCalculation: (value) => Buffer.byteLength(value, 'utf-8'),
-          }
+          maxSize: config.maxSize ? bytes.parse(config.maxSize) : undefined,
+          sizeCalculation: (value) => Buffer.byteLength(value, 'utf-8'),
+        }
         : {}),
     })
   }
@@ -61,6 +71,7 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
     return new MemoryDriver({
       ...this.config,
       cacheInstance: this.#cache,
+      hashes: this.#hashes,
       prefix: this.createNamespacePrefix(namespace),
     })
   }
@@ -109,6 +120,12 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
         this.#cache.delete(key)
       }
     }
+
+    for (const key of this.#hashes.keys()) {
+      if (key.startsWith(`${this.prefix}:`)) {
+        this.#hashes.delete(key)
+      }
+    }
   }
 
   /**
@@ -116,7 +133,9 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
    * Returns true if the key was deleted, false otherwise
    */
   delete(key: string) {
-    return this.#cache.delete(this.getItemKey(key))
+    const itemKey = this.getItemKey(key)
+    this.#hashes.delete(itemKey)
+    return this.#cache.delete(itemKey)
   }
 
   /**
@@ -128,5 +147,49 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
     return true
   }
 
-  async disconnect() {}
+  async disconnect() { }
+
+  /**
+   * Hash operations
+   */
+  readonly hash: HashOperations<false> = {
+    supportLevel: HashSupportLevel.Simulated,
+
+    get: (key, field) => {
+      return this.#hashes.get(this.getItemKey(key))?.get(field)
+    },
+
+    set: (key, field, value, ttl) => {
+      const itemKey = this.getItemKey(key)
+      if (!this.#hashes.has(itemKey)) {
+        this.#hashes.set(itemKey, new Map())
+      }
+
+      this.#hashes.get(itemKey)!.set(field, value)
+
+      // Note: TTL is not supported for simulated hashes in this simple implementation
+      // If we wanted to support it, we'd need to track expiry separately
+    },
+
+    getAll: (key) => {
+      const hash = this.#hashes.get(this.getItemKey(key))
+      return hash ? Object.fromEntries(hash) : undefined
+    },
+
+    keys: (key) => {
+      const hash = this.#hashes.get(this.getItemKey(key))
+      return hash ? Array.from(hash.keys()) : undefined
+    },
+
+    delete: (key, field) => {
+      const hash = this.#hashes.get(this.getItemKey(key))
+      if (!hash) return false
+
+      const result = hash.delete(field)
+      if (hash.size === 0) {
+        this.#hashes.delete(this.getItemKey(key))
+      }
+      return result
+    },
+  }
 }

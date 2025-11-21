@@ -198,4 +198,75 @@ export class CacheStack extends BaseDriver {
   async createTagInvalidations(tags: string[]) {
     return this.#tagSystem.createTagInvalidations(tags)
   }
+
+  async hSet(key: string, field: string, value: any) {
+    if (this.l2) {
+      await this.l2.hSet(key, field, value)
+    }
+
+    if (this.l1) {
+      await this.l1.hSet(key, field, value)
+    }
+
+    await this.publish({ type: CacheBusMessageType.Set, keys: [key] })
+  }
+
+  async hGet(key: string, field: string) {
+    if (this.l1) {
+      const value = await this.l1.hGet(key, field)
+      if (value !== undefined) return value
+    }
+
+    if (this.l2) {
+      const value = await this.l2.hGet(key, field)
+
+      if (value !== undefined && this.l1) {
+        await this.l1.hSet(key, field, value)
+      }
+
+      return value
+    }
+  }
+
+  async hDel(key: string, field: string) {
+    if (this.l2) {
+      await this.l2.hDel(key, field)
+    }
+
+    if (this.l1) {
+      await this.l1.hDel(key, field)
+    }
+
+    await this.publish({ type: CacheBusMessageType.Set, keys: [key] })
+  }
+
+  async hGetAll(key: string) {
+    if (this.l1) {
+      const value = await this.l1.hGetAll(key)
+      if (value !== undefined) return value
+    }
+
+    if (this.l2) {
+      const value = await this.l2.hGetAll(key)
+
+      if (value !== undefined && this.l1) {
+        for (const [k, v] of Object.entries(value)) {
+          await this.l1.hSet(key, k, v)
+        }
+      }
+
+      return value
+    }
+  }
+
+  async hKeys(key: string) {
+    if (this.l1) {
+      const value = await this.l1.hKeys(key)
+      if (value !== undefined) return value
+    }
+
+    if (this.l2) {
+      return this.l2.hKeys(key)
+    }
+  }
 }

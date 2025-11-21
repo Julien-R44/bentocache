@@ -271,4 +271,24 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
   async disconnectAll(): Promise<void> {
     await Promise.all(Object.keys(this.#stores).map((cache) => this.use(cache).disconnect()))
   }
+
+  async hSet(key: string, field: string, value: any): Promise<void> {
+    return this.use().hSet(key, field, value)
+  }
+
+  async hGet<T = any>(key: string, field: string): Promise<T | undefined> {
+    return this.use().hGet(key, field)
+  }
+
+  async hDel(key: string, field: string): Promise<void> {
+    return this.use().hDel(key, field)
+  }
+
+  async hGetAll(key: string): Promise<Record<string, any> | undefined> {
+    return this.use().hGetAll(key)
+  }
+
+  async hKeys(key: string): Promise<string[] | undefined> {
+    return this.use().hKeys(key)
+  }
 }

@@ -9,6 +9,7 @@ import type {
   BusOptions,
   CreateBusDriverResult,
   CreateDriverResult,
+  HashOperations,
   L2CacheDriver,
   RedisConfig,
 } from '../types/main.js'
@@ -37,6 +38,8 @@ export function redisBusDriver(
     },
   }
 }
+
+import { HashSupportLevel } from '../types/main.js'
 
 /**
  * Caching driver for Redis
@@ -155,5 +158,41 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
    */
   async disconnect() {
     this.#connection.disconnect()
+  }
+
+  /**
+   * Hash operations
+   */
+  readonly hash: HashOperations = {
+    supportLevel: HashSupportLevel.Native,
+
+    get: async (key, field) => {
+      const result = await this.#connection.hget(this.getItemKey(key), field)
+      return result ?? undefined
+    },
+
+    set: async (key, field, value, ttl) => {
+      key = this.getItemKey(key)
+      await this.#connection.hset(key, field, value)
+
+      if (ttl) {
+        await this.#connection.pexpire(key, ttl)
+      }
+    },
+
+    getAll: async (key) => {
+      const result = await this.#connection.hgetall(this.getItemKey(key))
+      return Object.keys(result).length > 0 ? result : undefined
+    },
+
+    keys: async (key) => {
+      const result = await this.#connection.hkeys(this.getItemKey(key))
+      return result.length > 0 ? result : undefined
+    },
+
+    delete: async (key, field) => {
+      const result = await this.#connection.hdel(this.getItemKey(key), field)
+      return result > 0
+    },
   }
 }

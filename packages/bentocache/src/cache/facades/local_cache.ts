@@ -74,6 +74,33 @@ export class LocalCache {
     return this.#driver.delete(key)
   }
 
+
+
+  async hSet(key: string, field: string, value: any): Promise<void> {
+    if (!this.#driver.hash) throw new Error('Hash operations not supported by this driver')
+    await this.#driver.hash.set(key, field, value)
+  }
+
+  async hGet<T = any>(key: string, field: string): Promise<T | undefined> {
+    if (!this.#driver.hash) return undefined
+    return this.#driver.hash.get(key, field)
+  }
+
+  async hDel(key: string, field: string): Promise<void> {
+    if (!this.#driver.hash) throw new Error('Hash operations not supported by this driver')
+    await this.#driver.hash.delete(key, field)
+  }
+
+  async hGetAll(key: string): Promise<Record<string, any> | undefined> {
+    if (!this.#driver.hash) return undefined
+    return this.#driver.hash.getAll(key)
+  }
+
+  async hKeys(key: string): Promise<string[] | undefined> {
+    if (!this.#driver.hash) return undefined
+    return this.#driver.hash.keys(key)
+  }
+
   /**
    * Delete many item from the local cache
    */
@@ -114,5 +141,12 @@ export class LocalCache {
    */
   disconnect() {
     return this.#driver.disconnect()
+  }
+
+  /**
+   * Returns the underlying driver
+   */
+  get driver() {
+    return this.#driver
   }
 }

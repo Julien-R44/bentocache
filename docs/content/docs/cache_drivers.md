@@ -56,6 +56,11 @@ const bento = new BentoCache({
 |--------------|-------------------------------------------------------------------------------|---------|
 | `connection` | The connection options to use to connect to Redis or an instance of `ioredis` | N/A     |
 
+### Hash Operations
+
+The Redis driver supports hash operations natively.
+
+
 ## Filesystem
 
 The filesystem driver will store your cache in a distributed way in several files/folders on your filesystem.
@@ -116,6 +121,11 @@ const bento = new BentoCache({
 | `serialize`    | If the data stored in the memory cache should be serialized/parsed using `JSON.stringify` and `JSON.parse`.                                          | `true`  |
 
 `maxSize` and `maxEntrySize` accept human-readable strings. We use [bytes](https://www.npmjs.com/package/bytes) under the hood so make sure to ensure the format is correct. A `number` can also be passed to these options.
+
+### Hash Operations
+
+The memory driver supports hash operations by simulating them using a `Map`.
+
 
 ### `serialize` option
 

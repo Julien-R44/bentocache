@@ -283,8 +283,27 @@ export class Cache implements CacheProvider {
   async disconnect() {
     await Promise.all([
       this.#stack.l1?.disconnect(),
-      this.#stack.l2?.disconnect(),
       this.#stack.bus?.disconnect(),
     ])
+  }
+
+  async hSet(key: string, field: string, value: any): Promise<void> {
+    return this.#stack.hSet(key, field, value)
+  }
+
+  async hGet<T = any>(key: string, field: string): Promise<T | undefined> {
+    return this.#stack.hGet(key, field)
+  }
+
+  async hDel(key: string, field: string): Promise<void> {
+    return this.#stack.hDel(key, field)
+  }
+
+  async hGetAll(key: string): Promise<Record<string, any> | undefined> {
+    return this.#stack.hGetAll(key)
+  }
+
+  async hKeys(key: string): Promise<string[] | undefined> {
+    return this.#stack.hKeys(key)
   }
 }

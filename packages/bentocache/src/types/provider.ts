@@ -104,4 +104,29 @@ export interface CacheProvider {
    * Closes the connection to the cache
    */
   disconnect(): Promise<void>
+
+  /**
+   * Set a value in a hash
+   */
+  hSet(key: string, field: string, value: any): Promise<void>
+
+  /**
+   * Get a value from a hash
+   */
+  hGet<T = any>(key: string, field: string): Promise<T | undefined>
+
+  /**
+   * Delete a field from a hash
+   */
+  hDel(key: string, field: string): Promise<void>
+
+  /**
+   * Get all fields and values from a hash
+   */
+  hGetAll(key: string): Promise<Record<string, any> | undefined>
+
+  /**
+   * Get all keys from a hash
+   */
+  hKeys(key: string): Promise<string[] | undefined>
 }

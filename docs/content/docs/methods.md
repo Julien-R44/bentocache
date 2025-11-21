@@ -265,3 +265,43 @@ Disconnect from the cache. This will close the connection to the cache server, i
 ```ts
 await bento.disconnect();
 ```
+
+## hSet
+
+Set a value in a hash.
+
+```ts
+await bento.hSet('user:1', 'name', 'John')
+```
+
+## hGet
+
+Get a value from a hash.
+
+```ts
+const name = await bento.hGet('user:1', 'name')
+```
+
+## hDel
+
+Delete a value from a hash.
+
+```ts
+await bento.hDel('user:1', 'name')
+```
+
+## hGetAll
+
+Get all values from a hash.
+
+```ts
+const user = await bento.hGetAll('user:1')
+```
+
+## hKeys
+
+Get all keys from a hash.
+
+```ts
+const keys = await bento.hKeys('user:1')
+```
