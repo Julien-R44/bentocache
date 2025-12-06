@@ -51,8 +51,7 @@ test.group('Redis driver', (group) => {
     assert.equal(r2, 'value2')
     assert.equal(r3, null)
 
-    await redis2.disconnect()
-    await ioRedis2.quit()
     await ioredis.quit()
+    await ioRedis2.quit()
   })
 })

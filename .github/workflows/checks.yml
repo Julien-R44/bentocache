@@ -80,6 +80,10 @@ jobs:
         image: redis:7-bookworm
         ports:
           - 6379:6379
+      valkey:
+        image: valkey/valkey:8.1-alpine
+        ports:
+          - 6380:6379
       dynamodb:
         image: amazon/dynamodb-local:2.6.1
         ports:
@@ -122,5 +126,7 @@ jobs:
         env:
           REDIS_HOST: localhost
           REDIS_PORT: 6379
+          VALKEY_HOST: localhost
+          VALKEY_PORT: 6380
           FORCE_COLOR: 1
         run: pnpm test

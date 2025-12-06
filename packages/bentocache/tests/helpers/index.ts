@@ -6,6 +6,10 @@ import type { GetSetFactory, GetSetFactoryContext } from '../../src/types/helper
 
 export const BASE_URL = new URL('./tmp/', import.meta.url)
 export const REDIS_CREDENTIALS = { host: 'localhost', port: 6379 }
+export const VALKEY_CREDENTIALS = {
+  host: process.env.VALKEY_HOST || 'localhost',
+  port: Number(process.env.VALKEY_PORT) || 6380,
+}
 
 /**
  * Returns a factory that will throw an error when invoked

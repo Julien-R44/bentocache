@@ -125,8 +125,11 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
         COUNT,
       )
 
-      if (keys.length)
-        this.#connection.unlink(keys.map((key) => key.slice(connectionKeyPrefix?.length)))
+      if (keys.length) {
+        const pipeline = this.#connection.pipeline()
+        for (const key of keys) pipeline.unlink(key.slice(connectionKeyPrefix?.length))
+        await pipeline.exec()
+      }
 
       cursor = newCursor
     } while (cursor !== '0')
@@ -146,7 +149,11 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
    */
   async deleteMany(keys: string[]) {
     if (keys.length === 0) return true
-    await this.#connection.unlink(keys.map((key) => this.getItemKey(key)))
+
+    const pipeline = this.#connection.pipeline()
+    for (const key of keys) pipeline.unlink(this.getItemKey(key))
+    await pipeline.exec()
+
     return true
   }
 
