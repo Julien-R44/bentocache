@@ -41,7 +41,7 @@ test.group('File Driver | Prune', () => {
     assert.isTrue(await fs.exists('foo4'))
   })
 
-  test('continue if invalid file is inside the cache directory', async ({
+  test('delete corrupted cache files (invalid JSON) during prune', async ({
     assert,
     fs,
     cleanup,
@@ -59,9 +59,26 @@ test.group('File Driver | Prune', () => {
 
     await sleep(1000)
 
-    assert.isTrue(await fs.exists('foo'))
+    assert.isFalse(await fs.exists('foo'))
     assert.isFalse(await fs.exists('foo2'))
     assert.isFalse(await fs.exists('foo3/1'))
+  })
+
+  test('delete empty cache files during prune', async ({ assert, fs, cleanup }) => {
+    const driver = new FileDriver({
+      pruneInterval: 500,
+      directory: fileURLToPath(BASE_URL),
+    })
+
+    cleanup(() => driver.disconnect())
+
+    await fs.create('emptyFile', '')
+    await driver.set('validKey', 'bar', 300)
+
+    await sleep(1000)
+
+    assert.isFalse(await fs.exists('emptyFile'))
+    assert.isFalse(await fs.exists('validKey'))
   })
 
   test('use configured logger', async ({ assert, fs, cleanup }) => {
