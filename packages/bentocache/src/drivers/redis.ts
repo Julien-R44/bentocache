@@ -1,11 +1,7 @@
 import type { RedisOptions as IoRedisOptions } from 'ioredis'
 import { RedisTransport } from '@boringnode/bus/transports/redis'
 import { Redis as IoRedis, Cluster as IoRedisCluster } from 'ioredis'
-import type {
-  RedisTransportConfig,
-  Redis as BusRedis,
-  Cluster as BusCluster,
-} from '@boringnode/bus/types/main'
+import type { RedisTransportConfig } from '@boringnode/bus/types/main'
 
 import { BaseDriver } from './base_driver.js'
 import { BinaryEncoder } from '../bus/encoders/binary_encoder.js'
