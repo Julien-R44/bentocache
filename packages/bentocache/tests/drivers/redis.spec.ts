@@ -32,7 +32,7 @@ test.group('Redis driver', (group) => {
     await redis.disconnect()
   }).skip(!!process.env.CI, 'Skipping cluster test on CI')
 
-  test('should work with ioredis keyPrefix', async ({ assert }) => {
+  test('should works with ioredis keyPrefix', async ({ assert }) => {
     const ioredis = new IoRedis({ ...REDIS_CREDENTIALS, keyPrefix: 'test:' })
     const ioRedis2 = new IoRedis({ ...REDIS_CREDENTIALS })
     const redis2 = new RedisDriver({ connection: ioredis, prefix: 'japa' })

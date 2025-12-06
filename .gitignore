@@ -3,8 +3,7 @@ build
 coverage
 poc
 doc.md
-.env*
-!.env.*.example
+.env
 cache.sqlite3
 .todo.md
 

@@ -9,7 +9,6 @@
     ".env.dev",
     ".env.test",
     ".env.testing",
-    ".env.testing.example",
     ".env.production",
     ".env.prod"
   ],
