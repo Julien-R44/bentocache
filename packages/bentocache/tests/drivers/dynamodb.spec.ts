@@ -6,7 +6,7 @@ import { registerCacheDriverTestSuite } from '../helpers/driver_test_suite.js'
 
 const dynamoClient = new DynamoDBClient({
   region: 'eu-west-3',
-  endpoint: 'http://localhost:8000',
+  endpoint: process.env.DYNAMODB_ENDPOINT,
   credentials: { accessKeyId: 'foo', secretAccessKey: 'foo' },
 })
 
