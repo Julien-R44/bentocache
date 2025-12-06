@@ -19,6 +19,16 @@ async function deleteFileIfExpired({ filePath, onError }) {
 
     if (expiry < Date.now()) await unlink(filePath)
   } catch (error) {
+    /**
+     * If the file is empty or contains invalid JSON, we should delete it
+     * as its a corrupted cache file that wont be readable anyway
+     */
+    if (error instanceof SyntaxError) {
+      if (onError) onError({ filePath, error })
+      await unlink(filePath).catch(() => {})
+      return
+    }
+
     if (onError) onError({ filePath, error })
   }
 }
