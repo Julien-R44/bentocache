@@ -1,7 +1,11 @@
 import type { RedisOptions as IoRedisOptions } from 'ioredis'
 import { RedisTransport } from '@boringnode/bus/transports/redis'
 import { Redis as IoRedis, Cluster as IoRedisCluster } from 'ioredis'
-import type { RedisTransportConfig } from '@boringnode/bus/types/main'
+import type {
+  RedisTransportConfig,
+  Redis as BusRedis,
+  Cluster as BusCluster,
+} from '@boringnode/bus/types/main'
 
 import { BaseDriver } from './base_driver.js'
 import { BinaryEncoder } from '../bus/encoders/binary_encoder.js'
@@ -23,13 +27,24 @@ export function redisDriver(options: RedisConfig): CreateDriverResult<RedisDrive
 /**
  * Create a new bus redis driver. It leverages the Pub/sub capabilities of Redis
  * to sending messages between your different processes.
+ *
+ * You can pass either connection options or an existing Redis/Cluster instance.
  */
 export function redisBusDriver(
-  options: { connection: IoRedisOptions } & BusOptions,
+  options: { connection: IoRedisOptions | IoRedis | IoRedisCluster } & BusOptions,
 ): CreateBusDriverResult {
   return {
     options,
     factory: () => {
+      /**
+       * If an existing Redis or Cluster instance is passed, use it directly
+       */
+      if (options.connection instanceof IoRedis || options.connection instanceof IoRedisCluster) {
+        return new RedisTransport(options.connection, new BinaryEncoder(), {
+          useMessageBuffer: true,
+        })
+      }
+
       return new RedisTransport(
         { ...options.connection, useMessageBuffer: true } as RedisTransportConfig,
         new BinaryEncoder(),
