@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import { sleep } from '@julr/utils/misc'
 import { MemoryTransport } from '@boringnode/bus/transports/memory'
+import { Redis as IoRedis, Cluster as IoRedisCluster } from 'ioredis'
 
 import { ChaosBus } from '../helpers/chaos/chaos_bus.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
@@ -411,4 +412,70 @@ test.group('Bus synchronization', () => {
 
     await sleep(200)
   }).waitForDone()
+
+  test('works with an existing Redis instance', async ({ assert }, done) => {
+    const redis = new IoRedis(REDIS_CREDENTIALS)
+
+    const bus1 = redisBusDriver({ connection: redis })
+      .factory(null as any)
+      .setId('foo')
+
+    const bus2 = redisBusDriver({ connection: redis })
+      .factory(null as any)
+      .setId('bar')
+
+    const data = {
+      keys: ['foo'],
+      type: CacheBusMessageType.Set,
+    }
+
+    bus1.subscribe('foo', (message: any) => {
+      assert.deepInclude(message, data)
+      done()
+    })
+
+    await sleep(200)
+
+    await bus2.publish('foo', data)
+
+    await bus1.disconnect()
+    await bus2.disconnect()
+    await redis.quit()
+
+    await sleep(200)
+  }).waitForDone()
+
+  test('works with an existing Cluster instance', async ({ assert }, done) => {
+    const cluster = new IoRedisCluster([{ host: '127.0.0.1', port: 7000 }])
+
+    const bus1 = redisBusDriver({ connection: cluster })
+      .factory(null as any)
+      .setId('foo')
+
+    const bus2 = redisBusDriver({ connection: cluster })
+      .factory(null as any)
+      .setId('bar')
+
+    const data = {
+      keys: ['foo'],
+      type: CacheBusMessageType.Set,
+    }
+
+    bus1.subscribe('foo', (message: any) => {
+      assert.deepInclude(message, data)
+      done()
+    })
+
+    await sleep(200)
+
+    await bus2.publish('foo', data)
+
+    await bus1.disconnect()
+    await bus2.disconnect()
+    await cluster.quit()
+
+    await sleep(200)
+  })
+    .waitForDone()
+    .skip(!!process.env.CI, 'Skipping cluster test on CI')
 })
