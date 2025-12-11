@@ -61,39 +61,70 @@ This may be a good practice if you have a lot of keys, because [high cardinality
 
 ## Exposed metrics
 
-Every metric is prefixed with the `prefix` option.
+Every metric is prefixed with the `prefix` option (default: `bentocache`).
 
 ### `graced_hits`
 
-The number of [graced values](../grace_periods.md) that were returned from the cache.
+Counter. The number of [graced values](../grace_periods.md) that were returned from the cache.
+
+| Label   | Description                                            |
+| ------- | ------------------------------------------------------ |
+| `store` | The name of the cache store                            |
+| `key`   | The cache key (or grouped key if using `keyGroups`)    |
+| `layer` | The cache layer that returned the value (`l1` or `l2`) |
 
 ### `hits`
 
-The number of cache hits.
+Counter. The number of cache hits.
+
+| Label   | Description                                            |
+| ------- | ------------------------------------------------------ |
+| `store` | The name of the cache store                            |
+| `key`   | The cache key (or grouped key if using `keyGroups`)    |
+| `layer` | The cache layer that returned the value (`l1` or `l2`) |
 
 ### `misses`
 
-The number of cache misses.
+Counter. The number of cache misses.
+
+| Label   | Description                                         |
+| ------- | --------------------------------------------------- |
+| `store` | The name of the cache store                         |
+| `key`   | The cache key (or grouped key if using `keyGroups`) |
 
 ### `writes`
 
-The number of cache writes.
+Counter. The number of cache writes.
+
+| Label   | Description                                         |
+| ------- | --------------------------------------------------- |
+| `store` | The name of the cache store                         |
+| `key`   | The cache key (or grouped key if using `keyGroups`) |
 
 ### `deletes`
 
-The number of cache deletes.
+Counter. The number of cache deletes.
+
+| Label   | Description                                         |
+| ------- | --------------------------------------------------- |
+| `store` | The name of the cache store                         |
+| `key`   | The cache key (or grouped key if using `keyGroups`) |
 
 ### `clears`
 
-The number of cache clears.
+Counter. The number of cache clears.
+
+| Label   | Description                 |
+| ------- | --------------------------- |
+| `store` | The name of the cache store |
 
 ### `bus_messages_published`
 
-The number of messages published to the bus.
+Counter. The number of messages published to the bus. No labels.
 
 ### `bus_messages_received`
 
-The number of messages received from the bus.
+Counter. The number of messages received from the bus. No labels.
 
 ## Grafana dashboard
 
