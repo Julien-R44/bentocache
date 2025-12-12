@@ -170,13 +170,15 @@ export class DynamoDbDriver extends BaseDriver implements CacheDriver {
     return data.Item.value.S ?? data.Item.value.N
   }
 
+  /**
+   * Get multiple values in order. Expired items return undefined.
+   */
   async getMany(keys: string[]) {
     if (keys.length === 0) return []
 
     const results: (string | undefined)[] = []
     const prefixedKeys = keys.map((key) => this.getItemKey(key))
 
-    // DynamoDB batch get limit is 100 items
     const chunks = chunkify(prefixedKeys, 100)
 
     const keyToValueMap: Record<string, string | undefined> = {}
@@ -192,18 +194,15 @@ export class DynamoDbDriver extends BaseDriver implements CacheDriver {
 
       const items = data.Responses?.[this.#tableName] ?? []
 
-      // Map each item key to its value (skip expired)
       for (const item of items) {
         if (!this.#isItemExpired(item)) {
           keyToValueMap[item.key.S!] = item.value.S ?? item.value.N
         } else {
-          // Optionally delete expired items asynchronously
           this.delete(item.key.S!).catch(() => {})
         }
       }
     }
 
-    // Preserve order of original keys
     for (const key of prefixedKeys) {
       results.push(keyToValueMap[key] ?? undefined)
     }

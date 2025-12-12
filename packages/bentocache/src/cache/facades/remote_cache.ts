@@ -93,6 +93,39 @@ export class RemoteCache {
   }
 
   /**
+   * Batch get many items from the remote cache
+   */
+  async getMany(keys: string[], options: CacheEntryOptions) {
+    return await this.#tryCacheOperation('getMany', options, [], async () => {
+      this.#logger.debug({ keys, opId: options.id }, 'batch getting items from l2 cache')
+      if (typeof this.#driver.getMany === 'function') {
+        const values = await this.#driver.getMany(keys)
+        return values.map((value, i) => {
+          if (value === undefined) return undefined
+          const entry = CacheEntry.fromDriver(keys[i], value, this.#options.serializer)
+          return {
+            entry,
+            isGraced: entry.isLogicallyExpired(),
+          }
+        })
+      }
+
+      const results = await Promise.all(
+        keys.map(async (key) => {
+          const value = await this.#driver.get(key)
+          if (value === undefined) return undefined
+          const entry = CacheEntry.fromDriver(key, value, this.#options.serializer)
+          return {
+            entry,
+            isGraced: entry.isLogicallyExpired(),
+          }
+        }),
+      )
+      return results
+    })
+  }
+
+  /**
    * Set a new item in the remote cache
    */
   async set(key: string, value: string, options: CacheEntryOptions) {
@@ -110,39 +143,6 @@ export class RemoteCache {
     return await this.#tryCacheOperation('delete', options, false, async () => {
       this.#logger.debug({ key, opId: options.id }, 'deleting item')
       return await this.#driver.delete(key)
-    })
-  }
-
-  /**
-   * Batch get many items from the remote cache
-   */
-  async getMany(keys: string[], options: CacheEntryOptions) {
-    return await this.#tryCacheOperation('getMany', options, [], async () => {
-      this.#logger.debug({ keys, opId: options.id }, 'batch getting items from l2 cache')
-      if (typeof this.#driver.getMany === 'function') {
-        const values = await this.#driver.getMany(keys)
-        return values.map((value, i) => {
-          if (value === undefined) return undefined
-          const entry = CacheEntry.fromDriver(keys[i], value, this.#options.serializer)
-          return {
-            entry,
-            isGraced: entry.isLogicallyExpired(),
-          }
-        })
-      }
-      // fallback: parallel single gets
-      const results = await Promise.all(
-        keys.map(async (key) => {
-          const value = await this.#driver.get(key)
-          if (value === undefined) return undefined
-          const entry = CacheEntry.fromDriver(key, value, this.#options.serializer)
-          return {
-            entry,
-            isGraced: entry.isLogicallyExpired(),
-          }
-        }),
-      )
-      return results
     })
   }
 

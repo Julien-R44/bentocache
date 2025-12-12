@@ -67,14 +67,14 @@ export class ChaosCache<Cache extends L1CacheDriver | L2CacheDriver> implements 
     return this.#innerCache.namespace(namespace) as any
   }
 
-  async getMany(keys: string[]) {
-    await this.#chaosInjector.injectChaos()
-    return this.#innerCache.getMany(keys)
-  }
-
   async get(key: string) {
     await this.#chaosInjector.injectChaos()
     return this.#innerCache.get(key)
+  }
+
+  async getMany(keys: string[]) {
+    await this.#chaosInjector.injectChaos()
+    return this.#innerCache.getMany(keys)
   }
 
   async pull(key: string) {

@@ -142,19 +142,6 @@ export class FileDriver extends BaseDriver implements CacheDriver {
   }
 
   /**
-   * Get multiple values from the cache
-   */
-  async getMany(keys: string[]) {
-    if (keys.length === 0) return []
-    const results: (string | undefined)[] = []
-    for (const key of keys) {
-      const value = await this.get(key)
-      results.push(value)
-    }
-    return results
-  }
-
-  /**
    * Get a value from the cache
    */
   async get(key: string) {
@@ -173,6 +160,19 @@ export class FileDriver extends BaseDriver implements CacheDriver {
     }
 
     return value as string
+  }
+
+  /**
+   * Get multiple values from the cache
+   */
+  async getMany(keys: string[]) {
+    if (keys.length === 0) return []
+    const results: (string | undefined)[] = []
+    for (const key of keys) {
+      const value = await this.get(key)
+      results.push(value)
+    }
+    return results
   }
 
   /**

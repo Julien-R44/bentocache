@@ -82,6 +82,23 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
   }
 
   /**
+   * Get a value from the cache
+   */
+  async get(key: string) {
+    await this.#initializer()
+
+    const result = await this.#adapter.get(this.getItemKey(key))
+    if (!result) return
+
+    if (this.#isExpired(result.expiresAt)) {
+      await this.#adapter.delete(key)
+      return
+    }
+
+    return result.value
+  }
+
+  /**
    * Get multiple values from the cache
    */
   async getMany(keys: string[]) {
@@ -120,23 +137,6 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
 
       return result.value
     })
-  }
-
-  /**
-   * Get a value from the cache
-   */
-  async get(key: string) {
-    await this.#initializer()
-
-    const result = await this.#adapter.get(this.getItemKey(key))
-    if (!result) return
-
-    if (this.#isExpired(result.expiresAt)) {
-      await this.#adapter.delete(key)
-      return
-    }
-
-    return result.value
   }
 
   /**

@@ -73,6 +73,14 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
   }
 
   /**
+   * Get multiple values from the cache
+   */
+  getMany(keys: string[]) {
+    if (keys.length === 0) return []
+    return keys.map((key) => this.get(key))
+  }
+
+  /**
    * Get the value of a key and delete it
    *
    * Returns the value if the key exists, undefined otherwise
@@ -91,14 +99,6 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
   set(key: string, value: string, ttl?: number) {
     this.#cache.set(this.getItemKey(key), value, { ttl })
     return true
-  }
-
-  /**
-   * Get multiple values from the cache
-   */
-  getMany(keys: string[]) {
-    if (keys.length === 0) return []
-    return keys.map((key) => this.get(key))
   }
 
   /**

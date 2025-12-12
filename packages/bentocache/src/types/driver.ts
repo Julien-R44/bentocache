@@ -12,6 +12,12 @@ export interface CacheDriver<Async extends boolean = true> {
   get(key: string): PromiseOr<string | undefined, Async>
 
   /**
+   * Get multiple values from the cache
+   * Returns an array of values (or undefined for missing keys) in the same order as the input keys
+   */
+  getMany(keys: string[]): PromiseOr<(string | undefined)[], Async>
+
+  /**
    * Get the value of a key and delete it
    *
    * Returns the value if the key exists, undefined otherwise
@@ -35,12 +41,6 @@ export interface CacheDriver<Async extends boolean = true> {
    * Returns true if the key was deleted, false otherwise
    */
   delete(key: string): PromiseOr<boolean, Async>
-
-  /**
-   * Get multiple values from the cache
-   * Returns an array of values (or undefined for missing keys) in the same order as the input keys
-   */
-  getMany(keys: string[]): PromiseOr<(string | undefined)[], Async>
 
   /**
    * Delete multiple keys from the cache

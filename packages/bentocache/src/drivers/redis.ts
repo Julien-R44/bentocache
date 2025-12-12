@@ -84,6 +84,14 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
   }
 
   /**
+   * Get a value from the cache
+   */
+  async get(key: string) {
+    const result = await this.#connection.get(this.getItemKey(key))
+    return result ?? undefined
+  }
+
+  /**
    * Get multiple values from the cache
    */
   async getMany(keys: string[]) {
@@ -91,14 +99,6 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
     const prefixedKeys = keys.map((key) => this.getItemKey(key))
     const values = await this.#connection.mget(prefixedKeys)
     return values.map((value) => value ?? undefined)
-  }
-
-  /**
-   * Get a value from the cache
-   */
-  async get(key: string) {
-    const result = await this.#connection.get(this.getItemKey(key))
-    return result ?? undefined
   }
 
   /**

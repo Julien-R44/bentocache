@@ -48,6 +48,14 @@ export class LocalCache {
   }
 
   /**
+   * Batch get many items from the local cache
+   */
+  getMany(keys: string[], options: CacheEntryOptions) {
+    this.#logger.debug({ keys, opId: options.id }, 'batch getting items from l1 cache')
+    return keys.map((key) => this.get(key, options))
+  }
+
+  /**
    * Set a new item in the local cache
    */
   set(key: string, value: any, options: CacheEntryOptions) {
@@ -72,14 +80,6 @@ export class LocalCache {
   delete(key: string, options?: CacheEntryOptions) {
     this.#logger.debug({ key, opId: options?.id }, 'deleting item')
     return this.#driver.delete(key)
-  }
-
-  /**
-   * Batch get many items from the local cache
-   */
-  getMany(keys: string[], options: CacheEntryOptions) {
-    this.#logger.debug({ keys, opId: options.id }, 'batch getting items from l1 cache')
-    return keys.map((key) => this.get(key, options))
   }
 
   /**
