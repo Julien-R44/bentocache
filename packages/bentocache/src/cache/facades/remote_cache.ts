@@ -123,9 +123,10 @@ export class RemoteCache {
         const values = await this.#driver.getMany(keys)
         return values.map((value, i) => {
           if (value === undefined) return undefined
+          const entry = CacheEntry.fromDriver(keys[i], value, this.#options.serializer)
           return {
-            entry: CacheEntry.fromDriver(keys[i], value, this.#options.serializer),
-            isGraced: false,
+            entry,
+            isGraced: entry.isLogicallyExpired(),
           }
         })
       }
@@ -134,9 +135,10 @@ export class RemoteCache {
         keys.map(async (key) => {
           const value = await this.#driver.get(key)
           if (value === undefined) return undefined
+          const entry = CacheEntry.fromDriver(key, value, this.#options.serializer)
           return {
-            entry: CacheEntry.fromDriver(key, value, this.#options.serializer),
-            isGraced: false,
+            entry,
+            isGraced: entry.isLogicallyExpired(),
           }
         }),
       )
