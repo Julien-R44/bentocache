@@ -72,6 +72,17 @@ export class ChaosCache<Cache extends L1CacheDriver | L2CacheDriver> implements 
     return this.#innerCache.get(key)
   }
 
+  async getMany(keys: string[]): Promise<any> {
+    await this.#chaosInjector.injectChaos()
+
+    if ('getMany' in this.#innerCache && typeof (this.#innerCache as any).getMany === 'function') {
+      return (this.#innerCache as any).getMany(keys)
+    }
+
+    const results = await Promise.all(keys.map((k) => (this.#innerCache as any).get(k)))
+    return results
+  }
+
   async pull(key: string) {
     await this.#chaosInjector.injectChaos()
     return this.#innerCache.pull(key)
