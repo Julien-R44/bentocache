@@ -54,10 +54,10 @@ export class KnexAdapter implements DatabaseAdapter {
       .select(['key', 'value', 'expires_at as expiresAt'])
       .whereIn('key', keys)
 
-    return results.map((row) => ({
-      key: row.key,
-      value: row.value,
-      expiresAt: row.expiresAt,
+    return results.map((result) => ({
+      key: result.key,
+      value: result.value,
+      expiresAt: result.expiresAt,
     }))
   }
 

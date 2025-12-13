@@ -96,8 +96,16 @@ export class Cache implements CacheProvider {
   }
 
   /**
-   * Batch get many values from the cache, minimizing roundtrips to L2 if possible
-   * Returns an array of values (or undefined for missing keys) in the same order as the input keys
+   * Batch get many values from the cache, minimizing roundtrips to L2 if possible.
+   *
+   * This method will:
+   * - Try to get all keys from L1.
+   * - Identify missing keys.
+   * - Fetch missing keys from L2 in a single batch.
+   * - Backfill L1 with valid L2 results (fire-and-forget).
+   * - Fallback to grace periods or default values if needed.
+   *
+   * Returns an array of values (or default/undefined for missing keys) in the same order as the input keys.
    */
   async getMany<T = any>(rawOptions: GetManyOptions<T>): Promise<(T | undefined | null)[]> {
     const keys = rawOptions.keys

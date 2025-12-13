@@ -1,8 +1,13 @@
 import { asyncNoop, once } from '@julr/utils/functions'
 
+import type { Logger } from '../../logger.js'
 import { resolveTtl } from '../../helpers.js'
 import { BaseDriver } from '../base_driver.js'
 import type { DatabaseConfig, CacheDriver, DatabaseAdapter } from '../../types/main.js'
+import type {
+  DriverCommonOptions,
+  DriverCommonInternalOptions,
+} from '../../types/options/drivers_options.js'
 
 /**
  * A store that use a database to store cache entries
@@ -10,6 +15,7 @@ import type { DatabaseConfig, CacheDriver, DatabaseAdapter } from '../../types/m
  * You should provide an adapter that will handle the database interactions
  */
 export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
+  declare protected config: DriverCommonOptions & DriverCommonInternalOptions
   type = 'l2' as const
 
   /**
@@ -23,13 +29,24 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
   #initializer: () => Promise<any>
 
   /**
+   * Logger
+   */
+  protected logger?: Logger
+
+  /**
    * Pruning interval
    */
   #pruneInterval?: NodeJS.Timeout
 
-  constructor(adapter: DatabaseAdapter, config: DatabaseConfig, isNamespace = false) {
+  constructor(
+    adapter: DatabaseAdapter,
+    config: DatabaseConfig & DriverCommonInternalOptions,
+    isNamespace = false,
+  ) {
     super(config)
     this.#adapter = adapter
+
+    this.logger = config.logger
 
     if (isNamespace) {
       this.#initializer = asyncNoop
@@ -55,9 +72,9 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
   #startPruneInterval(interval: number) {
     this.#pruneInterval = setInterval(async () => {
       await this.#initializer()
-      await this.#adapter
-        .pruneExpiredEntries()
-        .catch((err) => console.error('[bentocache] failed to prune expired entries', err))
+      await this.#adapter.pruneExpiredEntries().catch((error) => {
+        this.logger?.error('Failed to prune expired entries', { error })
+      })
     }, interval)
   }
 
@@ -103,35 +120,52 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
    */
   async getMany(keys: string[]) {
     if (keys.length === 0) return []
-
     await this.#initializer()
-    const prefixedKeys = keys.map((key) => this.getItemKey(key))
 
-    let results: { key: string; value: any; expiresAt: number | null }[] = []
+    const prefixedKeys = keys.map((key) => this.getItemKey(key))
+    /**
+     * Deduplicate keys to avoid unnecessary DB calls.
+     */
+    const uniquePrefixedKeys = [...new Set(prefixedKeys)]
+    let results: Array<{ key: string; value: any; expiresAt: number | null } | undefined> = []
 
     if (typeof this.#adapter.getMany === 'function') {
-      results = await this.#adapter.getMany(prefixedKeys)
+      results = (await this.#adapter.getMany(uniquePrefixedKeys)) ?? []
     } else {
-      const singleResults = await Promise.all(
-        prefixedKeys.map(async (k) => {
-          const r = await this.#adapter.get(k)
-          if (!r) return undefined
-          return { key: k, value: r.value, expiresAt: r.expiresAt }
-        }),
-      )
-      results = singleResults.filter(
-        (r): r is { key: string; value: any; expiresAt: number | null } => !!r,
-      )
+      /**
+       * If the adapter doesn't implement getMany, we'll batch the requests
+       * to avoid flooding the database with too many concurrent queries.
+       */
+      const batchSize = 10
+
+      for (let i = 0; i < uniquePrefixedKeys.length; i += batchSize) {
+        const batchKeys = uniquePrefixedKeys.slice(i, i + batchSize)
+        const batchResults = await Promise.all(
+          batchKeys.map(async (k) => {
+            const r = await this.#adapter.get(k)
+            return r ? { key: k, value: r.value, expiresAt: r.expiresAt } : undefined
+          }),
+        )
+
+        results.push(...batchResults)
+      }
     }
 
-    const resultsMap = new Map(results.map((r) => [r.key, r]))
+    const resultsMap = new Map()
+    for (const r of results) {
+      if (r !== undefined) {
+        resultsMap.set(r.key, r)
+      }
+    }
 
     return prefixedKeys.map((prefixedKey) => {
       const result = resultsMap.get(prefixedKey)
       if (!result) return undefined
 
       if (this.#isExpired(result.expiresAt)) {
-        this.#adapter.delete(prefixedKey).catch(() => {})
+        this.#adapter.delete(prefixedKey).catch((error) => {
+          this.config.logger?.error({ error, key: prefixedKey }, 'Failed to delete expired key')
+        })
         return undefined
       }
 

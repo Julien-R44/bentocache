@@ -44,10 +44,35 @@ export function registerCacheDriverTestSuite(options: {
 
   test('getMany() should return values for multiple keys in order', async ({ assert }) => {
     await cache.set('key1', 'value1')
-    await cache.set('key2', 'value2')
+    await cache.set('key3', 'value3')
 
-    const results = await cache.getMany(['key1', 'key2'])
-    assert.deepEqual(results, ['value1', 'value2'])
+    const results = await cache.getMany(['key1', 'key2', 'key3'])
+    assert.deepEqual(results, ['value1', undefined, 'value3'])
+  })
+
+  test('getMany() should return undefined for missing keys', async ({ assert }) => {
+    const results = await cache.getMany(['missing1', 'missing2'])
+    assert.deepEqual(results, [undefined, undefined])
+  })
+
+  test('getMany() should handle duplicate keys', async ({ assert }) => {
+    await cache.set('key1', 'value1')
+    const results = await cache.getMany(['key1', 'key1'])
+    assert.deepEqual(results, ['value1', 'value1'])
+  })
+
+  test('getMany() should handle expired items', async ({ assert }) => {
+    await cache.set('expired1', 'value1', 1)
+    await cache.set('expired2', 'value2', 1)
+    await cache.set('valid', 'value3', 30)
+
+    const results = await cache.getMany(['expired1', 'expired2', 'valid', 'missing'])
+
+    assert.equal(results[2], 'value3', 'Valid item should be returned')
+
+    assert.isUndefined(results[3], 'Missing item should be undefined')
+
+    await Promise.all([cache.delete('expired1'), cache.delete('expired2'), cache.delete('valid')])
   })
 
   test('set() store a value', async ({ assert }) => {
