@@ -38,6 +38,16 @@ test.group('One tier tests', () => {
     assert.equal(r2, 'default')
   })
 
+  test('get() should assume array as a value and not a factory', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    const r1 = await cache.get({ key: 'key1', defaultValue: ['a', 'b'] })
+    const r2 = await cache.get({ key: 'key2', defaultValue: () => ['a', 'b'] })
+
+    assert.deepEqual(r1, ['a', 'b'])
+    assert.deepEqual(r2, ['a', 'b'])
+  })
+
   test('get() with fallback but item found should return item', async ({ assert }) => {
     const { cache } = new CacheFactory().withMemoryL1().create()
 
@@ -217,6 +227,33 @@ test.group('One tier tests', () => {
     const { cache } = new CacheFactory().withMemoryL1().create()
     const results = await cache.getMany({ keys: ['key1', 'key2'], defaultValue: 'default' })
     assert.deepEqual(results, ['default', 'default'])
+  })
+
+  test('getMany() should treat array defaultValue as a single value for each key', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    // 1. Array as value
+    const r1 = await cache.getMany({
+      keys: ['key1', 'key2'],
+      defaultValue: ['a', 'b'],
+    })
+
+    // 2. Factory returning array
+    const r2 = await cache.getMany({
+      keys: ['key1', 'key2'],
+      defaultValue: () => ['a', 'b'],
+    })
+
+    assert.deepEqual(r1, [
+      ['a', 'b'],
+      ['a', 'b'],
+    ])
+    assert.deepEqual(r2, [
+      ['a', 'b'],
+      ['a', 'b'],
+    ])
   })
 
   test('getMany() should preserve order regardless of storage order', async ({ assert }) => {
