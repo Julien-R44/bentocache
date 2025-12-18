@@ -4,7 +4,7 @@ import { sleep } from '@julr/utils/misc'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { throwingFactory, slowFactory } from '../helpers/index.js'
 
-test.group('One tier tests', () => {
+test.group('One tier cache', () => {
   test('get() returns deserialized value', async ({ assert }) => {
     const { cache } = new CacheFactory().withMemoryL1().create()
 

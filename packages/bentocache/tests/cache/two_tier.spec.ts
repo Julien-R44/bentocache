@@ -10,7 +10,7 @@ import { CacheFactory } from '../../factories/cache_factory.js'
 import { L2CacheError, UndefinedValueError } from '../../src/errors.js'
 import { throwingFactory, slowFactory, REDIS_CREDENTIALS } from '../helpers/index.js'
 
-test.group('Cache', () => {
+test.group('Two tier cache', () => {
   test('get() returns null if null is stored', async ({ assert }) => {
     const { cache } = new CacheFactory().withL1L2Config().create()
 
@@ -674,7 +674,7 @@ test.group('Cache', () => {
     assert.deepEqual(r2?.entry.getValue(), { foo: 'bar' })
   })
 
-  test('when local and remote hitted items are logically it should prioritize remote', async ({
+  test('should prioritize remote value when both local and remote items are logically expired', async ({
     assert,
   }) => {
     const { cache, local, remote, stack } = new CacheFactory()

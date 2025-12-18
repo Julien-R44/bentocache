@@ -5,7 +5,7 @@ import { sleep } from '@julr/utils/misc'
 import { DatabaseDriver } from '../../src/drivers/database/database.js'
 import { KnexAdapter } from '../../src/drivers/database/adapters/knex.js'
 
-test.group('Database', () => {
+test.group('Database driver', () => {
   test('should prune expired items every x seconds', async ({ assert, cleanup }) => {
     const db = knex({
       client: 'better-sqlite3',
