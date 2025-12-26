@@ -62,4 +62,33 @@ test.group('Database driver', () => {
     assert.isUndefined(hasFoo)
     assert.isUndefined(hasFoo2)
   })
+
+  test('should delete expired item with correct prefixed key', async ({ assert, cleanup }) => {
+    const db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    })
+
+    const driver = new DatabaseDriver(new KnexAdapter({ connection: db }), {
+      tableName: 'cache',
+      autoCreateTable: true,
+      prefix: 'test',
+      pruneInterval: false,
+    })
+    cleanup(() => driver.disconnect())
+
+    await driver.set('foo', 'bar', 100)
+
+    const hasKeyBefore = await db('cache').where('key', 'test:foo').first()
+    assert.isDefined(hasKeyBefore)
+
+    await sleep(150)
+
+    const result = await driver.get('foo')
+    assert.isUndefined(result)
+
+    const hasKeyAfter = await db('cache').where('key', 'test:foo').first()
+    assert.isUndefined(hasKeyAfter)
+  })
 })
