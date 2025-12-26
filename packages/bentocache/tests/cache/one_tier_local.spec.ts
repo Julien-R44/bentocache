@@ -146,7 +146,7 @@ test.group('One tier cache', () => {
     const { cache } = new CacheFactory().withMemoryL1().merge({ grace: '500ms' }).create()
 
     await cache.set({ key: 'key1', value: 'value1', ttl: '100ms' })
-    await sleep(100)
+    await sleep(150)
 
     const r1 = await cache.has({ key: 'key1' })
 
