@@ -176,6 +176,14 @@ export function createCacheEntryOptions(
      * lock to be acquired
      */
     getApplicableLockTimeout(hasFallbackValue: boolean) {
+      /**
+       * If we're in SWR mode (timeout: 0 with fallback), we should
+       * return 0 regardless of lockTimeout to ensure immediate return
+       */
+      if (hasFallbackValue && self.isGraceEnabled() && timeout === 0) {
+        return 0
+      }
+
       if (lockTimeout) return lockTimeout
 
       /**
