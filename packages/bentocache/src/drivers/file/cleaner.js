@@ -49,7 +49,7 @@ export async function pruneExpiredFiles({ directory, onError }) {
      * "parentPath" was added in Node.js v20.12.0.
      * We fallback to "path" for older versions of Node.js.
      */
-    // @ts-ignore
+    // @ts-expect-error -- ignore --
     const basePath = typeof dirEntry.parentPath === 'string' ? dirEntry.parentPath : dirEntry.path
 
     const filePath = join(basePath, dirEntry.name)
