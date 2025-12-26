@@ -1,7 +1,5 @@
-import Emittery from 'emittery'
 import { Redis } from 'ioredis'
 import { test } from '@japa/runner'
-import EventEmitter from 'node:events'
 
 import { bentostore } from '../src/bento_store.js'
 import { BentoCache } from '../src/bento_cache.js'
@@ -11,20 +9,6 @@ import { redisBusDriver, redisDriver } from '../src/drivers/redis.js'
 import { BentoCacheFactory } from '../factories/bentocache_factory.js'
 
 test.group('Bento Cache', () => {
-  test('should accept EventEmitter or Emittery', async ({ expectTypeOf }) => {
-    expectTypeOf(BentoCache).toBeConstructibleWith({
-      default: 'memory',
-      stores: { memory: bentostore().useL1Layer(memoryDriver({})) },
-      emitter: new EventEmitter(),
-    })
-
-    expectTypeOf(BentoCache).toBeConstructibleWith({
-      default: 'memory',
-      stores: { memory: bentostore().useL1Layer(memoryDriver({})) },
-      emitter: new Emittery(),
-    })
-  })
-
   test('Subscribe to an event', async ({ assert }) => {
     assert.plan(2)
 

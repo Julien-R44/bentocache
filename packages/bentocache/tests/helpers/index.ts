@@ -65,7 +65,6 @@ export const traceLogger = (pretty = true) => {
 
   return pino(
     { level: 'trace', timestamp: () => `,"time":${nanoseconds()}` },
-    // @ts-expect-error missing types
     pinoLoki({
       batching: false,
       labels: { application: 'bentocache' },
