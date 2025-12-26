@@ -120,7 +120,7 @@ test.group('One tier cache', () => {
 
     await cache.set({ key: 'key1', value: 'value1', ttl: '100ms' })
 
-    await sleep(100)
+    await sleep(150)
     const r1 = await cache.missing({ key: 'key1' })
 
     await sleep(500)
