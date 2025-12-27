@@ -38,6 +38,16 @@ test.group('One tier cache', () => {
     assert.equal(r2, 'default')
   })
 
+  test('get() should assume array as a value and not a factory', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    const r1 = await cache.get({ key: 'key1', defaultValue: ['a', 'b'] })
+    const r2 = await cache.get({ key: 'key2', defaultValue: () => ['a', 'b'] })
+
+    assert.deepEqual(r1, ['a', 'b'])
+    assert.deepEqual(r2, ['a', 'b'])
+  })
+
   test('get() with fallback but item found should return item', async ({ assert }) => {
     const { cache } = new CacheFactory().withMemoryL1().create()
 
@@ -184,6 +194,285 @@ test.group('One tier cache', () => {
 
     assert.isFalse(await cache.has({ key: 'key1' }))
     assert.isFalse(await cache.has({ key: 'key2' }))
+  })
+
+  test('getMany() should return values for multiple keys in order', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    await cache.set({ key: 'key1', value: 'value1' })
+    await cache.set({ key: 'key2', value: 'value2' })
+
+    const results = await cache.getMany({ keys: ['key1', 'key2', 'key3'] })
+    assert.deepEqual(results, ['value1', 'value2', undefined])
+
+    const resultsWithDefault = await cache.getMany({ keys: ['key1', 'key3'], defaultValue: 'def' })
+    assert.deepEqual(resultsWithDefault, ['value1', 'def'])
+  })
+
+  test('getMany() should return empty array for empty keys', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+    const results = await cache.getMany({ keys: [] })
+    assert.deepEqual(results, [])
+  })
+
+  test('getMany() should return all undefined for missing keys', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+    const results = await cache.getMany({ keys: ['key1', 'key2'] })
+    assert.deepEqual(results, [undefined, undefined])
+  })
+
+  test('getMany() should return defaults for all missing keys when defaultValue provided', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+    const results = await cache.getMany({ keys: ['key1', 'key2'], defaultValue: 'default' })
+    assert.deepEqual(results, ['default', 'default'])
+  })
+
+  test('getMany() should treat array defaultValue as a single value for each key', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    // 1. Array as value
+    const r1 = await cache.getMany({
+      keys: ['key1', 'key2'],
+      defaultValue: ['a', 'b'],
+    })
+
+    // 2. Factory returning array
+    const r2 = await cache.getMany({
+      keys: ['key1', 'key2'],
+      defaultValue: () => ['a', 'b'],
+    })
+
+    assert.deepEqual(r1, [
+      ['a', 'b'],
+      ['a', 'b'],
+    ])
+    assert.deepEqual(r2, [
+      ['a', 'b'],
+      ['a', 'b'],
+    ])
+  })
+
+  test('getMany() should preserve order regardless of storage order', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    await cache.set({ key: 'keyC', value: 'valueC' })
+    await cache.set({ key: 'keyA', value: 'valueA' })
+    await cache.set({ key: 'keyB', value: 'valueB' })
+
+    const results = await cache.getMany({ keys: ['keyA', 'keyB', 'keyC'] })
+    assert.deepEqual(results, ['valueA', 'valueB', 'valueC'])
+
+    const resultsReverse = await cache.getMany({ keys: ['keyC', 'keyB', 'keyA'] })
+    assert.deepEqual(resultsReverse, ['valueC', 'valueB', 'valueA'])
+
+    const resultsMixed = await cache.getMany({ keys: ['keyB', 'keyA', 'keyC', 'keyA'] })
+    assert.deepEqual(resultsMixed, ['valueB', 'valueA', 'valueC', 'valueA'])
+  })
+
+  test('getMany() should handle duplicate keys in request', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    await cache.set({ key: 'key1', value: 'value1' })
+    await cache.set({ key: 'key2', value: 'value2' })
+
+    const results = await cache.getMany({ keys: ['key1', 'key2', 'key1', 'key2', 'key1'] })
+    assert.deepEqual(results, ['value1', 'value2', 'value1', 'value2', 'value1'])
+  })
+
+  test('getMany() should handle different data types correctly', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    await cache.set({ key: 'string', value: 'text' })
+    await cache.set({ key: 'number', value: 42 })
+    await cache.set({ key: 'boolean', value: true })
+    await cache.set({ key: 'array', value: [1, 2, 3] })
+    await cache.set({ key: 'object', value: { foo: 'bar' } })
+    await cache.set({ key: 'null', value: null })
+
+    const results = await cache.getMany({
+      keys: ['string', 'number', 'boolean', 'array', 'object', 'null', 'missing'],
+    })
+
+    assert.equal(results[0], 'text')
+    assert.equal(results[1], 42)
+    assert.equal(results[2], true)
+    assert.deepEqual(results[3], [1, 2, 3])
+    assert.deepEqual(results[4], { foo: 'bar' })
+    assert.isNull(results[5])
+    assert.isUndefined(results[6])
+  })
+
+  test('getMany() should call factory function for each missing key when used as defaultValue', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    await cache.set({ key: 'key1', value: 'value1' })
+
+    let callCount = 0
+    const factory = () => {
+      callCount++
+      return `default-${callCount}`
+    }
+
+    const results = await cache.getMany({
+      keys: ['key1', 'key2', 'key3'],
+      defaultValue: factory,
+    })
+
+    assert.deepEqual(results, ['value1', 'default-1', 'default-2'])
+    assert.equal(callCount, 2)
+  })
+
+  test('getMany() should respect TTL and return undefined for expired items', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    await cache.set({ key: 'key1', value: 'value1' })
+    await cache.set({ key: 'key2', value: 'value2', ttl: '50ms' })
+    await cache.set({ key: 'key3', value: 'value3' })
+
+    const results1 = await cache.getMany({ keys: ['key1', 'key2', 'key3'] })
+    assert.deepEqual(results1, ['value1', 'value2', 'value3'])
+
+    await sleep(100)
+
+    const results2 = await cache.getMany({
+      keys: ['key1', 'key2', 'key3'],
+      defaultValue: 'expired',
+    })
+    assert.deepEqual(results2, ['value1', 'expired', 'value3'])
+  })
+
+  test('getMany() should handle grace period correctly with individual keys', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory().withMemoryL1().merge({ grace: '500ms' }).create()
+
+    await cache.set({ key: 'key1', value: 'value1', ttl: '50ms' })
+
+    const results1 = await cache.getMany({ keys: ['key1'] })
+    assert.deepEqual(results1, ['value1'])
+
+    await sleep(100)
+
+    const results2 = await cache.getMany({ keys: ['key1'] })
+    assert.deepEqual(results2, ['value1'])
+
+    await sleep(500)
+
+    const results3 = await cache.getMany({ keys: ['key1'], defaultValue: 'default' })
+    assert.deepEqual(results3, ['default'])
+  })
+
+  test('getMany() should return undefined after expiration when grace is disabled', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory().withMemoryL1().merge({ grace: false }).create()
+
+    await cache.set({ key: 'key1', value: 'value1' })
+    await cache.set({ key: 'key2', value: 'value2', ttl: '50ms' })
+
+    await sleep(100)
+
+    const results = await cache.getMany({
+      keys: ['key1', 'key2'],
+      defaultValue: 'default',
+    })
+
+    assert.deepEqual(results, ['value1', 'default'])
+  })
+
+  test('getMany() should isolate results between namespaces', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    await cache.set({ key: 'key1', value: 'root-value1' })
+    await cache.namespace('users').set({ key: 'key1', value: 'users-value1' })
+    await cache.namespace('users').set({ key: 'key2', value: 'users-value2' })
+
+    const rootResults = await cache.getMany({ keys: ['key1', 'key2'] })
+    assert.deepEqual(rootResults, ['root-value1', undefined])
+
+    const usersResults = await cache.namespace('users').getMany({ keys: ['key1', 'key2'] })
+    assert.deepEqual(usersResults, ['users-value1', 'users-value2'])
+  })
+
+  test('getMany() should handle large number of keys efficiently', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    const numKeys = 100
+    const keys = Array.from({ length: numKeys }, (_, i) => `key${i}`)
+
+    for (let i = 0; i < numKeys / 2; i++) {
+      await cache.set({ key: `key${i}`, value: `value${i}` })
+    }
+
+    const results = await cache.getMany({ keys })
+
+    for (let i = 0; i < numKeys / 2; i++) {
+      assert.equal(results[i], `value${i}`)
+    }
+    for (let i = numKeys / 2; i < numKeys; i++) {
+      assert.isUndefined(results[i])
+    }
+
+    assert.lengthOf(results, numKeys)
+  })
+
+  test('getMany() should work correctly with concurrent set operations', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    await cache.set({ key: 'key1', value: 'initial1' })
+    await cache.set({ key: 'key2', value: 'initial2' })
+
+    const [getResults] = await Promise.all([
+      cache.getMany({ keys: ['key1', 'key2', 'key3'] }),
+      (async () => {
+        await cache.set({ key: 'key3', value: 'concurrent3' })
+      })(),
+    ])
+
+    assert.isArray(getResults)
+    assert.lengthOf(getResults, 3)
+
+    const finalResults = await cache.getMany({ keys: ['key1', 'key2', 'key3'] })
+    assert.deepEqual(finalResults, ['initial1', 'initial2', 'concurrent3'])
+  })
+
+  test('getMany() should handle mixed valid and expired keys correctly', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    await cache.set({ key: 'key1', value: 'value1' })
+    await cache.set({ key: 'key2', value: 'value2', ttl: '50ms' })
+    await cache.set({ key: 'key3', value: 'value3' })
+    await cache.set({ key: 'key4', value: 'value4', ttl: '50ms' })
+
+    await sleep(100)
+
+    const results = await cache.getMany({
+      keys: ['key1', 'key2', 'key3', 'key4'],
+      defaultValue: 'default',
+    })
+
+    assert.deepEqual(results, ['value1', 'default', 'value3', 'default'])
+  })
+
+  test('getMany() should not mutate input keys array', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().create()
+
+    await cache.set({ key: 'key1', value: 'value1' })
+
+    const keys = ['key1', 'key2']
+    const keysCopy = [...keys]
+
+    await cache.getMany({ keys })
+
+    assert.deepEqual(keys, keysCopy)
   })
 
   test('deleteMany should delete multiple keys', async ({ assert }) => {
