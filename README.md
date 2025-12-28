@@ -15,7 +15,7 @@
 - 🤓 SWR-like caching strategy
 - 🗂️ Namespaces. Group your keys by categories.
 - 🏷️ Tagging. Easy invalidations.
-- 🛑 Cache stamped protection.
+- 🛑 Cache stampede protection.
 - 🏷️ Named caches
 - 📖 Well documented + handy JSDoc annotations
 - 📊 Events. Useful for monitoring and metrics
@@ -76,15 +76,15 @@ Multi-layer caching allows you to combine the speed of in-memory caching with th
 
 Many drivers available to suit all situations: Redis, Upstash, Database (MySQL, SQLite, PostgreSQL), DynamoDB, Filesystem, In-memory (LRU Cache), Vercel KV...
 
-See the [drivers documentation](https://bentocache.dev/docs/cache-drivers) for list of available drivers. Also very easy to extend the library and [add your own driver](https://bentocache.dev/docs/custom-cache-driver)
+See the [drivers documentation](https://bentocache.dev/docs/cache-drivers) for list of available drivers. Also, it is very easy to extend the library and [add your own driver](https://bentocache.dev/docs/custom-cache-driver)
 
 ### Resiliency
 
 - [Grace period](https://bentocache.dev/docs/grace-periods): Keep your application running smoothly with the ability to temporarily use expired cache entries when your database is down, or when a factory is failing.
 
-- [Cache stamped prevention](https://bentocache.dev/docs/stampede-protection): Ensuring that only one factory is executed at the same time.
+- [Cache stampede prevention](https://bentocache.dev/docs/stampede-protection): Ensuring that only one factory is executed at the same time.
 
-- [Retry queue](https://bentocache.dev/docs/multi-tier#retry-queue-strategy) : When a application fails to publish something to the bus, it is added to a queue and retried later.
+- [Retry queue](https://bentocache.dev/docs/multi-tier#retry-queue-strategy) : When an application fails to publish something to the bus, it is added to a queue and retried later.
 
 ### Timeouts
 
