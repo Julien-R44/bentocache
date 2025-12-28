@@ -15,7 +15,7 @@
 - 🤓 SWR-like caching strategy
 - 🗂️ Namespaces. Group your keys by categories.
 - 🏷️ Tagging. Easy invalidations.
-- 🛑 Cache stamped protection.
+- 🛑 Cache stampede protection.
 - 🏷️ Named caches
 - 📖 Well documented + handy JSDoc annotations
 - 📊 Events. Useful for monitoring and metrics
