@@ -42,6 +42,47 @@ export function registerCacheDriverTestSuite(options: {
     assert.deepEqual(await cache.get('key'), 'value')
   })
 
+  test('getMany() should return values for multiple keys in order', async ({ assert }) => {
+    await cache.set('key1', 'value1')
+    await cache.set('key3', 'value3')
+
+    const results = await cache.getMany(['key1', 'key2', 'key3'])
+    assert.deepEqual(results, ['value1', undefined, 'value3'])
+  })
+
+  test('getMany() should return undefined for missing keys', async ({ assert }) => {
+    const results = await cache.getMany(['missing1', 'missing2'])
+    assert.deepEqual(results, [undefined, undefined])
+  })
+
+  test('getMany() should handle duplicate keys', async ({ assert }) => {
+    await cache.set('key1', 'value1')
+    const results = await cache.getMany(['key1', 'key1'])
+    assert.deepEqual(results, ['value1', 'value1'])
+  })
+
+  test('getMany() should handle expired items', async ({ assert }) => {
+    /**
+     * Using second-level TTL values (1000ms+) because MySQL and some other databases
+     * only support second-precision for expiration timestamps. Sub-second TTLs cause
+     * flaky tests due to unpredictable rounding behavior.
+     */
+    await cache.set('expired1', 'value1', 1000)
+    await cache.set('expired2', 'value2', 1000)
+    await cache.set('valid', 'value3', 5000)
+
+    await sleep(1500)
+
+    const results = await cache.getMany(['expired1', 'expired2', 'valid', 'missing'])
+
+    assert.isUndefined(results[0], 'Expired item 1 should be undefined')
+    assert.isUndefined(results[1], 'Expired item 2 should be undefined')
+    assert.equal(results[2], 'value3', 'Valid item should be returned')
+    assert.isUndefined(results[3], 'Missing item should be undefined')
+
+    await Promise.all([cache.delete('expired1'), cache.delete('expired2'), cache.delete('valid')])
+  })
+
   test('set() store a value', async ({ assert }) => {
     await cache.set('key', 'value')
     assert.deepEqual(await cache.get('key'), 'value')

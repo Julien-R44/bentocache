@@ -8,6 +8,7 @@ import type {
   HasOptions,
   SetOptions,
   DeleteByTagOptions,
+  GetManyOptions,
 } from './main.js'
 
 /**
@@ -99,6 +100,11 @@ export interface CacheProvider {
    * Returns a new instance of the driver namespaced
    */
   namespace(namespace: string): CacheProvider
+
+  /**
+   * Get multiple values from the cache
+   */
+  getMany<T = any>(options: GetManyOptions<T>): Promise<(T | undefined | null)[]>
 
   /**
    * Closes the connection to the cache

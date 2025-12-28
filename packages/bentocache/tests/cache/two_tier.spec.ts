@@ -57,6 +57,10 @@ test.group('Two tier cache', () => {
       get(): any {
         assert.fail('should not be called')
       }
+
+      getMany(_keys: string[]): any {
+        assert.fail('should not be called')
+      }
     }
 
     const { cache, local, stack } = new CacheFactory()
@@ -825,6 +829,40 @@ test.group('Two tier cache', () => {
     assert.equal(value, 'updated')
     assert.equal(l1Value?.entry.getValue(), 'updated')
     assert.equal(l2Value?.entry.getValue(), 'updated')
+  })
+
+  test('getMany() should correctly handle L1/L2 hits and misses', async ({ assert }) => {
+    const { cache, local, remote, stack } = new CacheFactory().withL1L2Config().create()
+
+    // Setup:
+    // key1: in L1 only
+    // key2: in L2 only
+    // key3: in neither
+    await local.set('key1', JSON.stringify({ value: 'value1' }), stack.defaultOptions)
+    await remote.set('key2', JSON.stringify({ value: 'value2' }), stack.defaultOptions)
+
+    const results = await cache.getMany({ keys: ['key1', 'key2', 'key3'] })
+
+    assert.deepEqual(results, ['value1', 'value2', undefined])
+
+    // Verify backfill (key2 should now be in L1)
+    const key2Local = local.get('key2', stack.defaultOptions)
+    assert.equal(key2Local?.entry.getValue(), 'value2')
+  })
+
+  test('getMany() should return default values for missing keys in two-tier setup', async ({
+    assert,
+  }) => {
+    const { cache, local, stack } = new CacheFactory().withL1L2Config().create()
+
+    await local.set('key1', JSON.stringify({ value: 'value1' }), stack.defaultOptions)
+
+    const results = await cache.getMany({
+      keys: ['key1', 'key2'],
+      defaultValue: 'default',
+    })
+
+    assert.deepEqual(results, ['value1', 'default'])
   })
 
   test('getOrSet() should execute factory even if value exists in L2 when forceFresh is true', async ({
