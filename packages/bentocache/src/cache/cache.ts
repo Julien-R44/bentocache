@@ -1,23 +1,25 @@
 import { is } from '@julr/utils/is'
 
 import type { CacheStack } from './cache_stack.js'
-import { CacheBusMessageType } from '../types/main.js'
 import { cacheEvents } from '../events/cache_events.js'
+import { cacheOperation } from '../tracing_channels.js'
 import type { CacheProvider } from '../types/provider.js'
 import { GetSetHandler } from './get_set/get_set_handler.js'
 import type { BentoCacheOptions } from '../bento_cache_options.js'
-import type {
-  Factory,
-  ClearOptions,
-  GetOrSetOptions,
-  GetOptions,
-  SetOptions,
-  HasOptions,
-  DeleteOptions,
-  DeleteManyOptions,
-  GetOrSetForeverOptions,
-  ExpireOptions,
-  DeleteByTagOptions,
+import type { CacheOperationMessage } from '../types/tracing_channels.js'
+import {
+  type Factory,
+  type ClearOptions,
+  type GetOrSetOptions,
+  type GetOptions,
+  type SetOptions,
+  type HasOptions,
+  type DeleteOptions,
+  type DeleteManyOptions,
+  type GetOrSetForeverOptions,
+  type ExpireOptions,
+  type DeleteByTagOptions,
+  CacheBusMessageType,
 } from '../types/main.js'
 
 export class Cache implements CacheProvider {
@@ -58,40 +60,59 @@ export class Cache implements CacheProvider {
     const options = this.#stack.defaultOptions.cloneWith(rawOptions)
     this.#options.logger.logMethod({ method: 'get', key, options, cacheName: this.name })
 
-    const localItem = this.#stack.l1?.get(key, options)
-    const isLocalItemValid = await this.#stack.isEntryValid(localItem)
-    if (isLocalItemValid) {
-      this.#stack.emit(cacheEvents.hit(key, localItem!.entry.getValue(), this.name))
-      this.#options.logger.logL1Hit({ cacheName: this.name, key, options })
-      return localItem!.entry.getValue()
+    const message: CacheOperationMessage = {
+      operation: 'get',
+      key: this.#stack.getFullKey(key),
+      store: this.name,
     }
 
-    const remoteItem = await this.#stack.l2?.get(key, options)
-    const isRemoteItemValid = await this.#stack.isEntryValid(remoteItem)
+    return cacheOperation.tracePromise(async () => {
+      const localItem = this.#stack.l1?.get(key, options)
+      const isLocalItemValid = await this.#stack.isEntryValid(localItem)
+      if (isLocalItemValid) {
+        this.#stack.emit(cacheEvents.hit(key, localItem!.entry.getValue(), this.name))
+        this.#options.logger.logL1Hit({ cacheName: this.name, key, options })
+        message.hit = true
+        message.tier = 'l1'
+        return localItem!.entry.getValue()
+      }
 
-    if (isRemoteItemValid) {
-      this.#stack.l1?.set(key, remoteItem!.entry.serialize(), options)
-      this.#stack.emit(cacheEvents.hit(key, remoteItem!.entry.getValue(), this.name))
-      this.#options.logger.logL2Hit({ cacheName: this.name, key, options })
-      return remoteItem!.entry.getValue()
-    }
+      const remoteItem = await this.#stack.l2?.get(key, options)
+      const isRemoteItemValid = await this.#stack.isEntryValid(remoteItem)
 
-    if (remoteItem && options.isGraceEnabled()) {
-      this.#stack.l1?.set(key, remoteItem.entry.serialize(), options)
-      this.#stack.emit(cacheEvents.hit(key, remoteItem.entry.serialize(), this.name, 'l2', true))
-      this.#options.logger.logL2Hit({ cacheName: this.name, key, options, graced: true })
-      return remoteItem.entry.getValue()
-    }
+      if (isRemoteItemValid) {
+        this.#stack.l1?.set(key, remoteItem!.entry.serialize(), options)
+        this.#stack.emit(cacheEvents.hit(key, remoteItem!.entry.getValue(), this.name))
+        this.#options.logger.logL2Hit({ cacheName: this.name, key, options })
+        message.hit = true
+        message.tier = 'l2'
+        return remoteItem!.entry.getValue()
+      }
 
-    if (localItem && options.isGraceEnabled()) {
-      this.#stack.emit(cacheEvents.hit(key, localItem.entry.serialize(), this.name, 'l2', true))
-      this.#options.logger.logL1Hit({ cacheName: this.name, key, options, graced: true })
-      return localItem.entry.getValue()
-    }
+      if (remoteItem && options.isGraceEnabled()) {
+        this.#stack.l1?.set(key, remoteItem.entry.serialize(), options)
+        this.#stack.emit(cacheEvents.hit(key, remoteItem.entry.serialize(), this.name, 'l2', true))
+        this.#options.logger.logL2Hit({ cacheName: this.name, key, options, graced: true })
+        message.hit = true
+        message.tier = 'l2'
+        message.graced = true
+        return remoteItem.entry.getValue()
+      }
 
-    this.#stack.emit(cacheEvents.miss(key, this.name))
-    this.#options.logger.debug({ key, cacheName: this.name }, 'cache miss. using default value')
-    return this.#resolveDefaultValue(defaultValueFn)
+      if (localItem && options.isGraceEnabled()) {
+        this.#stack.emit(cacheEvents.hit(key, localItem.entry.serialize(), this.name, 'l2', true))
+        this.#options.logger.logL1Hit({ cacheName: this.name, key, options, graced: true })
+        message.hit = true
+        message.tier = 'l1'
+        message.graced = true
+        return localItem.entry.getValue()
+      }
+
+      this.#stack.emit(cacheEvents.miss(key, this.name))
+      this.#options.logger.debug({ key, cacheName: this.name }, 'cache miss. using default value')
+      message.hit = false
+      return this.#resolveDefaultValue(defaultValueFn)
+    }, message)
   }
 
   /**
@@ -193,13 +214,21 @@ export class Cache implements CacheProvider {
     const options = this.#stack.defaultOptions.cloneWith(rawOptions)
     this.#options.logger.logMethod({ method: 'delete', key, cacheName: this.name, options })
 
-    this.#stack.l1?.delete(key, options)
-    await this.#stack.l2?.delete(key, options)
+    const message: CacheOperationMessage = {
+      operation: 'delete',
+      key: this.#stack.getFullKey(key),
+      store: this.name,
+    }
 
-    this.#stack.emit(cacheEvents.deleted(key, this.name))
-    await this.#stack.publish({ type: CacheBusMessageType.Delete, keys: [key] })
+    return cacheOperation.tracePromise(async () => {
+      this.#stack.l1?.delete(key, options)
+      await this.#stack.l2?.delete(key, options)
 
-    return true
+      this.#stack.emit(cacheEvents.deleted(key, this.name))
+      await this.#stack.publish({ type: CacheBusMessageType.Delete, keys: [key] })
+
+      return true
+    }, message)
   }
 
   /**
@@ -229,13 +258,21 @@ export class Cache implements CacheProvider {
       options,
     })
 
-    this.#stack.l1?.deleteMany(keys, options)
-    await this.#stack.l2?.deleteMany(keys, options)
+    const message: CacheOperationMessage = {
+      operation: 'deleteMany',
+      keys: this.#stack.getFullKeys(keys),
+      store: this.name,
+    }
 
-    keys.forEach((key) => this.#stack.emit(cacheEvents.deleted(key, this.name)))
-    await this.#stack.publish({ type: CacheBusMessageType.Delete, keys })
+    return cacheOperation.tracePromise(async () => {
+      this.#stack.l1?.deleteMany(keys, options)
+      await this.#stack.l2?.deleteMany(keys, options)
 
-    return true
+      for (const key of keys) this.#stack.emit(cacheEvents.deleted(key, this.name))
+      await this.#stack.publish({ type: CacheBusMessageType.Delete, keys })
+
+      return true
+    }, message)
   }
 
   /**
@@ -258,13 +295,20 @@ export class Cache implements CacheProvider {
     const options = this.#stack.defaultOptions.cloneWith(rawOptions)
     this.#options.logger.logMethod({ method: 'clear', cacheName: this.name, options })
 
-    await Promise.all([
-      this.#stack.l1?.clear(),
-      this.#stack.l2?.clear(options),
-      this.#stack.publish({ type: CacheBusMessageType.Clear, keys: [] }),
-    ])
+    const message: CacheOperationMessage = {
+      operation: 'clear',
+      store: this.name,
+    }
 
-    this.#stack.emit(cacheEvents.cleared(this.name))
+    return cacheOperation.tracePromise(async () => {
+      await Promise.all([
+        this.#stack.l1?.clear(),
+        this.#stack.l2?.clear(options),
+        this.#stack.publish({ type: CacheBusMessageType.Clear, keys: [] }),
+      ])
+
+      this.#stack.emit(cacheEvents.cleared(this.name))
+    }, message)
   }
 
   /**
