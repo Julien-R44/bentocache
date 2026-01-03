@@ -7,7 +7,9 @@ import { FactoryRunner } from '../factory_runner.js'
 import type { Factory } from '../../types/helpers.js'
 import type { CacheEvent } from '../../types/events.js'
 import { cacheEvents } from '../../events/cache_events.js'
+import { cacheOperation } from '../../tracing_channels.js'
 import type { GetCacheValueReturn } from '../../types/internals/index.js'
+import type { CacheOperationMessage } from '../../types/tracing_channels.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
 
 export class SingleTierHandler {
@@ -39,7 +41,13 @@ export class SingleTierHandler {
     key: string,
     item: GetCacheValueReturn,
     options: CacheEntryOptions,
+    message?: CacheOperationMessage,
   ) {
+    if (message) {
+      message.hit = true
+      message.tier = 'l2'
+    }
+
     this.logger.logL2Hit({ cacheName: this.stack.name, key, options })
 
     this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, 'l2'))
@@ -62,8 +70,15 @@ export class SingleTierHandler {
     item: GetCacheValueReturn | undefined,
     options: CacheEntryOptions,
     err: Error,
+    message?: CacheOperationMessage,
   ) {
     if (options.isGraceEnabled() && item) {
+      if (message) {
+        message.hit = true
+        message.tier = 'l2'
+        message.graced = item.isGraced
+      }
+
       this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, 'l2', item.isGraced))
       return item.entry.getValue()
     }
@@ -75,6 +90,7 @@ export class SingleTierHandler {
     key: string,
     item: GetCacheValueReturn,
     options: CacheEntryOptions,
+    message?: CacheOperationMessage,
   ) {
     if (options.grace && options.graceBackoff) {
       this.logger.trace(
@@ -89,12 +105,23 @@ export class SingleTierHandler {
       )
     }
 
+    if (message) {
+      message.hit = true
+      message.tier = 'l2'
+      message.graced = true
+    }
+
     this.logger.trace({ key, cache: this.stack.name, opId: options.id }, 'returns stale value')
     this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, 'l2', true))
     return item.entry.getValue()
   }
 
-  async handle(key: string, factory: Factory, options: CacheEntryOptions) {
+  async #handleInternal(
+    key: string,
+    factory: Factory,
+    options: CacheEntryOptions,
+    message?: CacheOperationMessage,
+  ) {
     /**
      * If forceFresh is not true, check in the remote cache first
      */
@@ -105,7 +132,7 @@ export class SingleTierHandler {
       remoteItem = await this.stack.l2?.get(key, options)
       isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
       if (isRemoteItemValid) {
-        return this.#returnRemoteCacheValue(key, remoteItem!, options)
+        return this.#returnRemoteCacheValue(key, remoteItem!, options, message)
       }
     }
 
@@ -117,7 +144,7 @@ export class SingleTierHandler {
     try {
       releaser = await this.#acquireLock(key, !!remoteItem, options)
     } catch (err) {
-      return this.#returnGracedValueOrThrow(key, remoteItem, options, err)
+      return this.#returnGracedValueOrThrow(key, remoteItem, options, err, message)
     }
 
     /**
@@ -129,12 +156,15 @@ export class SingleTierHandler {
       isRemoteItemValid = await this.stack.isEntryValid(remoteItem)
       if (isRemoteItemValid) {
         this.#locks.release(key, releaser)
-        return this.#returnRemoteCacheValue(key, remoteItem!, options)
+        return this.#returnRemoteCacheValue(key, remoteItem!, options, message)
       }
     }
 
     try {
       const result = await this.#factoryRunner.run(key, factory, remoteItem, options, releaser)
+
+      if (message) message.hit = false
+
       this.#emit(cacheEvents.miss(key, this.stack.name))
       return result
     } catch (err) {
@@ -143,7 +173,7 @@ export class SingleTierHandler {
        */
       const staleItem = remoteItem
       if (err instanceof errors.E_FACTORY_SOFT_TIMEOUT && staleItem) {
-        return this.#returnGracedValueOrThrow(key, staleItem, options, err)
+        return this.#returnGracedValueOrThrow(key, staleItem, options, err, message)
       }
 
       /**
@@ -154,11 +184,24 @@ export class SingleTierHandler {
 
       if (staleItem && options.isGraceEnabled()) {
         this.#locks.release(key, releaser)
-        return this.#applyFallbackAndReturnGracedValue(key, staleItem, options)
+        return this.#applyFallbackAndReturnGracedValue(key, staleItem, options, message)
       }
 
       this.#locks.release(key, releaser)
       throw err
     }
+  }
+
+  handle(key: string, factory: Factory, options: CacheEntryOptions) {
+    const message: CacheOperationMessage = {
+      operation: 'get',
+      key: this.stack.getFullKey(key),
+      store: this.stack.name,
+    }
+
+    return cacheOperation.tracePromise(
+      () => this.#handleInternal(key, factory, options, message),
+      message,
+    )
   }
 }
