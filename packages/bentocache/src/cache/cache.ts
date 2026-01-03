@@ -74,6 +74,7 @@ export class Cache implements CacheProvider {
         this.#options.logger.logL1Hit({ cacheName: this.name, key, options })
         message.hit = true
         message.tier = 'l1'
+        message.graced = false
         return localItem!.entry.getValue()
       }
 
@@ -86,6 +87,7 @@ export class Cache implements CacheProvider {
         this.#options.logger.logL2Hit({ cacheName: this.name, key, options })
         message.hit = true
         message.tier = 'l2'
+        message.graced = false
         return remoteItem!.entry.getValue()
       }
 

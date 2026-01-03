@@ -49,7 +49,7 @@ test.group('Tracing Channels', () => {
     assert.lengthOf(collector.messages.end, 1)
 
     assert.equal(collector.messages.start[0].operation, 'get')
-    assert.equal(collector.messages.start[0].key, 'test:nonexistent')
+    assert.equal(collector.messages.start[0].key, 'bentocache:nonexistent')
     assert.equal(collector.messages.start[0].store, 'primary')
 
     assert.equal(collector.messages.end[0].hit, false)
@@ -86,7 +86,7 @@ test.group('Tracing Channels', () => {
     assert.lengthOf(collector.messages.end, 1)
 
     assert.equal(collector.messages.start[0].operation, 'set')
-    assert.equal(collector.messages.start[0].key, 'test:foo')
+    assert.equal(collector.messages.start[0].key, 'bentocache:foo')
     assert.equal(collector.messages.start[0].store, 'primary')
   })
 
@@ -104,7 +104,7 @@ test.group('Tracing Channels', () => {
     assert.lengthOf(collector.messages.end, 1)
 
     assert.equal(collector.messages.start[0].operation, 'delete')
-    assert.equal(collector.messages.start[0].key, 'test:foo')
+    assert.equal(collector.messages.start[0].key, 'bentocache:foo')
   })
 
   test('traces deleteMany operation', async ({ assert, cleanup }) => {
@@ -122,7 +122,7 @@ test.group('Tracing Channels', () => {
     assert.lengthOf(collector.messages.end, 1)
 
     assert.equal(collector.messages.start[0].operation, 'deleteMany')
-    assert.deepEqual(collector.messages.start[0].keys, ['test:foo', 'test:baz'])
+    assert.deepEqual(collector.messages.start[0].keys, ['bentocache:foo', 'bentocache:baz'])
   })
 
   test('traces clear operation', async ({ assert, cleanup }) => {
@@ -154,7 +154,7 @@ test.group('Tracing Channels', () => {
     assert.lengthOf(collector.messages.end, 1)
 
     assert.equal(collector.messages.start[0].operation, 'expire')
-    assert.equal(collector.messages.start[0].key, 'test:foo')
+    assert.equal(collector.messages.start[0].key, 'bentocache:foo')
   })
 
   test('traces getOrSet with cache hit', async ({ assert, cleanup }) => {
@@ -193,7 +193,7 @@ test.group('Tracing Channels', () => {
     assert.lengthOf(setMessages, 1)
 
     assert.equal(getMessages[0].hit, false)
-    assert.equal(setMessages[0].key, 'test:newkey')
+    assert.equal(setMessages[0].key, 'bentocache:newkey')
   })
 
   test('traces namespaced operations with full key', async ({ assert, cleanup }) => {
@@ -204,7 +204,7 @@ test.group('Tracing Channels', () => {
 
     await cache.namespace('users').set({ key: '123', value: 'john' })
 
-    assert.equal(collector.messages.start[0].key, 'test:users:123')
+    assert.equal(collector.messages.start[0].key, 'bentocache:users:123')
   })
 
   test('traces graced get operation', async ({ assert, cleanup }) => {
