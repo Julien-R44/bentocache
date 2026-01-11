@@ -22,8 +22,8 @@ const bento = new BentoCache({
       // Store level 👇
       ttl: '30m',
       grace: false,
-    })
-  }
+    }),
+  },
 })
 
 bento.getOrSet({
@@ -104,6 +104,7 @@ Levels: `global`, `store`, `operation`
 A duration to define a hard [timeout](./timeouts.md#hard-timeouts).
 
 ### `forceFresh`
+
 Default: `false`
 
 Levels: `operation`
@@ -117,7 +118,7 @@ Default: `undefined`
 
 Levels: `global`, `store`, `operation`
 
-The maximum amount of time (in milliseconds) that the in-memory lock for [stampeded protection](./stampede_protection.md) can be held. If the lock is not released before this timeout, it will be released automatically. 
+The maximum amount of time (in milliseconds) that the in-memory lock for [stampeded protection](./stampede_protection.md) can be held. If the lock is not released before this timeout, it will be released automatically.
 
 This is usually not needed, but can provide an extra layer of protection against theoretical deadlocks.
 
@@ -146,9 +147,9 @@ Default: `undefined (disabled)`
 
 Levels: `global`, `store`, `operation`
 
-This option allows you to enable a simple circuit breaker system for the L2 Cache. If defined, the circuit breaker will open when a call to our distributed cache fails. It will stay open for `l2CircuitBreakerDuration` seconds. 
+This option allows you to enable a simple circuit breaker system for the L2 Cache. If defined, the circuit breaker will open when a call to our distributed cache fails. It will stay open for `l2CircuitBreakerDuration` seconds.
 
-If you're not familiar with the circuit breaker system, to summarize it very simply: if an operation on the L2 Cache fails and the circuit breaker option is activated, then all future operations on the L2 Cache will be rejected for `l2CircuitBreakerDuration` seconds, in order to avoid overloading the L2 Cache with operations that are likely to fail. 
+If you're not familiar with the circuit breaker system, to summarize it very simply: if an operation on the L2 Cache fails and the circuit breaker option is activated, then all future operations on the L2 Cache will be rejected for `l2CircuitBreakerDuration` seconds, in order to avoid overloading the L2 Cache with operations that are likely to fail.
 
 Once the `l2CircuitBreakerDuration` seconds have passed, the circuit breaker closes and operations on the L2 Cache can resume.
 
@@ -180,8 +181,8 @@ import superjson from 'superjson'
 const bento = new BentoCache({
   serializer: {
     serialize: superjson.stringify,
-    deserialize: superjson.parse
-  }
+    deserialize: superjson.parse,
+  },
 })
 ```
 
@@ -204,3 +205,46 @@ Levels: `global`
 Only configurable at the BentoCache level.
 
 See [events](./digging_deeper/events.md) for more details.
+
+### `waitUntil`
+
+Default: `undefined`.
+
+Levels: `global`
+
+Only configurable at the BentoCache level.
+
+A function to register background tasks in serverless environments. This is essential for SWR (Stale-While-Revalidate) to work properly in serverless platforms like Vercel, Cloudflare Workers, Netlify, etc.
+
+When BentoCache uses background revalidation (when a stale value is returned and the cache is refreshed in the background), it needs to inform the serverless platform that work is still ongoing after the response is sent. Without this, the serverless function may be terminated before the background task completes.
+
+```ts
+// title: Vercel Functions
+import { waitUntil } from '@vercel/functions'
+
+const bento = new BentoCache({
+  default: 'memory',
+  waitUntil: waitUntil,
+  stores: {
+    memory: bentostore().useL1Layer(memoryDriver({})),
+  },
+})
+```
+
+```ts
+// title: Cloudflare Workers
+import { waitUntil } from 'cloudflare:workers'
+
+const bento = new BentoCache({
+  default: 'memory',
+  waitUntil: waitUntil,
+  stores: {
+    memory: bentostore().useL1Layer(memoryDriver({})),
+  },
+})
+```
+
+This option is only needed when:
+
+- You're running in a serverless environment
+- You're using features that trigger background revalidation (SWR with grace periods, soft timeouts, etc.)

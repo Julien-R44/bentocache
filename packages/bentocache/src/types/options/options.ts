@@ -117,6 +117,22 @@ export type RawBentoCacheOptions = {
    * Custom serializer
    */
   serializer?: CacheSerializer
+
+  /**
+   * A function to register background tasks in serverless environments.
+   * This is needed for SWR (Stale-While-Revalidate) to work properly in
+   * serverless platforms like Vercel, Cloudflare Workers, etc.
+   *
+   * Example with Vercel:
+   * ```ts
+   * import { waitUntil } from '@vercel/functions'
+   *
+   * const bento = new BentoCache({
+   *   waitUntil: waitUntil
+   * })
+   * ```
+   */
+  waitUntil?: (promise: Promise<unknown>) => void
 } & Omit<RawCommonOptions, 'tags' | 'skipBusNotify' | 'skipL2Write'>
 
 /**

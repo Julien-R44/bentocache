@@ -127,7 +127,8 @@ export class FactoryRunner {
      * And immediately return the fallback value
      */
     if (options.shouldSwr(hasGracedValue)) {
-      this.#runFactory({ key, factory, options, lockReleaser, isBackground: true })
+      const promise = this.#runFactory({ key, factory, options, lockReleaser, isBackground: true })
+      this.#stack.options.waitUntil?.(promise)
       throw new errors.E_FACTORY_SOFT_TIMEOUT(key)
     }
 
@@ -140,6 +141,7 @@ export class FactoryRunner {
           { cache: this.#stack.name, opId: options.id, key },
           `factory timed out after ${timeout?.duration}ms`,
         )
+        this.#stack.options.waitUntil?.(runFactory)
         throw new timeout!.exception(key)
       },
     })
