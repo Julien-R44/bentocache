@@ -80,6 +80,11 @@ export class BentoCacheOptions {
   serializeL1: boolean = true
   onFactoryError?: (error: FactoryError) => void
 
+  /**
+   * A function to register background tasks in serverless environments
+   */
+  waitUntil?: (promise: Promise<unknown>) => void
+
   constructor(options: RawBentoCacheOptions) {
     this.#options = { ...this, ...options }
 
@@ -98,6 +103,7 @@ export class BentoCacheOptions {
 
     this.logger = new Logger(this.#options.logger ?? noopLogger())
     this.onFactoryError = this.#options.onFactoryError
+    this.waitUntil = this.#options.waitUntil
   }
 
   serializeL1Cache(shouldSerialize: boolean = true) {
