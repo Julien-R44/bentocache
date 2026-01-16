@@ -212,6 +212,7 @@ export class CacheStack extends BaseDriver {
    * Valid means :
    * - Logically not expired ( not graced )
    * - Not invalidated by a tag
+   * - Not marked for hard deletion by a tag
    */
   isEntryValid(item: GetCacheValueReturn | undefined): Promise<boolean> | boolean {
     if (!item) return false
@@ -221,9 +222,26 @@ export class CacheStack extends BaseDriver {
 
     if (item.entry.getTags().length === 0) return true
 
-    return this.#tagSystem.isTagInvalidated(item.entry).then((isTagInvalidated) => {
-      return !isTagInvalidated
+    // If we have tags, check for both hard deletion and soft invalidation in a single call
+    return this.#tagSystem.checkTagValidation(item.entry).then(async (result) => {
+      if (result.isHardDeleted) {
+        // Immediately delete from all layers and return false
+        await this.#deleteFromAllLayers(item.entry.getKey())
+        return false
+      }
+
+      return !result.isTagInvalidated
     })
+  }
+
+  /**
+   * Helper method to delete a key from all cache layers
+   */
+  async #deleteFromAllLayers(key: string) {
+    this.l1?.delete(key)
+    await this.l2?.delete(key, this.defaultOptions)
+    await this.publish({ type: CacheBusMessageType.Delete, keys: [key] })
+    this.emit(cacheEvents.deleted(key, this.name))
   }
 
   /**
@@ -231,5 +249,22 @@ export class CacheStack extends BaseDriver {
    */
   async createTagInvalidations(tags: string[]) {
     return this.#tagSystem.createTagInvalidations(tags)
+  }
+
+  /**
+   * Create hard deletion marks for a list of tags
+   */
+  async createTagDeletionTimestamps(tags: string[]) {
+    const result = await this.#tagSystem.createTagDeletionTimestamps(tags)
+
+    // Also notify other instances via bus that these tags have been marked for deletion
+    if (this.bus) {
+      await this.publish({
+        type: 'cache:tags:deletion-marked' as any,
+        keys: tags.map((tag) => this.#tagSystem.getTagCacheKey(tag)),
+      })
+    }
+
+    return result
   }
 }
