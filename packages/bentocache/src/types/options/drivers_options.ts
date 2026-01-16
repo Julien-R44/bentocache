@@ -1,8 +1,12 @@
 import type { Knex } from 'knex'
 import type { Kysely } from 'kysely'
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
-import type { Redis as IoRedis, RedisOptions as IoRedisOptions } from 'ioredis'
 import type { DbResult, DefaultColumnTypes, DefaultSchemaConfig } from 'orchid-orm'
+import type {
+  Redis as IoRedis,
+  RedisOptions as IoRedisOptions,
+  Cluster as IoRedisCluster,
+} from 'ioredis'
 
 import type { Logger } from '../../logger.js'
 import type { Duration } from '../helpers.js'
@@ -105,9 +109,9 @@ export type MemoryConfig = {
  */
 export type RedisConfig = {
   /**
-   * A IoRedis connection instance or connection options
+   * A IoRedis connection instance (Redis or Cluster) or connection options
    */
-  connection: IoRedis | IoRedisOptions
+  connection: IoRedis | IoRedisCluster | IoRedisOptions
 } & DriverCommonOptions
 
 /**

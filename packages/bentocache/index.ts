@@ -1,3 +1,6 @@
 export { errors } from './src/errors.js'
 export { BentoCache } from './src/bento_cache.js'
 export { bentostore } from './src/bento_store.js'
+export { BentoStore } from './src/bento_store.js'
+export * as tracingChannels from './src/tracing_channels.js'
+export type { CacheOperationMessage } from './src/types/tracing_channels.js'

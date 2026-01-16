@@ -14,7 +14,7 @@ test.group('Fail', () => {
     const factory = sequentialFactory([() => 'foo', ({ fail }) => fail('error')])
 
     const r1 = await cache.getOrSet({ ttl: 100, key: 'foo', factory })
-    await sleep(100)
+    await sleep(150)
     const r2 = await cache.getOrSet({ key: 'foo', factory })
 
     assert.deepEqual(factory.callsCount(), 2)

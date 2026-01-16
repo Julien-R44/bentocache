@@ -171,7 +171,7 @@ test.group('Cache events', () => {
 
     cache.getOrSet({ key: 'foo', factory: () => 'baz' })
 
-    const event = await pEvent(emitter, 'bus:message:published')
+    const event = await pEvent<any, any>(emitter, 'bus:message:published')
 
     assert.deepInclude(event.message, { keys: ['foo'], type: CacheBusMessageType.Set })
   })
@@ -183,7 +183,7 @@ test.group('Cache events', () => {
 
     cache2.getOrSet({ key: 'foo', factory: () => 'baz' })
 
-    const event = await pEvent(emitter, 'bus:message:received')
+    const event = await pEvent<any, any>(emitter, 'bus:message:received')
 
     assert.deepInclude(event.message, {
       keys: ['foo'],
@@ -200,7 +200,7 @@ test.group('Cache events', () => {
 
     cache.get({ key: 'foo' })
 
-    const event = await pEvent(emitter, 'cache:hit')
+    const event = await pEvent<any, any>(emitter, 'cache:hit')
 
     assert.isTrue(event.graced)
   })
@@ -214,7 +214,7 @@ test.group('Cache events', () => {
 
     cache.getOrSet({ key: 'foo', factory: throwingFactory('foo') })
 
-    const event = await pEvent(emitter, 'cache:hit')
+    const event = await pEvent<any, any>(emitter, 'cache:hit')
 
     assert.isTrue(event.graced)
   })

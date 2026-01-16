@@ -1,5 +1,5 @@
 import { test } from '@japa/runner'
-import { Redis as IoRedis } from 'ioredis'
+import { Redis as IoRedis, Cluster as IoRedisCluster } from 'ioredis'
 
 import { REDIS_CREDENTIALS } from '../helpers/index.js'
 import { RedisDriver } from '../../src/drivers/redis.js'
@@ -13,20 +13,40 @@ test.group('Redis driver', (group) => {
       new RedisDriver({ prefix: 'japa', connection: REDIS_CREDENTIALS, ...options }),
   })
 
-  test('should be able to provide an instance of ioredis', async ({ assert }) => {
+  test('should be able to provide an instance of ioredis', async ({ assert, cleanup }) => {
     const ioredis = new IoRedis(REDIS_CREDENTIALS)
     const redis2 = new RedisDriver({ connection: ioredis })
 
-    assert.equal(redis2.getConnection(), ioredis)
+    cleanup(async () => {
+      await redis2.disconnect()
+      await ioredis.quit()
+    })
 
-    await redis2.disconnect()
-    await ioredis.quit()
+    assert.equal(redis2.getConnection(), ioredis)
   })
 
-  test('should works with ioredis keyPrefix', async ({ assert }) => {
+  test('should be able to provide an instance of ioredis cluster', async ({ assert, cleanup }) => {
+    const cluster = new IoRedisCluster([{ host: '127.0.0.1', port: 7000 }])
+    const redis = new RedisDriver({ connection: cluster })
+
+    cleanup(async () => {
+      await redis.disconnect()
+      cluster.disconnect()
+    })
+
+    assert.equal(redis.getConnection(), cluster)
+  }).skip(!!process.env.CI, 'Skipping cluster test on CI')
+
+  test('should work with ioredis keyPrefix', async ({ assert, cleanup }) => {
     const ioredis = new IoRedis({ ...REDIS_CREDENTIALS, keyPrefix: 'test:' })
     const ioRedis2 = new IoRedis({ ...REDIS_CREDENTIALS })
     const redis2 = new RedisDriver({ connection: ioredis, prefix: 'japa' })
+
+    cleanup(async () => {
+      await redis2.disconnect()
+      await ioRedis2.quit()
+      await ioredis.quit()
+    })
 
     await redis2.set('key', 'value')
     await redis2.namespace('foo').set('key', 'value2')
@@ -41,9 +61,5 @@ test.group('Redis driver', (group) => {
     assert.equal(r1, 'value')
     assert.equal(r2, 'value2')
     assert.equal(r3, null)
-
-    await redis2.disconnect()
-    await ioRedis2.quit()
-    await ioredis.quit()
   })
 })

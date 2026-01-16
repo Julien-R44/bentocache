@@ -250,6 +250,16 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
   }
 
   /**
+   * Manually prune expired cache entries
+   *
+   * For drivers with native TTL support, this is typically a noop
+   * For drivers without native TTL (PostgreSQL, File), this will remove expired entries
+   */
+  prune(): Promise<void> {
+    return this.use().prune?.() ?? Promise.resolve()
+  }
+
+  /**
    * Remove all items from all caches
    */
   async clearAll(options?: ClearOptions) {

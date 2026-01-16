@@ -1,5 +1,21 @@
 # bentocache
 
+## 1.5.1
+
+### Patch Changes
+
+- 82e6ce6: Add support for Cluster with bus
+- c4d7a93: Fix lockTimeout overriding timeout:0 SWR behavior. When timeout is set to 0 (stale-while-revalidate mode), subsequent requests made during background revalidation now return stale data immediately as expected, regardless of lockTimeout setting. Fixes #103
+- 67e059b: Delete cache file if corrupted. See #93
+- 96eb649: Remove database entries with correct prefixed keys
+- dbd214e: Fix CROSSSLOT error when using `clear()` or `deleteMany()` with Valkey. Now uses pipeline with individual unlink commands instead of batch unlink.
+
+## 1.5.0
+
+### Minor Changes
+
+- eb29853: Add `prune()` method for cache drivers without native TTL support as an alternative to `pruneInterval` strategy
+
 ## 1.4.0
 
 ### Minor Changes
@@ -10,7 +26,7 @@
 
 ### Patch Changes
 
-- 5941f90: Fix race condition with file driver writing corrupted data to disk   
+- 5941f90: Fix race condition with file driver writing corrupted data to disk
 
   See [#74](https://github.com/Julien-R44/bentocache/issues/74)
 
@@ -93,7 +109,6 @@
   ```
 
 - 4d1feb5: Added a super simple circuit breaker system to the L2 Cache :
-
   - a `l2CircuitBreakerDuration` parameter to set the duration of the circuit breaker. How many seconds the circuit breaker will stay open.
   - If defined, the circuit breaker will open when a call to our distributed cache fails. It will stay open for `l2CircuitBreakerDuration` seconds.
 
@@ -202,7 +217,6 @@
 - 2578357: Added a `serialize: false` to the memory driver.
 
   It means that, the data stored in the memory cache will not be serialized/parsed using `JSON.stringify` and `JSON.parse`. This allows for a much faster throughput but at the expense of:
-
   - not being able to limit the size of the stored data, because we can't really know the size of an unserialized object
   - Having inconsistent return between the L1 and L2 cache. The data stored in the L2 Cache will always be serialized because it passes over the network. Therefore, depending on whether the data is retrieved from the L1 and L2, we can have data that does not have the same form. For example, a Date instance will become a string if retrieved from the L2, but will remain a Date instance if retrieved from the L1. So, you should put extra care when using this feature with an additional L2 cache.
 

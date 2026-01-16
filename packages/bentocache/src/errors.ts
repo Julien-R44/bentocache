@@ -26,7 +26,7 @@ export class FactoryHardTimeout extends Exception {
   key: string
 
   constructor(key: string) {
-    super()
+    super(FactoryHardTimeout.message, { code: FactoryHardTimeout.code })
 
     this.key = key
   }

@@ -91,7 +91,7 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
     if (!result) return
 
     if (this.#isExpired(result.expiresAt)) {
-      await this.#adapter.delete(key)
+      await this.#adapter.delete(this.getItemKey(key))
       return
     }
 
@@ -165,5 +165,13 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
     }
 
     await this.#adapter.disconnect()
+  }
+
+  /**
+   * Manually prune expired cache entries.
+   */
+  async prune() {
+    await this.#initializer()
+    await this.#adapter.pruneExpiredEntries()
   }
 }

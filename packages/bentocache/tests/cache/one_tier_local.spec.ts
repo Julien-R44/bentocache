@@ -4,7 +4,7 @@ import { sleep } from '@julr/utils/misc'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { throwingFactory, slowFactory } from '../helpers/index.js'
 
-test.group('One tier tests', () => {
+test.group('One tier cache', () => {
   test('get() returns deserialized value', async ({ assert }) => {
     const { cache } = new CacheFactory().withMemoryL1().create()
 
@@ -120,7 +120,7 @@ test.group('One tier tests', () => {
 
     await cache.set({ key: 'key1', value: 'value1', ttl: '100ms' })
 
-    await sleep(100)
+    await sleep(150)
     const r1 = await cache.missing({ key: 'key1' })
 
     await sleep(500)
@@ -146,7 +146,7 @@ test.group('One tier tests', () => {
     const { cache } = new CacheFactory().withMemoryL1().merge({ grace: '500ms' }).create()
 
     await cache.set({ key: 'key1', value: 'value1', ttl: '100ms' })
-    await sleep(100)
+    await sleep(150)
 
     const r1 = await cache.has({ key: 'key1' })
 

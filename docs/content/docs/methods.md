@@ -197,7 +197,7 @@ const missingProducts = await bento.missing({ key: 'products' })
 Get the value of the key, and then delete it from the cache. Returns `undefined` if the key does not exist.
 
 ```ts
-const products = await bento.pull({ key: 'products' })
+const products = await bento.pull('products')
 ```
 
 ## delete
@@ -248,6 +248,14 @@ Clear the cache. This will delete all the keys in the cache if called from the "
 
 ```ts
 await bento.clear();
+```
+
+## prune
+
+Prunes the cache by removing expired entries. This is useful for drivers that do not have native TTL support, such as File and Database drivers. On drivers with native TTL support, this is typically a noop.
+
+```ts
+await bento.prune();
 ```
 
 ## disconnect

@@ -15,7 +15,7 @@ Bentocache is a robust multi-tier caching library for Node.js applications
 - 🤓 SWR-like caching strategy
 - 🗂️ Namespaces. Group your keys by categories.
 - 🏷️ Tagging. Easy invalidations.
-- 🛑 Cache stamped protection.
+- 🛑 Cache stampede protection.
 - 🏷️ Named caches
 - 📖 Well documented + handy JSDoc annotations
 - 📊 Events. Useful for monitoring and metrics
@@ -84,7 +84,7 @@ Multi-layer caching allows you to combine the speed of in-memory caching with th
 
 Many drivers available to suit all situations: Redis, Upstash, Database (MySQL, SQLite, PostgreSQL), DynamoDB, Filesystem, In-memory (LRU Cache), Vercel KV...
 
-See the [drivers documentation](./cache_drivers.md) for list of available drivers. Also, very easy to extend the library and [add your own driver](./extend/custom_cache_driver.md)
+See the [drivers documentation](./cache_drivers.md) for list of available drivers. Also, it is very easy to extend the library and [add your own driver](./extend/custom_cache_driver.md)
 
 <!-- :::warning
 Only a Redis driver for the bus is currently available. We probably have drivers for other backends like Zookeeper, Kafka, RabbitMQ... Let us know with an issue if you are interested in this.
@@ -95,7 +95,7 @@ Only a Redis driver for the bus is currently available. We probably have drivers
 
 - [Grace period](./grace_periods.md): Keep your application running smoothly with the ability to temporarily use expired cache entries when your database is down, or when a factory is failing.
 
-- [Cache stamped prevention](./stampede_protection.md): Ensuring that only one factory is executed at the same time.
+- [Cache stampede prevention](./stampede_protection.md): Ensuring that only one factory is executed at the same time.
 
 - [Retry queue](./multi_tier.md#retry-queue-strategy) : When an application fails to publish something to the bus, it is added to a queue and retried later.
 

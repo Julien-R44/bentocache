@@ -6,11 +6,6 @@ summary: Setup Bentocache in your application
 
 You can install Bentocache via your favorite package manager.
 
-:::warning
-Bentocache is an ESM-only package. You will also need Node.js 18 or higher.
-:::
-
-
 :::codegroup
 ```sh
 // title: npm
