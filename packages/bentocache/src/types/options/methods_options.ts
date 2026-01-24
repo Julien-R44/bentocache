@@ -49,6 +49,14 @@ export type GetOptions<T> = { key: string; defaultValue?: Factory<T> } & Pick<
 >
 
 /**
+ * Options accepted by the `getMany` method
+ */
+export type GetManyOptions<T = any> = { keys: string[]; defaultValue?: Factory<T> } & Pick<
+  RawCommonOptions,
+  'grace' | 'graceBackoff' | 'suppressL2Errors'
+>
+
+/**
  * Options accepted by the `delete` method
  */
 export type DeleteOptions = { key: string } & Pick<RawCommonOptions, 'suppressL2Errors'>
