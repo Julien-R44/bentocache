@@ -5,7 +5,7 @@ import { Kysely, SqliteDialect } from 'kysely'
 import { createKyselyStore } from './helpers.js'
 import { registerCacheDriverTestSuite } from '../../../src/test_suite.js'
 
-test.group('Kysely | Postgres driver', (group) => {
+test.group('Kysely | Better-sqlite3 driver', (group) => {
   registerCacheDriverTestSuite({
     test,
     group,

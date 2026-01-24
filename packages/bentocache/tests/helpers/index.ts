@@ -5,7 +5,23 @@ import { sleep } from '@julr/utils/misc'
 import type { GetSetFactory, GetSetFactoryContext } from '../../src/types/helpers.js'
 
 export const BASE_URL = new URL('./tmp/', import.meta.url)
-export const REDIS_CREDENTIALS = { host: 'localhost', port: 6379 }
+
+export const REDIS_CREDENTIALS = {
+  host: process.env.REDIS_HOST || 'localhost',
+  port: Number(process.env.REDIS_PORT) || 6379,
+}
+
+export const MYSQL_CREDENTIALS = {
+  user: process.env.MYSQL_USER || 'root',
+  password: process.env.MYSQL_PASSWORD || 'root',
+  database: process.env.MYSQL_DATABASE || 'mysql',
+  port: Number(process.env.MYSQL_PORT) || 3306,
+}
+
+export const POSTGRES_CREDENTIALS = {
+  user: process.env.POSTGRES_USER || 'postgres',
+  password: process.env.POSTGRES_PASSWORD || 'postgres',
+}
 export const VALKEY_CREDENTIALS = {
   host: process.env.VALKEY_HOST || 'localhost',
   port: Number(process.env.VALKEY_PORT) || 6380,
@@ -49,7 +65,6 @@ export const traceLogger = (pretty = true) => {
 
   return pino(
     { level: 'trace', timestamp: () => `,"time":${nanoseconds()}` },
-    // @ts-expect-error missing types
     pinoLoki({
       batching: false,
       labels: { application: 'bentocache' },

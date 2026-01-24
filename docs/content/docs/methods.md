@@ -240,7 +240,7 @@ const missingProducts = await bento.missing({ key: 'products' })
 Get the value of the key, and then delete it from the cache. Returns `undefined` if the key does not exist.
 
 ```ts
-const products = await bento.pull({ key: 'products' })
+const products = await bento.pull('products')
 ```
 
 ## delete

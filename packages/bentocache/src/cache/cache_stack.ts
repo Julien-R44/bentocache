@@ -8,9 +8,11 @@ import { LocalCache } from './facades/local_cache.js'
 import { BaseDriver } from '../drivers/base_driver.js'
 import { RemoteCache } from './facades/remote_cache.js'
 import { cacheEvents } from '../events/cache_events.js'
+import { cacheOperation } from '../tracing_channels.js'
 import type { GetSetHandler } from './get_set/get_set_handler.js'
 import type { BentoCacheOptions } from '../bento_cache_options.js'
 import type { GetCacheValueReturn } from '../types/internals/index.js'
+import type { CacheOperationMessage } from '../types/tracing_channels.js'
 import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
 import { createCacheEntryOptions } from './cache_entry/cache_entry_options.js'
 import {
@@ -117,6 +119,20 @@ export class CacheStack extends BaseDriver {
   }
 
   /**
+   * Returns the full key with prefix applied
+   */
+  getFullKey(key: string) {
+    return this.getItemKey(key)
+  }
+
+  /**
+   * Returns the full keys with prefix applied
+   */
+  getFullKeys(keys: string[]) {
+    return keys.map((key) => this.getItemKey(key))
+  }
+
+  /**
    * Write a value in the cache stack
    * - Set value in local cache
    * - Set value in remote cache
@@ -126,37 +142,47 @@ export class CacheStack extends BaseDriver {
   async set(key: string, value: any, options: CacheEntryOptions) {
     if (is.undefined(value)) throw new UndefinedValueError(key)
 
-    const rawItem = {
-      value,
-      logicalExpiration: options.logicalTtlFromNow(),
-      tags: options.tags,
-      createdAt: Date.now(),
+    const message: CacheOperationMessage = {
+      operation: 'set',
+      key: this.getFullKey(key),
+      store: this.name,
     }
 
-    /**
-     * Store raw or serialized value in the local cache based on the serializeL1 option
-     */
-    const l1Item = this.options.serializeL1 ? this.options.serializer.serialize(rawItem) : rawItem
-    this.l1?.set(key, l1Item, options)
+    return cacheOperation.tracePromise(async () => {
+      const rawItem = {
+        value,
+        logicalExpiration: options.logicalTtlFromNow(),
+        tags: options.tags,
+        createdAt: Date.now(),
+      }
 
-    /**
-     * Store the serialized value in the remote cache
-     */
-    let l2Success = false
-    if (this.l2 && options.skipL2Write !== true) {
-      const l2Item = this.options.serializeL1 ? l1Item : this.options.serializer.serialize(rawItem)
-      l2Success = await this.l2?.set(key, l2Item as any, options)
-    }
+      /**
+       * Store raw or serialized value in the local cache based on the serializeL1 option
+       */
+      const l1Item = this.options.serializeL1 ? this.options.serializer.serialize(rawItem) : rawItem
+      this.l1?.set(key, l1Item, options)
 
-    /**
-     * Publish only if the remote cache write was successful.
-     */
-    if ((this.l2 && l2Success) || !this.l2) {
-      await this.publish({ type: CacheBusMessageType.Set, keys: [key] }, options)
-    }
+      /**
+       * Store the serialized value in the remote cache
+       */
+      let l2Success = false
+      if (this.l2 && options.skipL2Write !== true) {
+        const l2Item = this.options.serializeL1
+          ? l1Item
+          : this.options.serializer.serialize(rawItem)
+        l2Success = await this.l2?.set(key, l2Item as any, options)
+      }
 
-    this.emit(cacheEvents.written(key, value, this.name))
-    return true
+      /**
+       * Publish only if the remote cache write was successful.
+       */
+      if ((this.l2 && l2Success) || !this.l2) {
+        await this.publish({ type: CacheBusMessageType.Set, keys: [key] }, options)
+      }
+
+      this.emit(cacheEvents.written(key, value, this.name))
+      return true
+    }, message)
   }
 
   /**
@@ -165,12 +191,20 @@ export class CacheStack extends BaseDriver {
    * retained for the grace period if enabled.
    */
   async expire(key: string, options: CacheEntryOptions) {
-    this.l1?.logicallyExpire(key, options)
-    await this.l2?.logicallyExpire(key, options)
-    await this.publish({ type: CacheBusMessageType.Expire, keys: [key] })
+    const message: CacheOperationMessage = {
+      operation: 'expire',
+      key: this.getFullKey(key),
+      store: this.name,
+    }
 
-    this.emit(cacheEvents.expire(key, this.name))
-    return true
+    return cacheOperation.tracePromise(async () => {
+      this.l1?.logicallyExpire(key, options)
+      await this.l2?.logicallyExpire(key, options)
+      await this.publish({ type: CacheBusMessageType.Expire, keys: [key] })
+
+      this.emit(cacheEvents.expire(key, this.name))
+      return true
+    }, message)
   }
 
   /**

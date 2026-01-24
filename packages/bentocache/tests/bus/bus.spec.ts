@@ -320,7 +320,7 @@ test.group('Bus synchronization', () => {
     assert.deepEqual(result, 'bar')
   })
 
-  test('binary encoding/decoding should works fine', async ({ assert, cleanup }, done) => {
+  test('binary encoding/decoding should work fine', async ({ assert, cleanup }, done) => {
     const bus1 = redisBusDriver({ connection: REDIS_CREDENTIALS })
       .factory(null as any)
       .setId('foo')
@@ -383,7 +383,7 @@ test.group('Bus synchronization', () => {
     .waitForDone()
     .disableTimeout()
 
-  test('works with utf8 characters', async ({ assert }, done) => {
+  test('works with utf8 characters', async ({ assert, cleanup }, done) => {
     const bus1 = redisBusDriver({ connection: REDIS_CREDENTIALS })
       .factory(null as any)
       .setId('foo')
@@ -391,6 +391,11 @@ test.group('Bus synchronization', () => {
     const bus2 = redisBusDriver({ connection: REDIS_CREDENTIALS })
       .factory(null as any)
       .setId('bar')
+
+    cleanup(async () => {
+      await bus1.disconnect()
+      await bus2.disconnect()
+    })
 
     const data = {
       keys: ['foo', '1', '2', 'bar', 'key::test', '🚀'],
@@ -405,10 +410,6 @@ test.group('Bus synchronization', () => {
     await sleep(200)
 
     await bus2.publish('foo', data)
-
-    await bus1.disconnect()
-
-    await bus2.disconnect()
 
     await sleep(200)
   }).waitForDone()

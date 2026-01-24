@@ -3,11 +3,7 @@ import { bytes } from '@julr/utils/string/bytes'
 import { InvalidArgumentsException } from '@poppinss/exception'
 
 import { BaseDriver } from './base_driver.js'
-import type {
-  CreateDriverResult,
-  L1CacheDriver,
-  MemoryConfig as MemoryConfig,
-} from '../types/main.js'
+import type { CreateDriverResult, L1CacheDriver, MemoryConfig } from '../types/main.js'
 
 /**
  * Create a new memory driver
@@ -111,7 +107,7 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
   /**
    * Remove all items from the cache
    */
-  async clear() {
+  clear() {
     for (const key of this.#cache.keys()) {
       if (key.startsWith(`${this.prefix}:`)) {
         this.#cache.delete(key)

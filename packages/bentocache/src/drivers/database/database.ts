@@ -108,7 +108,7 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
     if (!result) return
 
     if (this.#isExpired(result.expiresAt)) {
-      await this.#adapter.delete(key)
+      await this.#adapter.delete(this.getItemKey(key))
       return
     }
 

@@ -45,7 +45,14 @@ export async function pruneExpiredFiles({ directory, onError }) {
   for (const dirEntry of dirEntries) {
     if (dirEntry.isDirectory()) continue
 
-    const filePath = join(dirEntry.parentPath, dirEntry.name)
+    /**
+     * "parentPath" was added in Node.js v20.12.0.
+     * We fallback to "path" for older versions of Node.js.
+     */
+    // @ts-expect-error -- ignore --
+    const basePath = typeof dirEntry.parentPath === 'string' ? dirEntry.parentPath : dirEntry.path
+
+    const filePath = join(basePath, dirEntry.name)
     await deleteFileIfExpired({ filePath, onError })
   }
 }

@@ -4,15 +4,6 @@ summary: Associate tags with your cache keys to easily invalidat a bunch of keys
 
 # Tags
 
-:::warning
-Tags are available since v1.2.0 and still **experimental**.
-
-We will **not** make breaking changes without a major version, but no guarantees are made about the stability of this feature yet.
-
-Please if you find any bugs, report them on Github issues.
-:::
-
-
 Tagging allows associating a cache entry with one or more tags to simplify invalidation. Instead of managing individual keys, entries can be grouped under multiple tags and invalidated in a single operation.
 
 ## Usage
