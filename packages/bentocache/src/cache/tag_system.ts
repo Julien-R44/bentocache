@@ -2,14 +2,16 @@ import type { CacheStack } from './cache_stack.js'
 import type { CacheEntry } from './cache_entry/cache_entry.js'
 import type { GetSetFactoryContext } from '../types/helpers.js'
 import type { GetSetHandler } from './get_set/get_set_handler.js'
-import { createCacheEntryOptions } from './cache_entry/cache_entry_options.js'
+import {
+  createCacheEntryOptions,
+  type CacheEntryOptions,
+} from './cache_entry/cache_entry_options.js'
 
 export class TagSystem {
   #getSetHandler!: GetSetHandler
   #kTagPrefix = '___bc:t:'
 
   #expireOptions = createCacheEntryOptions({})
-
   #getSetTagOptions = createCacheEntryOptions({
     ttl: '10d',
     grace: '10d',
@@ -260,23 +262,27 @@ export class TagSystem {
    * When we check if a key is invalidated by a tag, we check if the key
    * was created before the tag key value.
    */
-  async createTagInvalidations(tags: string[]) {
-    return this.#createTagMarkers(tags, 'soft')
+  async createTagInvalidations(tags: string[], options?: CacheEntryOptions) {
+    return this.#createTagMarkers(tags, 'soft', options)
   }
 
   /**
    * Create hard deletion marks for a list of tags.
    * We write a `__bc:t:<tag>` key with metadata containing timestamp and type.
    */
-  async createTagDeletionTimestamps(tags: string[]) {
-    return this.#createTagMarkers(tags, 'hard')
+  async createTagDeletionTimestamps(tags: string[], options?: CacheEntryOptions) {
+    return this.#createTagMarkers(tags, 'hard', options)
   }
 
-  async #createTagMarkers(tags: string[], type: 'soft' | 'hard'): Promise<boolean> {
+  async #createTagMarkers(
+    tags: string[],
+    type: 'soft' | 'hard',
+    options?: CacheEntryOptions,
+  ): Promise<boolean> {
     const timestamp = Date.now()
     const uniqueTags = this.#getUniqueTags(tags)
 
-    await this.#writeTagMarkers(uniqueTags, timestamp, type)
+    await this.#writeTagMarkers(uniqueTags, timestamp, type, options)
 
     return true
   }
@@ -285,12 +291,20 @@ export class TagSystem {
     return [...new Set(tags)]
   }
 
-  async #writeTagMarkers(tags: string[], timestamp: number, type: 'soft' | 'hard'): Promise<void> {
+  async #writeTagMarkers(
+    tags: string[],
+    timestamp: number,
+    type: 'soft' | 'hard',
+    options?: CacheEntryOptions,
+  ): Promise<void> {
     const tagData = { timestamp, type }
+    const writeOptions = this.#getSetTagOptions.cloneWith({
+      suppressL2Errors: options?.suppressL2Errors,
+    })
 
     for (const tag of tags) {
       const key = this.getTagCacheKey(tag)
-      await this.stack.set(key, tagData, this.#getSetTagOptions)
+      await this.stack.set(key, tagData, writeOptions)
     }
   }
 }

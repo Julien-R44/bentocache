@@ -243,7 +243,7 @@ export class Cache implements CacheProvider {
 
     this.#options.logger.logMethod({ method: 'expireByTag', cacheName: this.name, tags, options })
 
-    return await this.#stack.createTagInvalidations(tags)
+    return await this.#stack.createTagInvalidations(tags, options)
   }
 
   /**
@@ -255,7 +255,7 @@ export class Cache implements CacheProvider {
 
     this.#options.logger.logMethod({ method: 'deleteByTag', cacheName: this.name, tags, options })
 
-    const result = await this.#stack.createTagDeletionTimestamps(tags)
+    const result = await this.#stack.createTagDeletionTimestamps(tags, options)
     if (result) {
       // Emit a 'deleted' event, reflecting the intent even if deletion is lazy
       this.#stack.emit(cacheEvents.deleted('tags:' + tags.join(','), this.name))

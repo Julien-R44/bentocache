@@ -75,6 +75,10 @@ export class Bus {
       for (const key of message.keys) cache?.delete(key)
     }
 
+    if (message.type === CacheBusMessageType.TagsDeletionMarked) {
+      for (const key of message.keys) cache?.delete(key)
+    }
+
     if (message.type === CacheBusMessageType.Set) {
       for (const key of message.keys) cache?.logicallyExpire(key)
     }

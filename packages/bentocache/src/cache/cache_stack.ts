@@ -247,20 +247,20 @@ export class CacheStack extends BaseDriver {
   /**
    * Create invalidation keys for a list of tags
    */
-  async createTagInvalidations(tags: string[]) {
-    return this.#tagSystem.createTagInvalidations(tags)
+  async createTagInvalidations(tags: string[], options?: CacheEntryOptions) {
+    return this.#tagSystem.createTagInvalidations(tags, options)
   }
 
   /**
    * Create hard deletion marks for a list of tags
    */
-  async createTagDeletionTimestamps(tags: string[]) {
-    const result = await this.#tagSystem.createTagDeletionTimestamps(tags)
+  async createTagDeletionTimestamps(tags: string[], options?: CacheEntryOptions) {
+    const result = await this.#tagSystem.createTagDeletionTimestamps(tags, options)
 
     // Also notify other instances via bus that these tags have been marked for deletion
     if (this.bus) {
       await this.publish({
-        type: 'cache:tags:deletion-marked' as any,
+        type: CacheBusMessageType.TagsDeletionMarked,
         keys: tags.map((tag) => this.#tagSystem.getTagCacheKey(tag)),
       })
     }
