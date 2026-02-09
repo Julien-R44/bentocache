@@ -1,3 +1,4 @@
+import { trace } from '@opentelemetry/api'
 import { memoryDriver } from 'bentocache/drivers/memory'
 import {
   BasicTracerProvider,
@@ -33,10 +34,11 @@ const setupTracer = () => {
   }
 
   const exporter = new InMemorySpanExporter()
-  const provider = new BasicTracerProvider()
+  const provider = new BasicTracerProvider({
+    spanProcessors: [new SimpleSpanProcessor(exporter)],
+  })
 
-  provider.addSpanProcessor(new SimpleSpanProcessor(exporter))
-  provider.register()
+  trace.setGlobalTracerProvider(provider)
 
   tracerSetup = { exporter, provider }
   return tracerSetup
