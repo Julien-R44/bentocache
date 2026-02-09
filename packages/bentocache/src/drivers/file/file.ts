@@ -163,6 +163,19 @@ export class FileDriver extends BaseDriver implements CacheDriver {
   }
 
   /**
+   * Get multiple values from the cache
+   */
+  async getMany(keys: string[]) {
+    if (keys.length === 0) return []
+    const results: (string | undefined)[] = []
+    for (const key of keys) {
+      const value = await this.get(key)
+      results.push(value)
+    }
+    return results
+  }
+
+  /**
    * Get the value of a key and delete it
    *
    * Returns the value if the key exists, undefined otherwise

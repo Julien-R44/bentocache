@@ -48,6 +48,14 @@ export class LocalCache {
   }
 
   /**
+   * Batch get many items from the local cache
+   */
+  getMany(keys: string[], options: CacheEntryOptions) {
+    this.#logger.debug({ keys, opId: options.id }, 'batch getting items from l1 cache')
+    return keys.map((key) => this.get(key, options))
+  }
+
+  /**
    * Set a new item in the local cache
    */
   set(key: string, value: any, options: CacheEntryOptions) {

@@ -17,6 +17,7 @@ import type {
   DeleteManyOptions,
   ExpireOptions,
   DeleteByTagOptions,
+  GetManyOptions,
 } from './types/main.js'
 
 export class BentoCache<KnownCaches extends Record<string, BentoStore>> implements CacheProvider {
@@ -146,6 +147,13 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    */
   async get<T = any>(options: GetOptions<T>): Promise<T> {
     return this.use().get<T>(options)
+  }
+
+  /**
+   * Get multiple values from the cache
+   */
+  async getMany<T = any>(options: GetManyOptions<T>): Promise<(T | undefined | null)[]> {
+    return this.use().getMany<T>(options)
   }
 
   /**

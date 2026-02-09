@@ -51,6 +51,16 @@ export class OrchidAdapter implements DatabaseAdapter {
     return { value: result.value, expiresAt: result.expires_at }
   }
 
+  async getMany(keys: string[]): Promise<{ key: string; value: any; expiresAt: number | null }[]> {
+    const results = await this.getTable().whereIn('key', keys).select('key', 'value', 'expires_at')
+
+    return results.map((result) => ({
+      key: result.key,
+      value: result.value,
+      expiresAt: result.expires_at,
+    }))
+  }
+
   async delete(key: string): Promise<boolean> {
     const count = await this.getTable().where({ key }).delete()
     return count > 0
