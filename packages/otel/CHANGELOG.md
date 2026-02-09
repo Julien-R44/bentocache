@@ -1,5 +1,11 @@
 # @bentocache/otel
 
+## 0.1.2
+
+### Patch Changes
+
+- 1831908: Update OpenTelemetry dependencies to v2
+
 ## 0.1.1
 
 ### Patch Changes
