@@ -93,6 +93,8 @@ export type RawCommonOptions = {
 /**
  * Options accepted by Bentocache
  */
+export type InternalOperationWrapper = <T>(fn: () => T) => T
+
 export type RawBentoCacheOptions = {
   prefix?: string
 
@@ -117,6 +119,12 @@ export type RawBentoCacheOptions = {
    * Custom serializer
    */
   serializer?: CacheSerializer
+
+  /**
+   * Wrap internal Bentocache operations (L2 cache + bus) to
+   * suppress or customize instrumentation.
+   */
+  internalOperationWrapper?: InternalOperationWrapper
 } & Omit<RawCommonOptions, 'tags' | 'skipBusNotify' | 'skipL2Write'>
 
 /**

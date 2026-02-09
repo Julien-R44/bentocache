@@ -78,6 +78,12 @@
     "category": "Guides"
   },
   {
+    "permalink": "telemetry",
+    "title": "Telemetry",
+    "contentPath": "./telemetry.md",
+    "category": "Digging Deeper"
+  },
+  {
     "permalink": "adaptive-caching",
     "title": "Adaptive caching",
     "contentPath": "./adaptive_caching.md",

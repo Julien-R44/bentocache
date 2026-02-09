@@ -5,7 +5,12 @@ import type { Logger } from '../logger.js'
 import { busEvents } from '../events/bus_events.js'
 import { CacheBusMessageType } from '../types/bus.js'
 import type { LocalCache } from '../cache/facades/local_cache.js'
-import type { BusOptions, CacheBusMessage, Emitter } from '../types/main.js'
+import type {
+  BusOptions,
+  CacheBusMessage,
+  Emitter,
+  InternalOperationWrapper,
+} from '../types/main.js'
 
 /**
  * The bus is used to notify other processes about cache changes.
@@ -22,6 +27,7 @@ export class Bus {
   #emitter: Emitter
   #localCaches: Map<string, LocalCache> = new Map()
   #channelName = 'bentocache.notifications'
+  #internalOperationWrapper?: InternalOperationWrapper
 
   constructor(
     name: string,
@@ -29,9 +35,11 @@ export class Bus {
     logger: Logger,
     emitter: Emitter,
     options: BusOptions = {},
+    internalOperationWrapper?: InternalOperationWrapper,
   ) {
     this.#emitter = emitter
     this.#logger = logger.child({ context: 'bentocache.bus' })
+    this.#internalOperationWrapper = internalOperationWrapper
 
     this.#bus = new BoringBus(driver, {
       retryQueue: {
@@ -43,8 +51,14 @@ export class Bus {
 
     if (name) this.#channelName += `:${name}`
 
-    this.#bus.subscribe<CacheBusMessage>(this.#channelName, this.#onMessage.bind(this))
+    this.#wrapInternalOperation(() => {
+      this.#bus.subscribe<CacheBusMessage>(this.#channelName, this.#onMessage.bind(this))
+    })
     this.#logger.trace({ channel: this.#channelName }, 'bus subscribed to channel')
+  }
+
+  #wrapInternalOperation<T>(fn: () => T): T {
+    return this.#internalOperationWrapper ? this.#internalOperationWrapper(fn) : fn()
   }
 
   /**
@@ -94,7 +108,9 @@ export class Bus {
    * @returns true if the message was published, false if not
    */
   async publish(message: CacheBusMessage): Promise<boolean> {
-    const wasPublished = await this.#bus.publish(this.#channelName, message)
+    const wasPublished = await this.#wrapInternalOperation(() => {
+      return this.#bus.publish(this.#channelName, message)
+    })
     if (wasPublished) {
       this.#emitter.emit('bus:message:published', busEvents.messagePublished(message).data)
       return true
@@ -108,6 +124,8 @@ export class Bus {
    * Disconnect the bus
    */
   async disconnect(): Promise<void> {
-    await this.#bus.disconnect()
+    await this.#wrapInternalOperation(() => {
+      return this.#bus.disconnect()
+    })
   }
 }

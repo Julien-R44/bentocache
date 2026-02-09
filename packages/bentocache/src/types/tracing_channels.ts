@@ -7,7 +7,7 @@ export interface CacheOperationMessage {
   /**
    * Operation type
    */
-  operation: 'get' | 'set' | 'delete' | 'deleteMany' | 'clear' | 'expire'
+  operation: 'get' | 'set' | 'getOrSet' | 'factory' | 'delete' | 'deleteMany' | 'clear' | 'expire'
 
   /**
    * Cache key with full prefix (e.g., 'users:123' for namespaced keys)

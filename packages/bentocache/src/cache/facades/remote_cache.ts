@@ -35,6 +35,12 @@ export class RemoteCache {
     this.#logger = logger.child({ layer: 'l2' })
   }
 
+  #wrapInternalOperation<T>(fn: () => T): T {
+    return this.#options.internalOperationWrapper
+      ? this.#options.internalOperationWrapper(fn)
+      : fn()
+  }
+
   /**
    * Try to execute a cache operation and fallback to a default value
    * if the operation fails
@@ -51,7 +57,7 @@ export class RemoteCache {
     }
 
     try {
-      return await fn()
+      return await this.#wrapInternalOperation(fn)
     } catch (err) {
       this.#logger.error({ err, opId: options.id }, `(${operation}) failed on remote cache`)
 

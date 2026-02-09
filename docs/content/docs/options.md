@@ -204,3 +204,21 @@ Levels: `global`
 Only configurable at the BentoCache level.
 
 See [events](./digging_deeper/events.md) for more details.
+
+### `internalOperationWrapper`
+
+Default: `undefined`
+
+Levels: `global`
+
+Wrap internal Bentocache operations (L2 cache + bus) to suppress or customize instrumentation.
+This does not affect userland factory execution.
+
+```ts
+import { context } from '@opentelemetry/api'
+import { suppressTracing } from '@opentelemetry/core'
+
+const bento = new BentoCache({
+  internalOperationWrapper: (fn) => context.with(suppressTracing(context.active()), fn),
+})
+```

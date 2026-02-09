@@ -194,7 +194,7 @@ export class SingleTierHandler {
 
   handle(key: string, factory: Factory, options: CacheEntryOptions) {
     const message: CacheOperationMessage = {
-      operation: 'get',
+      operation: 'getOrSet',
       key: this.stack.getFullKey(key),
       store: this.stack.name,
     }

@@ -73,7 +73,14 @@ export class CacheStack extends BaseDriver {
       ...busOptions,
     }
 
-    return new Bus(this.name, this.#busDriver, this.logger, this.emitter, this.#busOptions)
+    return new Bus(
+      this.name,
+      this.#busDriver,
+      this.logger,
+      this.emitter,
+      this.#busOptions,
+      this.options.internalOperationWrapper,
+    )
   }
 
   setTagSystemGetSetHandler(getSetHandler: GetSetHandler) {

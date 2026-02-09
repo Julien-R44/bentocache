@@ -5,8 +5,10 @@ import type { MutexInterface } from 'async-mutex'
 import { errors } from '../errors.js'
 import type { Locks } from './locks.js'
 import type { CacheStack } from './cache_stack.js'
+import { cacheOperation } from '../tracing_channels.js'
 import type { GetSetFactory } from '../types/helpers.js'
 import type { GetCacheValueReturn } from '../types/internals/index.js'
+import type { CacheOperationMessage } from '../types/tracing_channels.js'
 import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
 
 interface RunFactoryParameters {
@@ -55,30 +57,38 @@ export class FactoryRunner {
     /**
      * Execute the factory
      */
+    const factoryMessage: CacheOperationMessage = {
+      operation: 'factory',
+      key: this.#stack.getFullKey(params.key),
+      store: this.#stack.name,
+    }
+
     const [result, error] = await tryAsync(async () => {
-      const result = await params.factory({
-        skip: () => this.#skipSymbol as any as undefined,
-        fail: (message) => {
-          throw new Error(message ?? 'Factory failed')
-        },
-        setTtl: (ttl) => params.options.setLogicalTtl(ttl),
-        setTags: (tags) => params.options.tags.push(...tags),
-        setOptions: (options) => {
-          if (options.ttl) params.options.setLogicalTtl(options.ttl)
-          params.options.skipBusNotify = options.skipBusNotify ?? false
-          params.options.skipL2Write = options.skipL2Write ?? false
-        },
-        gracedEntry: params.gracedValue
-          ? { value: params.gracedValue?.entry.getValue() }
-          : undefined,
-      })
+      return cacheOperation.tracePromise(async () => {
+        const result = await params.factory({
+          skip: () => this.#skipSymbol as any as undefined,
+          fail: (message) => {
+            throw new Error(message ?? 'Factory failed')
+          },
+          setTtl: (ttl) => params.options.setLogicalTtl(ttl),
+          setTags: (tags) => params.options.tags.push(...tags),
+          setOptions: (options) => {
+            if (options.ttl) params.options.setLogicalTtl(options.ttl)
+            params.options.skipBusNotify = options.skipBusNotify ?? false
+            params.options.skipL2Write = options.skipL2Write ?? false
+          },
+          gracedEntry: params.gracedValue
+            ? { value: params.gracedValue?.entry.getValue() }
+            : undefined,
+        })
 
-      this.#stack.logger.info(
-        { cache: this.#stack.name, opId: params.options.id, key: params.key },
-        'factory success',
-      )
+        this.#stack.logger.info(
+          { cache: this.#stack.name, opId: params.options.id, key: params.key },
+          'factory success',
+        )
 
-      return result
+        return result
+      }, factoryMessage)
     })
 
     if (this.#skipSymbol === result) {

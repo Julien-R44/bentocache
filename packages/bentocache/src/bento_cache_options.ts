@@ -79,6 +79,7 @@ export class BentoCacheOptions {
    */
   serializeL1: boolean = true
   onFactoryError?: (error: FactoryError) => void
+  internalOperationWrapper?: RawBentoCacheOptions['internalOperationWrapper']
 
   constructor(options: RawBentoCacheOptions) {
     this.#options = { ...this, ...options }
@@ -98,6 +99,7 @@ export class BentoCacheOptions {
 
     this.logger = new Logger(this.#options.logger ?? noopLogger())
     this.onFactoryError = this.#options.onFactoryError
+    this.internalOperationWrapper = this.#options.internalOperationWrapper
   }
 
   serializeL1Cache(shouldSerialize: boolean = true) {
