@@ -167,15 +167,15 @@ test.group('Tracing Channels', () => {
 
     await cache.getOrSet({ key: 'foo', factory: () => 'new' })
 
-    // Should only have a get trace (hit), no set
-    const getMessages = collector.messages.end.filter((m) => m.operation === 'get')
+    // Should only have a getOrSet trace (hit), no set
+    const getOrSetMessages = collector.messages.end.filter((m) => m.operation === 'getOrSet')
     const setMessages = collector.messages.end.filter((m) => m.operation === 'set')
 
-    assert.lengthOf(getMessages, 1)
+    assert.lengthOf(getOrSetMessages, 1)
     assert.lengthOf(setMessages, 0)
 
-    assert.equal(getMessages[0].hit, true)
-    assert.equal(getMessages[0].tier, 'l1')
+    assert.equal(getOrSetMessages[0].hit, true)
+    assert.equal(getOrSetMessages[0].tier, 'l1')
   })
 
   test('traces getOrSet with cache miss (get + set)', async ({ assert, cleanup }) => {
@@ -186,13 +186,15 @@ test.group('Tracing Channels', () => {
 
     await cache.getOrSet({ key: 'newkey', factory: () => 'newvalue' })
 
-    const getMessages = collector.messages.end.filter((m) => m.operation === 'get')
+    const getOrSetMessages = collector.messages.end.filter((m) => m.operation === 'getOrSet')
+    const factoryMessages = collector.messages.end.filter((m) => m.operation === 'factory')
     const setMessages = collector.messages.end.filter((m) => m.operation === 'set')
 
-    assert.lengthOf(getMessages, 1)
+    assert.lengthOf(getOrSetMessages, 1)
+    assert.lengthOf(factoryMessages, 1)
     assert.lengthOf(setMessages, 1)
 
-    assert.equal(getMessages[0].hit, false)
+    assert.equal(getOrSetMessages[0].hit, false)
     assert.equal(setMessages[0].key, 'bentocache:newkey')
   })
 
