@@ -19,6 +19,7 @@
 - 🏷️ Named caches
 - 📖 Well documented + handy JSDoc annotations
 - 📊 Events. Useful for monitoring and metrics
+- 🧭 OpenTelemetry instrumentation package for distributed tracing
 - 📝 Easy Prometheus integration and ready-to-use Grafana dashboard
 - 🧩 Easily extendable with your own driver
 
@@ -128,6 +129,13 @@ bento.on('cache:miss', () => {})
 ```
 
 See the [events documentation](https://bentocache.dev/docs/events) for more information.
+
+### OpenTelemetry
+
+Bentocache ships with an official OpenTelemetry package: `@bentocache/otel`.
+It lets you instrument cache operations as spans and integrate with any OpenTelemetry-compatible tracing system (Jaeger, Zipkin, Datadog, New Relic, etc.). You can track cache hits, misses, evictions, and more in your distributed tracing setup.
+
+See the [telemetry documentation](https://bentocache.dev/docs/telemetry) for setup and examples.
 
 ### Friendly TTLs
 
