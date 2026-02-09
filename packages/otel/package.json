@@ -1,7 +1,7 @@
 {
   "name": "@bentocache/otel",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenTelemetry instrumentation for Bentocache",
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",
