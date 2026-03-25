@@ -2,12 +2,12 @@ services:
   redis:
     image: redis:6.2-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
 
   valkey:
     image: valkey/valkey:8.1-alpine
     ports:
-      - "6380:6379"
+      - '6380:6379'
 
   valkey-cluster:
     profiles:
@@ -17,7 +17,7 @@ services:
       - valkey-node-1
       - valkey-node-2
       - valkey-node-3
-    entrypoint: ["/bin/sh", "-c"]
+    entrypoint: ['/bin/sh', '-c']
     command:
       - |
         sleep 5
@@ -32,7 +32,7 @@ services:
     image: valkey/valkey:8.1-alpine
     command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes --port 6379 --cluster-announce-ip valkey-node-1
     ports:
-      - "7100:6379"
+      - '7100:6379'
     networks:
       - valkey-cluster
 
@@ -42,7 +42,7 @@ services:
     image: valkey/valkey:8.1-alpine
     command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes --port 6379 --cluster-announce-ip valkey-node-2
     ports:
-      - "7101:6379"
+      - '7101:6379'
     networks:
       - valkey-cluster
 
@@ -52,7 +52,7 @@ services:
     image: valkey/valkey:8.1-alpine
     command: valkey-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes --port 6379 --cluster-announce-ip valkey-node-3
     ports:
-      - "7102:6379"
+      - '7102:6379'
     networks:
       - valkey-cluster
 
@@ -66,19 +66,19 @@ services:
       - MASTERS=3
       - SLAVES_PER_MASTER=0
     ports:
-      - "7000:7000"
-      - "7001:7001"
-      - "7002:7002"
+      - '7000:7000'
+      - '7001:7001'
+      - '7002:7002'
 
   redis-insight:
     image: redis/redisinsight:latest
     ports:
-      - "5540:5540"
+      - '5540:5540'
 
   dynamodb:
     image: amazon/dynamodb-local
     ports:
-      - "8000:8000"
+      - '8000:8000'
 
   postgres:
     image: postgres:15-alpine
@@ -87,7 +87,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
 
   mysql:
     image: mysql:8.0
@@ -95,19 +95,19 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: mysql
     ports:
-      - "3306:3306"
+      - '3306:3306'
 
   lgtm:
     image: grafana/otel-lgtm:latest
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     ports:
-      - "3001:3000" # Grafana
-      - "3100:3100" # Loki HTTP API
-      - "3200:3200" # Tempo HTTP API
-      - "4317:4317" # OTLP gRPC
-      - "4318:4318" # OTLP HTTP
-      - "9090:9090" # Prometheus
+      - '3001:3000' # Grafana
+      - '3100:3100' # Loki HTTP API
+      - '3200:3200' # Tempo HTTP API
+      - '4317:4317' # OTLP gRPC
+      - '4318:4318' # OTLP HTTP
+      - '9090:9090' # Prometheus
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin

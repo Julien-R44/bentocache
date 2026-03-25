@@ -1,5 +1,5 @@
 ---
-summary: "Explore the concept of grace periods in BentoCache: extending the life of cached data beyond its TTL for enhanced resilience. Understand how it improves user experience during downtimes and ensures continuous data access."
+summary: 'Explore the concept of grace periods in BentoCache: extending the life of cached data beyond its TTL for enhanced resilience. Understand how it improves user experience during downtimes and ensures continuous data access.'
 ---
 
 # Grace periods
@@ -45,7 +45,7 @@ bento.getOrSet({
 
 - First time this code is executed, user will be fetched from database, stored in cache for **10 minutes** with a grace period of **6 hours**.
 - **11 minutes later**, someone request the same user. The cache entry is logically expired, but the grace period is still valid.
-- So, we try to call the factory again to refresh the cache entry. But oops, **the database is down** ( or factory is failing for any other reasons ). 
+- So, we try to call the factory again to refresh the cache entry. But oops, **the database is down** ( or factory is failing for any other reasons ).
 - Since we are still in the grace period of 6h, we will serve the stale data from the cache.
 
 As a result, instead of displaying an error page to the user, we are serving data that's a little out of date. Depending on your use case, this can result in a much better user experience.

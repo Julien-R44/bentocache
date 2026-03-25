@@ -13,6 +13,7 @@
     "typecheck": "pnpm run -r --parallel typecheck",
     "build": "pnpm run -r build",
     "lint": "eslint .",
+    "format:check": "prettier --check .",
     "checks": "pnpm lint && pnpm typecheck",
     "test": "pnpm run -r --parallel test"
   },

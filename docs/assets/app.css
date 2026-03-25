@@ -61,14 +61,14 @@ html.dark {
   margin: var(--prose-elements-margin) 0;
 }
 
-.markdown .media_box figure, .markdown .media_box p {
+.markdown .media_box figure,
+.markdown .media_box p {
   margin: 0;
 }
 
 .markdown ul li ul {
   margin: 0px;
 }
-
 
 @media only screen and (min-width: 768px) {
   .header_container {
@@ -80,4 +80,3 @@ html.dark {
 .markdown .table_container {
   overflow-x: auto;
 }
-

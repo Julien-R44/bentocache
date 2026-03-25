@@ -4,9 +4,9 @@ summary: Quick walkthrough of how Bentocache can help you improve your applicati
 
 # Walkthrough guide
 
-Let's try to take a real-word scenario to see how can Bentocache can help us. 
+Let's try to take a real-word scenario to see how can Bentocache can help us.
 
-We have a simple JSON API that is serving some products. Our JSON API is backed with PM2 and run in cluster modes with 3 instances equally served with round-robin distribution. 
+We have a simple JSON API that is serving some products. Our JSON API is backed with PM2 and run in cluster modes with 3 instances equally served with round-robin distribution.
 
 Let's also imagine the given numbers in a 10-minute window :
 
@@ -14,6 +14,7 @@ Let's also imagine the given numbers in a 10-minute window :
 - The database is down for the last 3 minutes of the 10-minute window.
 
 That means, without any caching, here's how the numbers would look like :
+
 - **Every 10 Seconds**: 1,000 x 100 x 3 = 300,000 database calls.
 - **Every Minute**: 300,000 x 6 = 1,800,000 database calls.
 - **Every 10 Minutes**: 1,800,000 x 10 = 18,000,000 database calls.
@@ -40,9 +41,9 @@ Now, let's make the first easy step by adding a simple memory-cache to our app :
 // title: Memory Cache
 const bento = new BentoCache({
   default: 'cache',
-  stores: { 
-    cache: bentostore().useL1Layer(memoryDriver())
-  }
+  stores: {
+    cache: bentostore().useL1Layer(memoryDriver()),
+  },
 })
 
 router.get('/products/:id', async (req, res) => {
@@ -55,7 +56,7 @@ router.get('/products/:id', async (req, res) => {
 
   res.json(product)
 })
-  ```
+```
 
 By caching the product for 1 minute, we significantly reduce the database load by making only one request per minute, per product and per instance. However, we still need to consider the 3 minutes of downtime when we can't cache anything, so we'll keep hitting the database.
 
@@ -67,16 +68,18 @@ By caching the product for 1 minute, we significantly reduce the database load b
 <br/>
 
 **Normal Operations (7 minutes):**
+
 - Database calls per minute: 300,000<br/>
-<small style="margin-left: 15px">1,000 products * 100 concurrent requests * 3 instances</small>
+  <small style="margin-left: 15px">1,000 products _ 100 concurrent requests _ 3 instances</small>
 - Total database calls: 3,000,000<br/>
-<small style="margin-left: 15px">300,000 calls * 7 minutes</small>
+  <small style="margin-left: 15px">300,000 calls \* 7 minutes</small>
 
 **During Downtime (3 minutes):**
+
 - Database Calls per Minute: 1,800,000<br/>
-<small style="margin-left: 15px">1,000 products * 100 concurrent requests * 3 instances * 6 ( every 10 seconds )</small>
+  <small style="margin-left: 15px">1,000 products _ 100 concurrent requests _ 3 instances \* 6 ( every 10 seconds )</small>
 - Total database calls: 5,400,000<br/>
-<small style="margin-left: 15px">1,800,000 calls * 3 minutes</small>
+  <small style="margin-left: 15px">1,800,000 calls \* 3 minutes</small>
 
 </details>
 
@@ -86,7 +89,7 @@ If we look at the above calculation, it is not exactly true. We made the assumpt
 
 We said we were receiving 100 concurrent requests for each 1.000 products. That means, at the start of each minute, when entries are expired, we will have 100 concurrent requests trying to fetch the same product from the database. This is called a cache stampede. And guess what, Bentocache has a built-in mechanism to prevent this. And this is totally transparent for you.
 
-So if we take this into account, results would be : 
+So if we take this into account, results would be :
 
 **Database calls in 10m before: 8,400,000**<br/>
 **Database calls in 10m: 5,430,000**
@@ -98,22 +101,24 @@ Note that in downtime case, we are not benefiting from the cache stampede protec
 <br/>
 
 **Normal Operations (7 minutes):**
+
 - Database calls per minute: 3,000<br/>
-<small style="margin-left: 15px">1,000 products * 3 instances</small>
+  <small style="margin-left: 15px">1,000 products \* 3 instances</small>
 - Total database calls: 30,000<br/>
-<small style="margin-left: 15px">3,000 calls * 7 minutes</small>
+  <small style="margin-left: 15px">3,000 calls \* 7 minutes</small>
 
 **During Downtime (3 minutes):**
+
 - Database Calls per Minute: 1,800,000<br/>
-<small style="margin-left: 15px">1,000 products * 100 concurrent requests * 3 instances * 6 ( every 10 seconds )</small>
+  <small style="margin-left: 15px">1,000 products _ 100 concurrent requests _ 3 instances \* 6 ( every 10 seconds )</small>
 - Total database calls: 5,400,000<br/>
-<small style="margin-left: 15px">1,800,000 calls * 3 minutes</small>
+  <small style="margin-left: 15px">1,800,000 calls \* 3 minutes</small>
 
 </details>
 
 ## Adding grace periods
 
-We have this nasty problem where the database is down during 3 minutes.  During this period, since we're using a 1-minute TTL, we can't cache anything, causing an overload of database calls and probably forcing us to show an error page to users. But there's a way to enhance our system's resilience: grace periods.
+We have this nasty problem where the database is down during 3 minutes. During this period, since we're using a 1-minute TTL, we can't cache anything, causing an overload of database calls and probably forcing us to show an error page to users. But there's a way to enhance our system's resilience: grace periods.
 
 Grace periods extend the time that cached data can be served even after their expiration. They improve not only system robustness during downtimes but also the user experience under heavy load.
 
@@ -126,8 +131,8 @@ const bento = new BentoCache({
   graceBackoff: '30s',
   // highlight-end
   stores: {
-    cache: bentostore().useL1Layer(memoryDriver()) 
-  }
+    cache: bentostore().useL1Layer(memoryDriver()),
+  },
 })
 
 router.get('/products/:id', async (req, res) => {
@@ -150,7 +155,7 @@ A particular aspect to highlight is the `graceBackoff` parameter, set here to 30
 
 By avoiding repeated calls to the database when the factory fails, it prevents what could be **likened to a self-inflicted DDoS attack**. It not only maintains service but does so in a way that doesn't further strain the system.
 
-In summary, that means, during this downtime of 3 minutes, we now only have 2 calls per minute to our database. This gives : 
+In summary, that means, during this downtime of 3 minutes, we now only have 2 calls per minute to our database. This gives :
 
 **Database calls in 10m before: 5,430,000**<br/>
 **Database calls in 10m: 39,000**
@@ -162,18 +167,19 @@ This is a huge improvement. Sure, we are serving some stale data, but depending 
 <br/>
 
 **Normal Operations (7 minutes):**
+
 - Database calls per minute: 3,000<br/>
-<small style="margin-left: 15px">1,000 products * 3 instances</small>
+  <small style="margin-left: 15px">1,000 products \* 3 instances</small>
 - Total database calls: 30,000<br/>
-<small style="margin-left: 15px">3,000 calls * 7 minutes</small>
+  <small style="margin-left: 15px">3,000 calls \* 7 minutes</small>
 
 **During Downtime (3 minutes with Grace Period):**
-- Database Calls per Minute: 1,000<br/>
-<small style="margin-left: 15px">1,000 products * 3 minutes * 1 factory calls * 3 nodes</small>
-- Total database calls: 9,000<br/>
-<small style="margin-left: 15px">1,000 calls * 3 minutes * 3 nodes</small>
-</details>
 
+- Database Calls per Minute: 1,000<br/>
+  <small style="margin-left: 15px">1,000 products _ 3 minutes _ 1 factory calls \* 3 nodes</small>
+- Total database calls: 9,000<br/>
+<small style="margin-left: 15px">1,000 calls _ 3 minutes _ 3 nodes</small>
+</details>
 
 ## Adding a distributed cache behind our memory-cache
 
@@ -189,12 +195,12 @@ See the problem ? Let's introduce our Multi-Tier cache setup :
 const connection = process.env.REDIS_CREDENTIALS!
 const bento = new BentoCache({
   default: 'cache',
-  grace: '6h', 
-  stores: { 
+  grace: '6h',
+  stores: {
     cache: bentostore()
       .useL1Layer(memoryDriver())
       .useL2Layer(redisDriver({ connection }))
-      .useBus(redisBusDriver({ connection }))
+      .useBus(redisBusDriver({ connection })),
   },
 })
 
@@ -215,14 +221,14 @@ Nice. We now have a robust two-level cache system. It also introduces a new conc
 Returning to our original problem of different instances redundantly fetching the same data from the database, let's estimate that this occurs 35% of the time. By using a multi-tier cache and bus, we can reduce database calls by this percentage.
 
 - We previously calculated 39,000 requests in 10 minutes.
-- With the new setup, we have reduced this to 25,350 requests in 10 minutes (39,000 * 0.65).
+- With the new setup, we have reduced this to 25,350 requests in 10 minutes (39,000 \* 0.65).
 
 **Database calls in 10m before: 39,000**<br/>
 **Database calls in 10m: 25,350**
 
 ## Adding soft timeouts
 
-We have likely achieved a more rational amount of database calls at this stage. 
+We have likely achieved a more rational amount of database calls at this stage.
 
 However, it sometimes happens that the database's response time is prolonged, sometimes taking up to 2 seconds. This delay becomes an issue when a key has just expired and must be refreshed, leaving the end-user waiting for the database's response before accessing the data. This is the scenario where soft timeouts become essential.
 
@@ -231,15 +237,15 @@ However, it sometimes happens that the database's response time is prolonged, so
 const connection = process.env.REDIS_CREDENTIALS!
 const bento = new BentoCache({
   default: 'cache',
-  grace: '6h', 
+  grace: '6h',
   // highlight-start
   timeout: '500ms',
   // highlight-end
-  stores: { 
+  stores: {
     cache: bentostore()
       .useL1Layer(memoryDriver())
       .useL2Layer(redisDriver({ connection }))
-      .useBus(redisBusDriver({ connection }))
+      .useBus(redisBusDriver({ connection })),
   },
 })
 
@@ -255,12 +261,12 @@ router.get('/products/:id', async (req, res) => {
 })
 ```
 
-Soft timeouts operate alongside grace periods. In this example, a soft timeout of 200ms has been configured. If the factory (ie the database call) takes more than 200ms to execute, and grace period data is still available, that data will be returned. 
+Soft timeouts operate alongside grace periods. In this example, a soft timeout of 200ms has been configured. If the factory (ie the database call) takes more than 200ms to execute, and grace period data is still available, that data will be returned.
 
 During this time, the factory will continue to run in the background. And the next time the key is requested, it will be fresh and immediately returned.
 
 ## Conclusion
 
-There are some other features to discover in Bentocache that can help you improve your user experience, resilience, and response time. But I believe this is a good introduction. 
+There are some other features to discover in Bentocache that can help you improve your user experience, resilience, and response time. But I believe this is a good introduction.
 
 By using different features of Bentocache, we were able to reduce the number of database calls **from 18,000,000 to 25,350**. We even managed to reduce the **response time to a maximum of 500ms instead of 2s** sometimes. These are all fictional numbers and a highly theoretical scenario, but I hope you get the idea of how Bentocache can help you.
