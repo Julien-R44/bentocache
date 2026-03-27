@@ -62,7 +62,7 @@ export class TwoTierHandler {
       message.tier = 'l2'
     }
 
-    this.stack.l1?.set(key, item.entry.serialize(), options)
+    this.stack.l1?.set(key, this.stack.prepareForL1(item.entry), options)
 
     this.#emit(cacheEvents.hit(key, item.entry.getValue(), this.stack.name, 'l2'))
     return item.entry.getValue()
