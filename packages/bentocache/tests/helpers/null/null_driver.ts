@@ -13,6 +13,10 @@ export class NullDriver extends BaseDriver implements CacheDriver<false> {
     return undefined
   }
 
+  getMany(_keys: string[]): any {
+    return []
+  }
+
   pull(_key: string): any {
     return undefined
   }

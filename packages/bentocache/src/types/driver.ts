@@ -12,6 +12,12 @@ export interface CacheDriver<Async extends boolean = true> {
   get(key: string): PromiseOr<string | undefined, Async>
 
   /**
+   * Get multiple values from the cache
+   * Returns an array of values (or undefined for missing keys) in the same order as the input keys
+   */
+  getMany(keys: string[]): PromiseOr<(string | undefined)[], Async>
+
+  /**
    * Get the value of a key and delete it
    *
    * Returns the value if the key exists, undefined otherwise
@@ -69,6 +75,11 @@ export interface DatabaseAdapter {
    * Get an entry from the database
    */
   get(key: string): Promise<{ value: any; expiresAt: number | null } | undefined>
+
+  /**
+   * Get multiple entries from the database
+   */
+  getMany(keys: string[]): Promise<{ key: string; value: any; expiresAt: number | null }[]>
 
   /**
    * Delete an entry from the database

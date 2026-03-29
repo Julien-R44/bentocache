@@ -150,6 +150,66 @@ test.group('Typings', () => {
     expectTypeOf(bento.get).parameter(0).exclude(undefined).not.toHaveProperty('timeout')
   })
 
+  test('getMany() typings on cache', async ({ expectTypeOf }) => {
+    const { cache } = new CacheFactory().create()
+
+    const r1 = await cache.getMany<string>({ keys: ['key1', 'key2'] })
+    const r2 = await cache.getMany({ keys: ['key1', 'key2'], defaultValue: 'default' })
+    const r3 = await cache.getMany({ keys: ['key1', 'key2'], defaultValue: () => 'default' })
+    const r4 = await cache.getMany({ keys: ['key1', 'key2'], defaultValue: () => 10 })
+    const r5 = await cache.getMany({ keys: ['key1', 'key2'], defaultValue: () => ({ foo: 'bar' }) })
+    const r6 = await cache.getMany({ keys: ['key1', 'key2'], defaultValue: { bar: 'foo' } })
+    const r7 = await cache.getMany({ keys: ['key1', 'key2'] })
+
+    expectTypeOf(r1).toEqualTypeOf<(string | null | undefined)[]>()
+    expectTypeOf(r2).toEqualTypeOf<(string | null | undefined)[]>()
+    expectTypeOf(r3).toEqualTypeOf<(string | null | undefined)[]>()
+    expectTypeOf(r4).toEqualTypeOf<(number | null | undefined)[]>()
+    expectTypeOf(r5).toEqualTypeOf<({ foo: string } | null | undefined)[]>()
+    expectTypeOf(r6).toEqualTypeOf<({ bar: string } | null | undefined)[]>()
+    expectTypeOf(r7).toEqualTypeOf<(any | null | undefined)[]>()
+  })
+
+  test('getMany() typings on bento', async ({ expectTypeOf }) => {
+    const { bento } = new BentoCacheFactory().create()
+
+    const r1 = await bento.getMany<string>({ keys: ['key1', 'key2'] })
+    const r2 = await bento.getMany({ keys: ['key1', 'key2'], defaultValue: 'default' })
+    const r3 = await bento.getMany({ keys: ['key1', 'key2'], defaultValue: () => 'default' })
+    const r4 = await bento.getMany({ keys: ['key1', 'key2'], defaultValue: () => 10 })
+    const r5 = await bento.getMany({
+      keys: ['key1', 'key2'],
+      defaultValue: () => ({ foo: 'bar' }),
+    })
+    const r6 = await bento.getMany({
+      keys: ['key1', 'key2'],
+      defaultValue: { bar: 'foo' },
+    })
+    const r7 = await bento.getMany({ keys: ['key1', 'key2'] })
+
+    expectTypeOf(r1).toEqualTypeOf<(string | null | undefined)[]>()
+    expectTypeOf(r2).toEqualTypeOf<(string | null | undefined)[]>()
+    expectTypeOf(r3).toEqualTypeOf<(string | null | undefined)[]>()
+    expectTypeOf(r4).toEqualTypeOf<(number | null | undefined)[]>()
+    expectTypeOf(r5).toEqualTypeOf<({ foo: string } | null | undefined)[]>()
+    expectTypeOf(r6).toEqualTypeOf<({ bar: string } | null | undefined)[]>()
+    expectTypeOf(r7).toEqualTypeOf<(any | null | undefined)[]>()
+  })
+
+  test('getMany() options parameters typings', async ({ expectTypeOf }) => {
+    const { bento } = new BentoCacheFactory().create()
+
+    expectTypeOf(bento.getMany).parameter(0).exclude(undefined).not.toHaveProperty('lockTimeout')
+    expectTypeOf(bento.getMany).parameter(0).exclude(undefined).not.toHaveProperty('timeout')
+    expectTypeOf(bento.getMany).parameter(0).exclude(undefined).toMatchTypeOf<{
+      keys: string[]
+      defaultValue?: any
+      grace?: any
+      graceBackoff?: any
+      suppressL2Errors?: boolean
+    }>()
+  })
+
   test('delete() options parameters typings', async ({ expectTypeOf }) => {
     const { bento } = new BentoCacheFactory().create()
 

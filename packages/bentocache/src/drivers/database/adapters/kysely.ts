@@ -54,6 +54,20 @@ export class KyselyAdapter implements DatabaseAdapter {
     return { value: result.value, expiresAt: result.expires_at }
   }
 
+  async getMany(keys: string[]): Promise<{ key: string; value: any; expiresAt: number | null }[]> {
+    const results = await this.#connection
+      .selectFrom(this.#tableName)
+      .select(['key', 'value', 'expires_at as expiresAt'])
+      .where('key', 'in', keys)
+      .execute()
+
+    return results.map((result) => ({
+      key: result.key,
+      value: result.value,
+      expiresAt: result.expiresAt,
+    }))
+  }
+
   async delete(key: string): Promise<boolean> {
     const result = await this.#connection
       .deleteFrom(this.#tableName)

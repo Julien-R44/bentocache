@@ -4,14 +4,21 @@ import {
   GetItemCommand,
   PutItemCommand,
   DeleteItemCommand,
+  BatchGetItemCommand,
   BatchWriteItemCommand,
   ScanCommand,
   type AttributeValue,
   ConditionalCheckFailedException,
 } from '@aws-sdk/client-dynamodb'
 
+import type { Logger } from '../logger.js'
 import { BaseDriver } from './base_driver.js'
-import type { CacheDriver, CreateDriverResult, DynamoDBConfig } from '../types/main.js'
+import type {
+  CacheDriver,
+  CreateDriverResult,
+  DynamoDBConfig,
+  DriverCommonInternalOptions,
+} from '../types/main.js'
 
 /**
  * Create a new DynamoDB driver
@@ -19,7 +26,7 @@ import type { CacheDriver, CreateDriverResult, DynamoDBConfig } from '../types/m
 export function dynamoDbDriver(options: DynamoDBConfig): CreateDriverResult<DynamoDbDriver> {
   return {
     options,
-    factory: (config: DynamoDBConfig) => new DynamoDbDriver(config),
+    factory: (config: DynamoDBConfig & DriverCommonInternalOptions) => new DynamoDbDriver(config),
   }
 }
 
@@ -40,13 +47,20 @@ export class DynamoDbDriver extends BaseDriver implements CacheDriver {
   declare config: DynamoDBConfig
 
   /**
+   * Logger
+   */
+  protected logger?: Logger
+
+  /**
    * Name of the table to use
    * Defaults to `cache`
    */
   #tableName: string
 
-  constructor(config: DynamoDBConfig & { client?: DynamoDBClient }) {
+  constructor(config: DynamoDBConfig & DriverCommonInternalOptions & { client?: DynamoDBClient }) {
     super(config)
+
+    this.logger = config.logger
 
     this.#tableName = this.config.table.name ?? 'cache'
 
@@ -167,6 +181,151 @@ export class DynamoDbDriver extends BaseDriver implements CacheDriver {
     }
 
     return data.Item.value.S ?? data.Item.value.N
+  }
+
+  /**
+   * Get multiple values in order. Expired items return undefined.
+   *
+   * DynamoDB has a limit of 100 items per BatchGetItem request, so we chunk
+   * the keys and make multiple parallel requests. Implements retry logic for
+   * UnprocessedKeys with exponential backoff.
+   *
+   * Returns the values in the same order as the keys were requested.
+   */
+  async getMany(keys: string[]) {
+    if (keys.length === 0) return []
+
+    const prefixedKeys = keys.map((key) => this.getItemKey(key))
+    /**
+     * DynamoDB will throw a ValidationException if we request the same key twice
+     * in the same batch, so we need to deduplicate them.
+     */
+    const uniqueKeys = [...new Set(prefixedKeys)]
+    const chunks = Array.from(chunkify(uniqueKeys, 100))
+    const keyToValueMap: Record<string, string | undefined> = {}
+
+    try {
+      /**
+       * We'll fetch all chunks in parallel to speed up the process.
+       */
+      const chunkPromises = chunks.map((chunk: string[]) => this.#getBatchWithRetry(chunk))
+      const allItemsArrays = await Promise.all(chunkPromises)
+      const allItems = allItemsArrays.flat()
+
+      const deletePromises: Promise<any>[] = []
+
+      for (const item of allItems) {
+        if (!item.key?.S) {
+          if (this.logger) {
+            this.logger.warn('DynamoDB item missing key attribute', { item })
+          }
+          continue
+        }
+
+        if (!this.#isItemExpired(item)) {
+          /**
+           * DynamoDB stores values differently depending on their type, so we
+           * need to extract them accordingly.
+           */
+          let value: string | undefined
+          if (item.value?.S) {
+            value = item.value.S
+          } else if (item.value?.N) {
+            value = item.value.N
+          }
+
+          if (value !== undefined) {
+            keyToValueMap[item.key.S] = value
+          }
+        } else {
+          /**
+           * If we encounter an expired item, we'll delete it in the background
+           * and log any errors that occur.
+           *
+           * We need to strip the prefix because the delete method will append it again.
+           */
+          const logicalKey = this.prefix ? item.key.S.slice(this.prefix.length + 1) : item.key.S
+
+          deletePromises.push(
+            this.delete(logicalKey).catch((err) => {
+              if (this.logger) {
+                this.logger.warn('Failed to delete expired key', {
+                  key: item.key.S,
+                  error: err.message,
+                })
+              }
+            }),
+          )
+        }
+      }
+    } catch (error) {
+      if (this.logger) {
+        this.logger.error('Failed to fetch items from DynamoDB', {
+          keyCount: keys.length,
+          error,
+        })
+      }
+      throw error
+    }
+
+    return prefixedKeys.map((key) => keyToValueMap[key])
+  }
+
+  /**
+   * Fetch a batch of keys with retry logic for UnprocessedKeys
+   */
+  async #getBatchWithRetry(keys: string[], maxRetries = 3): Promise<Record<string, any>[]> {
+    let unprocessedKeys = keys
+    const allItems: Record<string, any>[] = []
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      if (unprocessedKeys.length === 0) break
+
+      const requestItems = {
+        [this.#tableName]: {
+          Keys: unprocessedKeys.map((key) => ({ key: { S: key } })),
+        },
+      }
+
+      const command = new BatchGetItemCommand({ RequestItems: requestItems })
+      const data = await this.#client.send(command)
+
+      const items = data.Responses?.[this.#tableName] ?? []
+      allItems.push(...items)
+
+      const unprocessed = data.UnprocessedKeys?.[this.#tableName]?.Keys
+      if (!unprocessed || unprocessed.length === 0) {
+        break
+      }
+
+      unprocessedKeys = unprocessed.map((k) => k.key.S).filter((k): k is string => !!k)
+
+      if (unprocessedKeys.length > 0 && attempt < maxRetries) {
+        /**
+         * If we have unprocessed keys, we wait for a bit before retrying.
+         * We use exponential backoff to avoid hammering DynamoDB.
+         */
+        const backoffMs = Math.pow(2, attempt) * 100
+        await new Promise((resolve) => setTimeout(resolve, backoffMs))
+
+        if (this.logger) {
+          this.logger.debug('Retrying unprocessed keys', {
+            attempt: attempt + 1,
+            unprocessedCount: unprocessedKeys.length,
+            backoffMs,
+          })
+        }
+      }
+    }
+
+    if (unprocessedKeys.length > 0 && this.logger) {
+      this.logger.warn('Failed to process all keys after retries', {
+        unprocessedCount: unprocessedKeys.length,
+        maxRetries,
+      })
+    }
+
+    return allItems
   }
 
   /**
