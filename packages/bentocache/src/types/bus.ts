@@ -36,6 +36,11 @@ export const CacheBusMessageType = {
    * An item was logically expired
    */
   Expire: 'expire',
+
+  /**
+   * Tag keys were marked for hard deletion
+   */
+  TagsDeletionMarked: 'tags-deletion-marked',
 }
 export type CacheBusMessageType = (typeof CacheBusMessageType)[keyof typeof CacheBusMessageType]
 

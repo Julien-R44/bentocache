@@ -35,6 +35,7 @@ export class BinaryEncoder implements TransportEncoder {
     if (type === CacheBusMessageType.Clear) return 0x02
     if (type === CacheBusMessageType.Delete) return 0x03
     if (type === CacheBusMessageType.Expire) return 0x04
+    if (type === CacheBusMessageType.TagsDeletionMarked) return 0x05
 
     throw new Error(`Unknown message type: ${type}`)
   }
@@ -44,6 +45,7 @@ export class BinaryEncoder implements TransportEncoder {
     if (num === 0x02) return CacheBusMessageType.Clear
     if (num === 0x03) return CacheBusMessageType.Delete
     if (num === 0x04) return CacheBusMessageType.Expire
+    if (num === 0x05) return CacheBusMessageType.TagsDeletionMarked
 
     throw new Error(`Unknown message type: ${num}`)
   }
