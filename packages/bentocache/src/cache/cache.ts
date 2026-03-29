@@ -82,7 +82,7 @@ export class Cache implements CacheProvider {
       const isRemoteItemValid = await this.#stack.isEntryValid(remoteItem)
 
       if (isRemoteItemValid) {
-        this.#stack.l1?.set(key, remoteItem!.entry.serialize(), options)
+        this.#stack.l1?.set(key, this.#stack.prepareForL1(remoteItem!.entry), options)
         this.#stack.emit(cacheEvents.hit(key, remoteItem!.entry.getValue(), this.name))
         this.#options.logger.logL2Hit({ cacheName: this.name, key, options })
         message.hit = true
@@ -92,7 +92,7 @@ export class Cache implements CacheProvider {
       }
 
       if (remoteItem && options.isGraceEnabled()) {
-        this.#stack.l1?.set(key, remoteItem.entry.serialize(), options)
+        this.#stack.l1?.set(key, this.#stack.prepareForL1(remoteItem.entry), options)
         this.#stack.emit(cacheEvents.hit(key, remoteItem.entry.serialize(), this.name, 'l2', true))
         this.#options.logger.logL2Hit({ cacheName: this.name, key, options, graced: true })
         message.hit = true

@@ -78,14 +78,17 @@ export class CacheEntry {
     return this
   }
 
-  serialize() {
-    const raw = {
+  toRaw() {
+    return {
       value: this.#value,
       createdAt: this.#createdAt,
       logicalExpiration: this.#logicalExpiration,
       ...(this.#tags.length > 0 && { tags: this.#tags }),
     }
+  }
 
+  serialize() {
+    const raw = this.toRaw()
     if (this.#serializer) return this.#serializer.serialize(raw)
     return raw
   }
