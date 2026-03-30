@@ -12,16 +12,16 @@ Tagging allows associating a cache entry with one or more tags to simplify inval
 await bento.getOrSet({
   key: 'foo',
   factory: getFromDb(),
-  tags: ['tag-1', 'tag-2']
-});
+  tags: ['tag-1', 'tag-2'],
+})
 
-await bento.set({ key: 'foo', tags: ['tag-1'] });
+await bento.set({ key: 'foo', tags: ['tag-1'] })
 ```
 
 To invalidate all entries linked to a tag:
 
 ```ts
-await bento.deleteByTag({ tags: ['tag-1'] });
+await bento.deleteByTag({ tags: ['tag-1'] })
 ```
 
 Now, imagine that the tags depend on the cached value itself. In that case, you can use [adaptive caching](./adaptive_caching.md) to update tags dynamically based on the computed value.
@@ -30,13 +30,12 @@ Now, imagine that the tags depend on the cached value itself. In that case, you 
 const product = await bento.getOrSet({
   key: `product:${id}`,
   factory: async (ctx) => {
-    const product = await fetchProduct(id);
-    ctx.setTags(product.tags);
-    return product;
-  }
+    const product = await fetchProduct(id)
+    ctx.setTags(product.tags)
+    return product
+  },
 })
 ```
-
 
 ## How it works
 
@@ -74,6 +73,7 @@ This approach does not scale in a distributed cache with millions of entries, as
 Instead of directly deleting entries with a given tag, Bentocache uses a more efficient approach.
 
 Core idea is pretty simple:
+
 - When a tag is invalidated, Bentocache stores an **invalidation timestamp** in the cache.
 - When fetching an entry, Bentocache checks whether it was cached before or after its associated tags were invalidated.
 
@@ -83,8 +83,8 @@ Let's take a concrete example. Here we just cached an entry with the tags `tag-1
 await bento.getOrSet({
   key: 'foo',
   factory: getFromDb(),
-  tags: ['tag-1', 'tag-2']
-});
+  tags: ['tag-1', 'tag-2'],
+})
 ```
 
 Internally, Bentocache stores something like:
@@ -98,7 +98,7 @@ Note that we also store the creation date of the entry as `createdAt`.
 Now, we invalidate the `tag-1` tag:
 
 ```ts
-await bento.deleteByTag({ tags: ['tag-1'] });
+await bento.deleteByTag({ tags: ['tag-1'] })
 ```
 
 Instead of scanning and deleting every entry associated with `tag-1`, Bentocache simply stores the invalidation timestamp under a special cache key:

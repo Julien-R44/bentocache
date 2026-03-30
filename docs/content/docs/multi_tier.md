@@ -1,10 +1,10 @@
 ---
-summary: "Discover how to use multi-tier Caching with Bentocache: combines in-memory and distributed caches for optimal performance."
+summary: 'Discover how to use multi-tier Caching with Bentocache: combines in-memory and distributed caches for optimal performance.'
 ---
 
 # Multi Tier
 
-A multi-tier caching system can be very useful when you want to boost even more the performance of you caching strategy. 
+A multi-tier caching system can be very useful when you want to boost even more the performance of you caching strategy.
 
 To do that, we generally use a in-memory cache as the first level cache, and a distributed cache as the second level cache. In-memory cache is really fast, but it is limited by the amount of memory available on your server. Distributed cache is slower, but can store a lot more data, and is shared between your different instances.
 
@@ -23,7 +23,7 @@ If your application is running on a single instance, you don't need to bother wi
 ```ts
 import { BentoCache, bentostore } from 'bentocache'
 import { memoryDriver } from 'bentocache/drivers/memory'
-import { redisDriver,redisBusDriver } from 'bentocache/drivers/redis'
+import { redisDriver, redisBusDriver } from 'bentocache/drivers/redis'
 
 const redisConnection = { host: 'localhost', port: 6379 }
 const bento = new BentoCache({
@@ -31,7 +31,7 @@ const bento = new BentoCache({
 
   stores: {
     multitier: bentostore()
-      // Your L1 Cache. Here, an in-memory cache with 
+      // Your L1 Cache. Here, an in-memory cache with
       // a maximum size of 10Mb
       .useL1Layer(memoryDriver({ maxSize: '10mb' }))
       // Your L2 Cache. Here, a Redis cache
@@ -39,11 +39,12 @@ const bento = new BentoCache({
       // Finally, the bus to synchronize the L1 caches between
       // the different instances of your application
       .useBus(redisBusDriver({ connection: redisConnection })),
-  }
+  },
 })
 ```
 
 So here, We have defined a multi-tier cache with :
+
 - L1: An in-memory cache with a maximum size of 10Mb. After that, the LRU algorithm will be used to remove the least recently used items.
 - L2: A distributed cache using Redis.
 - And a Redis bus to synchronize the in-memory caches between the different instances of your application. The redis bus leverage Redis Pub/Sub system to send messages between instances.
@@ -71,9 +72,9 @@ See the problem ? That's why the bus is needed.
 
 ### How the bus works
 
-The bus is, as the name suggests, just a bus and messaging system. With the `redisBusDriver` we are leveraging Redis Pub/Sub system to send messages between instances. 
+The bus is, as the name suggests, just a bus and messaging system. With the `redisBusDriver` we are leveraging Redis Pub/Sub system to send messages between instances.
 
-Every time a key is invalidated or updated, the instance will notify other ones by sending a message saying "Hey, this key has been invalidated, you should delete it from your cache". Note that we are not sending the new value to other instances, for multiple reasons : 
+Every time a key is invalidated or updated, the instance will notify other ones by sending a message saying "Hey, this key has been invalidated, you should delete it from your cache". Note that we are not sending the new value to other instances, for multiple reasons :
 
 - Maybe the other instance will never need this key. So let's not waste memory space on this instance. It will fetch the value from the distributed cache if needed.
 - We also save network bandwidth and not overload the bus with serialized data of the value.
@@ -82,7 +83,7 @@ Bus messages are also encoded using a custom binary format instead of plain JSON
 
 ### Retry queue strategy
 
-The bus also has a retry queue strategy. If an instance fails to publish a message through the bus, it will be added to a retry queue. As soon as we can publish messages again, we will try to process that queue and send the messages. 
+The bus also has a retry queue strategy. If an instance fails to publish a message through the bus, it will be added to a retry queue. As soon as we can publish messages again, we will try to process that queue and send the messages.
 
 This can be configured through the `redisBusDriver` options as follow :
 
@@ -90,8 +91,8 @@ This can be configured through the `redisBusDriver` options as follow :
 redisBusDriver({
   retryQueue: {
     enabled: true,
-    maxSize: undefined
-  }
+    maxSize: undefined,
+  },
 })
 ```
 

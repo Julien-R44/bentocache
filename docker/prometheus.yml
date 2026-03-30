@@ -3,10 +3,10 @@ global:
   scrape_timeout: 10s
   evaluation_interval: 5s
 scrape_configs:
-- job_name: playground-app
-  metrics_path: /metrics
-  scheme: https
-  static_configs:
-  - targets: ['employees-projectors-reason-finland.trycloudflare.com']
-    labels:
-      service: 'app'
+  - job_name: playground-app
+    metrics_path: /metrics
+    scheme: https
+    static_configs:
+      - targets: ['employees-projectors-reason-finland.trycloudflare.com']
+        labels:
+          service: 'app'

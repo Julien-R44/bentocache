@@ -8,17 +8,17 @@ Namespaces are a way to organize your cache entries by grouping them into some c
 
 Basically, what BentoCache does internally is it prefixes all the keys with the namespace you provide.
 
-Let's take an example. 
+Let's take an example.
 
 ```ts
-const usersNamespace = bento.namespace('users');
+const usersNamespace = bento.namespace('users')
 
 bento.set('products', products)
-usersNamespace.set({ key: '1', value: { name: 'John' } });
-usersNamespace.set({ key: '2', value: { name: 'Jane' } });
-usersNamespace.set({ key: '3', value: { name: 'Doe' } });
+usersNamespace.set({ key: '1', value: { name: 'John' } })
+usersNamespace.set({ key: '2', value: { name: 'Jane' } })
+usersNamespace.set({ key: '3', value: { name: 'Doe' } })
 
-usersNamespace.clear();
+usersNamespace.clear()
 ```
 
 Here, the `bento.namespace('users')` call will return a new instance of the driver. Further calls to methods via this instance will basically automatically prefix the keys with `users:`.

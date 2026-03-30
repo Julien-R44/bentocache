@@ -2,7 +2,6 @@
 summary: How BentoCache protects you from cache stampede and how it works
 ---
 
-
 # Stampede Protection
 
 To begin with, what is a [Cache Stampede](https://en.wikipedia.org/wiki/Cache_stampede)?
@@ -14,13 +13,13 @@ Imagine this simple route that allows retrieving a post by its ID.
 ```ts
 router.get('/posts/:id', async (request) => {
   const { id } = request.params
-  
+
   const post = await bento.getOrSet({
-    key: `post:${id}`, 
+    key: `post:${id}`,
     factory: () => getPostFromDb(id),
     ttl: '1h',
   })
-  
+
   return user
 })
 ```

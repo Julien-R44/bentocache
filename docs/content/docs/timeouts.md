@@ -19,7 +19,7 @@ const result = await bento.getOrSet({
   ttl: '10m',
   grace: '6h',
   timeout: '200ms',
-});
+})
 ```
 
 Here, suppose we have an expired entry still under grace period in the cache. A new request comes in, so the factory `() => Product.all()` will be called.
@@ -43,7 +43,7 @@ const result = await bento.getOrSet({
   factory: () => Product.all(),
   ttl: '10m',
   hardTimeout: '1s',
-});
+})
 ```
 
 Here, if the factory takes more than 1s to execute, then an exception will be thrown. You can handle it like this:
@@ -57,7 +57,7 @@ try {
     factory: () => Product.all(),
     ttl: '10m',
     hardTimeout: '1s',
-  });
+  })
 } catch (e) {
   if (e instanceof errors.E_FACTORY_HARD_TIMEOUT) {
     // handle timeout error
@@ -75,5 +75,5 @@ const result = await bento.getOrSet({
   grace: '6h',
   timeout: '200ms',
   hardTimeout: '1s',
-});
+})
 ```

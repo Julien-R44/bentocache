@@ -10,7 +10,6 @@ This package is experimental and may change in future versions.
 
 Bentocache provides an official OpenTelemetry instrumentation package: `@bentocache/otel`.
 
-
 It listens to Bentocache tracing channels and emits spans like:
 
 - `cache.get`
@@ -72,6 +71,7 @@ tracingChannels.cacheOperation.subscribe({
 ## Install
 
 :::codegroup
+
 ```sh
 // title: npm
 npm i @bentocache/otel
@@ -86,6 +86,7 @@ pnpm add @bentocache/otel
 // title: yarn
 yarn add @bentocache/otel
 ```
+
 :::
 
 ## Basic setup

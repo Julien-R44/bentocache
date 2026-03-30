@@ -32,7 +32,6 @@ interface L2CacheDriver {
    */
   set(key: string, value: string, ttl?: number): Promise<boolean>
 
-
   /**
    * Remove all items from the cache
    */
@@ -57,9 +56,9 @@ interface L2CacheDriver {
 }
 ```
 
-Similarly, the `L1CacheDriver` interface is the same, except that it is not async. 
+Similarly, the `L1CacheDriver` interface is the same, except that it is not async.
 
-So this should be quite easy to implement. Feel free to take a lot at [the existing drivers](https://github.com/Julien-R44/bentocache/tree/main/packages/bentocache/src/drivers) implementations for inspiration. 
+So this should be quite easy to implement. Feel free to take a lot at [the existing drivers](https://github.com/Julien-R44/bentocache/tree/main/packages/bentocache/src/drivers) implementations for inspiration.
 
 Also note that your driver will receive two additional parameters in the constructor : `ttl` and `prefix`. These parameters are common to every driver and their purpose is explained in the [options](../options.md) page.
 
@@ -71,7 +70,7 @@ import type { CreateDriverResult } from 'bentocache/types'
 export function myDriver(options: MyDriverOptions): CreateDriverResult<MyDriver> {
   return {
     options,
-    factory: (config: MyDriverOptions) => new MyDriver(config)
+    factory: (config: MyDriverOptions) => new MyDriver(config),
   }
 }
 ```
@@ -84,9 +83,12 @@ import { BentoCache, bentostore } from 'bentocache'
 const bento = new BentoCache({
   default: 'myStore',
   stores: {
-    myStore: bentostore()
-      .useL2Layer(myDriver({ /* Your driver options */ }))
-  }
+    myStore: bentostore().useL2Layer(
+      myDriver({
+        /* Your driver options */
+      }),
+    ),
+  },
 })
 ```
 
@@ -178,6 +180,7 @@ export function prismaDriver(options: PrismaOptions): CreateDriverResult<Databas
   }
 }
 ```
+
 ## Tests
 
 If you want to test your driver and its compliance, Bentocache is shipped with a test suite for [Japa](https://japa.dev/docs) that you can use. Note that you will also need to have `@japa/assert` installed. Then, you can use it like this:
@@ -192,10 +195,11 @@ test.group('My Driver', (group) => {
   registerCacheDriverTestSuite({
     test,
     group,
-    createDriver: (options) => new MyDriver({
-      myOption: 'myValue',
-      ...options
-    }),
+    createDriver: (options) =>
+      new MyDriver({
+        myOption: 'myValue',
+        ...options,
+      }),
   })
 })
 ```

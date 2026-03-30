@@ -1,5 +1,5 @@
 ---
-summary: "Discover BentoCache named caches feature. Learn how to define multiple cache stores in your application and use them distinctly"
+summary: 'Discover BentoCache named caches feature. Learn how to define multiple cache stores in your application and use them distinctly'
 ---
 
 # Named Caches
@@ -11,8 +11,7 @@ const bento = new BentoCache({
   default: 'memory',
   stores: {
     // One store named "memory". Only L1 in-memory cache
-    memory: bentostore()
-      .useL1Layer(memoryDriver({ maxSize: '10mb' })),
+    memory: bentostore().useL1Layer(memoryDriver({ maxSize: '10mb' })),
 
     // One store named "multitier" using full multi-tier cache
     multitier: bentostore()
@@ -21,8 +20,11 @@ const bento = new BentoCache({
       .useBus(redisBusDriver({ connection: redisConnection })),
 
     // One store named "dynamo" using the dynamodb driver
-    dynamo: bentostore()
-      .useL2Layer(dynamodbDriver({ /* ... */ })),
+    dynamo: bentostore().useL2Layer(
+      dynamodbDriver({
+        /* ... */
+      }),
+    ),
   },
 })
 ```
@@ -57,11 +59,9 @@ In some cases, you may want to define two named caches that use the same backend
 const bento = new BentoCache({
   default: 'users',
   stores: {
-    users: bentostore()
-      .useL2Layer(redisDriver({ prefix: 'users' })),
+    users: bentostore().useL2Layer(redisDriver({ prefix: 'users' })),
 
-    posts: bentostore()
-      .useL2Layer(redisDriver({ prefix: 'posts' }))
+    posts: bentostore().useL2Layer(redisDriver({ prefix: 'posts' })),
   },
 })
 ```

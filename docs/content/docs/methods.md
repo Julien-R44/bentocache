@@ -1,5 +1,5 @@
 ---
-summary: "Comprehensive list of all methods available when using BentoCache"
+summary: 'Comprehensive list of all methods available when using BentoCache'
 ---
 
 # Methods
@@ -11,20 +11,20 @@ Below is a list of all the methods available when using BentoCache.
 Returns a new instance of the driver namespace. See [Namespaces](./namespaces.md) for more information.
 
 ```ts
-const usersNamespace = bento.namespace('users');
+const usersNamespace = bento.namespace('users')
 
-usersNamespace.set('1', { name: 'John' });
-usersNamespace.set('2', { name: 'Jane' });
-usersNamespace.set('3', { name: 'Doe' });
+usersNamespace.set('1', { name: 'John' })
+usersNamespace.set('2', { name: 'Jane' })
+usersNamespace.set('3', { name: 'Doe' })
 
-usersNamespace.clear();
+usersNamespace.clear()
 ```
 
-## get 
+## get
 
 `get` allows you to retrieve a value from the cache. It returns `undefined` if the key does not exist.
 
-#### get<T>(options: GetPojoOptions<T>) 
+#### get<T>(options: GetPojoOptions<T>)
 
 Returns the value of the key, or `undefined` if the key does not exist.
 
@@ -32,7 +32,7 @@ Returns the value of the key, or `undefined` if the key does not exist.
 const products = await bento.get({
   key: 'products',
   defaultValue: [],
-});
+})
 ```
 
 ## set
@@ -69,7 +69,7 @@ It will try to get the value in the cache. If it exists, it will return it. If i
 // basic usage
 const products = await bento.getOrSet({
   key: 'products',
-  factory: () => fetchProducts()
+  factory: () => fetchProducts(),
 })
 
 // with options
@@ -98,7 +98,7 @@ cache.getOrSet({
     }
 
     return item
-  }
+  },
 })
 ```
 
@@ -120,14 +120,13 @@ cache.getOrSet({
     }
 
     return item
-  }
+  },
 })
 ```
 
 ### ctx.setOptions
 
 `setOptions` allows you to update the options of the cache entry. This is useful when you want to update the TTL, grace period, or tags and when it depends on the value itself.
-
 
 ```ts
 const products = await bento.getOrSet({
@@ -141,10 +140,9 @@ const products = await bento.getOrSet({
     })
 
     return token
-  }
+  },
 })
 ```
-
 
 Auth tokens are a perfect example of this use case. The cached token should expire when the token itself expires. And we know the expiration time only after fetching the token. See [Adaptive Caching docs](./adaptive_caching.md) for more information.
 
@@ -161,7 +159,7 @@ const products = await bento.getOrSet({
     }
 
     return 'bar'
-  }
+  },
 })
 ```
 
@@ -218,10 +216,10 @@ When we delete a key, it is completely removed and forgotten. This means that ev
 
 ```ts
 // Set a value with a grace period of 6 minutes
-await cache.set({ 
+await cache.set({
   key: 'hello',
   value: 'world',
-  grace: '6m'
+  grace: '6m',
 })
 
 // Expire the value. It is kept in the cache but marked as STALE for 6 minutes
@@ -247,7 +245,7 @@ await bento.deleteMany({ keys: ['products', 'users'] })
 Clear the cache. This will delete all the keys in the cache if called from the "root" instance. If called from a namespace, it will only delete the keys in that namespace.
 
 ```ts
-await bento.clear();
+await bento.clear()
 ```
 
 ## prune
@@ -255,7 +253,7 @@ await bento.clear();
 Prunes the cache by removing expired entries. This is useful for drivers that do not have native TTL support, such as File and Database drivers. On drivers with native TTL support, this is typically a noop.
 
 ```ts
-await bento.prune();
+await bento.prune()
 ```
 
 ## disconnect
@@ -263,5 +261,5 @@ await bento.prune();
 Disconnect from the cache. This will close the connection to the cache server, if applicable.
 
 ```ts
-await bento.disconnect();
+await bento.disconnect()
 ```
