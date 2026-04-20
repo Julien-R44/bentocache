@@ -94,11 +94,19 @@ test.group('Typings', () => {
       ttl: 1000,
       factory: () => 34,
     })
+    const r5 = await cache.getOrSet({
+      key: 'key',
+      factory: (ctx) => {
+        ctx.setOptions({ ttl: '1m', grace: '2m', graceBackoff: '10s' })
+        return 99
+      },
+    })
 
     expectTypeOf(r1).toEqualTypeOf<string>()
     expectTypeOf(r2).toEqualTypeOf<number>()
     expectTypeOf(r3).toEqualTypeOf<number>()
     expectTypeOf(r4).toEqualTypeOf<number>()
+    expectTypeOf(r5).toEqualTypeOf<number>()
   })
 
   test('getOrSet() typings on bento', async ({ expectTypeOf }) => {

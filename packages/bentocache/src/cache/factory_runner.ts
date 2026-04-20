@@ -74,6 +74,8 @@ export class FactoryRunner {
           setTags: (tags) => params.options.tags.push(...tags),
           setOptions: (options) => {
             if (options.ttl) params.options.setLogicalTtl(options.ttl)
+            if ('grace' in options) params.options.setGrace(options.grace ?? false)
+            if ('graceBackoff' in options) params.options.setGraceBackoff(options.graceBackoff ?? null)
             params.options.skipBusNotify = options.skipBusNotify ?? false
             params.options.skipL2Write = options.skipL2Write ?? false
           },

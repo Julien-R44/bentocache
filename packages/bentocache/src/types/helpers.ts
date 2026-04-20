@@ -24,7 +24,13 @@ export type GetSetFactoryContext = {
   /**
    * Set the options for the current factory
    */
-  setOptions: (options: { ttl?: Duration; skipBusNotify?: boolean; skipL2Write?: boolean }) => void
+  setOptions: (options: {
+    ttl?: Duration
+    grace?: false | Duration
+    graceBackoff?: Duration
+    skipBusNotify?: boolean
+    skipL2Write?: boolean
+  }) => void
 
   /**
    * Set the tags for the current factory
