@@ -4,7 +4,9 @@ import { sleep } from '@julr/utils/misc'
 import { testLogger } from '@julr/utils/logger'
 
 import { BASE_URL } from '../helpers/index.js'
+import { Locks } from '../../src/cache/locks.js'
 import { FileDriver } from '../../src/drivers/file/file.js'
+import type { LockManager, LockReleaser } from '../../src/types/main.js'
 import { registerCacheDriverTestSuite } from '../helpers/driver_test_suite.js'
 
 test.group('File driver', (group) => {
@@ -119,6 +121,45 @@ test.group('File Driver | Prune', () => {
     ])
 
     await assert.doesNotReject(() => driver.get('foo'))
+  })
+
+  test('uses custom lock manager for writes', async ({ cleanup, assert }) => {
+    class SpyLockManager implements LockManager {
+      calls = 0
+      #locks = new Locks()
+
+      getOrCreateForKey(key: string, timeout?: number) {
+        this.calls++
+        return this.#locks.getOrCreateForKey(key, timeout)
+      }
+
+      release(key: string, releaser: LockReleaser) {
+        this.#locks.release(key, releaser)
+      }
+    }
+
+    const lockManager = new SpyLockManager()
+    class CustomLockManager implements LockManager {
+      getOrCreateForKey(key: string, timeout?: number) {
+        return lockManager.getOrCreateForKey(key, timeout)
+      }
+
+      release(key: string, releaser: LockReleaser) {
+        return lockManager.release(key, releaser)
+      }
+    }
+
+    const driver = new FileDriver({
+      pruneInterval: false,
+      directory: fileURLToPath(BASE_URL),
+      lockManager: CustomLockManager,
+    })
+
+    cleanup(() => driver.disconnect())
+
+    await Promise.all([driver.set('foo', 'bar', 300), driver.set('foo', 'baz', 300)])
+
+    assert.isTrue(lockManager.calls > 0)
   })
 
   test('prune manually using prune() method', async ({ assert, fs, cleanup }) => {

@@ -10,6 +10,7 @@ import type {
   CreateDriverResult,
   DriverCommonInternalOptions,
   FileConfig,
+  LockManager,
 } from '../../types/main.js'
 
 /**
@@ -42,13 +43,14 @@ export class FileDriver extends BaseDriver implements CacheDriver {
    * Worker thread that will clean up the expired files
    */
   #cleanerWorker?: Worker
-  #locks = new Locks()
+  #locks: LockManager
 
   declare config: FileConfig & DriverCommonInternalOptions
 
-  constructor(config: FileConfig, isNamespace: boolean = false) {
+  constructor(config: FileConfig & DriverCommonInternalOptions, isNamespace: boolean = false) {
     super(config)
 
+    this.#locks = new (config.lockManager ?? Locks)()
     this.#directory = this.#sanitizePath(join(config.directory, config.prefix || ''))
 
     /**

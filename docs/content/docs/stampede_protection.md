@@ -54,3 +54,11 @@ Well, in truth, this is not really a problem. Indeed, there will be more than on
 Given the same scenario with the 10k users. Imagine that your application is running in cluster mode with PM2 and you have 10 instances of your app. Also, imagine that the 10k requests are distributed equally across the 10 instances.
 
 This results in 1k requests per instance. And so, it will lead to **10 queries to the database instead of 10k**, with the help of our protection.
+
+## Shared locks
+
+BentoCache allows you to use custom lock manager class so you can implement **shared** locks.
+
+For example, you can implement lock manager which uses patterns like [Redis distributed locks](https://redis.io/docs/latest/develop/clients/patterns/distributed-locks/) where locks are created in L2 storage and shared across all application instances and don’t have process instance limitations.
+
+In multi-instance applications scenario, this will lead to **1 query to database instead of 10k**.
