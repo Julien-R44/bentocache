@@ -121,6 +121,39 @@ The maximum amount of time (in milliseconds) that the in-memory lock for [stampe
 
 This is usually not needed, but can provide an extra layer of protection against theoretical deadlocks.
 
+### `lockManager`
+
+Default: built-in in-memory lock manager.
+
+Levels: `global`
+
+A custom lock manager class.
+
+This lock manager is used for stampede protection and file driver writes.
+
+`LockManager` must return a lock compatible with `MutexInterface` from `async-mutex`. Bentocache exports `LockHandle` and `LockReleaser` as aliases for `MutexInterface` and `MutexInterface.Releaser`.
+
+```ts
+import { Mutex, withTimeout } from 'async-mutex'
+
+class CustomLockManager {
+  #lock = new Mutex()
+
+  getOrCreateForKey(key, timeout) {
+    return withTimeout(this.#lock, timeout ?? Infinity)
+  }
+
+  release(key, releaser) {
+    releaser()
+  }
+}
+
+const bento = new BentoCache({
+  lockManager: CustomLockManager,
+  // ...
+})
+```
+
 ### `onFactoryError`
 
 Default: `undefined`

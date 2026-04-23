@@ -1,3 +1,5 @@
+import type { MutexInterface } from 'async-mutex'
+
 import type { FactoryError } from '../../errors.js'
 import type { CacheSerializer, Duration, Emitter, Logger } from '../main.js'
 
@@ -95,6 +97,16 @@ export type RawCommonOptions = {
  */
 export type InternalOperationWrapper = <T>(fn: () => T) => T
 
+export type LockHandle = MutexInterface
+export type LockReleaser = MutexInterface.Releaser
+
+export interface LockManager {
+  getOrCreateForKey(key: string, timeout?: number): LockHandle
+  release(key: string, releaser: LockReleaser): void
+}
+
+export type LockManagerConstructor = new () => LockManager
+
 export type RawBentoCacheOptions = {
   prefix?: string
 
@@ -125,6 +137,11 @@ export type RawBentoCacheOptions = {
    * suppress or customize instrumentation.
    */
   internalOperationWrapper?: InternalOperationWrapper
+
+  /**
+   * Custom lock manager class used for stampede protection and file driver writes.
+   */
+  lockManager?: LockManagerConstructor
 } & Omit<RawCommonOptions, 'tags' | 'skipBusNotify' | 'skipL2Write'>
 
 /**

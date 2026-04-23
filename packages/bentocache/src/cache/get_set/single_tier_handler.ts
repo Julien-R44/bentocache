@@ -1,6 +1,3 @@
-import type { MutexInterface } from 'async-mutex'
-
-import { Locks } from '../locks.js'
 import { errors } from '../../errors.js'
 import type { CacheStack } from '../cache_stack.js'
 import { FactoryRunner } from '../factory_runner.js'
@@ -8,6 +5,7 @@ import type { Factory } from '../../types/helpers.js'
 import type { CacheEvent } from '../../types/events.js'
 import { cacheEvents } from '../../events/cache_events.js'
 import { cacheOperation } from '../../tracing_channels.js'
+import type { LockManager, LockReleaser } from '../../types/main.js'
 import type { GetCacheValueReturn } from '../../types/internals/index.js'
 import type { CacheOperationMessage } from '../../types/tracing_channels.js'
 import type { CacheEntryOptions } from '../cache_entry/cache_entry_options.js'
@@ -16,10 +14,11 @@ export class SingleTierHandler {
   /**
    * A map that will hold active locks for each key
    */
-  #locks = new Locks()
+  #locks: LockManager
   #factoryRunner: FactoryRunner
 
   constructor(protected stack: CacheStack) {
+    this.#locks = new this.stack.options.lockManager()
     this.#factoryRunner = new FactoryRunner(this.stack, this.#locks)
   }
 
@@ -140,7 +139,7 @@ export class SingleTierHandler {
      * If nothing is found in the remote cache, or if forceFresh is true,
      * we try to acquire a lock to run the factory
      */
-    let releaser: MutexInterface.Releaser
+    let releaser: LockReleaser
     try {
       releaser = await this.#acquireLock(key, !!remoteItem, options)
     } catch (err) {
