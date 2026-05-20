@@ -24,6 +24,9 @@
     "./drivers/knex": "./build/src/drivers/database/adapters/knex.js",
     "./drivers/kysely": "./build/src/drivers/database/adapters/kysely.js",
     "./drivers/orchid": "./build/src/drivers/database/adapters/orchid.js",
+    "./drivers/bun_redis": "./build/src/drivers/bun_redis.js",
+    "./drivers/bun_sqlite": "./build/src/drivers/database/adapters/bun_sqlite.js",
+    "./drivers/bun_postgres": "./build/src/drivers/database/adapters/bun_postgres.js",
     "./types": "./build/src/types/main.js",
     "./plugins/*": "./build/plugins/*.js",
     "./test_suite": "./build/src/test_suite.js"
@@ -57,6 +60,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --loader=ts-node/esm bin/test.ts",
+    "quick:test:bun": "bun bin/test.ts",
     "pretest": "pnpm lint",
     "test": "c8 pnpm quick:test",
     "build": "pnpm clean && tsup-node",
@@ -101,6 +105,7 @@
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.1019.0",
     "@types/better-sqlite3": "^7.6.13",
+    "@types/bun": "^1.2.0",
     "@types/pg": "^8.20.0",
     "better-sqlite3": "^12.8.0",
     "dayjs": "^1.11.20",

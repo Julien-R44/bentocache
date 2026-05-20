@@ -1,7 +1,13 @@
 import type { Knex } from 'knex'
 import type { Kysely } from 'kysely'
+import type { Database as BunSqliteDatabase } from 'bun:sqlite'
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb'
 import type { DbResult, DefaultColumnTypes, DefaultSchemaConfig } from 'orchid-orm'
+import type {
+  RedisClient as BunRedisClient,
+  RedisOptions as BunRedisOptions,
+  SQL as BunSQL,
+} from 'bun'
 import type {
   Redis as IoRedis,
   RedisOptions as IoRedisOptions,
@@ -184,4 +190,24 @@ export interface OrchidConfig extends DatabaseConfig {
    * The Orchid ORM instance
    */
   connection: DbResult<DefaultColumnTypes<DefaultSchemaConfig>>
+}
+
+export type BunRedisConfig = {
+  connection: BunRedisClient | string | (BunRedisOptions & { url?: string })
+  options?: BunRedisOptions
+} & DriverCommonOptions
+
+export interface BunSqliteConfig extends DatabaseConfig {
+  connection: BunSqliteDatabase | string
+  options?: {
+    readonly?: boolean
+    create?: boolean
+    readwrite?: boolean
+    safeIntegers?: boolean
+    strict?: boolean
+  }
+}
+
+export interface BunPostgresConfig extends DatabaseConfig {
+  connection: BunSQL | string
 }

@@ -86,6 +86,11 @@ pnpm add @bentocache/otel
 // title: yarn
 yarn add @bentocache/otel
 ```
+
+```sh
+// title: bun
+bun add @bentocache/otel
+```
 :::
 
 ## Basic setup

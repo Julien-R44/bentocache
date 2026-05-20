@@ -56,6 +56,44 @@ const bento = new BentoCache({
 |--------------|-------------------------------------------------------------------------------|---------|
 | `connection` | The connection options to use to connect to Redis or an instance of `ioredis` | N/A     |
 
+### Bun Redis
+
+**L2 driver, Bun runtime only.** Uses Bun's native `RedisClient` — no `ioredis` dependency. If you're running under Bun, this avoids the JavaScript-protocol implementation of `ioredis` in favor of Bun's Zig-backed client.
+
+```ts
+import { BentoCache, bentostore } from 'bentocache'
+import { bunRedisDriver } from 'bentocache/drivers/bun_redis'
+
+const bento = new BentoCache({
+  default: 'redis',
+  stores: {
+    redis: bentostore().useL2Layer(bunRedisDriver({
+      connection: 'redis://127.0.0.1:6379'
+    }))
+  }
+})
+```
+
+You can also pass an existing `RedisClient` to reuse a connection:
+
+```ts
+import { RedisClient } from 'bun'
+
+const client = new RedisClient('redis://127.0.0.1:6379')
+
+const bento = new BentoCache({
+  default: 'redis',
+  stores: {
+    redis: bentostore().useL2Layer(bunRedisDriver({ connection: client }))
+  }
+})
+```
+
+| Option       | Description                                                                                  | Default |
+|--------------|----------------------------------------------------------------------------------------------|---------|
+| `connection` | A connection URL string, a `Bun.RedisOptions` object, or an existing `Bun.RedisClient`.      | N/A     |
+| `options`    | Extra `Bun.RedisOptions` forwarded to the `RedisClient` constructor.                         | N/A     |
+
 ## Filesystem
 
 The filesystem driver will store your cache in a distributed way in several files/folders on your filesystem.
@@ -259,3 +297,70 @@ export const bento = new BentoCache({
   }
 })
 ```
+
+### Bun SQLite
+
+**L2 driver, Bun runtime only.** Talks to `bun:sqlite` directly using prepared statements — no `better-sqlite3` native binding required.
+
+```ts
+import { BentoCache, bentostore } from 'bentocache'
+import { bunSqliteDriver } from 'bentocache/drivers/bun_sqlite'
+
+const bento = new BentoCache({
+  default: 'sqlite',
+  stores: {
+    sqlite: bentostore().useL2Layer(bunSqliteDriver({
+      connection: './cache.sqlite3'
+    }))
+  }
+})
+```
+
+You can also pass an existing `Database` instance:
+
+```ts
+import { Database } from 'bun:sqlite'
+
+const db = new Database('./cache.sqlite3')
+
+const bento = new BentoCache({
+  default: 'sqlite',
+  stores: {
+    sqlite: bentostore().useL2Layer(bunSqliteDriver({ connection: db }))
+  }
+})
+```
+
+Inherits the common SQL driver options (`tableName`, `autoCreateTable`, `pruneInterval`).
+
+| Option       | Description                                                                          | Default |
+|--------------|--------------------------------------------------------------------------------------|---------|
+| `connection` | A filename (`':memory:'` for in-memory) or an existing `bun:sqlite` `Database`.      | N/A     |
+| `options`    | Open flags forwarded to `new Database(...)` (`readonly`, `create`, `readwrite`, …).  | N/A     |
+
+### Bun Postgres
+
+**L2 driver, Bun runtime only.** Uses Bun's native `SQL` Postgres client — no `pg` dependency.
+
+```ts
+import { BentoCache, bentostore } from 'bentocache'
+import { bunPostgresDriver } from 'bentocache/drivers/bun_postgres'
+
+const bento = new BentoCache({
+  default: 'pg',
+  stores: {
+    pg: bentostore().useL2Layer(bunPostgresDriver({
+      connection: 'postgres://user:pass@localhost:5432/app',
+      pruneInterval: '1h',
+    }))
+  }
+})
+```
+
+You can also pass an existing `SQL` instance (e.g. `Bun.sql`) to reuse a connection.
+
+Postgres has no native TTL, so set `pruneInterval` if you want expired entries cleaned automatically — same caveat as the existing Knex/Kysely Postgres path.
+
+| Option       | Description                                                              | Default |
+|--------------|--------------------------------------------------------------------------|---------|
+| `connection` | A Postgres connection URL string, or an existing `Bun.SQL` instance.     | N/A     |

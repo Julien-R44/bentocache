@@ -5,7 +5,10 @@ Official OpenTelemetry instrumentation for Bentocache.
 ## Install
 
 ```bash
+npm i @bentocache/otel
 pnpm add @bentocache/otel
+yarn add @bentocache/otel
+bun add @bentocache/otel
 ```
 
 ## Usage

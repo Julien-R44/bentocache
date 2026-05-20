@@ -21,6 +21,11 @@ pnpm add bentocache
 // title: yarn
 yarn add bentocache
 ```
+
+```sh
+// title: bun
+bun add bentocache
+```
 :::
 
 
