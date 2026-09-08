@@ -1,27 +1,10 @@
 import { test } from '@japa/runner'
 import { Redis as IoRedis, Cluster as IoRedisCluster } from 'ioredis'
+import { Redis as IoRedisV6, Cluster as IoRedisV6Cluster } from 'ioredis-v6'
 
 import { REDIS_CREDENTIALS } from '../helpers/index.js'
 import { RedisDriver, redisBusDriver } from '../../src/drivers/redis.js'
 import { registerCacheDriverTestSuite } from '../helpers/driver_test_suite.js'
-
-/**
- * Wraps a real ioredis client into a facade that has the exact same shape but
- * is NOT `instanceof` the `ioredis` copy bentocache resolved.
- *
- * This is what a client built by a *different* ioredis major looks like from
- * inside bentocache, and it is the case the old `instanceof` check got wrong:
- * it classified the client as a connection options object and silently built a
- * brand new connection to 127.0.0.1:6379.
- */
-function asForeignMajorClient<T extends object>(client: T): T {
-  return new Proxy(Object.create(null) as T, {
-    get(_target, property) {
-      const value = (client as any)[property]
-      return typeof value === 'function' ? value.bind(client) : value
-    },
-  })
-}
 
 test.group('Redis driver', (group) => {
   registerCacheDriverTestSuite({
@@ -81,38 +64,71 @@ test.group('Redis driver', (group) => {
     assert.equal(r3, null)
   })
 
+  /**
+   * `ioredis-v6` is a second, genuine ioredis install ( `"ioredis-v6":
+   * "npm:ioredis@^6.0.0"` in devDependencies ) living side by side with the
+   * `ioredis@5` the driver itself resolves.
+   *
+   * A client built from it is exactly what a host application on a different
+   * `ioredis` major hands to bentocache, and the `instanceof` checks the driver
+   * used to rely on classified it as a plain connection options object: the
+   * driver silently built a brand new connection to `127.0.0.1:6379` instead of
+   * reusing the client it was given.
+   */
   test('should reuse a client built by another ioredis major', async ({ assert, cleanup }) => {
-    const ioredis = new IoRedis(REDIS_CREDENTIALS)
-    const foreignClient = asForeignMajorClient(ioredis)
+    /**
+     * Any database but `0`. The failure mode we guard against ends up on
+     * `127.0.0.1:6379` **db 0**, so writing on another database is what proves
+     * the write went through the client we were handed rather than through a
+     * connection the driver conjured up on its own.
+     */
+    const foreignClient = new IoRedisV6({ ...REDIS_CREDENTIALS, db: 3 })
+    const fallbackClient = new IoRedis(REDIS_CREDENTIALS)
 
-    assert.isFalse(
-      foreignClient instanceof IoRedis,
-      'the fixture must not be `instanceof` our own ioredis, otherwise it tests nothing',
-    )
-
-    const driver = new RedisDriver({ connection: foreignClient, prefix: 'japa' })
     cleanup(async () => {
-      await driver.disconnect()
-      await ioredis.quit()
+      await foreignClient.flushdb()
+      foreignClient.disconnect()
+      await fallbackClient.quit()
+    })
+
+    /**
+     * The whole point of the fixture: a real client that is genuinely not of
+     * the class the driver would test against.
+     */
+    assert.instanceOf(foreignClient, IoRedisV6)
+    assert.notInstanceOf(foreignClient, IoRedis)
+
+    const driver = new RedisDriver({
+      connection: foreignClient as unknown as IoRedis,
+      prefix: 'japa',
     })
 
     assert.equal(driver.getConnection(), foreignClient)
 
-    /**
-     * And it must be a working connection, not a stray one pointing at localhost
-     */
     await driver.set('foreign', 'value')
-    assert.equal(await ioredis.get('japa:foreign'), 'value')
+
+    /**
+     * Delivery landed on the server the given client is connected to...
+     */
+    assert.equal(await foreignClient.get('japa:foreign'), 'value')
+
+    /**
+     * ...and not on the `127.0.0.1:6379` db 0 the silent fallback would have
+     * used.
+     */
+    assert.isNull(await fallbackClient.get('japa:foreign'))
   })
 
   test('should reuse a Cluster built by another ioredis major', async ({ assert, cleanup }) => {
-    const cluster = new IoRedisCluster([{ host: '127.0.0.1', port: 7000 }], { lazyConnect: true })
-    const foreignCluster = asForeignMajorClient(cluster)
+    const foreignCluster = new IoRedisV6Cluster([{ host: '127.0.0.1', port: 7000 }], {
+      lazyConnect: true,
+    })
+    cleanup(() => foreignCluster.disconnect())
 
-    assert.isFalse(foreignCluster instanceof IoRedisCluster)
+    assert.instanceOf(foreignCluster, IoRedisV6Cluster)
+    assert.notInstanceOf(foreignCluster, IoRedisCluster)
 
-    const driver = new RedisDriver({ connection: foreignCluster })
-    cleanup(() => cluster.disconnect())
+    const driver = new RedisDriver({ connection: foreignCluster as unknown as IoRedisCluster })
 
     assert.equal(driver.getConnection(), foreignCluster)
   })
@@ -138,9 +154,10 @@ test.group('Redis driver', (group) => {
     assert,
   }) => {
     /**
-     * Shaped like a client (`status` / `options` / `emit`) but missing the
-     * methods we discriminate on. We must refuse rather than treat it as an
-     * options bag and dial 127.0.0.1:6379.
+     * Not reachable with a real client of any major: shaped like a client
+     * (`status` / `options` / `emit`) but missing the methods we discriminate
+     * on. We must refuse rather than treat it as an options bag and dial
+     * 127.0.0.1:6379.
      */
     const unknownClient = { status: 'ready', options: { host: 'redis.internal' }, emit: () => true }
 
@@ -154,30 +171,40 @@ test.group('Redis driver', (group) => {
     assert,
     cleanup,
   }) => {
-    const ioredis = new IoRedis(REDIS_CREDENTIALS)
+    const foreignClient = new IoRedisV6({ ...REDIS_CREDENTIALS, lazyConnect: true })
+
+    assert.instanceOf(foreignClient, IoRedisV6)
+    assert.notInstanceOf(foreignClient, IoRedis)
 
     /**
-     * A Proxy over a null-prototype target has no own enumerable keys, so if the
-     * connection were misclassified as options and shallow-copied into
-     * `{ ...connection, useMessageBuffer: true }` the object itself would never
-     * be read. Any property access therefore proves the live client was handed
-     * to `RedisTransport` as-is.
+     * Unlike `RedisDriver`, the bus driver hands the connection to
+     * `RedisTransport`, which keeps it private. And a bare v6 client cannot
+     * discriminate the two code paths from the outside: `RedisTransport`
+     * performs the very same `instanceof` check, so it also fails to recognize
+     * a foreign-major client and builds its own connection either way. That
+     * one has to be fixed one layer down, in `@boringnode/bus`
+     * ( boringnode/bus#71 ).
+     *
+     * So we observe the only thing that is ours to get right: the client is
+     * passed *by reference* instead of being shallow-copied into an options
+     * bag. The real v6 client is fronted by a recorder over a null-prototype
+     * target, which has no own enumerable key: `{ ...connection }` would
+     * therefore read nothing, and any property access proves the object itself
+     * was forwarded.
      */
     let connectionWasForwarded = false
-    const foreignClient = new Proxy(Object.create(null) as IoRedis, {
+    const recordedClient = new Proxy(Object.create(null) as IoRedis, {
       get(_target, property) {
         connectionWasForwarded = true
-        const value = (ioredis as any)[property]
-        return typeof value === 'function' ? value.bind(ioredis) : value
+        const value = (foreignClient as any)[property]
+        return typeof value === 'function' ? value.bind(foreignClient) : value
       },
     })
 
-    assert.isFalse(foreignClient instanceof IoRedis)
-
-    const bus = redisBusDriver({ connection: foreignClient }).factory(null as any)
+    const bus = redisBusDriver({ connection: recordedClient }).factory(null as any)
     cleanup(async () => {
       await bus.disconnect().catch(() => {})
-      await ioredis.quit()
+      foreignClient.disconnect()
     })
 
     assert.isTrue(connectionWasForwarded)
