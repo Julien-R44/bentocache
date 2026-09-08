@@ -1,7 +1,8 @@
-import type { RedisOptions as IoRedisOptions } from 'ioredis'
+import { Redis as IoRedis } from 'ioredis'
+import { InvalidArgumentsException } from '@poppinss/exception'
 import { RedisTransport } from '@boringnode/bus/transports/redis'
-import { Redis as IoRedis, Cluster as IoRedisCluster } from 'ioredis'
 import type { RedisTransportConfig } from '@boringnode/bus/types/main'
+import type { Cluster as IoRedisCluster, RedisOptions as IoRedisOptions } from 'ioredis'
 
 import { BaseDriver } from './base_driver.js'
 import { BinaryEncoder } from '../bus/encoders/binary_encoder.js'
@@ -12,6 +13,65 @@ import type {
   L2CacheDriver,
   RedisConfig,
 } from '../types/main.js'
+
+/**
+ * Detect an already-instantiated ioredis client ( `Redis` or `Cluster` ) as
+ * opposed to a plain connection options object.
+ *
+ * We deliberately do *not* use `instanceof` here. `instanceof` is evaluated
+ * against the `ioredis` copy that *bentocache* resolved, so it returns `false`
+ * for a perfectly valid client whenever the host application resolved a
+ * different `ioredis` major (two copies in the tree). The old code then fell
+ * through to `new IoRedis(<a live client>)`; ioredis ignores the unrecognised
+ * properties and silently connects to `127.0.0.1:6379`.
+ *
+ * `duplicate` and `sendCommand` are defined on the prototype of both `Redis`
+ * and `Cluster` in every ioredis major, and neither name exists in
+ * `RedisOptions` / `ClusterOptions`, so an options object can never be
+ * misclassified as a client.
+ *
+ * Note that `constructor.name` is not usable as a discriminator either: ioredis
+ * builds its clients through a mixin, so it reports `EventEmitter` for both
+ * `Redis` and `Cluster`.
+ */
+function isIoRedisClient(connection: unknown): connection is IoRedis | IoRedisCluster {
+  if (typeof connection !== 'object' || connection === null) return false
+
+  const candidate = connection as Partial<IoRedis>
+  return typeof candidate.duplicate === 'function' && typeof candidate.sendCommand === 'function'
+}
+
+/**
+ * Guard against the failure mode that made the `instanceof` bug so expensive:
+ * silently building a connection to `127.0.0.1:6379` out of something that was
+ * never an options object.
+ *
+ * If the value was not recognised as a client but still carries the markers of
+ * an event-emitting, stateful client ( a `status` string, an `options` bag and
+ * `emit` ), we refuse loudly instead of dialing localhost. None of these three
+ * names exist in `RedisOptions` / `ClusterOptions`, so a legitimate options
+ * object never trips this.
+ */
+function assertIsConnectionOptions(connection: unknown): void {
+  if (typeof connection !== 'object' || connection === null) return
+
+  const candidate = connection as Record<string, unknown>
+  const looksLikeAClient =
+    typeof candidate.status === 'string' &&
+    typeof candidate.options === 'object' &&
+    candidate.options !== null &&
+    typeof candidate.emit === 'function'
+
+  if (!looksLikeAClient) return
+
+  throw new InvalidArgumentsException(
+    'The `connection` given to the Redis driver looks like a Redis client, but is not a ' +
+      'recognizable ioredis client. This usually means an incompatible or unsupported ' +
+      '`ioredis` build was used. Refusing to fall back to a new connection on ' +
+      '127.0.0.1:6379 - pass either an ioredis `Redis`/`Cluster` instance or a plain ' +
+      'connection options object.',
+  )
+}
 
 /**
  * Create a new cache redis driver
@@ -35,11 +95,13 @@ export function redisBusDriver(
       /**
        * If an existing Redis or Cluster instance is passed, use it directly
        */
-      if (options.connection instanceof IoRedis || options.connection instanceof IoRedisCluster) {
+      if (isIoRedisClient(options.connection)) {
         return new RedisTransport(options.connection, new BinaryEncoder(), {
           useMessageBuffer: true,
         })
       }
+
+      assertIsConnectionOptions(options.connection)
 
       return new RedisTransport(
         { ...options.connection, useMessageBuffer: true } as RedisTransportConfig,
@@ -60,10 +122,12 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
   constructor(config: RedisConfig) {
     super(config)
 
-    if (config.connection instanceof IoRedis || config.connection instanceof IoRedisCluster) {
+    if (isIoRedisClient(config.connection)) {
       this.#connection = config.connection
       return
     }
+
+    assertIsConnectionOptions(config.connection)
 
     this.#connection = new IoRedis(config.connection)
   }
