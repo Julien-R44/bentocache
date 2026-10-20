@@ -1,5 +1,5 @@
 import { Bus as BoringBus } from '@boringnode/bus'
-import type { Transport } from '@boringnode/bus/types/main'
+import type { Transport } from '@boringnode/bus/types/core'
 
 import type { Logger } from '../logger.js'
 import { busEvents } from '../events/bus_events.js'

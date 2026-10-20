@@ -1,4 +1,4 @@
-import type { TransportEncoder } from '@boringnode/bus/types/main'
+import type { TransportEncoder } from '@boringnode/bus/types/core'
 
 import { CacheBusMessageType } from '../../types/bus.js'
 import type { CacheBusMessage } from '../../types/bus.js'
