@@ -63,7 +63,7 @@ export class FileDriver extends BaseDriver implements CacheDriver {
     })
 
     const logger = this.config.logger?.child({ context: 'bentocache.file-driver' })
-    this.#cleanerWorker.on('message', (message) => {
+    this.#cleanerWorker.on('message', message => {
       if (message.type === 'error') {
         ;(logger || console).error({ err: message.error }, 'failed to prune expired items')
       } else if (message.type === 'info') {
@@ -227,7 +227,7 @@ export class FileDriver extends BaseDriver implements CacheDriver {
    */
   async deleteMany(keys: string[]) {
     if (keys.length === 0) return true
-    await Promise.all(keys.map((key) => this.delete(key)))
+    await Promise.all(keys.map(key => this.delete(key)))
     return true
   }
 
@@ -246,7 +246,7 @@ export class FileDriver extends BaseDriver implements CacheDriver {
     const { pruneExpiredFiles } = await import('./cleaner.js')
     await pruneExpiredFiles({
       directory: this.#directory,
-      onError: (err) => this.config.logger?.error(err),
+      onError: err => this.config.logger?.error(err),
     })
   }
 }

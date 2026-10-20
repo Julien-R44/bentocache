@@ -265,7 +265,7 @@ test.group('Bus synchronization', () => {
       })
       .create()
 
-    const [] = new CacheFactory().withL1L2Config().merge({ busDriver: bus2 }).create()
+    new CacheFactory().withL1L2Config().merge({ busDriver: bus2 }).create()
 
     bus1.alwaysThrow()
 

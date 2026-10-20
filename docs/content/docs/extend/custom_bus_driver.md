@@ -20,12 +20,12 @@ export interface BusDriver {
 
 Feel free to take inspirations from the existing drivers to create your own driver.
 
-## Methods 
+## Methods
 
 ### publish
 
 This method will be called internally by BentoCache when you call some of the core methods.
-First argument is the channel name, second argument is the message to publish. 
+First argument is the channel name, second argument is the message to publish.
 
 ### subscribe
 

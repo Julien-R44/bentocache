@@ -45,7 +45,7 @@ export function createProviders(options: {
   }
 }
 
-const data = Array.from({ length: 100 }, (_, i) => i).map((i) => ({
+const data = Array.from({ length: 100 }, (_, i) => i).map(i => ({
   foo: 'bar',
   date: new Date(),
   number: i,

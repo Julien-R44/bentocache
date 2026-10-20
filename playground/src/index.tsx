@@ -10,19 +10,19 @@ const app = new Hono().use(logger())
 
 const slowFetcher = async (url: string, timeout: number = 1000) => {
   await setTimeout(timeout)
-  return fetch(url).then(async (response) => ({
+  return fetch(url).then(async response => ({
     ...(await response.json()),
     fetchedAt: new Date().toISOString(),
   }))
 }
 
-app.get('/invalidate-users', async (c) => {
+app.get('/invalidate-users', async c => {
   await bento.deleteByTag({ tags: ['user'] })
 
   return c.text('Invalidated users')
 })
 
-app.get('/cache-user/:id', async (c) => {
+app.get('/cache-user/:id', async c => {
   const id = c.req.param('id')
   const user = await slowFetcher(`https://jsonplaceholder.typicode.com/users/${id}`)
 
@@ -42,7 +42,7 @@ app.get('/cache-user/:id', async (c) => {
   )
 })
 
-app.get('/cached-user/:id', async (c) => {
+app.get('/cached-user/:id', async c => {
   const id = c.req.param('id')
   const user = await bento.get({ key: `user-${id}`, defaultValue: 'NOT CACHED' })
 
@@ -55,7 +55,7 @@ app.get('/cached-user/:id', async (c) => {
   )
 })
 
-app.get('/get-set-post/:id', async (c) => {
+app.get('/get-set-post/:id', async c => {
   const id = c.req.param('id')
   const user = await bento.getOrSet({
     key: `posts-${id}`,
@@ -78,8 +78,8 @@ app.get('/get-set-post/:id', async (c) => {
   )
 })
 
-app.get('/', (c) => c.text('Hello Hono!'))
-app.get('/metrics', async (c) => {
+app.get('/', c => c.text('Hello Hono!'))
+app.get('/metrics', async c => {
   return c.text(await register.metrics(), 200, { 'Content-Type': register.contentType })
 })
 

@@ -57,7 +57,7 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
       await this.#initializer()
       await this.#adapter
         .pruneExpiredEntries()
-        .catch((err) => console.error('[bentocache] failed to prune expired entries', err))
+        .catch(err => console.error('[bentocache] failed to prune expired entries', err))
     }, interval)
   }
 
@@ -150,7 +150,7 @@ export class DatabaseDriver extends BaseDriver implements CacheDriver<true> {
     if (keys.length === 0) return true
     await this.#initializer()
 
-    keys = keys.map((key) => this.getItemKey(key))
+    keys = keys.map(key => this.getItemKey(key))
     const result = await this.#adapter.deleteMany(keys)
 
     return result > 0

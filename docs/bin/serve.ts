@@ -51,7 +51,7 @@ async function defineRoutes(app: ApplicationService) {
     for (const collection of collections) {
       await collection.refresh()
       const entry = collection.findByPermalink(request.url())
-      if (entry) return entry.render({ collection, entry }).catch((error) => console.log(error))
+      if (entry) return entry.render({ collection, entry }).catch(error => console.log(error))
     }
 
     return response.notFound('Page not found')
@@ -59,7 +59,7 @@ async function defineRoutes(app: ApplicationService) {
 }
 
 new Ignitor(APP_ROOT, { importer: IMPORTER })
-  .tap((app) => {
+  .tap(app => {
     app.initiating(() => {
       app.useConfig({
         appUrl: process.env.APP_URL || '',

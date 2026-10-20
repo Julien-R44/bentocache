@@ -98,7 +98,7 @@ export class DynamoDbDriver extends BaseDriver implements CacheDriver {
    * Delete multiple items from our table
    */
   async #batchDeleteItems(items: Record<string, AttributeValue>[]) {
-    const requests = items.map((item) => ({ DeleteRequest: { Key: item } }))
+    const requests = items.map(item => ({ DeleteRequest: { Key: item } }))
     const command = new BatchWriteItemCommand({ RequestItems: { [this.#tableName]: requests } })
     await this.#client.send(command)
   }
@@ -260,7 +260,7 @@ export class DynamoDbDriver extends BaseDriver implements CacheDriver {
    */
   async deleteMany(keys: string[]) {
     if (keys.length === 0) return true
-    await Promise.all(keys.map((key) => this.delete(key)))
+    await Promise.all(keys.map(key => this.delete(key)))
     return true
   }
 

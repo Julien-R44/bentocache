@@ -1,7 +1,7 @@
 {
   "name": "@bentocache/playground",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "tsx watch --import ./src/instrumentation.ts src/index.tsx"
   },

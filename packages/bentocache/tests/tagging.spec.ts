@@ -50,7 +50,7 @@ test.group('Tagging | deleteByTag', () => {
     const r2 = await cache.getOrSet({ key: 'bar', factory: () => 22, tags: ['y', 'z'] })
     const r3 = await cache.getOrSet({
       key: 'baz',
-      factory: (ctx) => {
+      factory: ctx => {
         ctx.setTags(['x', 'z'])
         return 33
       },

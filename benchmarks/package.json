@@ -1,11 +1,11 @@
 {
   "name": "@bentocache/benchmarks",
-  "type": "module",
   "private": true,
   "description": "",
-  "author": "Julien Ripouteau <julien@ripouteau.com>",
-  "license": "ISC",
   "keywords": [],
+  "license": "ISC",
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "bench:all": "pnpm tsx all.ts"

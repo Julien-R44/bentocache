@@ -13,7 +13,7 @@ const pruneIntervalInMs = workerData.pruneInterval
 async function prune() {
   await pruneExpiredFiles({
     directory,
-    onError: (err) => parentPort?.postMessage({ type: 'error', error: err }),
+    onError: err => parentPort?.postMessage({ type: 'error', error: err }),
   })
 }
 

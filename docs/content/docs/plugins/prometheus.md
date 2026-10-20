@@ -51,9 +51,7 @@ An array of `[RegExp, ((match: RegExpMatchArray) => string) | string]` tuples. T
 
 ```ts
 prometheusPlugin({
-  keyGroups: [
-    [/^users:(\d+)$/, 'users:*'],
-  ]
+  keyGroups: [[/^users:(\d+)$/, 'users:*']],
 })
 ```
 
@@ -131,6 +129,5 @@ Counter. The number of messages received from the bus. No labels.
 ![Grafana dashboard](content/docs/plugins/dashboard.png)
 
 We have a pretty basic but ready-to-use Grafana dashboard for Bentocache. You can find it [here](https://github.com/Julien-R44/bentocache/blob/main/packages/prometheus/dashboards/basic.json).
-
 
 Happy to accept any PRs that improve it!

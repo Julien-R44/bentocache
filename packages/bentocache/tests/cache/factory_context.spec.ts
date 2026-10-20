@@ -12,7 +12,7 @@ test.group('Factory Context', () => {
     await cache.getOrSet({
       key: 'key1',
       ttl: '4m',
-      factory: (options) => {
+      factory: options => {
         options.setOptions({ ttl: '2d' })
         return { foo: 'bar' }
       },
@@ -35,7 +35,7 @@ test.group('Factory Context', () => {
     await sleep(210)
     await cache2.getOrSet({
       key: 'foo',
-      factory: (ctx) => {
+      factory: ctx => {
         ctx.setOptions({ skipBusNotify: true })
 
         return 'baz'
@@ -55,7 +55,7 @@ test.group('Factory Context', () => {
 
     await cache1.getOrSet({
       key: 'foo',
-      factory: (ctx) => {
+      factory: ctx => {
         ctx.setOptions({ skipL2Write: true })
 
         return 'bar'

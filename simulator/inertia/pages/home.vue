@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Head, router, usePoll } from '@inertiajs/vue3'
+import Card from 'primevue/card'
 import Badge from 'primevue/badge'
 import Button from 'primevue/button'
-import Card from 'primevue/card'
 import ScrollPanel from 'primevue/scrollpanel'
 import ToggleSwitch from 'primevue/toggleswitch'
+import { Head, router, usePoll } from '@inertiajs/vue3'
 
 defineProps<{
   correctValue: number

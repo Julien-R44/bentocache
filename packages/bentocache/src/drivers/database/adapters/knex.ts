@@ -61,7 +61,7 @@ export class KnexAdapter implements DatabaseAdapter {
     const hasTable = await this.#connection.schema.hasTable(this.#tableName)
     if (hasTable) return
 
-    await this.#connection.schema.createTable(this.#tableName, (table) => {
+    await this.#connection.schema.createTable(this.#tableName, table => {
       table.string('key', 255).notNullable().primary()
       table.text('value', 'longtext')
       table.timestamp('expires_at').nullable()

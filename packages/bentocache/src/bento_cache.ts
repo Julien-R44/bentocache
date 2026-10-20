@@ -56,7 +56,7 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
     /**
      * Register plugins
      */
-    if (config.plugins) config.plugins.forEach((plugin) => plugin.register(this))
+    if (config.plugins) config.plugins.forEach(plugin => plugin.register(this))
   }
 
   #createProvider(cacheName: string, store: BentoStore): CacheProvider {
@@ -255,7 +255,7 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    * Remove all items from all caches
    */
   async clearAll(options?: ClearOptions) {
-    await Promise.all(Object.keys(this.#stores).map((cache) => this.use(cache).clear(options)))
+    await Promise.all(Object.keys(this.#stores).map(cache => this.use(cache).clear(options)))
   }
 
   /**
@@ -269,6 +269,6 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    * Disconnect all cache connections created by the manager
    */
   async disconnectAll(): Promise<void> {
-    await Promise.all(Object.keys(this.#stores).map((cache) => this.use(cache).disconnect()))
+    await Promise.all(Object.keys(this.#stores).map(cache => this.use(cache).disconnect()))
   }
 }

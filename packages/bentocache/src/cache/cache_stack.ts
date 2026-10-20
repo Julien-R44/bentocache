@@ -136,7 +136,7 @@ export class CacheStack extends BaseDriver {
    * Returns the full keys with prefix applied
    */
   getFullKeys(keys: string[]) {
-    return keys.map((key) => this.getItemKey(key))
+    return keys.map(key => this.getItemKey(key))
   }
 
   /**
@@ -228,7 +228,7 @@ export class CacheStack extends BaseDriver {
 
     if (item.entry.getTags().length === 0) return true
 
-    return this.#tagSystem.isTagInvalidated(item.entry).then((isTagInvalidated) => {
+    return this.#tagSystem.isTagInvalidated(item.entry).then(isTagInvalidated => {
       return !isTagInvalidated
     })
   }

@@ -18,11 +18,11 @@
   ```ts
   import { tracingChannels } from 'bentocache'
 
-  tracingChannels.cacheOperation.start.subscribe((message) => {
+  tracingChannels.cacheOperation.start.subscribe(message => {
     console.log(`Starting ${message.operation} on ${message.key}`)
   })
 
-  tracingChannels.cacheOperation.asyncEnd.subscribe((message) => {
+  tracingChannels.cacheOperation.asyncEnd.subscribe(message => {
     console.log(`Completed with hit=${message.hit}, tier=${message.tier}`)
   })
   ```
@@ -148,7 +148,7 @@
   ```ts
   await cache.getOrSet({
     key: 'foo',
-    factory: (ctx) => {
+    factory: ctx => {
       // You can access the graced entry, if any, from the context
       if (ctx.gracedEntry?.value === 'bar') {
         return 'foo'
@@ -330,7 +330,7 @@
     factory: () => {
       throw new MyError()
     },
-    onFactoryError: (error) => {
+    onFactoryError: error => {
       // error is an instance of errors.E_FACTORY_ERROR
       // error.cause is the original error thrown by the factory
       // you can also check if the factory was executed in background with error.isBackgroundFactory

@@ -65,15 +65,14 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
     if (moduleExports.BentoCache !== this.#originalBentoCache) return
 
     const original = this.#originalBentoCache
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const instrumentation = this
+    const patchConfig = this.#patchConfig.bind(this)
 
     const BentoCachePatched = class BentoCachePatched extends original {
       /**
        * Wraps user config before delegating to the original BentoCache constructor.
        */
       constructor(config: any) {
-        super(instrumentation.#patchConfig(config))
+        super(patchConfig(config))
       }
     }
 
@@ -128,11 +127,11 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
 
     this.subscribed = true
     this.handlers = {
-      start: (message) => this.#handleStart(message),
+      start: message => this.#handleStart(message),
       end: () => {},
       asyncStart: () => {},
-      asyncEnd: (message) => this.#handleAsyncEnd(message),
-      error: (message) => this.#handleError(message),
+      asyncEnd: message => this.#handleAsyncEnd(message),
+      error: message => this.#handleError(message),
     }
 
     this.#cacheOperation.subscribe(this.handlers)
@@ -257,7 +256,7 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
       if (message.keys?.length) {
         const keys = config.keySanitizer
           ? message.keys
-              .map((key) => config.keySanitizer?.(key))
+              .map(key => config.keySanitizer?.(key))
               .filter((key): key is string => !!key)
           : message.keys
 
@@ -290,7 +289,7 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
       new InstrumentationNodeModuleDefinition(
         'bentocache',
         ['>=1.6.0'],
-        (moduleExports) => {
+        moduleExports => {
           const exports = this.#getModuleExports(moduleExports)
           if (!exports) return moduleExports
 
@@ -300,7 +299,7 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
 
           return moduleExports
         },
-        (moduleExports) => {
+        moduleExports => {
           const exports = this.#getModuleExports(moduleExports)
           if (!exports) return
 

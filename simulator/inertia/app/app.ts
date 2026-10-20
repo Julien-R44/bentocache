@@ -13,8 +13,8 @@ import { resolvePageComponent } from '@adonisjs/inertia/helpers'
 
 createInertiaApp({
   progress: { color: '#5468FF' },
-  title: (title) => `${title}`,
-  resolve: (name) => {
+  title: title => `${title}`,
+  resolve: name => {
     return resolvePageComponent(
       `../pages/${name}.vue`,
       import.meta.glob<DefineComponent>('../pages/**/*.vue'),

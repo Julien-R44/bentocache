@@ -5,12 +5,12 @@ import { createKnexStore } from './helpers.js'
 import { POSTGRES_CREDENTIALS } from '../../helpers/index.js'
 import { registerCacheDriverTestSuite } from '../../helpers/driver_test_suite.js'
 
-test.group('Knex | Postgres driver', (group) => {
+test.group('Knex | Postgres driver', group => {
   registerCacheDriverTestSuite({
     test,
     group,
     supportsMilliseconds: false,
-    createDriver: (options) => {
+    createDriver: options => {
       const db = knex({
         client: 'pg',
         connection: { ...POSTGRES_CREDENTIALS },

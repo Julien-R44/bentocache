@@ -23,7 +23,7 @@ test.group('Prometheus Plugin', () => {
     const { registry } = createCache()
     const result = await registry.getMetricsAsJSON()
     const busMessageReceived = result.find(
-      (metric) => metric.name === 'bentocache_bus_messages_received',
+      metric => metric.name === 'bentocache_bus_messages_received',
     )
 
     assert.isDefined(busMessageReceived)

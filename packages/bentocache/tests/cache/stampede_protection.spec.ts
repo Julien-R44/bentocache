@@ -35,7 +35,7 @@ test.group('Cache | Stampede protection', () => {
 
     const results = await Promise.all(promises)
 
-    assert.isTrue(results.every((result) => result === 'value'))
+    assert.isTrue(results.every(result => result === 'value'))
     assert.equal(factoryCalls, 1)
   })
 

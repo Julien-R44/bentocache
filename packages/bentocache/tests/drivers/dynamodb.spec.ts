@@ -36,12 +36,12 @@ async function deleteTable() {
   await dynamoClient.send(new DeleteTableCommand({ TableName: 'cache' }))
 }
 
-test.group('DynamoDB driver', (group) => {
+test.group('DynamoDB driver', group => {
   group.setup(async () => {
-    await createTable().catch((e) => console.error('Could not create table', e))
+    await createTable().catch(e => console.error('Could not create table', e))
 
     return async () => {
-      await deleteTable().catch((e) => console.error('Could not delete table', e))
+      await deleteTable().catch(e => console.error('Could not delete table', e))
     }
   })
 
@@ -49,7 +49,7 @@ test.group('DynamoDB driver', (group) => {
     test,
     group,
     supportsMilliseconds: false,
-    createDriver: (options) => {
+    createDriver: options => {
       return new DynamoDbDriver({
         prefix: 'japa',
         region: 'eu-west-3',

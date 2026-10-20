@@ -26,7 +26,7 @@ export function registerCacheDriverTestSuite(options: {
     return () => cache.disconnect()
   })
 
-  group.tap((t) => t.disableTimeout())
+  group.tap(t => t.disableTimeout())
   group.each.teardown(async () => {
     await cache.clear()
   })

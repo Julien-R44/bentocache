@@ -67,12 +67,12 @@ export class FactoryRunner {
       return cacheOperation.tracePromise(async () => {
         const result = await params.factory({
           skip: () => this.#skipSymbol as any as undefined,
-          fail: (message) => {
+          fail: message => {
             throw new Error(message ?? 'Factory failed')
           },
-          setTtl: (ttl) => params.options.setLogicalTtl(ttl),
-          setTags: (tags) => params.options.tags.push(...tags),
-          setOptions: (options) => {
+          setTtl: ttl => params.options.setLogicalTtl(ttl),
+          setTags: tags => params.options.tags.push(...tags),
+          setOptions: options => {
             if (options.ttl) params.options.setLogicalTtl(options.ttl)
             params.options.skipBusNotify = options.skipBusNotify ?? false
             params.options.skipL2Write = options.skipL2Write ?? false

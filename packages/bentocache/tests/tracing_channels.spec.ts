@@ -168,8 +168,8 @@ test.group('Tracing Channels', () => {
     await cache.getOrSet({ key: 'foo', factory: () => 'new' })
 
     // Should only have a getOrSet trace (hit), no set
-    const getOrSetMessages = collector.messages.end.filter((m) => m.operation === 'getOrSet')
-    const setMessages = collector.messages.end.filter((m) => m.operation === 'set')
+    const getOrSetMessages = collector.messages.end.filter(m => m.operation === 'getOrSet')
+    const setMessages = collector.messages.end.filter(m => m.operation === 'set')
 
     assert.lengthOf(getOrSetMessages, 1)
     assert.lengthOf(setMessages, 0)
@@ -186,9 +186,9 @@ test.group('Tracing Channels', () => {
 
     await cache.getOrSet({ key: 'newkey', factory: () => 'newvalue' })
 
-    const getOrSetMessages = collector.messages.end.filter((m) => m.operation === 'getOrSet')
-    const factoryMessages = collector.messages.end.filter((m) => m.operation === 'factory')
-    const setMessages = collector.messages.end.filter((m) => m.operation === 'set')
+    const getOrSetMessages = collector.messages.end.filter(m => m.operation === 'getOrSet')
+    const factoryMessages = collector.messages.end.filter(m => m.operation === 'factory')
+    const setMessages = collector.messages.end.filter(m => m.operation === 'set')
 
     assert.lengthOf(getOrSetMessages, 1)
     assert.lengthOf(factoryMessages, 1)

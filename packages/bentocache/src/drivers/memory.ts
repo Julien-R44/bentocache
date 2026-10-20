@@ -44,7 +44,7 @@ export class MemoryDriver extends BaseDriver implements L1CacheDriver {
       ...(config.maxSize
         ? {
             maxSize: config.maxSize ? bytes.parse(config.maxSize) : undefined,
-            sizeCalculation: (value) => Buffer.byteLength(value, 'utf-8'),
+            sizeCalculation: value => Buffer.byteLength(value, 'utf-8'),
           }
         : {}),
     })

@@ -1,8 +1,11 @@
 {
   "name": "@bentocache/docs",
-  "type": "module",
   "private": true,
   "license": "UNLICENSED",
+  "type": "module",
+  "imports": {
+    "#src/*": "./src/*.js"
+  },
   "scripts": {
     "export": "vite build && node --loader=ts-node/esm bin/build.ts && pnpm copy:files",
     "copy:files": "copyfiles -u 1 public/* public/**/* dist",
@@ -10,9 +13,6 @@
     "typecheck": "tsc --noEmit",
     "serve": "node --loader=ts-node/esm bin/serve.ts",
     "dev": "vite build && npm run serve"
-  },
-  "imports": {
-    "#src/*": "./src/*.js"
   },
   "dependencies": {
     "@adonisjs/core": "^6.21.0",

@@ -79,7 +79,7 @@ export class KyselyAdapter implements DatabaseAdapter {
   async createTableIfNotExists(): Promise<void> {
     await this.#connection.schema
       .createTable(this.#tableName)
-      .addColumn('key', 'varchar(255)', (col) => col.primaryKey().notNull())
+      .addColumn('key', 'varchar(255)', col => col.primaryKey().notNull())
       .addColumn('value', 'text')
       .addColumn('expires_at', 'bigint')
       .ifNotExists()
@@ -103,11 +103,11 @@ export class KyselyAdapter implements DatabaseAdapter {
     await this.#connection
       .insertInto(this.#tableName)
       .values({ key: row.key, value: row.value, expires_at: expiresAt ?? null })
-      .$if(this.#dialect === 'mysql', (query) =>
+      .$if(this.#dialect === 'mysql', query =>
         query.onDuplicateKeyUpdate({ value: row.value, expires_at: expiresAt }),
       )
-      .$if(this.#dialect !== 'mysql', (query) => {
-        return query.onConflict((conflict) => {
+      .$if(this.#dialect !== 'mysql', query => {
+        return query.onConflict(conflict => {
           return conflict.columns(['key']).doUpdateSet({ value: row.value, expires_at: expiresAt })
         })
       })

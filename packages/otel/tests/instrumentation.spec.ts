@@ -15,12 +15,12 @@ test.group('BentoCacheInstrumentation', () => {
     await store.get({ key: 'foo' })
 
     const spans = exporter.getFinishedSpans()
-    const spanNames = spans.map((span) => span.name)
+    const spanNames = spans.map(span => span.name)
 
     assert.isTrue(spanNames.includes('cache.set'))
     assert.isTrue(spanNames.includes('cache.get'))
 
-    const getSpan = spans.find((span) => span.name === 'cache.get')
+    const getSpan = spans.find(span => span.name === 'cache.get')
     assert.equal(getSpan?.attributes['cache.hit'], true)
     assert.equal(getSpan?.attributes['cache.tier'], 'l1')
     assert.equal(getSpan?.attributes['cache.key'], 'bentocache:foo')
@@ -55,7 +55,7 @@ test.group('BentoCacheInstrumentation', () => {
     const store = createMemoryStore(bentocacheModule)
 
     await store.set({ key: 'foo', value: 'bar' })
-    const span = exporter.getFinishedSpans().find((item) => item.name === 'cache.set')
+    const span = exporter.getFinishedSpans().find(item => item.name === 'cache.set')
 
     assert.exists(span)
     assert.isUndefined(span?.attributes['cache.key'])
@@ -71,7 +71,7 @@ test.group('BentoCacheInstrumentation', () => {
     await prefixedStore.set({ key: 'foo', value: 'bar' })
     await prefixedStore.get({ key: 'foo' })
 
-    const prefixedNames = prefixed.exporter.getFinishedSpans().map((span) => span.name)
+    const prefixedNames = prefixed.exporter.getFinishedSpans().map(span => span.name)
     assert.isTrue(prefixedNames.includes('bento.set'))
     assert.isTrue(prefixedNames.includes('bento.get'))
   })
@@ -81,7 +81,7 @@ test.group('BentoCacheInstrumentation', () => {
       cleanup,
       {
         requireParentSpan: false,
-        spanName: (message) => `custom.${message.operation}`,
+        spanName: message => `custom.${message.operation}`,
       },
       'modulePatch',
     )
@@ -89,7 +89,7 @@ test.group('BentoCacheInstrumentation', () => {
     await customStore.set({ key: 'foo', value: 'bar' })
     await customStore.get({ key: 'foo' })
 
-    const customNames = custom.exporter.getFinishedSpans().map((span) => span.name)
+    const customNames = custom.exporter.getFinishedSpans().map(span => span.name)
     assert.isTrue(customNames.includes('custom.set'))
     assert.isTrue(customNames.includes('custom.get'))
   })
@@ -112,12 +112,12 @@ test.group('BentoCacheInstrumentation', () => {
     ])
 
     const spans = exporter.getFinishedSpans()
-    const getOrSetSpans = spans.filter((span) => span.name === 'cache.getOrSet')
+    const getOrSetSpans = spans.filter(span => span.name === 'cache.getOrSet')
 
     assert.isTrue(getOrSetSpans.length >= 3)
 
     // None of the getOrSet spans should be parented to another getOrSet span
-    const getOrSetSpanIds = new Set(getOrSetSpans.map((s) => s.spanContext().spanId))
+    const getOrSetSpanIds = new Set(getOrSetSpans.map(s => s.spanContext().spanId))
     for (const span of getOrSetSpans) {
       assert.isFalse(
         getOrSetSpanIds.has(span.parentSpanContext?.spanId ?? ''),
@@ -148,9 +148,9 @@ test.group('BentoCacheInstrumentation', () => {
     })
 
     const spans = exporter.getFinishedSpans()
-    const getOrSetSpan = spans.find((span) => span.name === 'cache.getOrSet')
-    const factorySpan = spans.find((span) => span.name === 'cache.factory')
-    const setSpan = spans.find((span) => span.name === 'cache.set')
+    const getOrSetSpan = spans.find(span => span.name === 'cache.getOrSet')
+    const factorySpan = spans.find(span => span.name === 'cache.factory')
+    const setSpan = spans.find(span => span.name === 'cache.set')
 
     assert.exists(getOrSetSpan)
     assert.exists(factorySpan)

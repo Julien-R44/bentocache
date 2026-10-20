@@ -28,7 +28,7 @@ export class OrchidAdapter implements DatabaseAdapter {
   }
 
   private getTable() {
-    return this.#connection(this.#tableName, (t) => ({
+    return this.#connection(this.#tableName, t => ({
       key: t.varchar().primaryKey(),
       value: t.varchar(),
       expires_at: t

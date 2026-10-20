@@ -1,33 +1,21 @@
 {
   "name": "bentocache",
-  "type": "module",
   "version": "1.6.1",
   "description": "Multi-tier cache module for Node.js. Redis, Upstash, CloudfareKV, File, in-memory and others drivers",
-  "author": "Julien Ripouteau <julien@ripouteau.com>",
-  "license": "MIT",
   "keywords": [
-    "caching",
-    "redis",
-    "in-memory",
     "cache",
+    "caching",
+    "in-memory",
     "multi-tier",
+    "redis",
     "tiered"
   ],
-  "exports": {
-    ".": "./build/index.js",
-    "./drivers/redis": "./build/src/drivers/redis.js",
-    "./drivers/memory": "./build/src/drivers/memory.js",
-    "./drivers/file": "./build/src/drivers/file/file.js",
-    "./drivers/dynamodb": "./build/src/drivers/dynamodb.js",
-    "./drivers/base_driver": "./build/src/drivers/base_driver.js",
-    "./drivers/database": "./build/src/drivers/database/database.js",
-    "./drivers/knex": "./build/src/drivers/database/adapters/knex.js",
-    "./drivers/kysely": "./build/src/drivers/database/adapters/kysely.js",
-    "./drivers/orchid": "./build/src/drivers/database/adapters/orchid.js",
-    "./types": "./build/src/types/main.js",
-    "./plugins/*": "./build/plugins/*.js",
-    "./test_suite": "./build/src/test_suite.js"
-  },
+  "license": "MIT",
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "files": [
+    "build"
+  ],
+  "type": "module",
   "main": "build/index.js",
   "typesVersions": {
     "*": {
@@ -48,14 +36,30 @@
       ]
     }
   },
-  "files": [
-    "build"
-  ],
+  "exports": {
+    ".": "./build/index.js",
+    "./drivers/redis": "./build/src/drivers/redis.js",
+    "./drivers/memory": "./build/src/drivers/memory.js",
+    "./drivers/file": "./build/src/drivers/file/file.js",
+    "./drivers/dynamodb": "./build/src/drivers/dynamodb.js",
+    "./drivers/base_driver": "./build/src/drivers/base_driver.js",
+    "./drivers/database": "./build/src/drivers/database/database.js",
+    "./drivers/knex": "./build/src/drivers/database/adapters/knex.js",
+    "./drivers/kysely": "./build/src/drivers/database/adapters/kysely.js",
+    "./drivers/orchid": "./build/src/drivers/database/adapters/orchid.js",
+    "./types": "./build/src/types/main.js",
+    "./plugins/*": "./build/plugins/*.js",
+    "./test_suite": "./build/src/test_suite.js"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
   "scripts": {
     "clean": "del-cli build",
     "copy:templates": "copyfiles \"stubs/**/*.stub\" build",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --loader=ts-node/esm bin/test.ts",
     "pretest": "pnpm lint",
     "test": "c8 pnpm quick:test",
@@ -65,30 +69,6 @@
     "version": "pnpm build",
     "prepublishOnly": "pnpm build",
     "checks": "pnpm lint && pnpm typecheck"
-  },
-  "peerDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.438.0",
-    "ioredis": "^5.3.2 || ^6.0.0",
-    "knex": "^3.0.1",
-    "kysely": "^0.27.3",
-    "orchid-orm": "^1.24.0"
-  },
-  "peerDependenciesMeta": {
-    "@aws-sdk/client-dynamodb": {
-      "optional": true
-    },
-    "ioredis": {
-      "optional": true
-    },
-    "knex": {
-      "optional": true
-    },
-    "kysely": {
-      "optional": true
-    },
-    "orchid-orm": {
-      "optional": true
-    }
   },
   "dependencies": {
     "@boringnode/bus": "^0.10.0",
@@ -117,21 +97,40 @@
     "sqlite3": "^6.0.1",
     "superjson": "^2.2.6"
   },
-  "prettier": "@julr/tooling-configs/prettier",
-  "publishConfig": {
-    "access": "public",
-    "tag": "latest"
+  "peerDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.438.0",
+    "ioredis": "^5.3.2 || ^6.0.0",
+    "knex": "^3.0.1",
+    "kysely": "^0.27.3",
+    "orchid-orm": "^1.24.0"
+  },
+  "peerDependenciesMeta": {
+    "@aws-sdk/client-dynamodb": {
+      "optional": true
+    },
+    "ioredis": {
+      "optional": true
+    },
+    "knex": {
+      "optional": true
+    },
+    "kysely": {
+      "optional": true
+    },
+    "orchid-orm": {
+      "optional": true
+    }
   },
   "c8": {
-    "reporter": [
-      "text",
-      "html"
-    ],
     "exclude": [
       "bin",
       "tests/**",
       "test_helpers/**",
       "factories/**"
+    ],
+    "reporter": [
+      "text",
+      "html"
     ]
   },
   "release-it": {

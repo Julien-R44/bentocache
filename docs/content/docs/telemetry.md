@@ -10,7 +10,6 @@ This package is experimental and may change in future versions.
 
 Bentocache provides an official OpenTelemetry instrumentation package: `@bentocache/otel`.
 
-
 It listens to Bentocache tracing channels and emits spans like:
 
 - `cache.get`
@@ -129,7 +128,7 @@ import { trace } from '@opentelemetry/api'
 
 const tracer = trace.getTracer('app')
 
-await tracer.startActiveSpan('request', async (span) => {
+await tracer.startActiveSpan('request', async span => {
   await bento.getOrSet({
     key: 'user:1',
     ttl: '5m',

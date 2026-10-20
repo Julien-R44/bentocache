@@ -122,10 +122,9 @@ test.group('Typings', () => {
   test('on() events list', async ({ expectTypeOf }) => {
     const { bento } = new BentoCacheFactory().create()
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    expectTypeOf(bento.on).parameter(0).toEqualTypeOf<keyof CacheEvents>
+    expectTypeOf(bento.on).parameter(0).toEqualTypeOf<keyof CacheEvents>()
 
-    bento.on('cache:cleared', (payload) => {
+    bento.on('cache:cleared', payload => {
       expectTypeOf(payload).toEqualTypeOf<CacheEvents['cache:cleared']>()
     })
   })

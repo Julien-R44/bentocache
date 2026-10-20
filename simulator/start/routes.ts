@@ -77,14 +77,14 @@ router.get('/', async ({ inertia }) => {
     state,
     sentMessages: [...nodes.entries()]
       .map(([key, cache]) =>
-        cache.bus.sentMessages.map((message) => ({ ...message, cacheName: key })),
+        cache.bus.sentMessages.map(message => ({ ...message, cacheName: key })),
       )
       .flat()
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, 40),
     receivedMessages: [...nodes.entries()]
       .map(([key, cache]) =>
-        cache.bus.receivedMessages.map((message) => ({ ...message, cacheName: key })),
+        cache.bus.receivedMessages.map(message => ({ ...message, cacheName: key })),
       )
       .flat()
       .sort((a, b) => b.timestamp - a.timestamp)
@@ -137,7 +137,7 @@ router.post('/state', async ({ request, response }) => {
     state.l2 = payload.l2
   }
 
-  nodes.forEach((cache) => {
+  nodes.forEach(cache => {
     if (!is.undefined(payload.bus) && !payload.bus) {
       cache.bus.alwaysThrow()
     } else {

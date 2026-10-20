@@ -32,7 +32,7 @@ test.group('Remote Cache', () => {
     await assert.rejects(() => cache.delete('foo', options))
     await assert.rejects(() => cache.deleteMany(['foo'], options))
 
-    const errors = logger.logs.filter((log) => log.level === 'error')
+    const errors = logger.logs.filter(log => log.level === 'error')
     assert.deepEqual(errors.length, 4)
   })
 
@@ -57,7 +57,7 @@ test.group('Remote Cache', () => {
     await assert.doesNotReject(() => cache.delete('foo', options))
     await assert.doesNotReject(() => cache.deleteMany(['foo'], options))
 
-    const errors = logger.logs.filter((log) => log.level === 'error')
+    const errors = logger.logs.filter(log => log.level === 'error')
     assert.deepEqual(errors.length, 4)
   })
 
@@ -85,7 +85,7 @@ test.group('Remote Cache', () => {
     await assert.rejects(() => cache.delete('foo', options))
     await assert.rejects(() => cache.deleteMany(['foo'], options))
 
-    const errors = logger.logs.filter((log) => log.level === 'error')
+    const errors = logger.logs.filter(log => log.level === 'error')
     assert.deepEqual(errors.length, 4)
   })
 
@@ -113,7 +113,7 @@ test.group('Remote Cache', () => {
     await assert.doesNotReject(() => cache.delete('foo', options))
     await assert.doesNotReject(() => cache.deleteMany(['foo'], options))
 
-    const errors = logger.logs.filter((log) => log.level === 'error')
+    const errors = logger.logs.filter(log => log.level === 'error')
     assert.deepEqual(errors.length, 4)
   })
 

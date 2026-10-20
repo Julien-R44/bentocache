@@ -6,12 +6,12 @@ import { createKyselyStore } from './helpers.js'
 import { MYSQL_CREDENTIALS } from '../../helpers/index.js'
 import { registerCacheDriverTestSuite } from '../../../src/test_suite.js'
 
-test.group('Kysely | Mysql driver', (group) => {
+test.group('Kysely | Mysql driver', group => {
   registerCacheDriverTestSuite({
     test,
     group,
     supportsMilliseconds: false,
-    createDriver: (options) => {
+    createDriver: options => {
       const db = new Kysely<any>({
         dialect: new MysqlDialect({
           pool: createPool({ ...MYSQL_CREDENTIALS }),

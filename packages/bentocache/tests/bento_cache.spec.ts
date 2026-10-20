@@ -14,7 +14,7 @@ test.group('Bento Cache', () => {
 
     const { bento } = new BentoCacheFactory().create()
 
-    bento.on('cache:hit', (event) => {
+    bento.on('cache:hit', event => {
       assert.equal(event.key, 'foo')
       assert.equal(event.value, 'bar')
     })

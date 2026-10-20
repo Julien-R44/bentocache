@@ -44,7 +44,7 @@ test.group('Factory Runner', () => {
       factory: () => {
         throw new MyError()
       },
-      onFactoryError: (error) => {
+      onFactoryError: error => {
         assert.instanceOf(error, errors.E_FACTORY_ERROR)
         assert.instanceOf(error.cause, MyError)
         assert.isTrue(error.isBackgroundFactory)

@@ -1,16 +1,8 @@
 {
   "name": "simulator",
-  "type": "module",
   "private": true,
   "license": "UNLICENSED",
-  "scripts": {
-    "start": "node bin/server.js",
-    "build": "node ace build",
-    "dev": "node ace serve --hmr",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "typecheck": "tsc --noEmit"
-  },
+  "type": "module",
   "imports": {
     "#controllers/*": "./app/controllers/*.js",
     "#exceptions/*": "./app/exceptions/*.js",
@@ -28,6 +20,14 @@
     "#tests/*": "./tests/*.js",
     "#start/*": "./start/*.js",
     "#config/*": "./config/*.js"
+  },
+  "scripts": {
+    "start": "node bin/server.js",
+    "build": "node ace build",
+    "dev": "node ace serve --hmr",
+    "lint": "oxlint",
+    "format": "oxfmt --write .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@adonisjs/auth": "^9.6.0",

@@ -68,7 +68,7 @@ export class ChaosBus implements Transport {
   }
 
   async subscribe<T extends Serializable>(channel: string, handler: SubscribeHandler<T>) {
-    return this.#innerTransport.subscribe(channel, (message) => {
+    return this.#innerTransport.subscribe(channel, message => {
       this.receivedMessages.push({
         channel,
         message,

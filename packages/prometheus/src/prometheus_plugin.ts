@@ -110,7 +110,7 @@ export class PrometheusPlugin implements BentoCachePlugin {
    * increment the metrics based on that.
    */
   register(bentocache: BentoCache<any>) {
-    bentocache.on('cache:hit', (event) => {
+    bentocache.on('cache:hit', event => {
       const key = this.#getKeyLabel(event.key)
 
       if (event.graced) {
@@ -120,19 +120,19 @@ export class PrometheusPlugin implements BentoCachePlugin {
       }
     })
 
-    bentocache.on('cache:miss', async (event) => {
+    bentocache.on('cache:miss', async event => {
       const key = this.#getKeyLabel(event.key)
       this.#metrics.cacheMisses.inc({ store: event.store, key })
     })
-    bentocache.on('cache:written', (event) => {
+    bentocache.on('cache:written', event => {
       const key = this.#getKeyLabel(event.key)
       this.#metrics.cacheWrites.inc({ store: event.store, key })
     })
-    bentocache.on('cache:deleted', (event) => {
+    bentocache.on('cache:deleted', event => {
       const key = this.#getKeyLabel(event.key)
       this.#metrics.cacheDeletes.inc({ store: event.store, key })
     })
-    bentocache.on('cache:cleared', (event) => {
+    bentocache.on('cache:cleared', event => {
       this.#metrics.cacheClears.inc({ store: event.store })
     })
 

@@ -1,37 +1,38 @@
 {
   "name": "@bentocache/otel",
-  "type": "module",
   "version": "0.1.2",
   "description": "OpenTelemetry instrumentation for Bentocache",
-  "author": "Julien Ripouteau <julien@ripouteau.com>",
-  "license": "MIT",
   "keywords": [
     "bentocache",
+    "instrumentation",
     "opentelemetry",
     "otel",
-    "instrumentation",
     "tracing"
   ],
+  "license": "MIT",
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "files": [
+    "build"
+  ],
+  "type": "module",
+  "main": "build/index.js",
   "exports": {
     ".": "./build/index.js",
     "./types": "./build/src/types.js"
   },
-  "main": "build/index.js",
-  "files": [
-    "build"
-  ],
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
   "scripts": {
     "test": "c8 pnpm quick:test",
     "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --loader=ts-node/esm bin/test.ts",
     "build": "tsup-node",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "release": "pnpm build && pnpm release-it",
     "prepublishOnly": "pnpm build",
     "checks": "pnpm lint && pnpm typecheck"
-  },
-  "peerDependencies": {
-    "bentocache": "^1.6.0"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
@@ -43,32 +44,20 @@
     "@opentelemetry/sdk-trace-base": "^2.12.0",
     "bentocache": "workspace:*"
   },
-  "tsup": {
-    "entry": [
-      "./index.ts",
-      "./src/types.ts"
-    ],
-    "outDir": "./build",
-    "clean": true,
-    "format": "esm",
-    "dts": true,
-    "target": "esnext"
+  "peerDependencies": {
+    "bentocache": "^1.6.0"
   },
   "c8": {
-    "reporter": [
-      "text",
-      "html"
-    ],
     "exclude": [
       "bin",
       "tests/**",
       "test_helpers/**",
       "factories/**"
+    ],
+    "reporter": [
+      "text",
+      "html"
     ]
-  },
-  "publishConfig": {
-    "access": "public",
-    "tag": "latest"
   },
   "release-it": {
     "git": {
@@ -81,5 +70,16 @@
       "releaseName": "@bentocache/otel@${version}",
       "web": true
     }
+  },
+  "tsup": {
+    "entry": [
+      "./index.ts",
+      "./src/types.ts"
+    ],
+    "outDir": "./build",
+    "clean": true,
+    "format": "esm",
+    "dts": true,
+    "target": "esnext"
   }
 }

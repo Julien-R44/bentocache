@@ -69,7 +69,7 @@ edge.global('getSections', function (collection: Collection, entry: CollectionEn
  * Configuring rendering pipeline
  */
 const pipeline = new RenderingPipeline()
-pipeline.use(docsHook).use((node) => {
+pipeline.use(docsHook).use(node => {
   if (node.tagName === 'img') {
     return pipeline.component('elements/img', { node })
   }
@@ -87,4 +87,4 @@ export const renderer = new Renderer(edge, pipeline)
 /**
  * Adding grammars
  */
-grammars.forEach((grammar) => renderer.registerLanguage(grammar))
+grammars.forEach(grammar => renderer.registerLanguage(grammar))

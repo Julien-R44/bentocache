@@ -5,12 +5,12 @@ import { Kysely, SqliteDialect } from 'kysely'
 import { createKyselyStore } from './helpers.js'
 import { registerCacheDriverTestSuite } from '../../../src/test_suite.js'
 
-test.group('Kysely | Better-sqlite3 driver', (group) => {
+test.group('Kysely | Better-sqlite3 driver', group => {
   registerCacheDriverTestSuite({
     test,
     group,
     supportsMilliseconds: false,
-    createDriver: (options) => {
+    createDriver: options => {
       const db = new Kysely<any>({
         dialect: new SqliteDialect({
           database: new SQLite.default('./cache.sqlite3'),

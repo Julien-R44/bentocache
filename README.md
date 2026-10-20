@@ -44,6 +44,7 @@ The one-level mode is a standard caching method. Choose from a variety of driver
 In addition to this, you benefit from many features that allow you to efficiently manage your cache, such as **cache stampede protection**, **grace periods**, **timeouts**, **namespaces**, etc.
 
 ### Two-levels
+
 For those looking to go further, you can use the two-levels caching system. Here's basically how it works:
 
 - **L1: Local Cache**: First level cache. Data is stored in memory with an LRU algorithm for quick access
@@ -59,7 +60,6 @@ All of this is managed invisibly for you via Bentocache. The only thing to do is
 The major benefit of multi-tier caching, is that it allows for responses between 2,000x and 5,000x faster. While Redis is fast, accessing RAM is REALLY MUCH faster.
 
 In fact, it's a quite common pattern : to quote an example, it's [what Stackoverflow does](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/#layers-of-cache-at-stack-overflow).
-
 
 To give some perspective, here's a simple benchmark that shows the difference between a simple distributed cache ( using Redis ) vs a multi-tier cache ( using Redis + In-memory cache ) :
 
@@ -99,10 +99,10 @@ Allows associating a cache entry with one or more tags to simplify invalidation.
 await bento.getOrSet({
   key: 'foo',
   factory: getFromDb(),
-  tags: ['tag-1', 'tag-2']
-});
+  tags: ['tag-1', 'tag-2'],
+})
 
-await bento.deleteByTag({ tags: ['tag-1'] });
+await bento.deleteByTag({ tags: ['tag-1'] })
 ```
 
 ### Namespaces
@@ -157,7 +157,7 @@ You can pass a logger to Bentocache, and it will log everything that happens. Ca
 import { pino } from 'pino'
 
 const bento = new BentoCache({
-  logger: pino()
+  logger: pino(),
 })
 ```
 

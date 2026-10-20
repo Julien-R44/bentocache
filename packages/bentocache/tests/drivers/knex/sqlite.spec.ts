@@ -4,11 +4,11 @@ import { test } from '@japa/runner'
 import { createKnexStore } from './helpers.js'
 import { registerCacheDriverTestSuite } from '../../helpers/driver_test_suite.js'
 
-test.group('Knex | Better-sqlite3 driver', (group) => {
+test.group('Knex | Better-sqlite3 driver', group => {
   registerCacheDriverTestSuite({
     test,
     group,
-    createDriver: (options) => {
+    createDriver: options => {
       const db = knex({
         client: 'better-sqlite3',
         connection: { filename: ':memory:' },

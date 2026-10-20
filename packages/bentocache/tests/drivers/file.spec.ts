@@ -7,11 +7,11 @@ import { BASE_URL } from '../helpers/index.js'
 import { FileDriver } from '../../src/drivers/file/file.js'
 import { registerCacheDriverTestSuite } from '../helpers/driver_test_suite.js'
 
-test.group('File driver', (group) => {
+test.group('File driver', group => {
   registerCacheDriverTestSuite({
     test,
     group,
-    createDriver: (options) => {
+    createDriver: options => {
       return new FileDriver({ prefix: 'japa', directory: fileURLToPath(BASE_URL), ...options })
     },
   })

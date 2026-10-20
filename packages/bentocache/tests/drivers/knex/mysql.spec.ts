@@ -6,12 +6,12 @@ import { createKnexStore } from './helpers.js'
 import { MYSQL_CREDENTIALS } from '../../helpers/index.js'
 import { registerCacheDriverTestSuite } from '../../helpers/driver_test_suite.js'
 
-test.group('Knex | Mysql driver', (group) => {
+test.group('Knex | Mysql driver', group => {
   registerCacheDriverTestSuite({
     test,
     group,
     supportsMilliseconds: false,
-    createDriver: (options) => {
+    createDriver: options => {
       const db = knex({
         client: 'mysql2',
         connection: { ...MYSQL_CREDENTIALS },
