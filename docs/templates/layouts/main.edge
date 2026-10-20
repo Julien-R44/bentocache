@@ -3,6 +3,7 @@
     lang="en"
     x-data
     :class="{ dark: $store.darkMode.enabled, light: !$store.darkMode.enabled }"
+    :data-theme="$store.darkMode.enabled ? 'dark' : 'light'"
   >
   <head>
     <meta charset="UTF-8">

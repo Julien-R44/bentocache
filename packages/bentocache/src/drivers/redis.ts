@@ -68,7 +68,7 @@ export class RedisDriver extends BaseDriver implements L2CacheDriver {
     this.#connection = new IoRedis(config.connection)
   }
 
-  getConnection() {
+  getConnection(): IoRedis | IoRedisCluster {
     return this.#connection
   }
 

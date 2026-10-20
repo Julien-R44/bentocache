@@ -69,7 +69,7 @@ export class SingleTierHandler {
     key: string,
     item: GetCacheValueReturn | undefined,
     options: CacheEntryOptions,
-    err: Error,
+    err: unknown,
     message?: CacheOperationMessage,
   ) {
     if (options.isGraceEnabled() && item) {

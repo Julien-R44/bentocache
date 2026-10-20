@@ -19,7 +19,6 @@ test.group('Redis driver', (group) => {
 
     cleanup(async () => {
       await redis2.disconnect()
-      await ioredis.quit()
     })
 
     assert.equal(redis2.getConnection(), ioredis)
@@ -31,7 +30,6 @@ test.group('Redis driver', (group) => {
 
     cleanup(async () => {
       await redis.disconnect()
-      cluster.disconnect()
     })
 
     assert.equal(redis.getConnection(), cluster)
@@ -45,7 +43,6 @@ test.group('Redis driver', (group) => {
     cleanup(async () => {
       await redis2.disconnect()
       await ioRedis2.quit()
-      await ioredis.quit()
     })
 
     await redis2.set('key', 'value')

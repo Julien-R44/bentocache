@@ -83,7 +83,7 @@ export class TwoTierHandler {
     key: string,
     item: GetCacheValueReturn | undefined,
     options: CacheEntryOptions,
-    err: Error,
+    err: unknown,
     message?: CacheOperationMessage,
   ) {
     if (options.isGraceEnabled() && item) return this.#returnL1Value(key, item, message)

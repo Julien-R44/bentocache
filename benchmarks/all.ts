@@ -60,7 +60,7 @@ await bench
   })
   .add('L1 GetOrSet - CacheManager', async () => {
     const result = await cacheManagerMemory.get('cm:key')
-    if (result === null) {
+    if (result === undefined) {
       await cacheManagerMemory.set('cm:key', await getFromDb(), 100)
     }
 
@@ -75,7 +75,7 @@ await bench
   })
   .add('L2 GetOrSet - CacheManager', async () => {
     const result = await cacheManagerRedis.get('cm:key')
-    if (result === null) {
+    if (result === undefined) {
       await cacheManagerRedis.set('cm:key', await getFromDb(), 100)
     }
 
@@ -90,7 +90,7 @@ await bench
   })
   .add('Tiered GetOrSet - CacheManager', async () => {
     const result = await cacheManagerTiered.get('cm:key')
-    if (result === null) {
+    if (result === undefined) {
       await cacheManagerTiered.set('cm:key', await getFromDb(), 100)
     }
 

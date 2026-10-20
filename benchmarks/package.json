@@ -11,12 +11,12 @@
     "bench:all": "pnpm tsx all.ts"
   },
   "devDependencies": {
-    "@keyv/redis": "^4.6.0",
+    "@keyv/redis": "^5.1.6",
     "bentocache": "workspace:*",
-    "cache-manager": "^6.4.3",
-    "cacheable": "^1.10.4",
-    "ioredis": "^5.11.1",
+    "cache-manager": "^7.2.9",
+    "cacheable": "^2.5.0",
+    "ioredis": "^6.0.0",
     "keyv": "^5.6.0",
-    "tinybench": "^4.1.0"
+    "tinybench": "^6.2.2"
   }
 }

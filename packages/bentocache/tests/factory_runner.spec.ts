@@ -25,6 +25,7 @@ test.group('Factory Runner', () => {
         },
       })
     } catch (error) {
+      if (!(error instanceof errors.E_FACTORY_ERROR)) throw error
       assert.instanceOf(error, errors.E_FACTORY_ERROR)
       assert.instanceOf(error.cause, MyError)
       assert.deepEqual(error.key, 'foo')
