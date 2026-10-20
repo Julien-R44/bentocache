@@ -1,12 +1,11 @@
 import pTimeout from 'p-timeout'
 import { tryAsync } from '@julr/utils/functions'
-import type { MutexInterface } from 'async-mutex'
 
 import { errors } from '../errors.js'
-import type { Locks } from './locks.js'
 import type { CacheStack } from './cache_stack.js'
 import { cacheOperation } from '../tracing_channels.js'
 import type { GetSetFactory } from '../types/helpers.js'
+import type { LockManager, LockReleaser } from '../types/main.js'
 import type { GetCacheValueReturn } from '../types/internals/index.js'
 import type { CacheOperationMessage } from '../types/tracing_channels.js'
 import type { CacheEntryOptions } from './cache_entry/cache_entry_options.js'
@@ -15,7 +14,7 @@ interface RunFactoryParameters {
   key: string
   factory: GetSetFactory
   options: CacheEntryOptions
-  lockReleaser: MutexInterface.Releaser
+  lockReleaser: LockReleaser
   isBackground?: boolean
   gracedValue?: GetCacheValueReturn
 }
@@ -24,11 +23,11 @@ interface RunFactoryParameters {
  * Factory Runner is responsible for executing factories
  */
 export class FactoryRunner {
-  #locks: Locks
+  #locks: LockManager
   #stack: CacheStack
   #skipSymbol = Symbol('bentocache.skip')
 
-  constructor(stack: CacheStack, locks: Locks) {
+  constructor(stack: CacheStack, locks: LockManager) {
     this.#stack = stack
     this.#locks = locks
   }
@@ -119,7 +118,7 @@ export class FactoryRunner {
     factory: GetSetFactory,
     gracedValue: GetCacheValueReturn | undefined,
     options: CacheEntryOptions,
-    lockReleaser: MutexInterface.Releaser,
+    lockReleaser: LockReleaser,
   ) {
     const hasGracedValue = !!gracedValue
     const timeout = options.factoryTimeout(hasGracedValue)

@@ -10,6 +10,7 @@ import type {
 
 import type { Logger } from '../../logger.js'
 import type { Duration } from '../helpers.js'
+import type { LockManagerConstructor } from './options.js'
 
 /**
  * Options that are common to all drivers
@@ -24,6 +25,7 @@ export type DriverCommonOptions = {
 
 export type DriverCommonInternalOptions = {
   logger?: Logger
+  lockManager?: LockManagerConstructor
 }
 
 /**

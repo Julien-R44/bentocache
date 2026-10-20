@@ -69,11 +69,13 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
       l1Driver: entry.l1?.factory({
         prefix: driverItemOptions.prefix,
         logger: driverItemOptions.logger,
+        lockManager: driverItemOptions.lockManager,
         ...entry.l1.options,
       }),
       l2Driver: entry.l2?.factory({
         prefix: driverItemOptions.prefix,
         logger: driverItemOptions.logger,
+        lockManager: driverItemOptions.lockManager,
         ...entry.l2.options,
       }),
       busDriver: entry.bus?.factory(entry.bus?.options),
