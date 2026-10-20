@@ -24,7 +24,7 @@
   },
   "scripts": {
     "test": "c8 pnpm quick:test",
-    "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --loader=ts-node/esm bin/test.ts",
+    "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --import=tsx bin/test.ts",
     "build": "tsup-node",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",

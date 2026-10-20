@@ -12,6 +12,8 @@
 import 'reflect-metadata'
 
 import { Ignitor } from '@adonisjs/core'
+import { defineConfig as defineHttpConfig } from '@adonisjs/core/http'
+import { defineConfig as defineEncryptionConfig, drivers } from '@adonisjs/core/encryption'
 
 import { viteConfig } from '../config/vite.js'
 
@@ -52,9 +54,14 @@ const app = new Ignitor(APP_ROOT, { importer: IMPORTER })
       app.useConfig({
         appUrl: process.env.APP_URL || '',
         app: {
-          appKey: 'zKXHe-Ahdb7aPK1ylAJlRgTefktEaACi',
-          http: {},
+          http: defineHttpConfig({}),
         },
+        encryption: defineEncryptionConfig({
+          default: 'legacy',
+          list: {
+            legacy: drivers.legacy({ keys: ['zKXHe-Ahdb7aPK1ylAJlRgTefktEaACi'] }),
+          },
+        }),
         logger: {
           default: 'app',
           loggers: {

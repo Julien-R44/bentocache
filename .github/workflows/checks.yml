@@ -71,6 +71,28 @@ jobs:
       - name: Build
         run: pnpm -C packages/bentocache build
 
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Export documentation
+        run: pnpm -C docs export
+
   tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10

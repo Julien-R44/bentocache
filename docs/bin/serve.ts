@@ -4,6 +4,7 @@ import { Ignitor } from '@adonisjs/core'
 import { readFile } from 'node:fs/promises'
 import type { ApplicationService } from '@adonisjs/core/types'
 import { defineConfig as defineHttpConfig } from '@adonisjs/core/http'
+import { defineConfig as defineEncryptionConfig, drivers } from '@adonisjs/core/encryption'
 
 import { viteConfig } from '../config/vite.js'
 
@@ -64,9 +65,14 @@ new Ignitor(APP_ROOT, { importer: IMPORTER })
       app.useConfig({
         appUrl: process.env.APP_URL || '',
         app: {
-          appKey: 'zKXHe-Ahdb7aPK1ylAJlRgTefktEaACi',
           http: defineHttpConfig({}),
         },
+        encryption: defineEncryptionConfig({
+          default: 'legacy',
+          list: {
+            legacy: drivers.legacy({ keys: ['zKXHe-Ahdb7aPK1ylAJlRgTefktEaACi'] }),
+          },
+        }),
         static: {
           enabled: true,
           etag: true,

@@ -7,24 +7,21 @@
     "#src/*": "./src/*.js"
   },
   "scripts": {
-    "export": "vite build && node --loader=ts-node/esm bin/build.ts && pnpm copy:files",
+    "export": "vite build && node --import=@poppinss/ts-exec bin/build.ts && pnpm copy:files",
     "copy:files": "copyfiles -u 1 public/* public/**/* dist",
     "start": "node bin/test.js",
     "typecheck": "tsc --noEmit",
-    "serve": "node --loader=ts-node/esm bin/serve.ts",
+    "serve": "node --import=@poppinss/ts-exec bin/serve.ts",
     "dev": "vite build && npm run serve"
   },
   "dependencies": {
-    "@adonisjs/core": "^6.21.0",
-    "@adonisjs/static": "^1.1.1",
+    "@adonisjs/core": "^7.6.0",
+    "@adonisjs/static": "^2.0.1",
     "@radix-ui/colors": "^3.0.0",
-    "@ryangjchandler/alpine-tooltip": "^2.0.1",
-    "edge.js": "6.5.1",
-    "tippy.js": "^6.3.7"
+    "edge.js": "6.5.1"
   },
   "devDependencies": {
-    "@adonisjs/assembler": "^7.8.2",
-    "@adonisjs/vite": "^4.0.0",
+    "@adonisjs/vite": "^6.0.3",
     "@alpinejs/persist": "^3.17.4",
     "@dimerapp/content": "^5.2.1",
     "@dimerapp/docs-theme": "^6.1.3",
@@ -32,16 +29,18 @@
     "@dimerapp/shiki": "^5.0.0",
     "@docsearch/css": "^5.1.2",
     "@docsearch/js": "^5.1.2",
-    "@types/node": "^25.9.9",
+    "@poppinss/ts-exec": "^1.5.1",
+    "@types/node": "^26.6.5",
     "alpinejs": "^3.17.4",
     "collect.js": "^4.36.1",
-    "concurrently": "^10.0.6",
     "edge-uikit": "^1.0.0-1",
     "medium-zoom": "^1.1.0",
     "reflect-metadata": "^0.2.2",
-    "typescript": "~5.9.3",
     "undici": "^8.12.3",
     "unpoly": "^3.14.3",
-    "vite": "^7.3.7"
+    "vite": "^8.3.4"
+  },
+  "engines": {
+    "node": ">=24.0.0"
   }
 }

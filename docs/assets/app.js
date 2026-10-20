@@ -7,12 +7,10 @@ import Persist from '@alpinejs/persist'
 import docsearch from '@docsearch/js/docsearch'
 import { initZoomComponent, initBaseComponents } from '@dimerapp/docs-theme/scripts'
 
-import.meta.glob([
-  '../content/**/*.png',
-  '../content/**/*.jpeg',
-  '../content/**/*.jpg',
-  '../content/**/*.webp',
-])
+import.meta.glob(
+  ['../content/**/*.png', '../content/**/*.jpeg', '../content/**/*.jpg', '../content/**/*.webp'],
+  { eager: true, query: '?url', import: 'default' },
+)
 
 Alpine.plugin(tabs)
 Alpine.plugin(Persist)

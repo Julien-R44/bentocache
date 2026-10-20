@@ -52,7 +52,7 @@ export async function downloadSponsors() {
 
     await writeFile(SPONSORS_FILE_PATH, JSON.stringify(sponsorsList))
   } catch (error) {
-    if (error.code === 'ENOENT') {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
       console.warn('Cannot download sponsors list. Unable to find "content/config.json" file')
       return
     }

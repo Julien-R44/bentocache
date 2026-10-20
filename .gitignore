@@ -1,4 +1,5 @@
 node_modules
+.adonisjs
 build
 coverage
 poc

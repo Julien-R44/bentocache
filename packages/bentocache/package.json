@@ -60,7 +60,7 @@
     "copy:templates": "copyfiles \"stubs/**/*.stub\" build",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
-    "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --loader=ts-node/esm bin/test.ts",
+    "quick:test": "cross-env NODE_NO_WARNINGS=1 node --enable-source-maps --import=tsx bin/test.ts",
     "pretest": "pnpm lint",
     "test": "c8 pnpm quick:test",
     "build": "pnpm clean && tsup-node",
