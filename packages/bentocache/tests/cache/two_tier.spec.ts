@@ -10,6 +10,75 @@ import { CacheFactory } from '../../factories/cache_factory.js'
 import { L2CacheError, UndefinedValueError } from '../../src/errors.js'
 import { throwingFactory, slowFactory, REDIS_CREDENTIALS } from '../helpers/index.js'
 
+test.group('Two tier cache | serialize: false on L1', () => {
+  test('L2 hit should correctly refill L1 when serialize is false', async ({ assert }) => {
+    const { cache, local, remote, stack } = new CacheFactory()
+      .withMemoryL1({ serialize: false })
+      .withL1L2Config()
+      .create()
+
+    await remote.set('foo', JSON.stringify({ value: { name: 'John' } }), stack.defaultOptions)
+
+    const r1 = await cache.get({ key: 'foo' })
+    assert.deepEqual(r1, { name: 'John' })
+
+    const r2 = await cache.get({ key: 'foo' })
+    assert.deepEqual(r2, { name: 'John' })
+
+    const l1Entry = local.get('foo', stack.defaultOptions)
+    assert.deepEqual(l1Entry?.entry.getValue(), { name: 'John' })
+    assert.isNotString(l1Entry?.entry.getValue())
+  })
+
+  test('getOrSet L2 hit should correctly refill L1 when serialize is false', async ({ assert }) => {
+    const { cache, remote, stack } = new CacheFactory()
+      .withMemoryL1({ serialize: false })
+      .withL1L2Config()
+      .create()
+
+    await remote.set('foo', JSON.stringify({ value: 'bar' }), stack.defaultOptions)
+
+    const r1 = await cache.getOrSet({
+      key: 'foo',
+      factory: throwingFactory('should not be called'),
+    })
+    assert.deepEqual(r1, 'bar')
+
+    const r2 = await cache.getOrSet({
+      key: 'foo',
+      factory: throwingFactory('should not be called'),
+    })
+    assert.deepEqual(r2, 'bar')
+  })
+
+  test('grace period backoff should correctly store in L1 when serialize is false', async ({
+    assert,
+  }) => {
+    const { cache } = new CacheFactory()
+      .withMemoryL1({ serialize: false })
+      .withL1L2Config()
+      .merge({ ttl: 100, grace: '10m', timeout: null })
+      .create()
+
+    const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
+
+    await sleep(100)
+
+    const r2 = await cache.getOrSet({
+      key: 'key1',
+      factory: () => {
+        throw new Error('factory error')
+      },
+    })
+
+    assert.deepEqual(r1, { foo: 'bar' })
+    assert.deepEqual(r2, { foo: 'bar' })
+
+    const r3 = await cache.get({ key: 'key1' })
+    assert.deepEqual(r3, { foo: 'bar' })
+  })
+})
+
 test.group('Two tier cache', () => {
   test('get() returns null if null is stored', async ({ assert }) => {
     const { cache } = new CacheFactory().withL1L2Config().create()
