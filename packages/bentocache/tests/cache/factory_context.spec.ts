@@ -110,14 +110,17 @@ test.group('Factory Context', () => {
 
     await sleep(100)
 
+    let gracedEntryValue;
+
     const r1 = await cache.getOrSet({
       key: 'foo',
       factory: ({ gracedEntry }) => {
-        assert.deepEqual(gracedEntry?.value, 'bar')
-        return gracedEntry?.value
+        gracedEntryValue = gracedEntry?.value
+        return gracedEntryValue
       },
     })
 
+    assert.deepEqual(gracedEntryValue, 'bar')
     assert.deepEqual(r1, 'bar')
   })
 })

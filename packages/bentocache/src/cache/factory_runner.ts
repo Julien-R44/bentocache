@@ -137,7 +137,7 @@ export class FactoryRunner {
      * And immediately return the fallback value
      */
     if (options.shouldSwr(hasGracedValue)) {
-      this.#runFactory({ key, factory, options, lockReleaser, isBackground: true })
+      this.#runFactory({ key, factory, options, lockReleaser, isBackground: true, gracedValue })
       throw new errors.E_FACTORY_SOFT_TIMEOUT(key)
     }
 
