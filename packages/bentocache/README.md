@@ -48,7 +48,7 @@ For those looking to go further, you can use the two-levels caching system. Here
 
 - **L1: Local Cache**: First level cache. Data is stored in memory with an LRU algorithm for quick access
 - **L2: Distributed Cache**: If the data is not in the in-memory cache, it is searched in the distributed cache (Redis, for example)
-- **Synchronization via Bus**: In a multi-instance context, you can synchronize different local in-memory caches of your instances via a Bus like Redis or RabbitMQ. This method maintains cache integrity across multiple instances
+- **Synchronization via Bus**: In a multi-instance context, you can synchronize different local in-memory caches of your instances via a Bus like Redis or Postgres. This method maintains cache integrity across multiple instances
 
 Here is a simplified diagram of the flow :
 
