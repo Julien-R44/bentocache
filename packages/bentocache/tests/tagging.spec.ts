@@ -61,6 +61,8 @@ test.group('Tagging | deleteByTag', () => {
     assert.deepEqual(r3, 3)
 
     await cache.deleteByTag({ tags: ['x'] })
+    // An entry created in the same millisecond as the invalidation counts as invalidated
+    await sleep(10)
 
     const r4 = await cache.get({ key: 'foo' })
     const r5 = await cache.getOrSet({ key: 'bar', factory: () => 222, tags: ['y', 'z'] })
