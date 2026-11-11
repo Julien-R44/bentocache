@@ -108,7 +108,7 @@ test.group('Factory Context', () => {
       factory: () => 'bar',
     })
 
-    await sleep(100)
+    await sleep(150)
 
     const r1 = await cache.getOrSet({
       key: 'foo',
