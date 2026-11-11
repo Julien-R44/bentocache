@@ -8,6 +8,8 @@ Official OpenTelemetry instrumentation for Bentocache.
 pnpm add @bentocache/otel
 ```
 
+Requires OpenTelemetry JS SDK 3 (`@opentelemetry/api` 1.10) and Node.js 22.15.0 or newer. For OpenTelemetry SDK 2, use `@bentocache/otel@0.1.x`.
+
 ## Usage
 
 ```ts

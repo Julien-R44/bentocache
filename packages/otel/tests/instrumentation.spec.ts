@@ -1,8 +1,65 @@
 import { test } from '@japa/runner'
+import { SpanStatusCode, trace } from '@opentelemetry/api'
 
 import { createMemoryStore, setupInstrumentation } from './helpers.js'
 
 test.group('BentoCacheInstrumentation', () => {
+  test('records cache spans under the active parent span of a real tracer provider', async ({
+    assert,
+    cleanup,
+  }) => {
+    const { exporter, bentocacheModule } = await setupInstrumentation(cleanup, {}, 'modulePatch')
+    const store = createMemoryStore(bentocacheModule)
+    const tracer = trace.getTracer('test-app')
+
+    await tracer.startActiveSpan('request', async requestSpan => {
+      await store.getOrSet({ key: 'user:1', ttl: '10s', factory: async () => ({ id: 1 }) })
+      await store.get({ key: 'user:1' })
+      await store
+        .getOrSet({
+          key: 'user:2',
+          ttl: '10s',
+          factory: async () => {
+            throw new Error('factory failed')
+          },
+        })
+        .catch(() => {})
+      requestSpan.end()
+    })
+
+    const spans = exporter.getFinishedSpans()
+    const requestSpan = spans.find(span => span.name === 'request')!
+    const traceId = requestSpan.spanContext().traceId
+    const cacheSpans = spans.filter(span => span.name.startsWith('cache.'))
+
+    assert.deepEqual(cacheSpans.map(span => span.name).sort(), [
+      'cache.factory',
+      'cache.factory',
+      'cache.get',
+      'cache.getOrSet',
+      'cache.getOrSet',
+      'cache.set',
+    ])
+
+    for (const span of cacheSpans) {
+      assert.equal(span.spanContext().traceId, traceId)
+      assert.equal(span.instrumentationScope.name, '@bentocache/otel')
+    }
+
+    const [okGetOrSet, failedGetOrSet] = cacheSpans.filter(span => span.name === 'cache.getOrSet')
+    assert.equal(okGetOrSet.parentSpanContext?.spanId, requestSpan.spanContext().spanId)
+    assert.equal(okGetOrSet.attributes['cache.store'], 'memory')
+    assert.isUndefined(okGetOrSet.attributes['cache.key'])
+
+    const getSpan = cacheSpans.find(span => span.name === 'cache.get')!
+    assert.equal(getSpan.parentSpanContext?.spanId, requestSpan.spanContext().spanId)
+    assert.strictEqual(getSpan.attributes['cache.hit'], true)
+
+    assert.equal(failedGetOrSet.status.code, SpanStatusCode.ERROR)
+    assert.equal(failedGetOrSet.status.message, 'Factory has thrown an error')
+    assert.equal(failedGetOrSet.events[0]?.name, 'exception')
+  })
+
   test('creates cache spans from diagnostic channel', async ({ assert, cleanup }) => {
     const { exporter, bentocacheModule } = await setupInstrumentation(
       cleanup,
