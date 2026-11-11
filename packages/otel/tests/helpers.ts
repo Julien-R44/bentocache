@@ -1,10 +1,7 @@
-import { trace } from '@opentelemetry/api'
+import { context, trace } from '@opentelemetry/api'
 import { memoryDriver } from 'bentocache/drivers/memory'
-import {
-  BasicTracerProvider,
-  InMemorySpanExporter,
-  SimpleSpanProcessor,
-} from '@opentelemetry/sdk-trace-base'
+import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks'
+import { InMemorySpanExporter, SimpleSpanProcessor, TracerProvider } from '@opentelemetry/sdk-trace'
 
 import { BentoCacheInstrumentation } from '../src/instrumentation.js'
 
@@ -21,7 +18,7 @@ type CleanupFn = (callback: () => Promise<void> | void) => void
 /**
  * Reused tracer setup shared across tests.
  */
-let tracerSetup: { exporter: InMemorySpanExporter; provider: BasicTracerProvider } | undefined
+let tracerSetup: { exporter: InMemorySpanExporter; provider: TracerProvider } | undefined
 
 /**
  * Creates a singleton tracer provider and in-memory exporter for the suite.
@@ -34,11 +31,12 @@ const setupTracer = () => {
   }
 
   const exporter = new InMemorySpanExporter()
-  const provider = new BasicTracerProvider({
-    spanProcessors: [new SimpleSpanProcessor(exporter)],
+  const provider = new TracerProvider({
+    spanProcessors: [new SimpleSpanProcessor({ exporter })],
   })
 
   trace.setGlobalTracerProvider(provider)
+  context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable())
 
   tracerSetup = { exporter, provider }
   return tracerSetup
@@ -60,9 +58,11 @@ export const setupInstrumentation = async (
   const moduleDefinitions = (instrumentation as any)._modules as any[]
   const moduleDefinition = moduleDefinitions[0]
 
-  const bentocacheModule = await import('bentocache')
+  let bentocacheModule: any = await import('bentocache')
 
   if (mode === 'modulePatch') {
+    // import-in-the-middle hands instrumentations a mutable view of the ESM namespace
+    bentocacheModule = { ...bentocacheModule }
     moduleDefinition.patch?.(bentocacheModule)
     instrumentation.enable()
   } else {
