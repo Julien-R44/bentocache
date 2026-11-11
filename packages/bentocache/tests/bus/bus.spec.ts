@@ -3,12 +3,14 @@ import { sleep } from '@julr/utils/misc'
 import { MemoryTransport } from '@boringnode/bus/transports/memory'
 import { Redis as IoRedis, Cluster as IoRedisCluster } from 'ioredis'
 
+import { BentoCache, bentostore } from '../../index.js'
 import { ChaosBus } from '../helpers/chaos/chaos_bus.js'
+import { memoryDriver } from '../../src/drivers/memory.js'
 import { ChaosCache } from '../helpers/chaos/chaos_cache.js'
 import { CacheBusMessageType } from '../../src/types/bus.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
-import { RedisDriver, redisBusDriver } from '../../src/drivers/redis.js'
 import { REDIS_CREDENTIALS, throwingFactory } from '../helpers/index.js'
+import { RedisDriver, redisBusDriver, redisDriver } from '../../src/drivers/redis.js'
 
 test.group('Bus synchronization', () => {
   test('synchronize multiple cache', async ({ assert }) => {
@@ -445,6 +447,30 @@ test.group('Bus synchronization', () => {
 
     await sleep(200)
   }).waitForDone()
+
+  test('disconnecting before the bus subscription is ready does not leave an unhandled rejection', async ({
+    assert,
+  }) => {
+    const rejections: unknown[] = []
+    const onRejection = (reason: unknown) => rejections.push(reason)
+    process.on('unhandledRejection', onRejection)
+
+    const bento = new BentoCache({
+      default: 'cache',
+      stores: {
+        cache: bentostore()
+          .useL1Layer(memoryDriver({}))
+          .useL2Layer(redisDriver({ connection: REDIS_CREDENTIALS }))
+          .useBus(redisBusDriver({ connection: REDIS_CREDENTIALS })),
+      },
+    })
+    bento.use('cache')
+    await bento.disconnectAll()
+    await sleep(50)
+
+    process.off('unhandledRejection', onRejection)
+    assert.deepEqual(rejections, [])
+  })
 
   test('works with an existing Cluster instance', async ({ assert }, done) => {
     const cluster = new IoRedisCluster([{ host: '127.0.0.1', port: 7000 }])

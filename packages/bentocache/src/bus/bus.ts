@@ -51,8 +51,14 @@ export class Bus {
 
     if (name) this.#channelName += `:${name}`
 
-    this.#wrapInternalOperation(() => {
-      this.#bus.subscribe<CacheBusMessage>(this.#channelName, this.#onMessage.bind(this))
+    /**
+     * The subscription rejects when the connection closes before it is ready,
+     * for example when the cache is disconnected right after its creation
+     */
+    this.#wrapInternalOperation(() =>
+      this.#bus.subscribe<CacheBusMessage>(this.#channelName, this.#onMessage.bind(this)),
+    ).catch(err => {
+      this.#logger.error({ err, channel: this.#channelName }, 'failed to subscribe to bus channel')
     })
     this.#logger.trace({ channel: this.#channelName }, 'bus subscribed to channel')
   }

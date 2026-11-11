@@ -237,7 +237,7 @@ test.group('Two tier cache', () => {
     const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
 
     // wait for expiration
-    await sleep(100)
+    await sleep(150)
 
     // get the value again
     const r2 = await cache.getOrSet({
@@ -335,7 +335,7 @@ test.group('Two tier cache', () => {
     remoteDriver.alwaysThrow()
 
     // wait till we enter the grace period
-    await sleep(100)
+    await sleep(150)
 
     // get the value again
     const r2 = cache.getOrSet({

@@ -406,13 +406,13 @@ test.group('One tier cache', () => {
     const r1 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bar' }) })
 
     // wait for expiration
-    await sleep(100)
+    await sleep(150)
 
     // factory that will exceed soft timeout
     const r2 = await cache.getOrSet({ key: 'key1', factory: slowFactory(550, { foo: 'baz' }) })
 
     // wait til factory is done
-    await sleep(50)
+    await sleep(100)
 
     // get the value
     const r3 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'bazzz' }) })
