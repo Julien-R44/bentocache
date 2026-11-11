@@ -1,6 +1,6 @@
 {
   "name": "bentocache",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "Multi-tier cache module for Node.js. Redis, Upstash, CloudfareKV, File, in-memory and others drivers",
   "keywords": [
     "cache",
