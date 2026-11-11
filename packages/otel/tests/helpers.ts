@@ -58,9 +58,11 @@ export const setupInstrumentation = async (
   const moduleDefinitions = (instrumentation as any)._modules as any[]
   const moduleDefinition = moduleDefinitions[0]
 
-  const bentocacheModule = await import('bentocache')
+  let bentocacheModule: any = await import('bentocache')
 
   if (mode === 'modulePatch') {
+    // import-in-the-middle hands instrumentations a mutable view of the ESM namespace
+    bentocacheModule = { ...bentocacheModule }
     moduleDefinition.patch?.(bentocacheModule)
     instrumentation.enable()
   } else {

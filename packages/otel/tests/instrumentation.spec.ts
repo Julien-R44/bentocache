@@ -1,9 +1,161 @@
 import { test } from '@japa/runner'
+import { memoryDriver } from 'bentocache/drivers/memory'
+import { setTimeout as sleep } from 'node:timers/promises'
 import { SpanStatusCode, trace } from '@opentelemetry/api'
+import type { ReadableSpan } from '@opentelemetry/sdk-trace'
+import { FileDriver, fileDriver } from 'bentocache/drivers/file'
 
 import { createMemoryStore, setupInstrumentation } from './helpers.js'
 
+const tracer = trace.getTracer('test-app')
+
+/**
+ * Runs `fn` inside an active span named `name`, like an HTTP request span.
+ */
+const inSpan = <T>(name: string, fn: () => Promise<T>) =>
+  tracer.startActiveSpan(name, async span => {
+    try {
+      return await fn()
+    } finally {
+      span.end()
+    }
+  })
+
+const parentName = (spans: ReadableSpan[], span: ReadableSpan | undefined) =>
+  spans.find(item => item.spanContext().spanId === span?.parentSpanContext?.spanId)?.name
+
 test.group('BentoCacheInstrumentation', () => {
+  test('keeps operations of concurrent requests on the same key in their own trace', async ({
+    assert,
+    cleanup,
+  }) => {
+    const { exporter, bentocacheModule } = await setupInstrumentation(cleanup, {}, 'modulePatch')
+    const store = createMemoryStore(bentocacheModule)
+
+    await Promise.all([
+      inSpan('request A', () =>
+        store.getOrSet({
+          key: 'k',
+          factory: async () => {
+            await sleep(30)
+            return 'a'
+          },
+        }),
+      ),
+      inSpan('request B', async () => {
+        await sleep(5)
+        await store.get({ key: 'k' })
+        await store.set({ key: 'k', value: 'b' })
+        await store.delete({ key: 'k' })
+      }),
+      inSpan('request C', async () => {
+        await sleep(10)
+        await store.getOrSet({ key: 'k', factory: async () => 'c' })
+      }),
+    ])
+
+    const spans = exporter.getFinishedSpans()
+    const traceOf = (name: string) => spans.find(span => span.name === name)!.spanContext().traceId
+    const namesInTrace = (name: string) =>
+      spans
+        .filter(span => span.spanContext().traceId === traceOf(name) && span.name !== name)
+        .map(span => `${span.name}<${parentName(spans, span)}`)
+        .sort()
+
+    assert.deepEqual(namesInTrace('request A'), [
+      'cache.factory<cache.getOrSet',
+      'cache.getOrSet<request A',
+      'cache.set<cache.getOrSet',
+    ])
+    assert.deepEqual(namesInTrace('request B'), [
+      'cache.delete<request B',
+      'cache.get<request B',
+      'cache.set<request B',
+    ])
+    assert.deepEqual(namesInTrace('request C'), ['cache.getOrSet<request C'])
+  })
+
+  test('makes the factory span active for code and cache operations inside the factory', async ({
+    assert,
+    cleanup,
+  }) => {
+    const { exporter, bentocacheModule } = await setupInstrumentation(
+      cleanup,
+      { includeKeys: true },
+      'modulePatch',
+    )
+    const store = createMemoryStore(bentocacheModule)
+
+    await inSpan('request', () =>
+      store.getOrSet({
+        key: 'outer',
+        factory: async () => {
+          await inSpan('db.query', async () => {})
+          return store.getOrSet({ key: 'inner', factory: async () => 1 })
+        },
+      }),
+    )
+
+    const spans = exporter.getFinishedSpans()
+    const byKey = (name: string, key: string) =>
+      spans.find(span => span.name === name && span.attributes['cache.key'] === key)
+
+    assert.equal(parentName(spans, byKey('cache.getOrSet', 'bentocache:outer')), 'request')
+    assert.equal(
+      parentName(
+        spans,
+        spans.find(span => span.name === 'db.query'),
+      ),
+      'cache.factory',
+    )
+    assert.equal(
+      byKey('cache.getOrSet', 'bentocache:inner')?.parentSpanContext?.spanId,
+      byKey('cache.factory', 'bentocache:outer')?.spanContext().spanId,
+    )
+    assert.equal(
+      byKey('cache.factory', 'bentocache:inner')?.parentSpanContext?.spanId,
+      byKey('cache.getOrSet', 'bentocache:inner')?.spanContext().spanId,
+    )
+    assert.equal(trace.getActiveSpan(), undefined)
+  })
+
+  test('suppresses spans created by L2 drivers when suppressInternalOperations is enabled', async ({
+    assert,
+    cleanup,
+    fs,
+  }) => {
+    class TracedDriver extends FileDriver {
+      override async get(key: string) {
+        return inSpan('l2.driver.get', () => super.get(key))
+      }
+    }
+    const l2 = {
+      ...fileDriver({ directory: fs.basePath }),
+      factory: (c: any) => new TracedDriver(c),
+    }
+
+    const run = async (suppressInternalOperations: boolean) => {
+      const { exporter, bentocacheModule } = await setupInstrumentation(
+        cleanup,
+        { suppressInternalOperations },
+        'modulePatch',
+      )
+      const cache = new bentocacheModule.BentoCache({
+        default: 's',
+        stores: { s: bentocacheModule.bentostore().useL1Layer(memoryDriver({})).useL2Layer(l2) },
+      })
+      cleanup(() => cache.disconnect())
+
+      await inSpan('request', () =>
+        cache.getOrSet({ key: `k-${suppressInternalOperations}`, factory: async () => 1 }),
+      )
+      return exporter.getFinishedSpans().map(span => span.name)
+    }
+
+    assert.notInclude(await run(true), 'l2.driver.get')
+    assert.include(await run(false), 'l2.driver.get')
+  })
+
   test('records cache spans under the active parent span of a real tracer provider', async ({
     assert,
     cleanup,

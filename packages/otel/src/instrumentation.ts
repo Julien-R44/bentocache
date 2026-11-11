@@ -1,6 +1,6 @@
 import { suppressTracing } from '@opentelemetry/core'
-import type { Context, Span } from '@opentelemetry/api'
 import type { CacheOperationMessage } from 'bentocache'
+import type { ContextManagementToken, Span } from '@opentelemetry/api'
 import type { TracingChannelSubscribers } from 'node:diagnostics_channel'
 import { context, SpanKind, SpanStatusCode, trace } from '@opentelemetry/api'
 import {
@@ -8,6 +8,7 @@ import {
   InstrumentationNodeModuleDefinition,
 } from '@opentelemetry/instrumentation'
 
+import packageJson from '../package.json' with { type: 'json' }
 import type {
   BentoCacheInstrumentationConfig,
   BentoCacheModuleExports,
@@ -32,10 +33,11 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
   protected handlers?: TracingChannelSubscribers<CacheOperationMessage>
 
   /**
-   * Tracks active getOrSet contexts so child operations (factory, set)
-   * can be parented to the getOrSet span. Keyed by `store:key`.
+   * Context tokens attached on `start` and disposed on the synchronous `end`
+   * event, so the operation span is the active context for everything the
+   * operation runs: nested cache operations and the user factory.
    */
-  #activeContexts = new Map<string, Context>()
+  #contextTokens = new WeakMap<object, ContextManagementToken>()
   #cacheOperation?: CacheOperationChannel
   #originalBentoCache?: BentoCacheModuleExports['BentoCache']
 
@@ -81,7 +83,10 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
     try {
       moduleExports.BentoCache = BentoCachePatched
     } catch {
-      return
+      this._diag.warn(
+        'Cannot patch the BentoCache constructor because the module exports are read-only (ESM namespace). ' +
+          'suppressInternalOperations has no effect on caches created from these exports.',
+      )
     }
   }
 
@@ -128,7 +133,7 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
     this.subscribed = true
     this.handlers = {
       start: message => this.#handleStart(message),
-      end: () => {},
+      end: message => this.#handleEnd(message),
       asyncStart: () => {},
       asyncEnd: message => this.#handleAsyncEnd(message),
       error: message => this.#handleError(message),
@@ -148,26 +153,17 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
     this.subscribed = false
     this.handlers = undefined
     this.spans = new WeakMap()
-    this.#activeContexts.clear()
   }
 
   /**
-   * Starts a span for each cache operation event and tracks getOrSet parent contexts.
+   * Starts a span for each cache operation and makes it the active context
+   * while the operation runs, so nested operations and the factory are parented to it.
    */
   #handleStart(message: CacheOperationMessage) {
     const config = this.getConfig()
-    const contextKey = `${message.store}:${message.key}`
+    const parentContext = context.active()
 
-    // Only child operations (factory, set) use the active getOrSet context as parent.
-    // getOrSet operations themselves always use the current context to avoid
-    // chaining concurrent getOrSet calls for the same key into a nested hierarchy.
-    const isGetOrSet = message.operation === 'getOrSet'
-    const parentContext = !isGetOrSet
-      ? (this.#activeContexts.get(contextKey) ?? context.active())
-      : context.active()
-    const parentSpan = trace.getSpan(parentContext)
-
-    if (config.requireParentSpan && !parentSpan) return
+    if (config.requireParentSpan && !trace.getSpan(parentContext)) return
 
     const spanName = this.#getSpanName(message)
     const span = this.tracer.startSpan(
@@ -180,10 +176,16 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
     )
 
     this.spans.set(message, span)
+    this.#contextTokens.set(message, context.attach(trace.setSpan(parentContext, span)))
+  }
 
-    if (isGetOrSet) {
-      this.#activeContexts.set(contextKey, trace.setSpan(context.active(), span))
-    }
+  /**
+   * Restores the caller context once the operation has returned its promise.
+   * Async continuations created by the operation keep the attached context.
+   */
+  #handleEnd(message: CacheOperationMessage) {
+    this.#contextTokens.get(message)?.dispose()
+    this.#contextTokens.delete(message)
   }
 
   /**
@@ -199,10 +201,6 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
 
     span.end()
     this.spans.delete(message)
-
-    if (message.operation === 'getOrSet') {
-      this.#activeContexts.delete(`${message.store}:${message.key}`)
-    }
   }
 
   /**
@@ -219,10 +217,6 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
 
     span.end()
     this.spans.delete(message)
-
-    if (message.operation === 'getOrSet') {
-      this.#activeContexts.delete(`${message.store}:${message.key}`)
-    }
   }
 
   /**
@@ -271,7 +265,7 @@ export class BentoCacheInstrumentation extends InstrumentationBase<BentoCacheIns
    * Creates a new instrumentation instance with default and user config merged.
    */
   constructor(config: BentoCacheInstrumentationConfig = {}) {
-    super('@bentocache/otel', '0.1.0', { ...DEFAULT_CONFIG, ...config })
+    super(packageJson.name, packageJson.version, { ...DEFAULT_CONFIG, ...config })
   }
 
   /**
