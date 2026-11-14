@@ -120,4 +120,33 @@ test.group('Factory Context', () => {
 
     assert.deepEqual(r1, 'bar')
   })
+
+  test('can access graced entry when refreshing in the background', async ({ assert }) => {
+    const { cache } = new CacheFactory()
+      .withL1L2Config()
+      .merge({ grace: '2m', timeout: 0 })
+      .create()
+
+    await cache.getOrSet({
+      key: 'foo',
+      ttl: 100,
+      factory: () => 'bar',
+    })
+
+    await sleep(100)
+
+    let gracedEntry: { value: any } | undefined
+    const r1 = await cache.getOrSet({
+      key: 'foo',
+      factory: (ctx) => {
+        gracedEntry = ctx.gracedEntry
+        return 'baz'
+      },
+    })
+
+    await sleep(50)
+
+    assert.deepEqual(r1, 'bar')
+    assert.deepEqual(gracedEntry, { value: 'bar' })
+  })
 })
