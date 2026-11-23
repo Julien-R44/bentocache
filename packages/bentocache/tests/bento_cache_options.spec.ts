@@ -1,6 +1,7 @@
 import { test } from '@japa/runner'
 import { ms } from '@julr/utils/string/ms'
 
+import { Locks } from '../src/cache/locks.js'
 import { BentoCacheOptions } from '../src/bento_cache_options.js'
 
 test.group('Bento Cache Options', () => {
@@ -9,6 +10,7 @@ test.group('Bento Cache Options', () => {
 
     assert.deepEqual(options.ttl, ms.parse('30m'))
     assert.deepEqual(options.prefix, 'bentocache')
+    assert.strictEqual(options.lockManager, Locks)
   })
 
   test('override defaults', ({ assert }) => {
@@ -24,5 +26,14 @@ test.group('Bento Cache Options', () => {
     assert.deepEqual(options.ttl, '20m')
     assert.deepEqual(options.prefix, 'foo')
     assert.deepEqual(options.grace, false)
+  })
+
+  test('uses custom lock manager class', ({ assert }) => {
+    class CustomLocks extends Locks {}
+
+    const lockManager = CustomLocks
+    const options = new BentoCacheOptions({ lockManager })
+
+    assert.strictEqual(options.lockManager, lockManager)
   })
 })

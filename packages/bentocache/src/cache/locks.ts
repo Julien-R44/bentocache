@@ -1,11 +1,13 @@
 import { is } from '@julr/utils/is'
-import { Mutex, withTimeout, type MutexInterface } from 'async-mutex'
+import { Mutex, withTimeout } from 'async-mutex'
 
-export class Locks {
+import type { LockHandle, LockManager, LockReleaser } from '../types/main.js'
+
+export class Locks implements LockManager {
   /**
    * A map that will hold active locks for each key
    */
-  #locks = new Map<string, MutexInterface>()
+  #locks = new Map<string, LockHandle>()
 
   /**
    * For a given key, get or create a new lock
@@ -13,7 +15,7 @@ export class Locks {
    * @param key Key to get or create a lock for
    * @param timeout Time to wait to acquire the lock
    */
-  getOrCreateForKey(key: string, timeout?: number) {
+  getOrCreateForKey(key: string, timeout?: number): LockHandle {
     let lock = this.#locks.get(key)
     if (!lock) {
       lock = new Mutex()
@@ -23,7 +25,7 @@ export class Locks {
     return is.number(timeout) ? withTimeout(lock, timeout) : lock
   }
 
-  release(key: string, releaser: MutexInterface.Releaser) {
+  release(key: string, releaser: LockReleaser) {
     releaser()
     this.#locks.delete(key)
   }

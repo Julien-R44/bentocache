@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import { Mutex, withTimeout } from 'async-mutex'
 
 import { bentostore } from '../src/bento_store.js'
 import { BentoCache } from '../src/bento_cache.js'
@@ -6,12 +7,26 @@ import { memoryDriver } from '../src/drivers/memory.js'
 import type { Duration } from '../src/types/helpers.js'
 import type { CacheEvents } from '../src/types/events.js'
 import { CacheFactory } from '../factories/cache_factory.js'
+import type { LockManager, LockReleaser } from '../src/types/main.js'
 import { BentoCacheFactory } from '../factories/bentocache_factory.js'
 
 test.group('Typings', () => {
   test('named caches typings', async ({ expectTypeOf }) => {
+    class CustomLockManager implements LockManager {
+      #lock = new Mutex()
+
+      getOrCreateForKey(_key: string, timeout?: number) {
+        return withTimeout(this.#lock, timeout ?? Infinity)
+      }
+
+      release(_key: string, releaser: LockReleaser) {
+        releaser()
+      }
+    }
+
     const bento = new BentoCache({
       default: 'primary',
+      lockManager: CustomLockManager,
       stores: {
         primary: bentostore().useL1Layer(memoryDriver({ maxItems: 100 })),
         secondary: bentostore().useL1Layer(memoryDriver({ maxItems: 100 })),

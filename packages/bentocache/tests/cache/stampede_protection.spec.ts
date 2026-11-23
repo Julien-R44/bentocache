@@ -2,12 +2,59 @@ import { test } from '@japa/runner'
 import { sleep } from '@julr/utils/misc'
 
 import { errors } from '../../src/errors.js'
+import { Locks } from '../../src/cache/locks.js'
 import { RedisDriver } from '../../src/drivers/redis.js'
 import { MemoryDriver } from '../../src/drivers/memory.js'
 import { CacheFactory } from '../../factories/cache_factory.js'
 import { REDIS_CREDENTIALS, throwingFactory } from '../helpers/index.js'
+import type { LockManager, LockReleaser } from '../../src/types/main.js'
 
 test.group('Cache | Stampede protection', () => {
+  test('should use custom lock manager class', async ({ assert }) => {
+    class SpyLockManager implements LockManager {
+      calls = 0
+      releases = 0
+      #locks = new Locks()
+
+      getOrCreateForKey(key: string, timeout?: number) {
+        this.calls++
+        return this.#locks.getOrCreateForKey(key, timeout)
+      }
+
+      release(key: string, releaser: LockReleaser) {
+        this.releases++
+        this.#locks.release(key, releaser)
+      }
+    }
+
+    const lockManager = new SpyLockManager()
+    class CustomLockManager implements LockManager {
+      getOrCreateForKey(key: string, timeout?: number) {
+        return lockManager.getOrCreateForKey(key, timeout)
+      }
+
+      release(key: string, releaser: LockReleaser) {
+        return lockManager.release(key, releaser)
+      }
+    }
+
+    const { cache } = new CacheFactory()
+      .merge({
+        lockManager: CustomLockManager,
+        l1Driver: new MemoryDriver({ maxItems: 100, prefix: 'test' }),
+      })
+      .create()
+
+    const results = await Promise.all([
+      cache.getOrSet({ key: 'key', factory: async () => 42 }),
+      cache.getOrSet({ key: 'key', factory: async () => 42 }),
+    ])
+
+    assert.deepEqual(results, [42, 42])
+    assert.isTrue(lockManager.calls > 0)
+    assert.isTrue(lockManager.releases > 0)
+  })
+
   test('only one background factory should be executed if soft timeout is triggered', async ({
     assert,
   }) => {

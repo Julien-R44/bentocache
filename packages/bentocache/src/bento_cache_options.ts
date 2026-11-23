@@ -3,10 +3,17 @@ import { ms } from '@julr/utils/string/ms'
 import { noopLogger } from '@julr/utils/logger'
 
 import { Logger } from './logger.js'
+import { Locks } from './cache/locks.js'
 import { resolveTtl } from './helpers.js'
 import type { FactoryError } from './errors.js'
 import { JsonSerializer } from './serializers/json.js'
-import type { CacheSerializer, Duration, Emitter, RawBentoCacheOptions } from './types/main.js'
+import type {
+  CacheSerializer,
+  Duration,
+  Emitter,
+  LockManagerConstructor,
+  RawBentoCacheOptions,
+} from './types/main.js'
 
 const defaultSerializer = new JsonSerializer()
 
@@ -69,6 +76,11 @@ export class BentoCacheOptions {
   lockTimeout?: Duration = null
 
   /**
+   * The lock manager class used throughout the library
+   */
+  lockManager: LockManagerConstructor
+
+  /**
    * Duration for the circuit breaker to stay open
    * if l2 cache fails
    */
@@ -90,6 +102,7 @@ export class BentoCacheOptions {
     this.hardTimeout = this.#options.hardTimeout
     this.suppressL2Errors = this.#options.suppressL2Errors
     this.lockTimeout = this.#options.lockTimeout
+    this.lockManager = this.#options.lockManager ?? Locks
     this.grace = this.#options.grace!
     this.graceBackoff = this.#options.graceBackoff!
 
