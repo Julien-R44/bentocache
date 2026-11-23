@@ -120,4 +120,45 @@ test.group('Factory Context', () => {
 
     assert.deepEqual(r1, 'bar')
   })
+
+  test('can set grace and graceBackoff with adaptive options', async ({ assert }) => {
+    const { cache } = new CacheFactory().withMemoryL1().merge({ timeout: '2s' }).create()
+
+    const r1 = await cache.getOrSet({
+      key: 'key1',
+      factory: (ctx) => {
+        ctx.setOptions({ ttl: 10, grace: '6h' })
+        return { foo: 'bar' }
+      },
+    })
+
+    await sleep(50)
+
+    const r2 = await cache.getOrSet({
+      key: 'key1',
+      factory: (ctx) => {
+        ctx.setOptions({ graceBackoff: '0.5s', grace: '6h' })
+        throw new Error('factory error')
+      },
+    })
+
+    let factoryCalledDuringBackoff = false
+    const r3 = await cache.getOrSet({
+      key: 'key1',
+      factory: () => {
+        factoryCalledDuringBackoff = true
+        throw new Error('should not be called')
+      },
+    })
+
+    await sleep(800)
+
+    const r4 = await cache.getOrSet({ key: 'key1', factory: () => ({ foo: 'baz' }) })
+
+    assert.deepEqual(r1, { foo: 'bar' })
+    assert.deepEqual(r2, { foo: 'bar' })
+    assert.deepEqual(r3, { foo: 'bar' })
+    assert.deepEqual(r4, { foo: 'baz' })
+    assert.isFalse(factoryCalledDuringBackoff)
+  })
 })

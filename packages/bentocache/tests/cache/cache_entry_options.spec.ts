@@ -115,4 +115,21 @@ test.group('Cache Entry Options', () => {
     assert.equal(options.getLogicalTtl(), ms.parse('5m'))
     assert.equal(options.getPhysicalTtl(), ms.parse('5m'))
   })
+
+  test('setGrace should re-compute physical ttl', ({ assert }) => {
+    const options = createCacheEntryOptions({ ttl: '10m' })
+
+    options.setGrace('30m')
+    assert.equal(options.getPhysicalTtl(), ms.parse('30m'))
+
+    options.setGrace(false)
+    assert.equal(options.getPhysicalTtl(), ms.parse('10m'))
+  })
+
+  test('setGraceBackoff should update grace backoff value', ({ assert }) => {
+    const options = createCacheEntryOptions({ graceBackoff: '10s' })
+
+    options.setGraceBackoff('25s')
+    assert.equal(options.graceBackoff, ms.parse('25s'))
+  })
 })
