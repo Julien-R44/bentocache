@@ -9,6 +9,7 @@ import { BaseDriver } from '../drivers/base_driver.js'
 import { RemoteCache } from './facades/remote_cache.js'
 import { cacheEvents } from '../events/cache_events.js'
 import { cacheOperation } from '../tracing_channels.js'
+import type { CacheEntry } from './cache_entry/cache_entry.js'
 import type { GetSetHandler } from './get_set/get_set_handler.js'
 import type { BentoCacheOptions } from '../bento_cache_options.js'
 import type { GetCacheValueReturn } from '../types/internals/index.js'
@@ -123,6 +124,14 @@ export class CacheStack extends BaseDriver {
 
   emit(event: CacheEvent) {
     return this.emitter.emit(event.name, event.data)
+  }
+
+  /**
+   * Prepare a cache entry for L1 storage, returning serialized
+   * or raw data based on the serializeL1 option
+   */
+  prepareForL1(entry: CacheEntry) {
+    return this.options.serializeL1 ? entry.serialize() : entry.toRaw()
   }
 
   /**
