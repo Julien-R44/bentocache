@@ -99,8 +99,13 @@ export interface DatabaseAdapter {
 
   /**
    * Remove expired entries from the cache table
+   *
+   * When `options.limit` is given, remove at most that many entries and return
+   * how many were removed, so the driver can prune a large table in batches
+   * instead of one statement over the whole table. Adapters that ignore the
+   * option and return nothing are pruned in a single call.
    */
-  pruneExpiredEntries(): Promise<void>
+  pruneExpiredEntries(options?: { limit?: number }): Promise<number | void>
 
   /**
    * Clear all entries from the cache table

@@ -86,11 +86,26 @@ export class KyselyAdapter implements DatabaseAdapter {
       .execute()
   }
 
-  async pruneExpiredEntries(): Promise<void> {
-    await this.#connection
-      .deleteFrom(this.#tableName)
-      .where('expires_at', '<', Date.now())
-      .execute()
+  async pruneExpiredEntries(options?: { limit?: number }): Promise<number | void> {
+    let query = this.#connection.deleteFrom(this.#tableName).where('expires_at', '<', Date.now())
+
+    if (options?.limit) {
+      const expiredKeys = this.#connection
+        .selectFrom(this.#tableName)
+        .select('key')
+        .where('expires_at', '<', Date.now())
+        .orderBy('expires_at')
+        .limit(options.limit)
+
+      query = this.#connection
+        .deleteFrom(this.#tableName)
+        .where('key', 'in', expiredKeys) as typeof query
+
+      const result = await query.executeTakeFirst()
+      return +result.numDeletedRows.toString()
+    }
+
+    await query.execute()
   }
 
   async clear(prefix: string): Promise<void> {

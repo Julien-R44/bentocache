@@ -63,6 +63,60 @@ test.group('Database driver', () => {
     assert.isUndefined(hasFoo2)
   })
 
+  test('should prune in batches when pruneBatchSize is set', async ({ assert, cleanup }) => {
+    const db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    })
+
+    const driver = new DatabaseDriver(new KnexAdapter({ connection: db }), {
+      tableName: 'cache',
+      autoCreateTable: true,
+      pruneBatchSize: 2,
+    })
+    cleanup(() => driver.disconnect())
+
+    // 5 entries, batches of 2: 2 + 2 + 1, and the loop stops on the batch that
+    // comes back short instead of asking a fourth time for an empty table.
+    for (const key of ['a', 'b', 'c', 'd', 'e']) await driver.set(key, 'bar', 300)
+    await sleep(400)
+
+    const adapter = new KnexAdapter({ connection: db })
+    adapter.setTableName('cache')
+    const deleted = await adapter.pruneExpiredEntries({ limit: 2 })
+    assert.equal(deleted, 2)
+
+    await driver.prune()
+
+    const remaining = await db('cache').select('key')
+    assert.deepEqual(remaining, [])
+  })
+
+  test('should honor an explicit batch size of 1 without looping forever', async ({
+    assert,
+    cleanup,
+  }) => {
+    const db = knex({
+      client: 'better-sqlite3',
+      connection: { filename: ':memory:' },
+      useNullAsDefault: true,
+    })
+
+    const driver = new DatabaseDriver(new KnexAdapter({ connection: db }), {
+      tableName: 'cache',
+      autoCreateTable: true,
+      pruneBatchSize: 1,
+    })
+    cleanup(() => driver.disconnect())
+
+    for (const key of ['a', 'b', 'c']) await driver.set(key, 'bar', 300)
+    await sleep(400)
+
+    await driver.prune()
+    assert.deepEqual(await db('cache').select('key'), [])
+  })
+
   test('should delete expired item with correct prefixed key', async ({ assert, cleanup }) => {
     const db = knex({
       client: 'better-sqlite3',

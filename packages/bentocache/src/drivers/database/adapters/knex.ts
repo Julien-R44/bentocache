@@ -68,8 +68,28 @@ export class KnexAdapter implements DatabaseAdapter {
     })
   }
 
-  async pruneExpiredEntries(): Promise<void> {
-    await this.#connection.from(this.#tableName).where('expires_at', '<', new Date()).delete()
+  async pruneExpiredEntries(options?: { limit?: number }): Promise<number | void> {
+    /**
+     * `limit` + `order by expires_at` keeps each statement inside the `expires_at`
+     * index, so a prune over millions of rows costs a bounded amount of work
+     * instead of a sequential scan of the whole table. Knex refuses `limit` on a
+     * `delete`, so the bounded set is picked by a subquery.
+     */
+    if (options?.limit) {
+      const expired = this.#connection
+        .from(this.#tableName)
+        .select('key')
+        .where('expires_at', '<', new Date())
+        .orderBy('expires_at')
+        .limit(options.limit)
+
+      return await this.#connection.from(this.#tableName).whereIn('key', expired).delete()
+    }
+
+    return await this.#connection
+      .from(this.#tableName)
+      .where('expires_at', '<', new Date())
+      .delete()
   }
 
   async clear(prefix: string): Promise<void> {
