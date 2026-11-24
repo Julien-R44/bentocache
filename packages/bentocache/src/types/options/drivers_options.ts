@@ -154,6 +154,29 @@ export interface DatabaseConfig extends DriverCommonOptions {
    * @default false
    */
   pruneInterval?: Duration | false
+
+  /**
+   * How many expired entries are deleted per statement during a prune run.
+   *
+   * One `delete ... where expires_at < now()` over a large table makes the
+   * planner choose a sequential scan and hold a single transaction open for
+   * the whole delete. On a cache table that grows to millions of rows, that
+   * statement can outlive the connection's `statement_timeout`, and the
+   * rollback then throws away the work that had already been done — the table
+   * never shrinks while each run keeps paying a full scan of it.
+   *
+   * Pruning therefore deletes in batches of this size, one statement each,
+   * until a batch comes back empty.
+   *
+   * Off by default: pruning in a single statement is what every adapter did
+   * before, and the batched form relies on a `delete … where key in (select …)`
+   * subquery, which MySQL rejects when the subquery reads the table being
+   * deleted from. Turn it on for a big Postgres table, where the single
+   * statement is what becomes a problem.
+   *
+   * @default false
+   */
+  pruneBatchSize?: number | false
 }
 
 /**
