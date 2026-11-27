@@ -269,6 +269,6 @@ export class BentoCache<KnownCaches extends Record<string, BentoStore>> implemen
    * Disconnect all cache connections created by the manager
    */
   async disconnectAll(): Promise<void> {
-    await Promise.all(Object.keys(this.#stores).map(cache => this.use(cache).disconnect()))
+    await Promise.all([...this.#driversCache.values()].map(cache => cache.disconnect()))
   }
 }
