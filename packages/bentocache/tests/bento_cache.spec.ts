@@ -54,6 +54,29 @@ test.group('Bento Cache', () => {
     await bento.disconnectAll()
   })
 
+  test('disconnectAll does not create stores that were never used', async ({ assert }) => {
+    let createdUnusedDrivers = 0
+    const unusedDriver = memoryDriver({})
+    const bento = new BentoCache({
+      default: 'memory',
+      stores: {
+        memory: bentostore().useL1Layer(memoryDriver({})),
+        unused: bentostore().useL1Layer({
+          ...unusedDriver,
+          factory: config => {
+            createdUnusedDrivers++
+            return unusedDriver.factory(config)
+          },
+        }),
+      },
+    })
+
+    await bento.use('memory').set({ key: 'foo', value: 'bar' })
+    await bento.disconnectAll()
+
+    assert.equal(createdUnusedDrivers, 0)
+  })
+
   test('create store with multiple layers', async ({ assert, cleanup }) => {
     const bento = new BentoCache({
       default: 'memory',
